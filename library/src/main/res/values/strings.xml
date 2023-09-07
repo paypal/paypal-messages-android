@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="logo_none_label_default">PayPal</string>
+	<string name="logo_none_label_credit">PayPal Credit</string>
+	<string name="paypal_checkout_sdk_app_name">PYPL Checkout</string>
+</resources>

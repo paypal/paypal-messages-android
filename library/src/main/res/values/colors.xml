@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+res/color folder is for a ColorStateList which changes colors based on the View
+res/colors.xml is for static colors
+https://stackoverflow.com/a/53067685
+-->
+<resources>
+	<color name="blue_600">#005ABA</color>
+	<color name="gray_700">#2C2E2F</color>
+	<color name="white">#FFFFFF</color>
+	<color name="black">#000000</color>
+	<color name="transparent">#00000000</color>
+</resources>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<declare-styleable name="PayPalMessageView">
+		<attr name="paypal_client_id" format="string" />
+
+		<attr name="paypal_text_color" format="enum">
+			<enum name="black" value="0" />
+			<enum name="white" value="1" />
+			<enum name="monochrome" value="2" />
+			<enum name="grayscale" value="3" />
+		</attr>
+
+		<attr name="paypal_logo_type" format="enum">
+			<enum name="primary" value="0" />
+			<enum name="alternative" value="1" />
+			<enum name="inline" value="2" />
+			<enum name="none" value="3" />
+		</attr>
+
+		<attr name="paypal_text_align" format="enum">
+			<enum name="left" value="0" />
+			<enum name="right" value="1" />
+			<enum name="center" value="2" />
+		</attr>
+
+		<attr name="paypal_offer_type" format="enum">
+			<enum name="PAY_LATER_SHORT_TERM" value="0" />
+			<enum name="PAY_LATER_LONG_TERM" value="1" />
+			<enum name="PAY_LATER_PAY_IN_1" value="2" />
+			<enum name="PAYPAL_CREDIT_NO_INTEREST" value="3" />
+		</attr>
+
+		<attr name="paypal_amount" format="float"/>
+
+		<attr name="paypal_placement" format="float"/>
+
+		<attr name="paypal_buyer_country" format="string"/>
+	</declare-styleable>
+</resources>

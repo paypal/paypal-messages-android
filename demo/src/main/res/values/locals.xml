@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="ExtraTranslation">
+	<string name="client_id">
+		REPLACE_WITH_CLIENT_ID_IN_LOCALS_XML
+	</string>
+</resources>
+
+<!--
+Changes to this file should not be tracked by git.
+Use this for any resources, like client IDs that should not be committed.
+Ignore this file by running the below command or using the command in README.md
+
+./scripts/ignore-files.sh -y
+
+Note: Original value for client_id is REPLACE_WITH_CLIENT_ID_IN_LOCALS_XML
+-->
