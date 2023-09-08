@@ -48,9 +48,7 @@ import com.paypal.messages.utils.LogCat
 import java.net.URI
 import java.util.UUID
 import kotlin.system.measureTimeMillis
-import com.google.android.material.R as MaterialR
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
-
 
 @RequiresApi(Build.VERSION_CODES.M)
 internal class ModalFragment constructor(
@@ -257,7 +255,7 @@ internal class ModalFragment constructor(
 			behavior.isFitToContents = false
 			behavior.expandedOffset = offsetTop
 			behavior.isHideable = true
-			behavior.isDraggable = false
+			behavior.isDraggable = true
 			behavior.state = BottomSheetBehavior.STATE_EXPANDED
 		}
 
