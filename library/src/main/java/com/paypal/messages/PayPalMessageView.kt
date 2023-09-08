@@ -324,15 +324,9 @@ class PayPalMessageView @JvmOverloads constructor(
 	}
 
 	private fun showWebView(response: ActionResponse) {
-		// Does an instance of the modal exist already?
-		if (modal != null) {
-			modal!!.show((context as AppCompatActivity).supportFragmentManager, modal!!.tag)
-		}
-		else {
-			// if it doesn't, instantiate the modal
-			val modal = ModalFragment(clientId)
-			val fragmentManager = (context as AppCompatActivity).supportFragmentManager
 
+		val modal = modal ?: run {
+			val modal = ModalFragment(clientId)
 			// Build modal config
 			val modalConfig = ModalConfig(
 				amount = amount,
@@ -352,8 +346,23 @@ class PayPalMessageView @JvmOverloads constructor(
 
 			modal.init(modalConfig)
 			modal.show((context as AppCompatActivity).supportFragmentManager, modal.tag)
+
 			this.modal = modal
+
+			modal
 		}
+
+		// modal.show() above will display the modal on initial view, but if the user closes the modal
+		// it will become visually hidden and this method will re-display the modal without
+		// attempting to reattach it
+		modal.expand()
+	}
+
+	override fun onDetachedFromWindow() {
+		super.onDetachedFromWindow()
+		// The modal will not dismiss (destroy) itself, it will only hide/show when opening and closing
+		// so we need to cleanup the modal instance if the message is removed
+		this.modal?.dismiss()
 	}
 
 	fun refresh() {

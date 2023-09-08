@@ -2,7 +2,6 @@ package com.paypal.messages
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.PorterDuff
@@ -49,9 +48,7 @@ import com.paypal.messages.utils.LogCat
 import java.net.URI
 import java.util.UUID
 import kotlin.system.measureTimeMillis
-import com.google.android.material.R as MaterialR
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
-
 
 @RequiresApi(Build.VERSION_CODES.M)
 internal class ModalFragment constructor(
@@ -76,6 +73,7 @@ internal class ModalFragment constructor(
 	private var currentUrl: String? = null
 	private var webView: WebView? = null
 	private var rootView: View? = null
+	private var dialog: BottomSheetDialog? = null
 	private var closeButtonData: ModalCloseButton? = null
 	private var instanceId = UUID.randomUUID()
 
@@ -136,12 +134,12 @@ internal class ModalFragment constructor(
 
 		closeButton?.setOnClickListener {
 			logEvent(TrackingEvent(eventType = EventType.MODAL_CLOSE))
-			this.dismiss()
+			dialog?.hide()
 		}
 
 		// If we already have a WebView, don't reset it
 		LogCat.debug(TAG, "Configuring WebView Settings and Handlers")
-		val webView = rootView.findViewById<WebView>(R.id.ModalWebView)
+		val webView = rootView.findViewById<RoundedWebView>(R.id.ModalWebView)
 
 		// Programmatically set bottom margin instead of in XML since we also apply it to the
 		// dialog behavior below to control it in a single location. The expanded offset below shifts
@@ -250,23 +248,24 @@ internal class ModalFragment constructor(
 	}
 
 	override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-		val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
-		dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-		dialog.behavior.isFitToContents = false
-		dialog.behavior.expandedOffset = offsetTop
-		dialog.behavior.isHideable = false
-		dialog.behavior.isDraggable = false
-		dialog.behavior.state = BottomSheetBehavior.STATE_EXPANDED
-		dialog.setOnShowListener { setupBottomSheet(it) }
+		setStyle(STYLE_NO_FRAME, R.style.BottomSheetDialog)
+
+		val dialog = (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
+			window?.setBackgroundDrawableResource(android.R.color.transparent)
+			behavior.isFitToContents = false
+			behavior.expandedOffset = offsetTop
+			behavior.isHideable = true
+			behavior.isDraggable = true
+			behavior.state = BottomSheetBehavior.STATE_EXPANDED
+		}
+
+		this.dialog = dialog
 
 		return dialog
 	}
 
-	private fun setupBottomSheet(dialogInterface: DialogInterface) {
-		val bottomSheetDialog = dialogInterface as BottomSheetDialog
-		val bottomSheet = bottomSheetDialog.findViewById<View>(MaterialR.id.design_bottom_sheet)
-		if (bottomSheet === null) return
-		bottomSheet.setBackgroundColor(Color.TRANSPARENT)
+	fun expand() {
+		this.dialog?.show()
 	}
 
 	fun init(config: ModalConfig) {
