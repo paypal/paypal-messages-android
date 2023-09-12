@@ -1,0 +1,21 @@
+name: Test
+on: [pull_request, workflow_dispatch]
+
+concurrency:
+  group: lint-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: echo "Install Dependencies"
+
+      - name: Run Tests
+        run: echo "Run Tests"
