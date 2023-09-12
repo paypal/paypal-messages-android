@@ -2,7 +2,7 @@ name: Test
 on: [pull_request, workflow_dispatch]
 
 concurrency:
-  group: lint-${{ github.event.number }}
+  group: test-${{ github.event.number }}
   cancel-in-progress: true
 
 jobs:
