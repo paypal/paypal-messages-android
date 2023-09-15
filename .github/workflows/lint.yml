@@ -26,4 +26,4 @@ jobs:
 
       - uses: yutailang0119/action-android-lint@v3
         with:
-          report-path: build/reports/*.xml
+          report-path: library/build/reports/*.xml
