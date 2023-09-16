@@ -9,7 +9,6 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.net.Uri
 import android.net.http.SslError
-import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -27,19 +26,18 @@ import android.webkit.WebViewClient
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
-import androidx.annotation.RequiresApi
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.paypal.messages.config.Channel
+import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.errors.BaseException
 import com.paypal.messages.errors.ModalFailedToLoad
 import com.paypal.messages.extensions.dp
 import com.paypal.messages.io.Api
-import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.logger.ComponentType
 import com.paypal.messages.logger.EventType
 import com.paypal.messages.logger.Logger
@@ -52,8 +50,6 @@ import kotlin.system.measureTimeMillis
 import com.google.android.material.R as MaterialR
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 
-
-@RequiresApi(Build.VERSION_CODES.M)
 internal class ModalFragment constructor(
 	private val clientId: String,
 ): BottomSheetDialogFragment() {

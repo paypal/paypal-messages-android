@@ -2,10 +2,8 @@ package com.paypal.messages
 
 import android.content.Context
 import android.content.res.TypedArray
-import android.os.Build
 import android.text.Spannable
 import android.text.SpannableStringBuilder
-import android.text.style.DynamicDrawableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.ImageSpan
 import android.text.style.StyleSpan
@@ -16,7 +14,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.getFloatOrThrow
@@ -57,7 +54,6 @@ import com.paypal.messages.config.message.PayPalMessageViewState as MessageViewS
  * be displayed in different styles. Interacting with this component will show more information about the
  * product itself and the option to apply
  */
-@RequiresApi(Build.VERSION_CODES.M)
 class PayPalMessageView @JvmOverloads constructor(
 	context: Context,
 	attributeSet: AttributeSet? = null,
@@ -638,8 +634,9 @@ class PayPalMessageView @JvmOverloads constructor(
 					val width =
 						lineHeight * logoDrawable.intrinsicWidth / logoDrawable.intrinsicHeight
 					logoDrawable.setBounds(0, 0, width, lineHeight)
+					val alignCenter = 2
 					setSpan(
-						ImageSpan(logoDrawable, DynamicDrawableSpan.ALIGN_CENTER),
+						ImageSpan(logoDrawable, alignCenter),
 						logoIndex,
 						logoIndex + logoTag.length,
 						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
