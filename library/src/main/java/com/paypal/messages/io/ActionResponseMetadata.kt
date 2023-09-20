@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.ProductGroup
 import com.paypal.messages.config.modal.ModalCloseButton
+import java.util.*
 
 data class ActionResponseMetadata(
 	@SerializedName("credit_product_group")
@@ -28,4 +29,6 @@ data class ActionResponseMetadata(
 	val fdata: String,
 	@SerializedName("tracking_keys")
 	val trackingKeys: List<String>,
+	@SerializedName("originating_instance_id")
+	val originatingInstanceId: UUID
 )
