@@ -63,7 +63,7 @@
 					android:text="Inline"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:id="@+id/styleInline"/>
+					android:id="@+id/styleInline" android:checked="true"/>
 				<RadioButton
 					android:text="Primary"
 					android:layout_width="wrap_content"
@@ -96,7 +96,7 @@
 					android:text="Black"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:id="@+id/styleBlack"/>
+					android:id="@+id/styleBlack" android:checked="true"/>
 				<RadioButton
 					android:text="White"
 					android:layout_width="wrap_content"
@@ -131,7 +131,7 @@
 					android:text="Left"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:id="@+id/styleLeft"/>
+					android:id="@+id/styleLeft" android:checked="true"/>
 				<RadioButton
 					android:text="Center"
 					android:layout_width="wrap_content"
@@ -166,7 +166,7 @@
 					android:text="Short Term"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:id="@+id/offerTypeShortTerm"/>
+					android:id="@+id/offerTypeShortTerm" android:checked="true"/>
 				<RadioButton
 					android:text="Long Term"
 					android:layout_width="wrap_content"
@@ -242,16 +242,15 @@
 				android:layout_height="match_parent"
 				android:orientation="horizontal">
 
-				<RadioButton
+				<Switch
 					android:text="Ignore Cache"
 					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/ignoreCache"/>
-				<RadioButton
+					android:layout_height="wrap_content" android:id="@+id/ignoreCache" android:layout_weight="1"/>
+
+				<Switch
 					android:text="Dev Touchpoint"
 					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/devTouchpoint"/>
+					android:layout_height="wrap_content" android:id="@+id/devTouchpoint" android:layout_weight="1"/>
 
 			</RadioGroup>
 
