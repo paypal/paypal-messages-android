@@ -35,12 +35,12 @@
 					android:layout_height="wrap_content"
 					android:id="@+id/clientIdLabel" android:layout_weight="1"/>
 				<EditText
+					android:text="@string/client_id"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:inputType="text"
-					android:text="Add Client ID"
 					android:ems="10"
-					android:id="@+id/clientId"/>
+					android:id="@+id/clientId" android:hint="Add Client ID"/>
 			</TableRow>
 		</TableLayout>
 
@@ -202,9 +202,8 @@
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:inputType="text"
-					android:text="0.00"
 					android:ems="10"
-					android:id="@+id/amount"/>
+					android:id="@+id/amount" android:hint="0.00"/>
 
 			</TableRow>
 		</TableLayout>
@@ -226,9 +225,8 @@
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:inputType="text"
-					android:text="US"
 					android:ems="10"
-					android:id="@+id/buyercountry"/>
+					android:id="@+id/buyercountry" android:hint="US"/>
 
 			</TableRow>
 		</TableLayout>
@@ -294,7 +292,7 @@
 			android:layout_height="match_parent">
 
 			<Button
-				android:id="@+id/reloadButton"
+				android:id="@+id/reset"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:text="@string/reload_label"

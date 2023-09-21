@@ -3,6 +3,8 @@ package com.paypal.messagesdemo
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Button
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.paypal.messages.PayPalMessageView
@@ -26,10 +28,34 @@ class XmlActivity: AppCompatActivity() {
 		super.onCreate(savedInstanceState)
 		binding = ActivityMessageBinding.inflate(layoutInflater)
 		setContentView(binding.root)
+		setContentView(R.layout.activity_message)
 
 		val payPalMessage = binding.payPalMessage
 		val progressBar = binding.progressBar
-		val reloadButton = binding.reloadButton
+//		val reset = binding.reset
+
+		val reloadButton = findViewById<Button>(R.id.reset)
+
+		reloadButton.setOnClickListener {
+			val editedClientId = findViewById<EditText>(R.id.clientId)
+			val amount = findViewById<EditText>(R.id.amount)
+			val buyerCountry = findViewById<EditText>(R.id.buyercountry)
+
+			editedClientId.text.toString().let {
+				payPalMessage.setClientId(editedClientId.text.toString())
+			}
+
+			amount.text.toString().let {
+				payPalMessage.setAmount(amount.text.toString().toDouble())
+			}
+
+			buyerCountry.text.toString().let {
+				payPalMessage.setBuyerCountry(buyerCountry.text.toString())
+			}
+
+
+			payPalMessage.refresh()
+		}
 
 		// TODO add example of adding MessageView here instead of in XML
 
