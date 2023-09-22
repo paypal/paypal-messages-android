@@ -141,6 +141,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			updateFromAttributes(typedArray)
 		}
 		config?.let { updateFromConfig(it) }
+		Api.sessionId = UUID.randomUUID();
 		updateMessageContent()
 	}
 
@@ -500,7 +501,6 @@ class PayPalMessageView @JvmOverloads constructor(
 	 */
 	private fun updateMessageContent() {
 		if (!updateInProgress) {
-			Api.sessionId = UUID.randomUUID();
 			Api.instanceID = UUID.randomUUID();
 
 			// Call OnLoading callback and prepare view for the process
