@@ -33,7 +33,7 @@
 					android:text="Client ID"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:id="@+id/clientIdLabel" android:layout_weight="1"/>
+					android:id="@+id/clientIdLabel" android:layout_weight="1" android:textSize="16sp"/>
 				<EditText
 					android:text="@string/client_id"
 					android:layout_width="wrap_content"
@@ -48,7 +48,7 @@
 			android:text="Style Options"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:id="@+id/styleOptionsLabel"/>
+			android:id="@+id/styleOptionsLabel" android:paddingTop="16dp" android:paddingBottom="16dp" android:textSize="16sp"/>
 
 		<LinearLayout
 			android:orientation="horizontal"
@@ -150,7 +150,7 @@
 			android:text="Offer Type"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:id="@+id/offerTypeLabel"/>
+			android:id="@+id/offerTypeLabel" android:paddingTop="16dp" android:paddingBottom="16dp" android:textSize="16sp"/>
 
 		<LinearLayout
 			android:orientation="horizontal"
@@ -197,7 +197,7 @@
 					android:text="Amount"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:id="@+id/amountLabel" android:layout_weight="1"/>
+					android:id="@+id/amountLabel" android:layout_weight="1" android:textSize="16sp"/>
 				<EditText
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
@@ -220,7 +220,7 @@
 					android:text="Buyer Country"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:id="@+id/buyerCountryLabel" android:layout_weight="1"/>
+					android:id="@+id/buyerCountryLabel" android:layout_weight="1" android:textSize="16sp"/>
 				<EditText
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
@@ -235,7 +235,7 @@
 			android:text="Stage Tag"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:id="@+id/stageTagLabel"/>
+			android:id="@+id/stageTagLabel"  android:paddingTop="16dp" android:paddingBottom="16dp" android:textSize="16sp"/>
 
 			<RadioGroup
 				android:layout_width="match_parent"
