@@ -1,8 +1,8 @@
 package com.paypal.messages
 
+import com.paypal.messages.config.ProductGroup
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
-import com.paypal.messages.config.ProductGroup
 
 class Logo(
 	private val logoType: PayPalMessageLogoType = PayPalMessageLogoType.PRIMARY,
@@ -26,7 +26,7 @@ class Logo(
 							PayPalMessageColor.MONOCHROME -> R.drawable.logo_primary_monochrome
 							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_primary_grayscale
 						}
-					}
+					},
 				)
 			}
 
@@ -46,7 +46,7 @@ class Logo(
 							PayPalMessageColor.MONOCHROME -> R.drawable.logo_alternative_monochrome
 							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_alternative_grayscale
 						}
-					}
+					},
 				)
 			}
 
@@ -66,7 +66,7 @@ class Logo(
 							PayPalMessageColor.MONOCHROME -> R.drawable.logo_inline_monochrome
 							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_inline_grayscale
 						}
-					}
+					},
 				)
 			}
 
@@ -75,7 +75,7 @@ class Logo(
 					when (productGroup) {
 						ProductGroup.PAYPAL_CREDIT -> R.string.logo_none_label_credit
 						else -> R.string.logo_none_label_default
-					}
+					},
 				)
 			}
 		}

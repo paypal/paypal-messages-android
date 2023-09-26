@@ -70,24 +70,20 @@ suspend inline fun <reified T> Call.executeSuspending(): T {
 			response = call.execute()
 			if (response.isSuccessful) {
 				Gson().fromJson(StringReader(response.body?.string().orEmpty()), klass)
-			}
-			else {
+			} else {
 				val code = response.code
 				response.close()
 				LogCat.error(TAG, "Network call failed. HTTP code: $code")
 				throw IOException("Network Error: $code ")
 			}
-		}
-		catch (e: Throwable) {
+		} catch (e: Throwable) {
 			LogCat.error(TAG, "Network call failed. ${e::class.java.simpleName}: ${e.message}")
 			if (e is IOException) {
 				throw e
-			}
-			else {
+			} else {
 				throw IOException(e)
 			}
-		}
-		finally {
+		} finally {
 			response?.close()
 		}
 	}

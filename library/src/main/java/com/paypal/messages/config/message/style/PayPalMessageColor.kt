@@ -1,7 +1,7 @@
 package com.paypal.messages.config.message.style
 
 import com.paypal.messages.R
-import com.paypal.messages.utils.createFormattedIllegalArgumentException
+import com.paypal.messages.errors.IllegalEnumArg
 
 /**
  * [PayPalMessageColor] provides different variations of colors supported by the PayPalMessage component
@@ -15,7 +15,8 @@ enum class PayPalMessageColor(
 	BLACK(value = 0, colorResId = R.color.gray_700),
 	WHITE(value = 1, colorResId = R.color.white),
 	MONOCHROME(value = 2, colorResId = R.color.black),
-	GRAYSCALE(value = 3, colorResId = R.color.gray_700);
+	GRAYSCALE(value = 3, colorResId = R.color.gray_700),
+	;
 
 	companion object {
 		/**
@@ -30,7 +31,7 @@ enum class PayPalMessageColor(
 				WHITE.value -> WHITE
 				MONOCHROME.value -> MONOCHROME
 				GRAYSCALE.value -> GRAYSCALE
-				else -> throw createFormattedIllegalArgumentException("Color", 4)
+				else -> throw IllegalEnumArg("Color", 4)
 			}
 		}
 	}

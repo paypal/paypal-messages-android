@@ -10,8 +10,7 @@ package com.paypal.messages.utils
 fun nullIfNullOrEmpty(string: String): String? {
 	return if (string.isNullOrEmpty()) {
 		null
-	}
-	else {
+	} else {
 		string
 	}
 }

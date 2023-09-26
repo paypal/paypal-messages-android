@@ -32,5 +32,5 @@ enum class CurrencyCode {
 	 * Countries using this: US (United States)
 	 * Symbol: $
 	 */
-	USD
+	USD,
 }

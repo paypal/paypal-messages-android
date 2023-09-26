@@ -1,9 +1,9 @@
 package com.paypal.messages.config.message
 
 import com.paypal.messages.config.CurrencyCode
-import com.paypal.messages.config.PayPalEnvironment as Environment
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.io.Api
+import com.paypal.messages.config.PayPalEnvironment as Environment
 
 /**
  * [PayPalMessageData] holds data used to determine the content of a PayPalMessage component

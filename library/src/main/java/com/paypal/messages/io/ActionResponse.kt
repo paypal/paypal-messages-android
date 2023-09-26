@@ -7,4 +7,4 @@ data class ActionResponse(
 	val meta: ActionResponseMetadata?,
 	@SerializedName("content")
 	val content: ActionResponseContent?,
-): ApiResult.ApiResponse()
+) : ApiResult.ApiResponse()

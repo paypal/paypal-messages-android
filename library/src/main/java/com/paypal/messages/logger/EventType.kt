@@ -7,5 +7,5 @@ enum class EventType {
 	MODAL_CLICK,
 	MODAL_OPEN,
 	MODAL_CLOSE,
-	MODAL_ERROR
+	MODAL_ERROR,
 }

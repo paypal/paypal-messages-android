@@ -18,13 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.paypal.messagesdemo.ui.BasicTheme
 import com.paypal.messages.Logo
 import com.paypal.messages.LogoAsset
+import com.paypal.messages.PayPalMessageView
+import com.paypal.messages.config.ProductGroup
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
-import com.paypal.messages.config.ProductGroup
-import com.paypal.messages.PayPalMessageView
+import com.paypal.messagesdemo.ui.BasicTheme
 
 class JetpackActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {

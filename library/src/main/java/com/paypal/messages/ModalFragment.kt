@@ -50,7 +50,7 @@ import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 
 internal class ModalFragment constructor(
 	private val clientId: String,
-): BottomSheetDialogFragment() {
+) : BottomSheetDialogFragment() {
 	private val TAG = "PayPalMessageModal"
 	private val offsetTop = 50.dp
 
@@ -119,11 +119,11 @@ internal class ModalFragment constructor(
 
 		closeButton.layoutParams.height = TypedValue.applyDimension(
 			TypedValue.COMPLEX_UNIT_DIP,
-			this.closeButtonData?.height!!.toFloat(), resources.displayMetrics
+			this.closeButtonData?.height!!.toFloat(), resources.displayMetrics,
 		).toInt()
 		closeButton.layoutParams.width = TypedValue.applyDimension(
 			TypedValue.COMPLEX_UNIT_DIP,
-			this.closeButtonData?.width!!.toFloat(), resources.displayMetrics
+			this.closeButtonData?.width!!.toFloat(), resources.displayMetrics,
 		).toInt()
 
 		val colorInt = Color.parseColor(this.closeButtonData?.color)
@@ -185,8 +185,7 @@ internal class ModalFragment constructor(
 
 				return if (requestHost == currentHost && requestPath == currentPath) {
 					false
-				}
-				else {
+				} else {
 					val intent = Intent(Intent.ACTION_VIEW, requestUri)
 					requireActivity().startActivity(intent)
 					true
@@ -307,7 +306,7 @@ internal class ModalFragment constructor(
 				eventType = EventType.MODAL_ERROR,
 				errorName = errorName,
 				errorDescription = errorDescription,
-			)
+			),
 		)
 	}
 
@@ -327,7 +326,7 @@ internal class ModalFragment constructor(
 				eventType = EventType.MODAL_ERROR,
 				errorName = errorName,
 				errorDescription = errorDescription,
-			)
+			),
 		)
 	}
 
@@ -349,18 +348,16 @@ internal class ModalFragment constructor(
 		this.onLoading()
 		val url = Api.createModalUrl(clientId, amount, buyerCountry, offer)
 
-		LogCat.debug(TAG, "Start show process for modal with webView: ${webView.toString()}")
+		LogCat.debug(TAG, "Start show process for modal with webView: $webView")
 		val requestDuration = measureTimeMillis {
 			if (inErrorState) {
 				LogCat.debug(TAG, "Modal had error, resetting state and reloading WebView with URL: $url")
 				inErrorState = false
-			}
-			else {
+			} else {
 				if (modalUrl == null) {
 					LogCat.debug(TAG, "Modal URL was null, new URL is: $url")
 					modalUrl = url
-				}
-				else {
+				} else {
 					LogCat.debug(TAG, "Modal reopened with original URL: $currentUrl")
 				}
 			}
@@ -376,8 +373,8 @@ internal class ModalFragment constructor(
 			TrackingEvent(
 				eventType = EventType.MODAL_RENDER,
 				renderDuration,
-				requestDuration
-			)
+				requestDuration,
+			),
 		)
 	}
 
@@ -399,16 +396,16 @@ internal class ModalFragment constructor(
 				val linkSrc = json.get("link_src")?.asString
 				if (linkName == "Apply Now") {
 					this.onApply()
-				}
-				else {
+				} else {
 					this.onClick()
 				}
 				logEvent(
 					TrackingEvent(
 						eventType = EventType.MODAL_CLICK,
 						linkSrc = linkSrc,
-						linkName = linkName
-					), shared
+						linkName = linkName,
+					),
+					shared,
 				)
 			}
 
@@ -418,8 +415,9 @@ internal class ModalFragment constructor(
 				logEvent(
 					TrackingEvent(
 						eventType = EventType.MODAL_CLICK,
-						data = "$calculatorAmount"
-					), shared
+						data = "$calculatorAmount",
+					),
+					shared,
 				)
 			}
 
@@ -447,12 +445,13 @@ internal class ModalFragment constructor(
 		return when {
 			jsonElement.isJsonPrimitive -> {
 				val jsonPrimitive = jsonElement.asJsonPrimitive
-				if (jsonPrimitive.isBoolean)
+				if (jsonPrimitive.isBoolean) {
 					jsonPrimitive.asBoolean
-				else if (jsonPrimitive.isNumber)
+				} else if (jsonPrimitive.isNumber) {
 					jsonPrimitive.asNumber
-				else
+				} else {
 					jsonPrimitive.asString
+				}
 			}
 
 			jsonElement.isJsonObject -> jsonElementToMutableMap(jsonElement)
@@ -479,7 +478,7 @@ internal class ModalFragment constructor(
 			type = ComponentType.MODAL.toString(),
 			instanceId = this.instanceId.toString(),
 			events = mutableListOf(event),
-			__shared__ = dynamicKeys
+			__shared__ = dynamicKeys,
 		)
 
 		context?.let { Logger.getInstance(clientId = clientId).log(it, component) }

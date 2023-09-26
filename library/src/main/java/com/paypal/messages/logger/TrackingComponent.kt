@@ -1,10 +1,10 @@
 package com.paypal.messages.logger
 
 import com.google.gson.annotations.SerializedName
-import com.paypal.messages.config.message.style.PayPalMessageColor
-import com.paypal.messages.config.message.style.PayPalMessageAlign
-import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.config.PayPalMessageOfferType
+import com.paypal.messages.config.message.style.PayPalMessageAlign
+import com.paypal.messages.config.message.style.PayPalMessageColor
+import com.paypal.messages.config.message.style.PayPalMessageLogoType
 
 data class TrackingComponent(
 	// Integration Details

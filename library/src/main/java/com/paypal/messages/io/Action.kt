@@ -35,30 +35,27 @@ class Action(private val context: Context) {
 				// If the stored hash is older than hard_ttl
 				if (ageOfStoredHash < hardTtl) {
 					// the stale value should be ignored and a new hash should be fetched
-					LogCat.debug(TAG, "TTL expired. Fetching new hash.\n${merchantHash}")
+					LogCat.debug(TAG, "TTL expired. Fetching new hash.\n$merchantHash")
 					newHash = fetchNewHash(messageConfig)
 
 					val messageData = Api.callMessageDataEndpoint(messageConfig, newHash)
 					withContext(Dispatchers.Main) {
 						onCompleted.onActionCompleted(messageData)
 					}
-				}
-				else if (ageOfStoredHash in softTtl..hardTtl) {
+				} else if (ageOfStoredHash in softTtl..hardTtl) {
 					LogCat.debug(TAG, "Fetching new hash but still using hash from local storage")
 					val messageData = Api.callMessageDataEndpoint(messageConfig, merchantHash)
 					withContext(Dispatchers.Main) {
 						onCompleted.onActionCompleted(messageData)
 					}
-				}
-				else {
-					LogCat.debug(TAG, "Retrieving hash from local storage\n${merchantHash}")
+				} else {
+					LogCat.debug(TAG, "Retrieving hash from local storage\n$merchantHash")
 					val messageData = Api.callMessageDataEndpoint(messageConfig, merchantHash)
 					withContext(Dispatchers.Main) {
 						onCompleted.onActionCompleted(messageData)
 					}
 				}
-			}
-			else {
+			} else {
 				LogCat.debug(TAG, "Omitting hash")
 				val messageData = Api.callMessageDataEndpoint(messageConfig, null)
 				withContext(Dispatchers.Main) {

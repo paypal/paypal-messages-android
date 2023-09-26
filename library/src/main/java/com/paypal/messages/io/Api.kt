@@ -2,7 +2,6 @@ package com.paypal.messages.io
 
 import com.google.gson.Gson
 import com.paypal.messages.BuildConfig
-import com.paypal.messages.config.PayPalEnvironment as Environment
 import com.paypal.messages.errors.FailedToFetchDataException
 import com.paypal.messages.logger.TrackingPayload
 import com.paypal.messages.utils.LogCat
@@ -14,6 +13,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.IOException
+import com.paypal.messages.config.PayPalEnvironment as Environment
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
 
@@ -81,18 +81,16 @@ object Api {
 
 			if (code != 200) { return ApiResult.Failure(FailedToFetchDataException()) }
 
-			LogCat.debug(TAG,"callMessageDataEndpoint response: $bodyJson")
+			LogCat.debug(TAG, "callMessageDataEndpoint response: $bodyJson")
 			val body = gson.fromJson(bodyJson, ActionResponse::class.java)
 
 			val isValidResponse = body?.content != null && body.meta != null
 			return if (isValidResponse) {
 				ApiResult.Success(body)
-			}
-			else {
+			} else {
 				ApiResult.getFailureWithDebugId(response.headers)
 			}
-		}
-		catch(exception: IOException) {
+		} catch (exception: IOException) {
 			// Failed to fetch the data and there is no debugId
 			return ApiResult.Failure(FailedToFetchDataException())
 		}
@@ -118,21 +116,20 @@ object Api {
 		try {
 			val response = client.newCall(request).execute()
 			val bodyJson = response.body?.string()
-			val isFailedResponse = ! response.isSuccessful
+			val isFailedResponse = !response.isSuccessful
 			val message = response.message
 			response.close()
 
 			if (isFailedResponse) {
-				LogCat.error(TAG, "callMessageHashEndpoint error: ${message}\n${bodyJson}")
+				LogCat.error(TAG, "callMessageHashEndpoint error: ${message}\n$bodyJson")
 				return ApiResult.getFailureWithDebugId(response.headers)
 			}
 
-			LogCat.debug(TAG,"callMessageHashEndpoint response: $bodyJson")
+			LogCat.debug(TAG, "callMessageHashEndpoint response: $bodyJson")
 
 			val hashResponse = gson.fromJson(bodyJson, HashActionResponse::class.java)
 			return ApiResult.Success(hashResponse)
-		}
-		catch (error: java.io.IOException) {
+		} catch (error: java.io.IOException) {
 			return ApiResult.Failure(FailedToFetchDataException())
 		}
 	}
@@ -141,7 +138,7 @@ object Api {
 		clientId: String,
 		amount: Double?,
 		buyerCountry: String?,
-		offer: OfferType?
+		offer: OfferType?,
 	): String {
 		val url = Endpoints.modalData.newBuilder().apply {
 			addQueryParameter("client_id", clientId)
@@ -171,6 +168,6 @@ object Api {
 		val json = gson.toJson(payload)
 		val request = createLoggerRequest(json)
 		val response = client.newCall(request).execute()
-		response.body?.string()?.let { LogCat.debug(TAG,"callLoggerEndpoint response: $it") }
+		response.body?.string()?.let { LogCat.debug(TAG, "callLoggerEndpoint response: $it") }
 	}
 }
