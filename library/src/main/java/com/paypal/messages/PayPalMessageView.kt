@@ -501,7 +501,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 */
 	private fun updateMessageContent() {
 		if (!updateInProgress) {
-			Api.instanceID = UUID.randomUUID();
+			Api.instanceId = UUID.randomUUID();
 
 			// Call OnLoading callback and prepare view for the process
 			onLoading.invoke()
@@ -697,7 +697,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			offerCountryCode = this.data?.meta?.offerCountryCode,
 			merchantCountryCode = this.data?.meta?.merchantCountryCode,
 			type = ComponentType.MESSAGE.toString(),
-			instanceId = Api.instanceID.toString(),
+			instanceId = Api.instanceId.toString(),
 			originatingInstanceId = Api.originatingInstanceId.toString(),
 			sessionId = Api.sessionId.toString(),
 			events = mutableListOf(event),

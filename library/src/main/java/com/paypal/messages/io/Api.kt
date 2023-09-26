@@ -23,9 +23,9 @@ object Api {
 	private val client = OkHttpClient()
 	private val gson = Gson()
 	var environment = Environment.SANDBOX
-	var instanceID : UUID? = null;
-	var originatingInstanceId  : UUID? = null;
-	var sessionId : UUID? = null;
+	var instanceId: UUID? = null;
+	var originatingInstanceId: UUID? = null;
+	var sessionId: UUID? = null;
 
 	object Endpoints {
 		private val ROOT_URLS = mapOf(
@@ -51,7 +51,7 @@ object Api {
 		addQueryParameter("devTouchpoint", "false")
 		addQueryParameter("env", environment.name.lowercase())
 		addQueryParameter("logo_type", config.style.logoType.name.lowercase())
-		addQueryParameter("instance_id", instanceID.toString())
+		addQueryParameter("instance_id", instanceId.toString())
 		addQueryParameter("session_id", sessionId.toString())
 
 		config.data?.amount?.let { addQueryParameter("amount", it.toString()) }
