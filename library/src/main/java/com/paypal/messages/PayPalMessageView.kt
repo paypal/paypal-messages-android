@@ -77,7 +77,6 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var logoType: LogoType = LogoType.PRIMARY
 	private var alignment: Align = Align.LEFT
 
-
 	// Full Message Data
 	private var data: ActionResponse? = null
 
