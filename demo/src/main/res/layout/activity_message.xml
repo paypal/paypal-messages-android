@@ -33,14 +33,18 @@
 					android:text="Client ID"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:id="@+id/clientIdLabel" android:layout_weight="1" android:textSize="16sp"/>
+					android:id="@+id/clientIdLabel" 
+					android:layout_weight="1" 
+					android:textSize="16sp" 
+					android:textStyle="bold"/>
 				<EditText
 					android:text="@string/client_id"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:inputType="text"
 					android:ems="10"
-					android:id="@+id/clientId" android:hint="Add Client ID"/>
+					android:id="@+id/clientId"
+					android:hint="Add Client ID"/>
 			</TableRow>
 		</TableLayout>
 
@@ -48,7 +52,11 @@
 			android:text="Style Options"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:id="@+id/styleOptionsLabel" android:paddingTop="16dp" android:paddingBottom="16dp" android:textSize="16sp"/>
+			android:id="@+id/styleOptionsLabel"
+			android:paddingTop="16dp"
+			android:paddingBottom="16dp"
+			android:textStyle="bold"
+			android:textSize="16sp"/>
 
 		<LinearLayout
 			android:orientation="horizontal"
@@ -58,7 +66,9 @@
 			<RadioGroup
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
-				android:orientation="horizontal">
+				android:orientation="horizontal"
+				android:paddingBottom="16dp"
+			>
 				<RadioButton
 					android:text="Inline"
 					android:layout_width="wrap_content"
@@ -90,7 +100,9 @@
 			<RadioGroup
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
-				android:orientation="horizontal">
+				android:orientation="horizontal"
+				android:paddingBottom="16dp"
+			>
 
 				<RadioButton
 					android:text="Black"
@@ -125,8 +137,9 @@
 			<RadioGroup
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
-				android:orientation="horizontal">
-
+				android:orientation="horizontal"
+				android:paddingBottom="16dp"
+			>
 				<RadioButton
 					android:text="Left"
 					android:layout_width="wrap_content"
@@ -150,7 +163,11 @@
 			android:text="Offer Type"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:id="@+id/offerTypeLabel" android:paddingTop="16dp" android:paddingBottom="16dp" android:textSize="16sp"/>
+			android:id="@+id/offerTypeLabel"
+			android:paddingTop="16dp"
+			android:paddingBottom="16dp"
+			android:textStyle="bold"
+			android:textSize="16sp"/>
 
 		<LinearLayout
 			android:orientation="horizontal"
@@ -160,7 +177,9 @@
 			<RadioGroup
 				android:layout_width="match_parent"
 				android:layout_height="match_parent"
-				android:orientation="horizontal">
+				android:orientation="horizontal"
+				android:paddingBottom="16dp"
+			>
 
 				<RadioButton
 					android:text="Short Term"
@@ -197,13 +216,17 @@
 					android:text="Amount"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:id="@+id/amountLabel" android:layout_weight="1" android:textSize="16sp"/>
+					android:id="@+id/amountLabel"
+					android:layout_weight="1"
+					android:textStyle="bold"
+					android:textSize="16sp"/>
 				<EditText
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:inputType="text"
 					android:ems="10"
-					android:id="@+id/amount" android:hint="0.00"/>
+					android:id="@+id/amount"
+					android:hint="0.00"/>
 
 			</TableRow>
 		</TableLayout>
@@ -220,7 +243,10 @@
 					android:text="Buyer Country"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:id="@+id/buyerCountryLabel" android:layout_weight="1" android:textSize="16sp"/>
+					android:id="@+id/buyerCountryLabel"
+					android:layout_weight="1"
+					android:textStyle="bold"
+					android:textSize="16sp"/>
 				<EditText
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
@@ -235,30 +261,39 @@
 			android:text="Stage Tag"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:id="@+id/stageTagLabel"  android:paddingTop="16dp" android:paddingBottom="16dp" android:textSize="16sp"/>
+			android:id="@+id/stageTagLabel"
+			android:paddingTop="16dp"
+			android:paddingBottom="16dp"
+			android:textStyle="bold"
+			android:textSize="16sp"/>
 
-			<RadioGroup
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				android:orientation="horizontal">
+		<RadioGroup
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:orientation="horizontal">
 
-				<Switch
-					android:text="Ignore Cache"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content" android:id="@+id/ignoreCache" android:layout_weight="1"/>
+			<Switch
+				android:text="Ignore Cache"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:id="@+id/ignoreCache"
+				android:textStyle="bold"
+				android:layout_weight="1"/>
 
-				<Switch
-					android:text="Dev Touchpoint"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content" android:id="@+id/devTouchpoint" android:layout_weight="1"/>
+			<Switch
+				android:text="Dev Touchpoint"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:id="@+id/devTouchpoint"
+				android:textStyle="bold"
+				android:layout_weight="1"/>
 
-			</RadioGroup>
+		</RadioGroup>
 
 		<androidx.constraintlayout.widget.ConstraintLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:layout_marginTop="16dp"
-		>
+			android:paddingTop="24dp">
 			<com.paypal.messages.PayPalMessageView
 				android:id="@+id/payPalMessage"
 				android:layout_width="0dp"
@@ -270,8 +305,7 @@
 				app:paypal_client_id="@string/client_id"
 				app:paypal_logo_type="alternative"
 				app:paypal_text_color="monochrome"
-				android:tag="PayPal"
-			/>
+				android:tag="PayPal"/>
 			<ProgressBar
 				android:id="@+id/progressBar"
 				android:layout_width="wrap_content"
@@ -295,7 +329,7 @@
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:text="@string/reload_label"
-			/>
+				android:layout_marginTop="32dp"/>
 
 		</LinearLayout>
 
