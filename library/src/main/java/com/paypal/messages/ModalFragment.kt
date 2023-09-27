@@ -386,17 +386,20 @@ internal class ModalFragment constructor(
 	 * See paypal-messaging-components/src/components/modal/v2/lib/zoid-polyfill.js for how it works.
 	 */
 	@JavascriptInterface
-	fun paypalMessageModalCallbackHandler(args: String) {
-		val json = JsonParser.parseString(args).asJsonObject
-		LogCat.debug(TAG, "CallbackHandler:\n  name = ${json.get("name")}\n  args = ${json.get("args")}")
+	fun paypalMessageModalCallbackHandler(passedParams: String) {
+		val params = if (passedParams != "") passedParams else "{\"name\": \"\", \"args\": [{}]"
+		val nameAndArgs = JsonParser.parseString(params).asJsonObject
+		val name = nameAndArgs.get("name").asString
+		val args = nameAndArgs.get("args").asJsonArray[0].asJsonObject
+		LogCat.debug(TAG, "CallbackHandler:\n  name = $name\n  args = $args")
 
 		// If __shared__ does not exist, use an empty object
-		val sharedJson = json.get("__shared__") ?: JsonParser.parseString("{}")
+		val sharedJson = args.get("__shared__") ?: JsonParser.parseString("{}")
 		val shared = jsonElementToMutableMap(sharedJson)
-		when (json.get("name").asString) {
+		when (name) {
 			"onClick" -> {
-				val linkName = json.get("link_name")?.asString
-				val linkSrc = json.get("link_src")?.asString
+				val linkName = args.get("link_name")?.asString
+				val linkSrc = args.get("link_src")?.asString
 				if (linkName == "Apply Now") {
 					this.onApply()
 				}
@@ -414,7 +417,7 @@ internal class ModalFragment constructor(
 			}
 
 			"onCalculate" -> {
-				val calculatorAmount = json.get("amount")?.asString
+				val calculatorAmount = args.get("amount")?.asString
 				this.onCalculate()
 				logEvent(
 					TrackingEvent(
@@ -448,18 +451,14 @@ internal class ModalFragment constructor(
 	private fun jsonValueToAny(jsonElement: JsonElement): Any {
 		return when {
 			jsonElement.isJsonPrimitive -> {
-				val jsonPrimitive = jsonElement.asJsonPrimitive
-				if (jsonPrimitive.isBoolean) {
-					jsonPrimitive.asBoolean
-				}
-				else if (jsonPrimitive.isNumber) {
-					jsonPrimitive.asNumber
-				}
-				else {
-					jsonPrimitive.asString
+				val primitive = jsonElement.asJsonPrimitive
+				when {
+					primitive.isBoolean -> primitive.asBoolean
+					primitive.isNumber -> primitive.asNumber
+					else -> primitive.asString
 				}
 			}
-
+			jsonElement.isJsonArray -> jsonElement.asJsonArray
 			jsonElement.isJsonObject -> jsonElementToMutableMap(jsonElement)
 			else -> throw IllegalArgumentException("Unsupported JSON element type: ${jsonElement::class.java.simpleName}")
 		}

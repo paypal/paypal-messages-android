@@ -13,7 +13,7 @@ data class TrackingPayload(
 	@SerializedName("partner_attribution_id")
 	val partnerAttributionId: String? = null,
 	@SerializedName("merchant_profile_hash")
-	val merchantProfileHash: String? = null,
+	var merchantProfileHash: String? = null,
 
 	// Global Details
 	@SerializedName("device_id")
