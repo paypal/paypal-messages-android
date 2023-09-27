@@ -56,6 +56,10 @@ data class TrackingComponent(
 	val type: String? = null,
 	@SerializedName("instance_id")
 	val instanceId: String? = null,
+	@SerializedName("originating_instance_id")
+	val originatingInstanceId: String? = null,
+	@SerializedName("session_id")
+	val sessionId: String? = null,
 	@SerializedName("events")
 	val events: MutableList<TrackingEvent>,
 
