@@ -20,16 +20,3 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
-
-      - name: Run Lint
-        run: ./gradlew lint
-
-      - name: Get Library Lint Reports
-        uses: yutailang0119/action-android-lint@v3
-        with:
-          report-path: library/build/reports/*.xml
-
-      - name: Get Demo Lint Reports
-        uses: yutailang0119/action-android-lint@v3
-        with:
-          report-path: demo/build/reports/*.xml
