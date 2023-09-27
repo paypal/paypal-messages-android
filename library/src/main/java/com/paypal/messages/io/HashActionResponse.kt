@@ -11,4 +11,4 @@ data class HashActionResponse(
 	val ttlHard: Long?,
 	@SerializedName("merchant_profile")
 	val merchantProfile: HashDataActionResponse?,
-): ApiResult.ApiResponse()
+) : ApiResult.ApiResponse()

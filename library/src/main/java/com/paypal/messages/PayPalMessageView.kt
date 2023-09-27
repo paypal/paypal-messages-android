@@ -2,10 +2,8 @@ package com.paypal.messages
 
 import android.content.Context
 import android.content.res.TypedArray
-import android.os.Build
 import android.text.Spannable
 import android.text.SpannableStringBuilder
-import android.text.style.DynamicDrawableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.ImageSpan
 import android.text.style.StyleSpan
@@ -16,7 +14,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.getFloatOrThrow
@@ -42,15 +39,15 @@ import com.paypal.messages.logger.TrackingEvent
 import com.paypal.messages.utils.LogCat
 import java.util.UUID
 import kotlin.system.measureTimeMillis
-import com.paypal.messages.config.message.style.PayPalMessageAlign as Align
-import com.paypal.messages.config.message.style.PayPalMessageColor as Color
-import com.paypal.messages.config.message.style.PayPalMessageLogoType as LogoType
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
 import com.paypal.messages.config.message.PayPalMessageData as MessageData
 import com.paypal.messages.config.message.PayPalMessageEvents as MessageEvents
 import com.paypal.messages.config.message.PayPalMessageStyle as MessageStyle
 import com.paypal.messages.config.message.PayPalMessageViewState as MessageViewState
+import com.paypal.messages.config.message.style.PayPalMessageAlign as Align
+import com.paypal.messages.config.message.style.PayPalMessageColor as Color
+import com.paypal.messages.config.message.style.PayPalMessageLogoType as LogoType
 
 /**
  * PayPalMessage is a component that provides the merchant with a message about different pay later
@@ -58,7 +55,6 @@ import com.paypal.messages.config.message.PayPalMessageViewState as MessageViewS
  * be displayed in different styles. Interacting with this component will show more information about the
  * product itself and the option to apply
  */
-@RequiresApi(Build.VERSION_CODES.M)
 class PayPalMessageView @JvmOverloads constructor(
 	context: Context,
 	attributeSet: AttributeSet? = null,
@@ -81,7 +77,6 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var logoType: LogoType = LogoType.PRIMARY
 	private var alignment: Align = Align.LEFT
 
-
 	// Full Message Data
 	private var data: ActionResponse? = null
 
@@ -95,7 +90,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var modal: ModalFragment? = null
 
 	// Stats
-	private var requestDuration : Int? = null
+	private var requestDuration: Int? = null
 
 	/**
 	 * Updates the onLoading callback used in [MessageConfig] for the current [PayPalMessageView].
@@ -141,7 +136,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			updateFromAttributes(typedArray)
 		}
 		config?.let { updateFromConfig(it) }
-		Api.sessionId = UUID.randomUUID();
+		Api.sessionId = UUID.randomUUID()
 		updateMessageContent()
 	}
 
@@ -325,7 +320,6 @@ class PayPalMessageView @JvmOverloads constructor(
 	}
 
 	private fun showWebView(response: ActionResponse) {
-
 		val modal = modal ?: run {
 			val modal = ModalFragment(clientId)
 			// Build modal config
@@ -342,7 +336,7 @@ class PayPalMessageView @JvmOverloads constructor(
 					onClick = onClick,
 					onError = onError,
 				),
-				modalCloseButton = this.data?.meta?.modalCloseButton!!
+				modalCloseButton = this.data?.meta?.modalCloseButton!!,
 			)
 
 			modal.init(modalConfig)
@@ -399,7 +393,6 @@ class PayPalMessageView @JvmOverloads constructor(
 				text = builder
 			}
 		}
-
 	}
 
 	/**
@@ -448,8 +441,8 @@ class PayPalMessageView @JvmOverloads constructor(
 			color = PayPalMessageColor(
 				typedArray.getInt(
 					R.styleable.PayPalMessageView_paypal_text_color,
-					Color.BLACK.value
-				)
+					Color.BLACK.value,
+				),
 			)
 		}
 
@@ -457,8 +450,8 @@ class PayPalMessageView @JvmOverloads constructor(
 			logoType = PayPalMessageLogoType(
 				typedArray.getInt(
 					R.styleable.PayPalMessageView_paypal_logo_type,
-					LogoType.PRIMARY.value
-				)
+					LogoType.PRIMARY.value,
+				),
 			)
 		}
 
@@ -466,8 +459,8 @@ class PayPalMessageView @JvmOverloads constructor(
 			alignment = PayPalMessageAlign(
 				typedArray.getInt(
 					R.styleable.PayPalMessageView_paypal_text_align,
-					Align.LEFT.value
-				)
+					Align.LEFT.value,
+				),
 			)
 		}
 	}
@@ -510,7 +503,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 */
 	private fun updateMessageContent() {
 		if (!updateInProgress) {
-			Api.instanceId = UUID.randomUUID();
+			Api.instanceId = UUID.randomUUID()
 
 			// Call OnLoading callback and prepare view for the process
 			onLoading.invoke()
@@ -524,9 +517,9 @@ class PayPalMessageView @JvmOverloads constructor(
 				action.execute(
 					MessageConfig(
 						MessageData(clientId, amount, placement, offerType, buyerCountry, currencyCode),
-						MessageStyle(logoType, color, alignment)
+						MessageStyle(logoType, color, alignment),
 					),
-					this
+					this,
 				)
 			}.toInt()
 		}
@@ -548,10 +541,9 @@ class PayPalMessageView @JvmOverloads constructor(
 					TrackingEvent(
 						eventType = EventType.MESSAGE_RENDER,
 						renderDuration,
-						requestDuration
-					)
+						requestDuration,
+					),
 				)
-
 			}
 
 			is ApiResult.Failure<*> -> {
@@ -580,7 +572,7 @@ class PayPalMessageView @JvmOverloads constructor(
 					eventType = EventType.MESSAGE_CLICK,
 					linkName = "banner_wrapper",
 					linkSrc = "message",
-				)
+				),
 			)
 			showWebView(response)
 		}
@@ -605,7 +597,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			logoTag?.let { tag ->
 				if (logoType in listOf(
 						LogoType.PRIMARY,
-						LogoType.ALTERNATIVE
+						LogoType.ALTERNATIVE,
 					) && !content.contains(tag)
 				) {
 					builder.append("$tag ")
@@ -641,7 +633,7 @@ class PayPalMessageView @JvmOverloads constructor(
 					StyleSpan(android.graphics.Typeface.BOLD),
 					logoIndex,
 					logoIndex + logoString.length,
-					Spannable.SPAN_INCLUSIVE_INCLUSIVE
+					Spannable.SPAN_INCLUSIVE_INCLUSIVE,
 				)
 			}
 
@@ -650,11 +642,12 @@ class PayPalMessageView @JvmOverloads constructor(
 					val width =
 						lineHeight * logoDrawable.intrinsicWidth / logoDrawable.intrinsicHeight
 					logoDrawable.setBounds(0, 0, width, lineHeight)
+					val alignCenter = 2
 					setSpan(
-						ImageSpan(logoDrawable, DynamicDrawableSpan.ALIGN_CENTER),
+						ImageSpan(logoDrawable, alignCenter),
 						logoIndex,
 						logoIndex + logoTag.length,
-						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
 					)
 				}
 			}
@@ -677,17 +670,16 @@ class PayPalMessageView @JvmOverloads constructor(
 				ForegroundColorSpan(ContextCompat.getColor(context, R.color.blue_600)),
 				disclaimerIndex,
 				disclaimerIndex + disclaimer.length,
-				Spannable.SPAN_INCLUSIVE_INCLUSIVE
+				Spannable.SPAN_INCLUSIVE_INCLUSIVE,
 			)
 		}
 		setSpan(
 			UnderlineSpan(),
 			disclaimerIndex,
 			disclaimerIndex + disclaimer.length,
-			Spannable.SPAN_INCLUSIVE_INCLUSIVE
+			Spannable.SPAN_INCLUSIVE_INCLUSIVE,
 		)
 	}
-
 
 	private fun logEvent(event: TrackingEvent) {
 		// Build component Information

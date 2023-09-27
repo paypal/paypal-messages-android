@@ -6,19 +6,19 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.paypal.messages.PayPalMessageView
-import com.paypal.messages.config.PayPalEnvironment as Environment
-import com.paypal.messages.config.message.style.PayPalMessageAlign
-import com.paypal.messages.config.message.style.PayPalMessageColor
-import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
 import com.paypal.messages.config.message.PayPalMessageEvents
 import com.paypal.messages.config.message.PayPalMessageStyle
 import com.paypal.messages.config.message.PayPalMessageViewState
+import com.paypal.messages.config.message.style.PayPalMessageAlign
+import com.paypal.messages.config.message.style.PayPalMessageColor
+import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messagesdemo.databinding.ActivityMessageBinding
+import com.paypal.messages.config.PayPalEnvironment as Environment
 
-class XmlActivity: AppCompatActivity() {
+class XmlActivity : AppCompatActivity() {
 	private lateinit var binding: ActivityMessageBinding
 	private val TAG = "XmlActivity"
 
@@ -39,14 +39,14 @@ class XmlActivity: AppCompatActivity() {
 					Log.d(TAG, "onLoading")
 					progressBar.visibility = View.VISIBLE
 					reloadButton.isEnabled = false
-					Toast.makeText(this, "Loading Content...",Toast.LENGTH_SHORT).show()
+					Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
 				},
 				onError = {
 					Log.d(TAG, "onError")
 					progressBar.visibility = View.INVISIBLE
 					runOnUiThread {
 						reloadButton.isEnabled = true
-						Toast.makeText(this, it.javaClass.toString() + ":" + it.message + ":" + it.paypalDebugId,Toast.LENGTH_LONG).show()
+						Toast.makeText(this, it.javaClass.toString() + ":" + it.message + ":" + it.paypalDebugId, Toast.LENGTH_LONG).show()
 					}
 					it.message?.let { it1 -> Log.d("XmlActivity Error", it1) }
 					it.paypalDebugId?.let { it1 -> Log.d("XmlActivity Error", it1) }
@@ -58,8 +58,8 @@ class XmlActivity: AppCompatActivity() {
 						reloadButton.isEnabled = true
 						Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
 					}
-				}
-			)
+				},
+			),
 		)
 	}
 

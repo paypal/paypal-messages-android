@@ -15,8 +15,8 @@ sealed class ApiResult {
 	val isSuccess: Boolean
 		get() = this is Success<*>
 
-	data class Success<T: ApiResponse>(val response: T): ApiResult()
-	data class Failure<T: BaseException?>(val error: T): ApiResult()
+	data class Success<T : ApiResponse>(val response: T) : ApiResult()
+	data class Failure<T : BaseException?>(val error: T) : ApiResult()
 
 	companion object {
 		fun getFailureWithDebugId(headers: Headers): ApiResult {

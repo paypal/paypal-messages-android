@@ -2,9 +2,9 @@ package com.paypal.messages.logger
 
 import android.content.Context
 import android.provider.Settings
-import com.paypal.messages.io.LocalStorage
 import com.paypal.messages.errors.InvalidCheckoutConfigException
 import com.paypal.messages.io.Api
+import com.paypal.messages.io.LocalStorage
 import com.paypal.messages.utils.LogCat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,7 +65,7 @@ class Logger private constructor() {
 		}
 	}
 
-	fun setGlobalAnalytics (
+	fun setGlobalAnalytics(
 		integrationName: String,
 		integrationVersion: String,
 	) {

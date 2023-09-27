@@ -13,8 +13,12 @@ class LocalStorage constructor(context: Context) {
 
 	enum class StorageKeys(private val keyName: String) {
 		MERCHANT_HASH_DATA("merchantProfileHashData"),
-		TIMESTAMP("timestamp");
-		override fun toString(): String { return keyName }
+		TIMESTAMP("timestamp"),
+		;
+
+		override fun toString(): String {
+			return keyName
+		}
 	}
 
 	var merchantHashData: HashActionResponse?
@@ -23,7 +27,7 @@ class LocalStorage constructor(context: Context) {
 			LogCat.debug(TAG, "Retrieving hash from local storage:\n$storage")
 			if (storage !== null) {
 				val storageFromString = gson.fromJson(storage, HashActionResponse::class.java)
-				LogCat.debug(TAG, "Converted local storage string to json:\n${storageFromString}")
+				LogCat.debug(TAG, "Converted local storage string to json:\n$storageFromString")
 				return storageFromString
 			}
 			return null

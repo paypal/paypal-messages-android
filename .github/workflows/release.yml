@@ -1,0 +1,53 @@
+name: Release
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+
+jobs:
+  lint:
+    uses: paypal/paypal-messages-android/.github/workflows/lint.yml@release
+
+  test:
+    uses: paypal/paypal-messages-android/.github/workflows/test.yml@release
+
+  build:
+    uses: paypal/paypal-messages-android/.github/workflows/build.yml@release
+
+  release:
+    name: Release
+    needs: [linting, tests, build]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          # pulls all commits (needed for semantic release to correctly version)
+          fetch-depth: '0'
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Install Dependencies
+        run: |
+          npm i -g @semantic-release/exec @semantic-release/changelog @semantic-release/git conventional-changelog-conventionalcommits@6.1.0
+
+      - name: GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release@21
+
+      - name: Publish to Maven
+        run: echo "Publish to Maven"

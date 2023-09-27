@@ -8,7 +8,6 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.net.Uri
 import android.net.http.SslError
-import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -26,19 +25,18 @@ import android.webkit.WebViewClient
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
-import androidx.annotation.RequiresApi
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.paypal.messages.config.Channel
+import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.errors.BaseException
 import com.paypal.messages.errors.ModalFailedToLoad
 import com.paypal.messages.extensions.dp
 import com.paypal.messages.io.Api
-import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.logger.ComponentType
 import com.paypal.messages.logger.EventType
 import com.paypal.messages.logger.Logger
@@ -50,10 +48,9 @@ import java.util.UUID
 import kotlin.system.measureTimeMillis
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 
-@RequiresApi(Build.VERSION_CODES.M)
 internal class ModalFragment constructor(
 	private val clientId: String,
-): BottomSheetDialogFragment() {
+) : BottomSheetDialogFragment() {
 	private val TAG = "PayPalMessageModal"
 	private val offsetTop = 50.dp
 
@@ -122,11 +119,11 @@ internal class ModalFragment constructor(
 
 		closeButton.layoutParams.height = TypedValue.applyDimension(
 			TypedValue.COMPLEX_UNIT_DIP,
-			this.closeButtonData?.height!!.toFloat(), resources.displayMetrics
+			this.closeButtonData?.height!!.toFloat(), resources.displayMetrics,
 		).toInt()
 		closeButton.layoutParams.width = TypedValue.applyDimension(
 			TypedValue.COMPLEX_UNIT_DIP,
-			this.closeButtonData?.width!!.toFloat(), resources.displayMetrics
+			this.closeButtonData?.width!!.toFloat(), resources.displayMetrics,
 		).toInt()
 
 		val colorInt = Color.parseColor(this.closeButtonData?.color)
@@ -310,7 +307,7 @@ internal class ModalFragment constructor(
 				eventType = EventType.MODAL_ERROR,
 				errorName = errorName,
 				errorDescription = errorDescription,
-			)
+			),
 		)
 	}
 
@@ -330,7 +327,7 @@ internal class ModalFragment constructor(
 				eventType = EventType.MODAL_ERROR,
 				errorName = errorName,
 				errorDescription = errorDescription,
-			)
+			),
 		)
 	}
 
@@ -352,7 +349,7 @@ internal class ModalFragment constructor(
 		this.onLoading()
 		val url = Api.createModalUrl(clientId, amount, buyerCountry, offer)
 
-		LogCat.debug(TAG, "Start show process for modal with webView: ${webView.toString()}")
+		LogCat.debug(TAG, "Start show process for modal with webView: $webView")
 		val requestDuration = measureTimeMillis {
 			if (inErrorState) {
 				LogCat.debug(TAG, "Modal had error, resetting state and reloading WebView with URL: $url")
@@ -379,8 +376,8 @@ internal class ModalFragment constructor(
 			TrackingEvent(
 				eventType = EventType.MODAL_RENDER,
 				renderDuration,
-				requestDuration
-			)
+				requestDuration,
+			),
 		)
 	}
 
@@ -410,8 +407,9 @@ internal class ModalFragment constructor(
 					TrackingEvent(
 						eventType = EventType.MODAL_CLICK,
 						linkSrc = linkSrc,
-						linkName = linkName
-					), shared
+						linkName = linkName,
+					),
+					shared,
 				)
 			}
 
@@ -421,8 +419,9 @@ internal class ModalFragment constructor(
 				logEvent(
 					TrackingEvent(
 						eventType = EventType.MODAL_CLICK,
-						data = "$calculatorAmount"
-					), shared
+						data = "$calculatorAmount",
+					),
+					shared,
 				)
 			}
 
@@ -450,12 +449,15 @@ internal class ModalFragment constructor(
 		return when {
 			jsonElement.isJsonPrimitive -> {
 				val jsonPrimitive = jsonElement.asJsonPrimitive
-				if (jsonPrimitive.isBoolean)
+				if (jsonPrimitive.isBoolean) {
 					jsonPrimitive.asBoolean
-				else if (jsonPrimitive.isNumber)
+				}
+				else if (jsonPrimitive.isNumber) {
 					jsonPrimitive.asNumber
-				else
+				}
+				else {
 					jsonPrimitive.asString
+				}
 			}
 
 			jsonElement.isJsonObject -> jsonElementToMutableMap(jsonElement)
@@ -482,7 +484,7 @@ internal class ModalFragment constructor(
 			type = ComponentType.MODAL.toString(),
 			instanceId = this.instanceId.toString(),
 			events = mutableListOf(event),
-			__shared__ = dynamicKeys
+			__shared__ = dynamicKeys,
 		)
 
 		context?.let { Logger.getInstance(clientId = clientId).log(it, component) }

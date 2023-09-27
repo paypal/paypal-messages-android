@@ -1,6 +1,6 @@
 package com.paypal.messages.config
 
-import com.paypal.messages.utils.createFormattedIllegalArgumentException
+import com.paypal.messages.errors.IllegalEnumArg
 
 /**
  * [PayPalMessageOfferType] provides different variations of OfferTypes supported by the PayPalMessage component
@@ -11,7 +11,8 @@ enum class PayPalMessageOfferType(val value: Int) {
 	PAY_LATER_SHORT_TERM(0),
 	PAY_LATER_LONG_TERM(1),
 	PAY_LATER_PAY_IN_1(2),
-	PAYPAL_CREDIT_NO_INTEREST(3);
+	PAYPAL_CREDIT_NO_INTEREST(3),
+	;
 
 	companion object {
 		/**
@@ -26,7 +27,7 @@ enum class PayPalMessageOfferType(val value: Int) {
 				PAY_LATER_LONG_TERM.value -> PAY_LATER_LONG_TERM
 				PAY_LATER_PAY_IN_1.value -> PAY_LATER_PAY_IN_1
 				PAYPAL_CREDIT_NO_INTEREST.value -> PAYPAL_CREDIT_NO_INTEREST
-				else -> throw createFormattedIllegalArgumentException("OfferType", 3)
+				else -> throw IllegalEnumArg("OfferType", 3)
 			}
 		}
 	}

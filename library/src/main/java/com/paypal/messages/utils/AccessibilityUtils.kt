@@ -16,7 +16,7 @@ fun View.requestAccessibilityFocus() {
 		{
 			sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)
 		},
-		ACCESSIBILITY_DELAY
+		ACCESSIBILITY_DELAY,
 	)
 }
 

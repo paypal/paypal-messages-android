@@ -5,5 +5,5 @@ enum class PayPalEnvironment {
 	SANDBOX,
 	STAGE,
 	STAGE_VPN,
-	LOCAL;
+	LOCAL,
 }

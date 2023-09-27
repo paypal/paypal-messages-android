@@ -23,14 +23,14 @@ fun <T> Dropdown(label: String, value: T, options: Array<T>, onValueChange: (T) 
 		Button(
 			onClick = { expanded = !expanded },
 			shape = RectangleShape,
-			modifier = Modifier.width(200.dp)
+			modifier = Modifier.width(200.dp),
 		) {
 			Text("$label: $value")
 		}
 		DropdownMenu(
 			expanded = expanded,
 			onDismissRequest = { expanded = false },
-			modifier = Modifier.width(200.dp)
+			modifier = Modifier.width(200.dp),
 		) {
 			options.forEach { option ->
 				DropdownMenuItem(
@@ -38,7 +38,7 @@ fun <T> Dropdown(label: String, value: T, options: Array<T>, onValueChange: (T) 
 					onClick = {
 						onValueChange(option)
 						expanded = false
-					}
+					},
 				)
 			}
 		}
