@@ -31,6 +31,7 @@ import com.paypal.messages.config.modal.ModalEvents
 import com.paypal.messages.errors.BaseException
 import com.paypal.messages.io.Action
 import com.paypal.messages.io.ActionResponse
+import com.paypal.messages.io.Api
 import com.paypal.messages.io.ApiResult
 import com.paypal.messages.io.OnActionCompleted
 import com.paypal.messages.logger.ComponentType
@@ -80,7 +81,6 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var logoType: LogoType = LogoType.PRIMARY
 	private var alignment: Align = Align.LEFT
 
-	private var instanceId = UUID.randomUUID()
 
 	// Full Message Data
 	private var data: ActionResponse? = null
@@ -141,6 +141,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			updateFromAttributes(typedArray)
 		}
 		config?.let { updateFromConfig(it) }
+		Api.sessionId = UUID.randomUUID();
 		updateMessageContent()
 	}
 
@@ -509,6 +510,8 @@ class PayPalMessageView @JvmOverloads constructor(
 	 */
 	private fun updateMessageContent() {
 		if (!updateInProgress) {
+			Api.instanceId = UUID.randomUUID();
+
 			// Call OnLoading callback and prepare view for the process
 			onLoading.invoke()
 			messageTextView.visibility = View.GONE
@@ -703,7 +706,9 @@ class PayPalMessageView @JvmOverloads constructor(
 			offerCountryCode = this.data?.meta?.offerCountryCode,
 			merchantCountryCode = this.data?.meta?.merchantCountryCode,
 			type = ComponentType.MESSAGE.toString(),
-			instanceId = this.instanceId.toString(),
+			instanceId = Api.instanceId.toString(),
+			originatingInstanceId = Api.originatingInstanceId.toString(),
+			sessionId = Api.sessionId.toString(),
 			events = mutableListOf(event),
 		)
 

@@ -16,12 +16,16 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okio.IOException
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
+import java.util.UUID
 
 object Api {
 	private const val TAG = "Api"
 	private val client = OkHttpClient()
 	private val gson = Gson()
 	var environment = Environment.SANDBOX
+	var instanceId: UUID? = null;
+	var originatingInstanceId: UUID? = null;
+	var sessionId: UUID? = null;
 
 	object Endpoints {
 		private val ROOT_URLS = mapOf(
@@ -47,6 +51,8 @@ object Api {
 		addQueryParameter("devTouchpoint", "false")
 		addQueryParameter("env", environment.name.lowercase())
 		addQueryParameter("logo_type", config.style.logoType.name.lowercase())
+		addQueryParameter("instance_id", instanceId.toString())
+		addQueryParameter("session_id", sessionId.toString())
 
 		config.data?.amount?.let { addQueryParameter("amount", it.toString()) }
 		config.data?.buyerCountry?.let { addQueryParameter("buyer_country", it) }
@@ -86,7 +92,8 @@ object Api {
 
 			val isValidResponse = body?.content != null && body.meta != null
 			return if (isValidResponse) {
-				ApiResult.Success(body)
+				Api.originatingInstanceId = body.meta?.originatingInstanceId;
+				ApiResult.Success(body);
 			}
 			else {
 				ApiResult.getFailureWithDebugId(response.headers)
