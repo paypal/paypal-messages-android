@@ -14,7 +14,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.IOException
 import java.util.UUID
-import com.paypal.messages.config.PayPalEnvironment as Environment
+import com.paypal.messages.config.PayPalEnvironment as Env
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
 
@@ -22,23 +22,23 @@ object Api {
 	private const val TAG = "Api"
 	private val client = OkHttpClient()
 	private val gson = Gson()
-	var environment = Environment.SANDBOX
+	var environment = Env.SANDBOX
 	var instanceId: UUID? = null
 	var originatingInstanceId: UUID? = null
 	var sessionId: UUID? = null
 
 	object Endpoints {
 		private val ROOT_URLS = mapOf(
-			Environment.LIVE to "https://www.paypal.com",
-			Environment.SANDBOX to "https://www.sandbox.paypal.com",
-			Environment.STAGE to BuildConfig.STAGE_URL,
-			Environment.STAGE_VPN to BuildConfig.STAGE_VPN_URL,
-			Environment.LOCAL to BuildConfig.LOCAL_URL,
+			Env.LIVE to "https://www.paypal.com",
+			Env.SANDBOX to "https://www.sandbox.paypal.com",
+			Env.STAGE to BuildConfig.STAGE_URL,
+			Env.STAGE_VPN to BuildConfig.STAGE_VPN_URL,
+			Env.LOCAL to BuildConfig.LOCAL_URL,
 		)
 
 		private val rootUrl = ROOT_URLS[environment]
-		private val presentmentUrl = if (environment === Environment.LOCAL) "$rootUrl:8000" else "$rootUrl"
-		private val loggerUrl = if (environment === Environment.LOCAL) "$rootUrl:9090" else "$rootUrl"
+		private val presentmentUrl = if (environment === Env.LOCAL) "$rootUrl:8000" else "$rootUrl"
+		private val loggerUrl = if (environment === Env.LOCAL) "$rootUrl:9090" else "$rootUrl"
 
 		val messageData = "$presentmentUrl/credit-presentment/native/message".toHttpUrl()
 		val messageHash = "$presentmentUrl/credit-presentment/merchant-profile".toHttpUrl()
@@ -85,7 +85,7 @@ object Api {
 			val bodyJson = response.body?.string()
 			response.close()
 
-			if (code != 200) { return ApiResult.Failure(FailedToFetchDataException()) }
+			if (code != 200) return ApiResult.Failure(FailedToFetchDataException())
 
 			LogCat.debug(TAG, "callMessageDataEndpoint response: $bodyJson")
 			val body = gson.fromJson(bodyJson, ActionResponse::class.java)
@@ -98,7 +98,8 @@ object Api {
 			else {
 				ApiResult.getFailureWithDebugId(response.headers)
 			}
-		} catch (exception: IOException) {
+		}
+		catch (exception: IOException) {
 			// Failed to fetch the data and there is no debugId
 			return ApiResult.Failure(FailedToFetchDataException())
 		}
@@ -137,7 +138,8 @@ object Api {
 
 			val hashResponse = gson.fromJson(bodyJson, HashActionResponse::class.java)
 			return ApiResult.Success(hashResponse)
-		} catch (error: java.io.IOException) {
+		}
+		catch (error: java.io.IOException) {
 			return ApiResult.Failure(FailedToFetchDataException())
 		}
 	}

@@ -409,7 +409,8 @@ class PayPalMessageView @JvmOverloads constructor(
 		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_amount)) {
 			amount = try {
 				typedArray.getFloatOrThrow(R.styleable.PayPalMessageView_paypal_amount).toDouble()
-			} catch (ex: Exception) {
+			}
+			catch (ex: Exception) {
 				LogCat.error(TAG, "Error parsing amount attribute")
 				null
 			}
@@ -422,7 +423,8 @@ class PayPalMessageView @JvmOverloads constructor(
 		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_offer_type)) {
 			offerType = try {
 				OfferType(typedArray.getIntOrThrow(R.styleable.PayPalMessageView_paypal_offer_type))
-			} catch (ex: Exception) {
+			}
+			catch (ex: Exception) {
 				LogCat.error(TAG, "Error parsing offer_type attribute")
 				null
 			}

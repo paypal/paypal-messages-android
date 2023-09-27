@@ -58,7 +58,8 @@ class Logger private constructor() {
 				integrationVersion = integrationVersion,
 				components = mutableListOf(),
 			)
-		} else {
+		}
+		else {
 			val exception = InvalidCheckoutConfigException()
 			exception.message?.let { LogCat.error(TAG, it, exception) }
 		}
@@ -96,7 +97,8 @@ class Logger private constructor() {
 				// Replace the old component payload with our newly created one
 				this.payload?.components?.set(index, component)
 			}
-		} else {
+		}
+		else {
 			// This will be the first instance for this specific component
 			this.payload?.components?.add(component)
 		}

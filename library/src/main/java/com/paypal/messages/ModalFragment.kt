@@ -185,7 +185,8 @@ internal class ModalFragment constructor(
 
 				return if (requestHost == currentHost && requestPath == currentPath) {
 					false
-				} else {
+				}
+				else {
 					val intent = Intent(Intent.ACTION_VIEW, requestUri)
 					requireActivity().startActivity(intent)
 					true
@@ -353,11 +354,13 @@ internal class ModalFragment constructor(
 			if (inErrorState) {
 				LogCat.debug(TAG, "Modal had error, resetting state and reloading WebView with URL: $url")
 				inErrorState = false
-			} else {
+			}
+			else {
 				if (modalUrl == null) {
 					LogCat.debug(TAG, "Modal URL was null, new URL is: $url")
 					modalUrl = url
-				} else {
+				}
+				else {
 					LogCat.debug(TAG, "Modal reopened with original URL: $currentUrl")
 				}
 			}
@@ -396,7 +399,8 @@ internal class ModalFragment constructor(
 				val linkSrc = json.get("link_src")?.asString
 				if (linkName == "Apply Now") {
 					this.onApply()
-				} else {
+				}
+				else {
 					this.onClick()
 				}
 				logEvent(
@@ -447,9 +451,11 @@ internal class ModalFragment constructor(
 				val jsonPrimitive = jsonElement.asJsonPrimitive
 				if (jsonPrimitive.isBoolean) {
 					jsonPrimitive.asBoolean
-				} else if (jsonPrimitive.isNumber) {
+				}
+				else if (jsonPrimitive.isNumber) {
 					jsonPrimitive.asNumber
-				} else {
+				}
+				else {
 					jsonPrimitive.asString
 				}
 			}

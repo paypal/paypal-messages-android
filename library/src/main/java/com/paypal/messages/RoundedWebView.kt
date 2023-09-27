@@ -12,7 +12,11 @@ internal class RoundedWebView : WebView {
 
 	constructor(context: Context) : super(context)
 	constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
-	constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle)
+	constructor(
+		context: Context,
+		attrs: AttributeSet,
+		defStyle: Int,
+	) : super(context, attrs, defStyle)
 
 	override fun onSizeChanged(width: Int, height: Int, oldWidth: Int, oldHeight: Int) {
 		super.onSizeChanged(width, height, oldWidth, oldHeight)

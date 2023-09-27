@@ -42,20 +42,23 @@ class Action(private val context: Context) {
 					withContext(Dispatchers.Main) {
 						onCompleted.onActionCompleted(messageData)
 					}
-				} else if (ageOfStoredHash in softTtl..hardTtl) {
+				}
+				else if (ageOfStoredHash in softTtl..hardTtl) {
 					LogCat.debug(TAG, "Fetching new hash but still using hash from local storage")
 					val messageData = Api.callMessageDataEndpoint(messageConfig, merchantHash)
 					withContext(Dispatchers.Main) {
 						onCompleted.onActionCompleted(messageData)
 					}
-				} else {
+				}
+				else {
 					LogCat.debug(TAG, "Retrieving hash from local storage\n$merchantHash")
 					val messageData = Api.callMessageDataEndpoint(messageConfig, merchantHash)
 					withContext(Dispatchers.Main) {
 						onCompleted.onActionCompleted(messageData)
 					}
 				}
-			} else {
+			}
+			else {
 				LogCat.debug(TAG, "Omitting hash")
 				val messageData = Api.callMessageDataEndpoint(messageConfig, null)
 				withContext(Dispatchers.Main) {

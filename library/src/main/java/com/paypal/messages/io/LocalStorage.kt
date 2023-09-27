@@ -15,7 +15,10 @@ class LocalStorage constructor(context: Context) {
 		MERCHANT_HASH_DATA("merchantProfileHashData"),
 		TIMESTAMP("timestamp"),
 		;
-		override fun toString(): String { return keyName }
+
+		override fun toString(): String {
+			return keyName
+		}
 	}
 
 	var merchantHashData: HashActionResponse?
