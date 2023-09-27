@@ -22,14 +22,11 @@ jobs:
           cache: gradle
 
       - name: Run Lint
-        run: ./gradlew lint
+        run: ./gradlew ktLint
+        continue-on-error: true
 
-      - name: Get Library Lint Reports
-        uses: yutailang0119/action-android-lint@v3
+      - name: Get Lint Reports
+        uses: yutailang0119/action-ktlint@v3
         with:
-          report-path: library/build/reports/*.xml
-
-      - name: Get Demo Lint Reports
-        uses: yutailang0119/action-android-lint@v3
-        with:
-          report-path: demo/build/reports/*.xml
+          report-path: build/reports/ktlint/*.xml
+        continue-on-error: false
