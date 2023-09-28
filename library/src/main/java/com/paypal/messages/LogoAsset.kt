@@ -14,6 +14,7 @@ sealed class LogoAsset {
 	/**
 	 * [ImageAsset] is a representation of a [LogoAsset] that holds a DrawableRes resourceId
 	 */
-	data class ImageAsset(@DrawableRes val resId: Int,
+	data class ImageAsset(
+		@DrawableRes val resId: Int,
 	) : LogoAsset()
 }
