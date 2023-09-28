@@ -10,6 +10,10 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        codebase: [library, demo]
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -23,6 +27,6 @@ jobs:
 
       # Only library assets are needed for the build step
       - name: Build with Gradle
-        run: ./gradlew :library:assemble
+        run: ./gradlew :${{ matrix.codebase }}:assemble
 
       - run: echo "Build status report=${{ job.status }}."
