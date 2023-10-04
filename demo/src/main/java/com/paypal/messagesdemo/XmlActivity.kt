@@ -37,25 +37,42 @@ class XmlActivity: AppCompatActivity() {
 		val reloadButton = findViewById<Button>(R.id.reset)
 
 		reloadButton.setOnClickListener {
-			val editedClientId = findViewById<EditText>(R.id.clientId)
-			val amount = findViewById<EditText>(R.id.amount)
-			val buyerCountry = findViewById<EditText>(R.id.buyercountry)
+			val editedClientId: EditText? = findViewById<EditText>(R.id.clientId)
+			val amount: EditText? = findViewById<EditText>(R.id.amount)
+			val buyerCountry: EditText? = findViewById<EditText>(R.id.buyercountry)
 
-			editedClientId.text.toString().let {
-				payPalMessage.setClientId(editedClientId.text.toString())
+			if ( editedClientId?.text.toString().isNotBlank() ) {
+				payPalMessage.setClientId(editedClientId?.text.toString())
 			}
 
-			amount.text.toString().let {
-				payPalMessage.setAmount(amount.text.toString().toDouble())
+			if ( amount?.text.toString().isNotBlank() ) {
+				payPalMessage.setAmount(amount?.text.toString().toDouble())
 			}
 
-			buyerCountry.text.toString().let {
-				payPalMessage.setBuyerCountry(buyerCountry.text.toString())
+			if ( buyerCountry?.text.toString().isNotBlank() ) {
+				payPalMessage.setBuyerCountry(buyerCountry?.text.toString())
 			}
 
+//			0 Black
+//			1 White
+//			2 Monochrome
+//			3 Grayscale
+//			payPalMessage.setColor(PayPalMessageColor.invoke(1))
 
-			payPalMessage.refresh()
+//			0 Left
+//			1 Center
+//			2 Right
+//			payPalMessage.setTextAlignment(PayPalMessageAlign.RIGHT)
+
+//		payPalMessage.setTextAlignment(PayPalMessageAlign.CENTER)
+//			payPalMessage.setStyle(PayPalMessageStyle(textAlign = PayPalMessageAlign.RIGHT))
+			payPalMessage.setStyle(PayPalMessageStyle(textAlign = PayPalMessageAlign.RIGHT, color = PayPalMessageColor.WHITE))
+
+//			payPalMessage.setLogoType()
+
+			// payPalMessage.refresh()
 		}
+
 
 		// TODO add example of adding MessageView here instead of in XML
 

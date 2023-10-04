@@ -33,9 +33,9 @@
 					android:text="Client ID"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:id="@+id/clientIdLabel" 
-					android:layout_weight="1" 
-					android:textSize="16sp" 
+					android:id="@+id/clientIdLabel"
+					android:layout_weight="1"
+					android:textSize="16sp"
 					android:textStyle="bold"/>
 				<EditText
 					android:text="@string/client_id"
@@ -303,8 +303,6 @@
 				app:layout_constraintEnd_toEndOf="parent"
 				app:layout_constraintBottom_toBottomOf="parent"
 				app:paypal_client_id="@string/client_id"
-				app:paypal_logo_type="alternative"
-				app:paypal_text_color="monochrome"
 				android:tag="PayPal"/>
 			<ProgressBar
 				android:id="@+id/progressBar"
