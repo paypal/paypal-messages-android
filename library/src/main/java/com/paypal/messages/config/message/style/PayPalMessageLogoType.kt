@@ -19,7 +19,7 @@ enum class PayPalMessageLogoType(val value: Int) {
 		 * Given an [attributeIndex] this will provide the correct [PayPalMessageLogoType].
 		 * If an invalid [attributeIndex] is provided then it will throw an [IllegalArgumentException].
 		 *
-		 * @throws [IllegalArgumentException] when an invalid index is provided.
+		 * @throws [IllegalEnumArg] when an invalid index is provided.
 		 */
 		operator fun invoke(attributeIndex: Int): PayPalMessageLogoType {
 			return when (attributeIndex) {
