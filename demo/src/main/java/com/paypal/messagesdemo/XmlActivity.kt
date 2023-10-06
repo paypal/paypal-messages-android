@@ -109,8 +109,25 @@ class XmlActivity: AppCompatActivity() {
 			}
 		}
 
-		val reloadButton = findViewById<Button>(R.id.reset)
-		reloadButton.setOnClickListener {
+		val resetButton = findViewById<Button>(R.id.reset)
+		resetButton.setOnClickListener {
+			logoType = PayPalMessageLogoType.PRIMARY
+		 	color = PayPalMessageColor.BLACK
+		 	alignment = PayPalMessageAlign.LEFT
+		 	offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
+			payPalMessage.setAmount(null)
+			payPalMessage.setBuyerCountry("")
+
+			Api.devTouchpoint = "false"
+			Api.ignoreCache = "false"
+			payPalMessage.setBackgroundColor(Color.White.hashCode())
+
+			payPalMessage.setOfferType(offerType = offerType)
+			payPalMessage.setStyle(PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType))
+		}
+
+		val submitButton = findViewById<Button>(R.id.submit)
+		submitButton.setOnClickListener {
 			val editedClientId: EditText? = findViewById<EditText>(R.id.clientId)
 			val amount: EditText? = findViewById<EditText>(R.id.amount)
 			val buyerCountry: EditText? = findViewById<EditText>(R.id.buyercountry)
@@ -156,14 +173,14 @@ class XmlActivity: AppCompatActivity() {
 				onLoading = {
 					Log.d(TAG, "onLoading")
 					progressBar.visibility = View.VISIBLE
-					reloadButton.isEnabled = false
+					resetButton.isEnabled = false
 					Toast.makeText(this, "Loading Content...",Toast.LENGTH_SHORT).show()
 				},
 				onError = {
 					Log.d(TAG, "onError")
 					progressBar.visibility = View.INVISIBLE
 					runOnUiThread {
-						reloadButton.isEnabled = true
+						resetButton.isEnabled = true
 						Toast.makeText(this, it.javaClass.toString() + ":" + it.message + ":" + it.paypalDebugId,Toast.LENGTH_LONG).show()
 					}
 					it.message?.let { it1 -> Log.d("XmlActivity Error", it1) }
@@ -173,7 +190,7 @@ class XmlActivity: AppCompatActivity() {
 					Log.d(TAG, "onSuccess")
 					progressBar.visibility = View.INVISIBLE
 					runOnUiThread {
-						reloadButton.isEnabled = true
+						resetButton.isEnabled = true
 						Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
 					}
 				}
@@ -181,33 +198,4 @@ class XmlActivity: AppCompatActivity() {
 		)
 	}
 
-	/**
-	 * Prevents unused warnings inside of [PayPalMessageView] and [PayPalMessageConfig]
-	 */
-	@Suppress("unused")
-	fun useUnusedFunctions() {
-		binding = ActivityMessageBinding.inflate(layoutInflater)
-		setContentView(binding.root)
-
-		val message = binding.payPalMessage
-		val config = PayPalMessageConfig()
-		config.setGlobalAnalytics("", "")
-		message.setConfig(config)
-
-		message.setData(PayPalMessageData())
-		message.setClientId(EnvVars.getClientId(Environment.LIVE))
-		message.setAmount(1.0)
-		message.setPlacement("placement")
-		message.setOfferType(PayPalMessageOfferType.PAY_LATER_SHORT_TERM)
-		message.setBuyerCountry("country")
-
-		message.setActionEventCallbacks(PayPalMessageEvents())
-
-		message.setViewStateCallbacks(PayPalMessageViewState())
-
-		message.setStyle(PayPalMessageStyle())
-		message.setColor(PayPalMessageColor.BLACK)
-		message.setLogoType(PayPalMessageLogoType.PRIMARY)
-		message.setTextAlignment(PayPalMessageAlign.CENTER)
-	}
 }

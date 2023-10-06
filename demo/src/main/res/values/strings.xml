@@ -1,6 +1,5 @@
 <resources>
-	<string name="app_name">PayPal Messages</string>
+	<string name="app_name">Message Configuration</string>
 	<string name="header_kotlin">Kotlin PayPal Message</string>
-	<string name="header_xml">Message Configuration</string>
 	<string name="reload_label">Reset</string>
 </resources>
