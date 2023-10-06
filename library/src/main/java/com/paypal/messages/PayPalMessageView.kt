@@ -62,7 +62,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	context: Context,
 	attributeSet: AttributeSet? = null,
 	defStyleAttr: Int = 0,
-	config: MessageConfig? = null,
+	config: MessageConfig? = null
 ) : LinearLayout(context, attributeSet, defStyleAttr), OnActionCompleted {
 	private val TAG = "PayPalMessage"
 	private var messageTextView: TextView
@@ -386,16 +386,18 @@ class PayPalMessageView @JvmOverloads constructor(
 			}
 			// Apply disclaimer style
 			messageDisclaimer?.let { builder.setupDisclaimer(color, it) }
-			// Apply the everything to the text view
-			messageTextView.apply {
-				visibility = View.VISIBLE
-				setTextColor(ContextCompat.getColor(context, color.colorResId))
-				gravity = when (alignment) {
-					Align.LEFT -> Gravity.START
-					Align.CENTER -> Gravity.CENTER_HORIZONTAL
-					Align.RIGHT -> Gravity.END
+			(context as AppCompatActivity).runOnUiThread {
+				// Apply everything to the text view
+				messageTextView.apply {
+					visibility = View.VISIBLE
+					setTextColor(ContextCompat.getColor(context, color.colorResId))
+					gravity = when (alignment) {
+						Align.LEFT -> Gravity.START
+						Align.CENTER -> Gravity.CENTER_HORIZONTAL
+						Align.RIGHT -> Gravity.END
+					}
+					text = builder
 				}
-				text = builder
 			}
 		}
 

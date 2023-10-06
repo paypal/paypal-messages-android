@@ -64,31 +64,32 @@
 			android:layout_height="match_parent">
 
 			<RadioGroup
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				android:orientation="horizontal"
-				android:paddingBottom="16dp"
-			>
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:orientation="horizontal"
+					android:paddingBottom="16dp"
+					android:id="@+id/logoTypeRadioGroup">
 				<RadioButton
-					android:text="Inline"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/styleInline" android:checked="true"/>
+						android:text="Primary"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:checked="true"
+						android:id="@+id/stylePrimary"/>
 				<RadioButton
-					android:text="Primary"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/stylePrimary"/>
+						android:text="Inline"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:id="@+id/styleInline"/>
 				<RadioButton
-					android:text="Alternative"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/styleAlternative"/>
+						android:text="Alternative"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:id="@+id/styleAlternative"/>
 				<RadioButton
-					android:text="None"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/styleNone"/>
+						android:text="None"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:id="@+id/styleNone"/>
 			</RadioGroup>
 		</LinearLayout>
 
@@ -98,32 +99,32 @@
 			android:layout_height="match_parent">
 
 			<RadioGroup
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				android:orientation="horizontal"
-				android:paddingBottom="16dp"
-			>
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:orientation="horizontal"
+					android:paddingBottom="16dp"
+					android:id="@+id/colorRadioGroup">
 
 				<RadioButton
-					android:text="Black"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/styleBlack" android:checked="true"/>
+						android:text="Black"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:id="@+id/styleBlack" android:checked="true"/>
 				<RadioButton
-					android:text="White"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/styleWhite"/>
+						android:text="White"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:id="@+id/styleWhite"/>
 				<RadioButton
-					android:text="Monochrome"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/styleMonochrome"/>
+						android:text="Monochrome"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:id="@+id/styleMonochrome"/>
 				<RadioButton
-					android:text="Grayscale"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/styleGrayscale"/>
+						android:text="Grayscale"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:id="@+id/styleGrayscale"/>
 
 			</RadioGroup>
 
@@ -135,26 +136,26 @@
 			android:layout_height="match_parent">
 
 			<RadioGroup
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				android:orientation="horizontal"
-				android:paddingBottom="16dp"
-			>
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:orientation="horizontal"
+					android:paddingBottom="16dp"
+					android:id="@+id/alignmentRadioGroup">
 				<RadioButton
-					android:text="Left"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/styleLeft" android:checked="true"/>
+						android:text="Left"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:id="@+id/styleLeft" android:checked="true"/>
 				<RadioButton
-					android:text="Center"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/styleCenter"/>
+						android:text="Center"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:id="@+id/styleCenter"/>
 				<RadioButton
-					android:text="Right"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/StyleRight"/>
+						android:text="Right"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:id="@+id/styleRight"/>
 			</RadioGroup>
 
 		</LinearLayout>
@@ -175,32 +176,32 @@
 			android:layout_height="match_parent">
 
 			<RadioGroup
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				android:orientation="horizontal"
-				android:paddingBottom="16dp"
-			>
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:orientation="horizontal"
+					android:paddingBottom="16dp"
+					android:id="@+id/offerTypeRadioGroup">
 
 				<RadioButton
-					android:text="Short Term"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/offerTypeShortTerm" android:checked="true"/>
+						android:text="Short Term"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:id="@+id/offerTypeShortTerm" android:checked="true"/>
 				<RadioButton
-					android:text="Long Term"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/offerTypeLongTerm"/>
+						android:text="Long Term"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:id="@+id/offerTypeLongTerm"/>
 				<RadioButton
-					android:text="Pay in 1"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/offerTypePayIn1"/>
+						android:text="Pay in 1"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:id="@+id/offerTypePayIn1"/>
 				<RadioButton
-					android:text="Credit"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/offerTypeCredit"/>
+						android:text="Credit"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:id="@+id/offerTypeCredit"/>
 			</RadioGroup>
 
 		</LinearLayout>

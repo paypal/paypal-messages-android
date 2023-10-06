@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.paypal.messages.PayPalMessageView
@@ -23,19 +24,70 @@ import com.paypal.messagesdemo.databinding.ActivityMessageBinding
 class XmlActivity: AppCompatActivity() {
 	private lateinit var binding: ActivityMessageBinding
 	private val TAG = "XmlActivity"
+	private var logoType: PayPalMessageLogoType = PayPalMessageLogoType.PRIMARY
+	private var color: PayPalMessageColor = PayPalMessageColor.BLACK
+	private var alignment: PayPalMessageAlign = PayPalMessageAlign.LEFT
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		binding = ActivityMessageBinding.inflate(layoutInflater)
 		setContentView(binding.root)
-		setContentView(R.layout.activity_message)
 
 		val payPalMessage = binding.payPalMessage
 		val progressBar = binding.progressBar
-//		val reset = binding.reset
+
+		val logoTypeRadioGroup = findViewById<RadioGroup>(R.id.logoTypeRadioGroup)
+		logoTypeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+			when (checkedId) {
+				R.id.styleInline -> {
+					logoType = PayPalMessageLogoType.INLINE
+				}
+				R.id.stylePrimary -> {
+					logoType = PayPalMessageLogoType.PRIMARY
+				}
+				R.id.styleAlternative -> {
+					logoType = PayPalMessageLogoType.ALTERNATIVE
+				}
+				R.id.styleNone -> {
+					logoType = PayPalMessageLogoType.NONE
+				}
+			}
+		}
+
+		val colorRadioGroup = findViewById<RadioGroup>(R.id.colorRadioGroup)
+		colorRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+			when (checkedId) {
+				R.id.styleBlack -> {
+					color = PayPalMessageColor.BLACK
+				}
+				R.id.styleWhite -> {
+					color = PayPalMessageColor.WHITE
+				}
+				R.id.styleMonochrome -> {
+					color = PayPalMessageColor.MONOCHROME
+				}
+				R.id.styleGrayscale -> {
+					color = PayPalMessageColor.GRAYSCALE
+				}
+			}
+		}
+
+		val alignmentRadioGroup = findViewById<RadioGroup>(R.id.alignmentRadioGroup)
+		alignmentRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+			when (checkedId) {
+				R.id.styleLeft -> {
+					alignment = PayPalMessageAlign.LEFT
+				}
+				R.id.styleCenter -> {
+					alignment = PayPalMessageAlign.CENTER
+				}
+				R.id.styleRight -> {
+					alignment = PayPalMessageAlign.RIGHT
+				}
+			}
+		}
 
 		val reloadButton = findViewById<Button>(R.id.reset)
-
 		reloadButton.setOnClickListener {
 			val editedClientId: EditText? = findViewById<EditText>(R.id.clientId)
 			val amount: EditText? = findViewById<EditText>(R.id.amount)
@@ -53,29 +105,11 @@ class XmlActivity: AppCompatActivity() {
 				payPalMessage.setBuyerCountry(buyerCountry?.text.toString())
 			}
 
-//			0 Black
-//			1 White
-//			2 Monochrome
-//			3 Grayscale
-//			payPalMessage.setColor(PayPalMessageColor.invoke(1))
+			payPalMessage.setStyle(PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType))
 
-//			0 Left
-//			1 Center
-//			2 Right
-//			payPalMessage.setTextAlignment(PayPalMessageAlign.RIGHT)
-
-//		payPalMessage.setTextAlignment(PayPalMessageAlign.CENTER)
-//			payPalMessage.setStyle(PayPalMessageStyle(textAlign = PayPalMessageAlign.RIGHT))
-			payPalMessage.setStyle(PayPalMessageStyle(textAlign = PayPalMessageAlign.RIGHT, color = PayPalMessageColor.WHITE))
-
-//			payPalMessage.setLogoType()
-
-			// payPalMessage.refresh()
 		}
 
-
 		// TODO add example of adding MessageView here instead of in XML
-
 		payPalMessage.setViewStates(
 			PayPalMessageViewState(
 				onLoading = {
