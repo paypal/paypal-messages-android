@@ -386,18 +386,16 @@ class PayPalMessageView @JvmOverloads constructor(
 			}
 			// Apply disclaimer style
 			messageDisclaimer?.let { builder.setupDisclaimer(color, it) }
-			(context as AppCompatActivity).runOnUiThread {
-				// Apply everything to the text view
-				messageTextView.apply {
-					visibility = View.VISIBLE
-					setTextColor(ContextCompat.getColor(context, color.colorResId))
-					gravity = when (alignment) {
-						Align.LEFT -> Gravity.START
-						Align.CENTER -> Gravity.CENTER_HORIZONTAL
-						Align.RIGHT -> Gravity.END
-					}
-					text = builder
+			// Apply everything to the text view
+			messageTextView.apply {
+				visibility = View.VISIBLE
+				setTextColor(ContextCompat.getColor(context, color.colorResId))
+				gravity = when (alignment) {
+					Align.LEFT -> Gravity.START
+					Align.CENTER -> Gravity.CENTER_HORIZONTAL
+					Align.RIGHT -> Gravity.END
 				}
+				text = builder
 			}
 		}
 

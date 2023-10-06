@@ -22,6 +22,8 @@ object Api {
 	private val client = OkHttpClient()
 	private val gson = Gson()
 	var environment = Environment.SANDBOX
+	var devTouchpoint: String = "false"
+	var ignoreCache: String = "false"
 
 	object Endpoints {
 		private val ROOT_URLS = mapOf(
@@ -44,7 +46,8 @@ object Api {
 
 	private fun HttpUrl.Builder.setMessageDataQuery(config: MessageConfig, hash: String?) {
 		addQueryParameter("client_id", config.data?.clientId)
-		addQueryParameter("devTouchpoint", "false")
+		addQueryParameter("devTouchpoint", devTouchpoint)
+		addQueryParameter("ignore_cache", ignoreCache)
 		addQueryParameter("env", environment.name.lowercase())
 		addQueryParameter("logo_type", config.style.logoType.name.lowercase())
 

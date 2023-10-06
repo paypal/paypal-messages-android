@@ -6,8 +6,10 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioGroup
+import android.widget.Switch
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.ui.graphics.Color
 import com.paypal.messages.PayPalMessageView
 import com.paypal.messages.config.PayPalEnvironment as Environment
 import com.paypal.messages.config.message.style.PayPalMessageAlign
@@ -19,6 +21,7 @@ import com.paypal.messages.config.message.PayPalMessageData
 import com.paypal.messages.config.message.PayPalMessageEvents
 import com.paypal.messages.config.message.PayPalMessageStyle
 import com.paypal.messages.config.message.PayPalMessageViewState
+import com.paypal.messages.io.Api
 import com.paypal.messagesdemo.databinding.ActivityMessageBinding
 
 class XmlActivity: AppCompatActivity() {
@@ -27,6 +30,7 @@ class XmlActivity: AppCompatActivity() {
 	private var logoType: PayPalMessageLogoType = PayPalMessageLogoType.PRIMARY
 	private var color: PayPalMessageColor = PayPalMessageColor.BLACK
 	private var alignment: PayPalMessageAlign = PayPalMessageAlign.LEFT
+	private var offerType: PayPalMessageOfferType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -87,24 +91,61 @@ class XmlActivity: AppCompatActivity() {
 			}
 		}
 
+		val offerTypeRadioGroup = findViewById<RadioGroup>(R.id.offerTypeRadioGroup)
+		offerTypeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+			when (checkedId) {
+				R.id.offerTypeShortTerm -> {
+					offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
+				}
+				R.id.offerTypeLongTerm -> {
+					offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM
+				}
+				R.id.offerTypePayIn1 -> {
+					offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1
+				}
+				R.id.offerTypeCredit -> {
+					offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
+				}
+			}
+		}
+
 		val reloadButton = findViewById<Button>(R.id.reset)
 		reloadButton.setOnClickListener {
 			val editedClientId: EditText? = findViewById<EditText>(R.id.clientId)
 			val amount: EditText? = findViewById<EditText>(R.id.amount)
 			val buyerCountry: EditText? = findViewById<EditText>(R.id.buyercountry)
 
+			val ignoreCache = findViewById<Switch>(R.id.ignoreCache)
+			val devTouchpoint = findViewById<Switch>(R.id.devTouchpoint)
+			Api.devTouchpoint = devTouchpoint.isEnabled.toString()
+			Api.ignoreCache = ignoreCache.isEnabled.toString()
+
 			if ( editedClientId?.text.toString().isNotBlank() ) {
 				payPalMessage.setClientId(editedClientId?.text.toString())
+			} else {
+				payPalMessage.setClientId("")
 			}
 
 			if ( amount?.text.toString().isNotBlank() ) {
 				payPalMessage.setAmount(amount?.text.toString().toDouble())
+			} else {
+				payPalMessage.setAmount(null)
 			}
 
 			if ( buyerCountry?.text.toString().isNotBlank() ) {
 				payPalMessage.setBuyerCountry(buyerCountry?.text.toString())
+			} else {
+				payPalMessage.setBuyerCountry("US")
 			}
 
+			if ( color === PayPalMessageColor.WHITE ) {
+				payPalMessage.setBackgroundColor(Color.Black.hashCode())
+			} else {
+				payPalMessage.setBackgroundColor(Color.White.hashCode())
+			}
+
+			// This can be better optimized since setOfferType and setStyle calls updateMessageContent()
+			payPalMessage.setOfferType(offerType = offerType)
 			payPalMessage.setStyle(PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType))
 
 		}
