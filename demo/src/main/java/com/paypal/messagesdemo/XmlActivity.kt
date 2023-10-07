@@ -10,15 +10,12 @@ import android.widget.Switch
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color
-import com.paypal.messages.PayPalMessageView
-import com.paypal.messages.config.PayPalEnvironment as Environment
 import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
-import com.paypal.messages.config.message.PayPalMessageEvents
 import com.paypal.messages.config.message.PayPalMessageStyle
 import com.paypal.messages.config.message.PayPalMessageViewState
 import com.paypal.messages.io.Api
@@ -40,14 +37,16 @@ class XmlActivity: AppCompatActivity() {
 		val payPalMessage = binding.payPalMessage
 		val progressBar = binding.progressBar
 
+		val editedClientId: EditText? = findViewById<EditText>(R.id.clientId)
+
 		val logoTypeRadioGroup = findViewById<RadioGroup>(R.id.logoTypeRadioGroup)
 		logoTypeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
 			when (checkedId) {
-				R.id.styleInline -> {
-					logoType = PayPalMessageLogoType.INLINE
-				}
 				R.id.stylePrimary -> {
 					logoType = PayPalMessageLogoType.PRIMARY
+				}
+				R.id.styleInline -> {
+					logoType = PayPalMessageLogoType.INLINE
 				}
 				R.id.styleAlternative -> {
 					logoType = PayPalMessageLogoType.ALTERNATIVE
@@ -109,33 +108,16 @@ class XmlActivity: AppCompatActivity() {
 			}
 		}
 
-		val resetButton = findViewById<Button>(R.id.reset)
-		resetButton.setOnClickListener {
-			logoType = PayPalMessageLogoType.PRIMARY
-		 	color = PayPalMessageColor.BLACK
-		 	alignment = PayPalMessageAlign.LEFT
-		 	offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
-			payPalMessage.setAmount(null)
-			payPalMessage.setBuyerCountry("")
+		val amount = findViewById<EditText>(R.id.amount)
+		val buyerCountry = findViewById<EditText>(R.id.buyercountry)
 
-			Api.devTouchpoint = "false"
-			Api.ignoreCache = "false"
-			payPalMessage.setBackgroundColor(Color.White.hashCode())
+		val ignoreCache = findViewById<Switch>(R.id.ignoreCache)
+		val devTouchpoint = findViewById<Switch>(R.id.devTouchpoint)
 
-			payPalMessage.setOfferType(offerType = offerType)
-			payPalMessage.setStyle(PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType))
-		}
-
-		val submitButton = findViewById<Button>(R.id.submit)
-		submitButton.setOnClickListener {
-			val editedClientId: EditText? = findViewById<EditText>(R.id.clientId)
-			val amount: EditText? = findViewById<EditText>(R.id.amount)
-			val buyerCountry: EditText? = findViewById<EditText>(R.id.buyercountry)
-
-			val ignoreCache = findViewById<Switch>(R.id.ignoreCache)
-			val devTouchpoint = findViewById<Switch>(R.id.devTouchpoint)
-			Api.devTouchpoint = devTouchpoint.isEnabled.toString()
-			Api.ignoreCache = ignoreCache.isEnabled.toString()
+		// Get the data from the selected options
+		fun updateMessageData() {
+			Api.devTouchpoint = devTouchpoint.isChecked.toString()
+			Api.ignoreCache = ignoreCache.isChecked.toString()
 
 			if ( editedClientId?.text.toString().isNotBlank() ) {
 				payPalMessage.setClientId(editedClientId?.text.toString())
@@ -160,11 +142,42 @@ class XmlActivity: AppCompatActivity() {
 			} else {
 				payPalMessage.setBackgroundColor(Color.White.hashCode())
 			}
+		}
 
-			// This can be better optimized since setOfferType and setStyle calls updateMessageContent()
-			payPalMessage.setOfferType(offerType = offerType)
-			payPalMessage.setStyle(PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType))
+		// Restore default options
+		val resetButton = findViewById<Button>(R.id.reset)
+		resetButton.setOnClickListener {
+			// Reset UI
+			logoTypeRadioGroup.check(R.id.stylePrimary)
+			colorRadioGroup.check(R.id.styleBlack)
+			alignmentRadioGroup.check(R.id.styleLeft)
+			offerTypeRadioGroup.check(R.id.offerTypeShortTerm)
+			ignoreCache.isChecked = false
+			devTouchpoint.isChecked = false
+			amount.setText("")
+			buyerCountry.setText("")
 
+			updateMessageData()
+			payPalMessage.setConfig(
+				PayPalMessageConfig(
+					PayPalMessageData(offerType = offerType),
+					PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType)
+				)
+			)
+			payPalMessage.refresh()
+		}
+
+		// Request message based on options
+		val submitButton = findViewById<Button>(R.id.submit)
+		submitButton.setOnClickListener {
+			updateMessageData()
+			payPalMessage.setConfig(
+				PayPalMessageConfig(
+					PayPalMessageData(offerType = offerType),
+					PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType)
+				)
+			)
+			payPalMessage.refresh()
 		}
 
 		// TODO add example of adding MessageView here instead of in XML
@@ -174,6 +187,7 @@ class XmlActivity: AppCompatActivity() {
 					Log.d(TAG, "onLoading")
 					progressBar.visibility = View.VISIBLE
 					resetButton.isEnabled = false
+					submitButton.isEnabled = false
 					Toast.makeText(this, "Loading Content...",Toast.LENGTH_SHORT).show()
 				},
 				onError = {
@@ -181,6 +195,7 @@ class XmlActivity: AppCompatActivity() {
 					progressBar.visibility = View.INVISIBLE
 					runOnUiThread {
 						resetButton.isEnabled = true
+						submitButton.isEnabled = true
 						Toast.makeText(this, it.javaClass.toString() + ":" + it.message + ":" + it.paypalDebugId,Toast.LENGTH_LONG).show()
 					}
 					it.message?.let { it1 -> Log.d("XmlActivity Error", it1) }
@@ -191,6 +206,7 @@ class XmlActivity: AppCompatActivity() {
 					progressBar.visibility = View.INVISIBLE
 					runOnUiThread {
 						resetButton.isEnabled = true
+						submitButton.isEnabled = true
 						Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
 					}
 				}
