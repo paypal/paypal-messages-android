@@ -14,8 +14,6 @@ import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.config.PayPalMessageOfferType
-import com.paypal.messages.config.message.PayPalMessageConfig
-import com.paypal.messages.config.message.PayPalMessageData
 import com.paypal.messages.config.message.PayPalMessageStyle
 import com.paypal.messages.config.message.PayPalMessageViewState
 import com.paypal.messages.io.Api
@@ -142,6 +140,10 @@ class XmlActivity: AppCompatActivity() {
 			} else {
 				payPalMessage.setBackgroundColor(Color.White.hashCode())
 			}
+
+			payPalMessage.setOfferType(offerType = offerType)
+			payPalMessage.setStyle(PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType))
+			payPalMessage.refresh()
 		}
 
 		// Restore default options
@@ -158,26 +160,12 @@ class XmlActivity: AppCompatActivity() {
 			buyerCountry.setText("")
 
 			updateMessageData()
-			payPalMessage.setConfig(
-				PayPalMessageConfig(
-					PayPalMessageData(offerType = offerType),
-					PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType)
-				)
-			)
-			payPalMessage.refresh()
 		}
 
 		// Request message based on options
 		val submitButton = findViewById<Button>(R.id.submit)
 		submitButton.setOnClickListener {
 			updateMessageData()
-			payPalMessage.setConfig(
-				PayPalMessageConfig(
-					PayPalMessageData(offerType = offerType),
-					PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType)
-				)
-			)
-			payPalMessage.refresh()
 		}
 
 		// TODO add example of adding MessageView here instead of in XML

@@ -211,14 +211,11 @@ class PayPalMessageView @JvmOverloads constructor(
 
 	/**
 	 * Update the [MessageConfig] style currently associated with the [PayPalMessageView] component
-	 *
-	 * This function will also trigger an update in the component to get the new content based on the provided configuration
 	 */
 	fun setStyle(style: MessageStyle?) {
 		color = style?.color ?: Color.BLACK
 		alignment = style?.textAlign ?: Align.LEFT
 		logoType = style?.logoType ?: LogoType.PRIMARY
-		updateMessageContent()
 	}
 
 	/**
@@ -257,8 +254,6 @@ class PayPalMessageView @JvmOverloads constructor(
 
 	/**
 	 * Updates the offerType used in [MessageConfig] for the current [PayPalMessageView].
-	 *
-	 * This function will also trigger an update in the component content to reflect the changes with the [MessageConfig] updated offerType
 	 */
 	fun setOfferType(offerType: OfferType?) {
 		if (this.offerType != offerType) {
@@ -267,7 +262,6 @@ class PayPalMessageView @JvmOverloads constructor(
 //                if (offerType != null) {
 //                    modal?.setOfferType(offerType)
 //                }
-			updateMessageContent()
 		}
 	}
 
