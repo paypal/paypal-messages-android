@@ -1,10 +1,10 @@
 package com.paypal.messages.logger
 
 import com.google.gson.annotations.SerializedName
-import com.paypal.messages.config.message.style.PayPalMessageColor
-import com.paypal.messages.config.message.style.PayPalMessageAlign
-import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.config.PayPalMessageOfferType
+import com.paypal.messages.config.message.style.PayPalMessageAlign
+import com.paypal.messages.config.message.style.PayPalMessageColor
+import com.paypal.messages.config.message.style.PayPalMessageLogoType
 
 data class TrackingComponent(
 	// Integration Details
@@ -56,6 +56,10 @@ data class TrackingComponent(
 	val type: String? = null,
 	@SerializedName("instance_id")
 	val instanceId: String? = null,
+	@SerializedName("originating_instance_id")
+	val originatingInstanceId: String? = null,
+	@SerializedName("session_id")
+	val sessionId: String? = null,
 	@SerializedName("events")
 	val events: MutableList<TrackingEvent>,
 

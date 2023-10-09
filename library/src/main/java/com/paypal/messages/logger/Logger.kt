@@ -2,9 +2,9 @@ package com.paypal.messages.logger
 
 import android.content.Context
 import android.provider.Settings
-import com.paypal.messages.io.LocalStorage
 import com.paypal.messages.errors.InvalidCheckoutConfigException
 import com.paypal.messages.io.Api
+import com.paypal.messages.io.LocalStorage
 import com.paypal.messages.utils.LogCat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,21 +43,26 @@ class Logger private constructor() {
 		initBasePayload()
 	}
 
+	private fun resetBasePayload(isInit: Boolean = false) {
+		LogCat.debug(TAG, if (isInit) "initBasePayload" else "resetBasePayload")
+		this.payload = TrackingPayload(
+			clientId = clientId,
+			merchantId = null,
+			partnerAttributionId = null,
+			// merchantProfileHash will be later defined by pulling from LocalStorage
+			merchantProfileHash = null,
+			deviceId = Settings.Secure.ANDROID_ID,
+			// TODO Determine SessionId for Logger
+			sessionId = "random for now, TBD at later point to what this is specifically",
+			integrationName = integrationName,
+			integrationVersion = integrationVersion,
+			components = mutableListOf(),
+		)
+	}
+
 	private fun initBasePayload() {
 		if (clientId !== "") {
-			this.payload = TrackingPayload(
-				clientId = clientId,
-				merchantId = null,
-				partnerAttributionId = null,
-				// merchantProfileHash can be later defined after a message request by pulling from paypalmessagelocalstorage
-				merchantProfileHash = null,
-				deviceId = Settings.Secure.ANDROID_ID,
-				// TODO Determine SessionId for Logger
-				sessionId = "random for now, TBD at later point to what this is specifically",
-				integrationName = integrationName,
-				integrationVersion = integrationVersion,
-				components = mutableListOf(),
-			)
+			resetBasePayload(true)
 		}
 		else {
 			val exception = InvalidCheckoutConfigException()
@@ -65,7 +70,7 @@ class Logger private constructor() {
 		}
 	}
 
-	fun setGlobalAnalytics (
+	fun setGlobalAnalytics(
 		integrationName: String,
 		integrationVersion: String,
 	) {
@@ -113,18 +118,16 @@ class Logger private constructor() {
 			delay(5000) // Wait 5 seconds before sending our payload
 
 			val localStorage = LocalStorage(context)
-			LogCat.debug(TAG, localStorage.merchantHash.toString())
-			finalPayload.components.forEach { component ->
-				component.instanceId?.let { LogCat.debug(TAG, it) }
-				component.events.forEach { event ->
-					LogCat.debug(TAG, event.eventType.toString())
-				}
+			val hash = localStorage.merchantHash
+			val payloadSummary = finalPayload.components.joinToString("\n") {
+				val eventsString = it.events.joinToString { event -> event.eventType.toString() }
+				"  type: ${it.type}\n  instanceId: ${it.instanceId}\n  events: $eventsString\n"
 			}
+			LogCat.debug(TAG, "merchantHash: ${hash}\npayloadSummary:\n$payloadSummary")
 
+			finalPayload.merchantProfileHash = hash
 			Api.callLoggerEndpoint(finalPayload)
-
-			// After our response has completed, we can reset our base payload.
-			initBasePayload()
+			resetBasePayload()
 		}
 	}
 }

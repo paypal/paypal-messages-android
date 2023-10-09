@@ -1,6 +1,6 @@
 package com.paypal.messages.config.message.style
 
-import com.paypal.messages.utils.createFormattedIllegalArgumentException
+import com.paypal.messages.errors.IllegalEnumArg
 
 /**
  * [PayPalMessageAlign] provides different variations of text alignments supported by the PayPalMessage component
@@ -10,7 +10,8 @@ import com.paypal.messages.utils.createFormattedIllegalArgumentException
 enum class PayPalMessageAlign(val value: Int) {
 	LEFT(0),
 	CENTER(1),
-	RIGHT(2);
+	RIGHT(2),
+	;
 
 	companion object {
 		/**
@@ -24,7 +25,7 @@ enum class PayPalMessageAlign(val value: Int) {
 				LEFT.value -> LEFT
 				CENTER.value -> CENTER
 				RIGHT.value -> RIGHT
-				else -> throw createFormattedIllegalArgumentException("LogoAlignment", 3)
+				else -> throw IllegalEnumArg("LogoAlignment", 3)
 			}
 		}
 	}

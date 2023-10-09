@@ -8,7 +8,6 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.net.Uri
 import android.net.http.SslError
-import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -26,19 +25,18 @@ import android.webkit.WebViewClient
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
-import androidx.annotation.RequiresApi
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.paypal.messages.config.Channel
+import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.errors.BaseException
 import com.paypal.messages.errors.ModalFailedToLoad
 import com.paypal.messages.extensions.dp
 import com.paypal.messages.io.Api
-import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.logger.ComponentType
 import com.paypal.messages.logger.EventType
 import com.paypal.messages.logger.Logger
@@ -50,10 +48,9 @@ import java.util.UUID
 import kotlin.system.measureTimeMillis
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 
-@RequiresApi(Build.VERSION_CODES.M)
 internal class ModalFragment constructor(
 	private val clientId: String,
-): BottomSheetDialogFragment() {
+) : BottomSheetDialogFragment() {
 	private val TAG = "PayPalMessageModal"
 	private val offsetTop = 50.dp
 
@@ -122,11 +119,11 @@ internal class ModalFragment constructor(
 
 		closeButton.layoutParams.height = TypedValue.applyDimension(
 			TypedValue.COMPLEX_UNIT_DIP,
-			this.closeButtonData?.height!!.toFloat(), resources.displayMetrics
+			this.closeButtonData?.height!!.toFloat(), resources.displayMetrics,
 		).toInt()
 		closeButton.layoutParams.width = TypedValue.applyDimension(
 			TypedValue.COMPLEX_UNIT_DIP,
-			this.closeButtonData?.width!!.toFloat(), resources.displayMetrics
+			this.closeButtonData?.width!!.toFloat(), resources.displayMetrics,
 		).toInt()
 
 		val colorInt = Color.parseColor(this.closeButtonData?.color)
@@ -310,7 +307,7 @@ internal class ModalFragment constructor(
 				eventType = EventType.MODAL_ERROR,
 				errorName = errorName,
 				errorDescription = errorDescription,
-			)
+			),
 		)
 	}
 
@@ -330,7 +327,7 @@ internal class ModalFragment constructor(
 				eventType = EventType.MODAL_ERROR,
 				errorName = errorName,
 				errorDescription = errorDescription,
-			)
+			),
 		)
 	}
 
@@ -352,7 +349,7 @@ internal class ModalFragment constructor(
 		this.onLoading()
 		val url = Api.createModalUrl(clientId, amount, buyerCountry, offer)
 
-		LogCat.debug(TAG, "Start show process for modal with webView: ${webView.toString()}")
+		LogCat.debug(TAG, "Start show process for modal with webView: $webView")
 		val requestDuration = measureTimeMillis {
 			if (inErrorState) {
 				LogCat.debug(TAG, "Modal had error, resetting state and reloading WebView with URL: $url")
@@ -379,8 +376,8 @@ internal class ModalFragment constructor(
 			TrackingEvent(
 				eventType = EventType.MODAL_RENDER,
 				renderDuration,
-				requestDuration
-			)
+				requestDuration,
+			),
 		)
 	}
 
@@ -389,17 +386,20 @@ internal class ModalFragment constructor(
 	 * See paypal-messaging-components/src/components/modal/v2/lib/zoid-polyfill.js for how it works.
 	 */
 	@JavascriptInterface
-	fun paypalMessageModalCallbackHandler(args: String) {
-		val json = JsonParser.parseString(args).asJsonObject
-		LogCat.debug(TAG, "CallbackHandler:\n  name = ${json.get("name")}\n  args = ${json.get("args")}")
+	fun paypalMessageModalCallbackHandler(passedParams: String) {
+		val params = if (passedParams != "") passedParams else "{\"name\": \"\", \"args\": [{}]"
+		val nameAndArgs = JsonParser.parseString(params).asJsonObject
+		val name = nameAndArgs.get("name").asString
+		val args = nameAndArgs.get("args").asJsonArray[0].asJsonObject
+		LogCat.debug(TAG, "CallbackHandler:\n  name = $name\n  args = $args")
 
 		// If __shared__ does not exist, use an empty object
-		val sharedJson = json.get("__shared__") ?: JsonParser.parseString("{}")
+		val sharedJson = args.get("__shared__") ?: JsonParser.parseString("{}")
 		val shared = jsonElementToMutableMap(sharedJson)
-		when (json.get("name").asString) {
+		when (name) {
 			"onClick" -> {
-				val linkName = json.get("link_name")?.asString
-				val linkSrc = json.get("link_src")?.asString
+				val linkName = args.get("link_name")?.asString
+				val linkSrc = args.get("link_src")?.asString
 				if (linkName == "Apply Now") {
 					this.onApply()
 				}
@@ -410,19 +410,21 @@ internal class ModalFragment constructor(
 					TrackingEvent(
 						eventType = EventType.MODAL_CLICK,
 						linkSrc = linkSrc,
-						linkName = linkName
-					), shared
+						linkName = linkName,
+					),
+					shared,
 				)
 			}
 
 			"onCalculate" -> {
-				val calculatorAmount = json.get("amount")?.asString
+				val calculatorAmount = args.get("amount")?.asString
 				this.onCalculate()
 				logEvent(
 					TrackingEvent(
 						eventType = EventType.MODAL_CLICK,
-						data = "$calculatorAmount"
-					), shared
+						data = "$calculatorAmount",
+					),
+					shared,
 				)
 			}
 
@@ -449,15 +451,14 @@ internal class ModalFragment constructor(
 	private fun jsonValueToAny(jsonElement: JsonElement): Any {
 		return when {
 			jsonElement.isJsonPrimitive -> {
-				val jsonPrimitive = jsonElement.asJsonPrimitive
-				if (jsonPrimitive.isBoolean)
-					jsonPrimitive.asBoolean
-				else if (jsonPrimitive.isNumber)
-					jsonPrimitive.asNumber
-				else
-					jsonPrimitive.asString
+				val primitive = jsonElement.asJsonPrimitive
+				when {
+					primitive.isBoolean -> primitive.asBoolean
+					primitive.isNumber -> primitive.asNumber
+					else -> primitive.asString
+				}
 			}
-
+			jsonElement.isJsonArray -> jsonElement.asJsonArray
 			jsonElement.isJsonObject -> jsonElementToMutableMap(jsonElement)
 			else -> throw IllegalArgumentException("Unsupported JSON element type: ${jsonElement::class.java.simpleName}")
 		}
@@ -482,7 +483,7 @@ internal class ModalFragment constructor(
 			type = ComponentType.MODAL.toString(),
 			instanceId = this.instanceId.toString(),
 			events = mutableListOf(event),
-			__shared__ = dynamicKeys
+			__shared__ = dynamicKeys,
 		)
 
 		context?.let { Logger.getInstance(clientId = clientId).log(it, component) }

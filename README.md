@@ -1,66 +1,42 @@
-# PayPalMessages
+# PayPalMessages Android
 
-## Run
+A messaging component library allowing easy integration of PayPal Credit Messages onto your app.
 
-There are two activities that can be run for PayPalMessages:
+- [Availability](#availability)
+- [Contribution](#contribution)
+- [Support](#support)
+- [Client ID](#client-id)
+- [Release Process](#release-process)
+- [Testing](#testing)
+- [Static Analysis Tools](#static-analysis-tools)
+- [Build](#build)
+- [Local Development and Troubleshooting](#local-development-and-troubleshooting)
 
-- [JetpackActivity](demo/src/main/java/com/paypal/messagesdemo/JetpackActivity.kt)
-	- Uses [Jetpack Compose](https://developer.android.com/jetpack/compose) to render PayPalMessages
-	- Jetpack Compose is the new way to render Android UI, [since 2021](https://android-developers.googleblog.com/2021/07/jetpack-compose-announcement.html)
-	- **Note**: The Jetpack view does not currently work to show PayPalMessages
-- [XmlActivity](demo/src/main/java/com/paypal/messagesdemo/XmlActivity.kt)
-	- Uses traditional [XML Layouts](https://developer.android.com/develop/ui/views/layout/declaring-layout)
+## Availability
+The library is currently in the development process. This product is being developed fully open source - throughout the development process, we welcome any and all feedback. Aspects of the library _will likely_ change as we develop the SDK. We recommend using the library in the sandbox environment until an official release is available. This README will be updated with an official release date once it is generally available.
 
-To run either activity:
+## Contribution
+As the library is moved to general availability, we will be adding a contribution guide for developers that would like to contribute to the library. If you have suggestions for features that you would like to see in future iterations of the library, please feel free to open an issue, PR, or discussion with suggestions. If you want to open a PR but are unsure about our testing strategy, we are more than happy to work with you to add tests to any PRs before work is merged.
 
-1. Open your run configurations
-2. If you don't have any run configurations, create one
-	- It is suggested to create two configurations, one for running JetpackActivity and one for running XmlActivity
-3. Under the **General** tab of the configuration, modify Launch Options
-	- Set **Launch** to **Specified Activity**
-	- Set **Activity** to one of the above activities
-		- com.paypal.messages demo.JetpackActivity
-		- com.paypal.messages demo.XmlActivity
+## Support
+The PayPalMessages Library is available for Android SDK 23+.
 
-![Run General Settings Screenshot](readme-images/run-settings_general.png)
+## Client ID
 
-### Environment Variables
+The PayPalMessages Library uses a client ID for authentication. This can be found in your [PayPal Developer Dashboard](https://developer.paypal.com/api/rest/#link-getstarted).
 
-Add environment variables to your shell config file (`~/.zshrc`, `~/.bashrc`, so on)
+## Release Process
+This library follows [Semantic Versioning](https://semver.org/). This library is published to Maven Central. The release process is automated via GitHub Actions.
 
-```
-export UPSTREAM_ANDROID_STAGE_URL=""
-export UPSTREAM_ANDROID_STAGE_VPN_URL=""
-export UPSTREAM_ANDROID_LOCAL_URL=""
-```
+## Testing
 
-### Set Demo Client ID
+This repository includes unit tests, integration tests, and end-to-end tests.
 
-Set the demo's client ID inside of [demo locals](demo/src/main/res/values/locals.xml)
+// TODO: Add sections with commands for running each type of tests
 
-### Ignored Files
+## Static Analysis Tools
 
-To prevent commits of sensitive data, tell git to ignore future changes to some files, including:
-
-- [demo locals](demo/src/main/res/values/locals.xml)
-
-Run `./scripts/ignore-files.sh -y`, which will tell git to ignore the files above.
-
-To see how to stop ignoring files or to list ignored files, see [ignore-files.sh](scripts/ignore-files.sh)
-
-### Logcat Debugging
-
-For ease of debugging, it is suggested to set Logcat to clear and show automatically.
-
-To set that up:
-
-1. Open your run configurations
-2. Select the run configuration to modify
-3. Under the **Miscellaneous** tab of the configuration, modify Logcat
-	- Check **Show logcat automatically**
-	- Check **Clear log before launch**
-
-![Run Miscellaneous Settings Screenshot](readme-images/run-settings_miscellaneous.png)
+// TODO: Add sections with commands for static analysis
 
 ## Build
 
@@ -73,36 +49,6 @@ To set that up:
 
 ![Switch Folder View Screenshot](readme-images/build-switch_view.png)
 
-### `JAVA_HOME` ISSUES
+## Local Development and Troubleshooting
 
-If you get the below error during your build attempt, please follow these instructions to fix it.
-
-```
-ERROR: JAVA_HOME is set to an invalid directory:
-```
-
-1. Click **File** and then **Project Structure**
-2. Click **Gradle Settings**
-
-![Java Home Project Structure Settings Screenshot](readme-images/java_home-settings_project_structure.png)
-
-3. In Gradle Settings, note the file path to the Gradle JDK
-
-![Java Home Gradle Settings Screenshot](readme-images/java_home-settings_gradle.png)
-
-4. Open your shell's Run Commands file (`.zshrc`, `.bashrc`, etc)
-5. Add a line to export `JAVA_HOME` and set its value to the path from step 3
-
-```
-export JAVA_HOME='/Applications/Android Studio.app/Contents/jbr/Contents/Home'
-```
-
-Or if it matches this path, you can run this command to add it your `.zshrc`
-
-```
-echo 'export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"' >> ~/.zshrc
-```
-
-# Sample Modal URL
-
-[https://www.paypal.com/credit-presentment/lander/modal?client_id=CLIENT_ID&integration_type=NATIVE_ANDROID&features=native-modal](https://www.paypal.com/credit-presentment/lander/modal?client_id=CLIENT_ID&integration_type=NATIVE_ANDROID&features=native-modal)
+See [our development guidelines](DEVELOPMENT.md)

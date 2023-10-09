@@ -15,7 +15,7 @@ import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.io.Api
 import com.paypal.messagesdemo.databinding.ActivityMessageBinding
 
-class XmlActivity: AppCompatActivity() {
+class XmlActivity : AppCompatActivity() {
 	private lateinit var binding: ActivityMessageBinding
 	private val TAG = "XmlActivity"
 	private var logoType: PayPalMessageLogoType = PayPalMessageLogoType.PRIMARY
@@ -197,7 +197,7 @@ class XmlActivity: AppCompatActivity() {
 					progressBar.visibility = View.VISIBLE
 					resetButton.isEnabled = false
 					submitButton.isEnabled = false
-					Toast.makeText(this, "Loading Content...",Toast.LENGTH_SHORT).show()
+					Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
 				},
 				onError = {
 					Log.d(TAG, "onError")
@@ -205,7 +205,7 @@ class XmlActivity: AppCompatActivity() {
 					runOnUiThread {
 						resetButton.isEnabled = true
 						submitButton.isEnabled = true
-						Toast.makeText(this, it.javaClass.toString() + ":" + it.message + ":" + it.paypalDebugId,Toast.LENGTH_LONG).show()
+						Toast.makeText(this, it.javaClass.toString() + ":" + it.message + ":" + it.paypalDebugId, Toast.LENGTH_LONG).show()
 					}
 					it.message?.let { it1 -> Log.d("XmlActivity Error", it1) }
 					it.paypalDebugId?.let { it1 -> Log.d("XmlActivity Error", it1) }
@@ -218,8 +218,8 @@ class XmlActivity: AppCompatActivity() {
 						submitButton.isEnabled = true
 						Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
 					}
-				}
-			)
+				},
+			),
 		)
 	}
 

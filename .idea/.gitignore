@@ -1,0 +1,17 @@
+# Recommended Ignores by JetBrains
+# https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+# Default ignored files
+/dictionaries/
+/libraries/
+/modules/
+/shelf/
+/assetWizardSettings.xml
+/dataSources.ids
+/dataSources.xml
+/dynamic.xml
+/modules.xml
+/sqlDataSources.xml
+/tasks.xml
+/workspace.xml
+/usage.statistics.xml
+*.iml

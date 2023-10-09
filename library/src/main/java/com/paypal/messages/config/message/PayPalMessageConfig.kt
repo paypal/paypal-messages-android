@@ -15,7 +15,7 @@ data class PayPalMessageConfig(
 	var viewState: PayPalMessageViewState? = null,
 	var events: PayPalMessageEvents? = null,
 ) {
-	fun setGlobalAnalytics (
+	fun setGlobalAnalytics(
 		integrationName: String,
 		integrationVersion: String,
 	) {

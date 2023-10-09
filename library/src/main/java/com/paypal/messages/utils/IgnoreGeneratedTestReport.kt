@@ -11,6 +11,6 @@ package com.paypal.messages.utils
 	AnnotationTarget.FUNCTION,
 	AnnotationTarget.CLASS,
 	AnnotationTarget.FIELD,
-	AnnotationTarget.FILE
+	AnnotationTarget.FILE,
 )
 annotation class IgnoreGeneratedTestReport

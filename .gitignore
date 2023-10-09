@@ -1,10 +1,13 @@
 *.iml
 .gradle
 /local.properties
-.idea
 .DS_Store
 /build
 /captures
 .externalNativeBuild
 .cxx
 local.properties
+
+# Recommended Ignores by JetBrains
+# https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+# .idea/ files are handled in .idea/.gitignore
