@@ -9,9 +9,8 @@ import com.paypal.messages.PayPalMessageView
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
-import com.paypal.messages.config.message.PayPalMessageEvents
-import com.paypal.messages.config.message.PayPalMessageStyle
-import com.paypal.messages.config.message.PayPalMessageViewState
+import com.paypal.messages.config.message.PayPalMessageEventsCallbacks
+import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
 import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
@@ -33,33 +32,31 @@ class XmlActivity : AppCompatActivity() {
 
 		// TODO add example of adding MessageView here instead of in XML
 
-		payPalMessage.setViewStates(
-			PayPalMessageViewState(
-				onLoading = {
-					Log.d(TAG, "onLoading")
-					progressBar.visibility = View.VISIBLE
-					reloadButton.isEnabled = false
-					Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
-				},
-				onError = {
-					Log.d(TAG, "onError")
-					progressBar.visibility = View.INVISIBLE
-					runOnUiThread {
-						reloadButton.isEnabled = true
-						Toast.makeText(this, it.javaClass.toString() + ":" + it.message + ":" + it.paypalDebugId, Toast.LENGTH_LONG).show()
-					}
-					it.message?.let { it1 -> Log.d("XmlActivity Error", it1) }
-					it.paypalDebugId?.let { it1 -> Log.d("XmlActivity Error", it1) }
-				},
-				onSuccess = {
-					Log.d(TAG, "onSuccess")
-					progressBar.visibility = View.INVISIBLE
-					runOnUiThread {
-						reloadButton.isEnabled = true
-						Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
-					}
-				},
-			),
+		payPalMessage.viewStateCallbacks = PayPalMessageViewStateCallbacks(
+			onLoading = {
+				Log.d(TAG, "onLoading")
+				progressBar.visibility = View.VISIBLE
+				reloadButton.isEnabled = false
+				Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
+			},
+			onError = {
+				Log.d(TAG, "onError")
+				progressBar.visibility = View.INVISIBLE
+				runOnUiThread {
+					reloadButton.isEnabled = true
+					Toast.makeText(this, it.javaClass.toString() + ":" + it.message + ":" + it.paypalDebugId, Toast.LENGTH_LONG).show()
+				}
+				it.message?.let { it1 -> Log.d("XmlActivity Error", it1) }
+				it.paypalDebugId?.let { it1 -> Log.d("XmlActivity Error", it1) }
+			},
+			onSuccess = {
+				Log.d(TAG, "onSuccess")
+				progressBar.visibility = View.INVISIBLE
+				runOnUiThread {
+					reloadButton.isEnabled = true
+					Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
+				}
+			},
 		)
 	}
 
@@ -76,20 +73,19 @@ class XmlActivity : AppCompatActivity() {
 		config.setGlobalAnalytics("", "")
 		message.setConfig(config)
 
-		message.setData(PayPalMessageData())
-		message.setClientId(EnvVars.getClientId(Environment.LIVE))
-		message.setAmount(1.0)
-		message.setPlacement("placement")
-		message.setOfferType(PayPalMessageOfferType.PAY_LATER_SHORT_TERM)
-		message.setBuyerCountry("country")
+		message.data = PayPalMessageData()
+		message.clientId = EnvVars.getClientId(Environment.LIVE)
+		message.amount = 1.0
+		message.placement = ""
+		message.offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
+		message.buyerCountry = "country"
 
-		message.setActionEventCallbacks(PayPalMessageEvents())
+		message.eventsCallbacks = PayPalMessageEventsCallbacks()
 
-		message.setViewStateCallbacks(PayPalMessageViewState())
+		message.viewStateCallbacks = PayPalMessageViewStateCallbacks()
 
-		message.setStyle(PayPalMessageStyle())
-		message.setColor(PayPalMessageColor.BLACK)
-		message.setLogoType(PayPalMessageLogoType.PRIMARY)
-		message.setTextAlignment(PayPalMessageAlign.CENTER)
+		message.color = PayPalMessageColor.BLACK
+		message.logoType = PayPalMessageLogoType.PRIMARY
+		message.alignment = PayPalMessageAlign.CENTER
 	}
 }

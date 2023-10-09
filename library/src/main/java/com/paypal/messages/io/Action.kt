@@ -32,8 +32,8 @@ class Action(private val context: Context) {
 				val softTtl = localStorage.softTtl!!
 				val hardTtl = localStorage.hardTtl!!
 
-				// If the stored hash is older than hard_ttl
-				if (ageOfStoredHash < hardTtl) {
+				// If the stored hash is older than hard_ttl (max 3 hours)
+				if (ageOfStoredHash > hardTtl) {
 					// the stale value should be ignored and a new hash should be fetched
 					LogCat.debug(TAG, "TTL expired. Fetching new hash.\n$merchantHash")
 					newHash = fetchNewHash(messageConfig)
@@ -69,7 +69,7 @@ class Action(private val context: Context) {
 	}
 
 	private suspend fun fetchNewHash(messageConfig: MessageConfig): String? {
-		val clientId = messageConfig.data?.clientId ?: ""
+		val clientId = messageConfig.data?.clientID ?: ""
 		val localStorage = LocalStorage(context)
 		val result = withContext(Dispatchers.IO) {
 			Api.callMessageHashEndpoint(clientId)

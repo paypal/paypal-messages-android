@@ -1,14 +1,22 @@
 package com.paypal.messages.config.message
 
-import com.paypal.messages.config.message.style.PayPalMessageAlign
-import com.paypal.messages.config.message.style.PayPalMessageColor
-import com.paypal.messages.config.message.style.PayPalMessageLogoType
+import com.paypal.messages.config.message.style.PayPalMessageAlign as Align
+import com.paypal.messages.config.message.style.PayPalMessageColor as Color
+import com.paypal.messages.config.message.style.PayPalMessageLogoType as LogoType
 
 /**
  * [PayPalMessageStyle] holds data used to customize the style of a PayPalMessage component
  */
 data class PayPalMessageStyle(
-	val logoType: PayPalMessageLogoType = PayPalMessageLogoType.PRIMARY,
-	val color: PayPalMessageColor = PayPalMessageColor.BLACK,
-	val textAlign: PayPalMessageAlign = PayPalMessageAlign.LEFT,
-)
+	val color: Color? = Color.BLACK,
+	val logoType: LogoType? = LogoType.PRIMARY,
+	val textAlign: Align? = Align.LEFT,
+) {
+	fun merge(newStyle: PayPalMessageStyle): PayPalMessageStyle {
+		return this.copy(
+			color = newStyle.color ?: this.color,
+			logoType = newStyle.logoType ?: this.logoType,
+			textAlign = newStyle.textAlign ?: this.textAlign,
+		)
+	}
+}
