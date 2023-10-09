@@ -3,19 +3,15 @@ package com.paypal.messagesdemo
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.RadioGroup
-import android.widget.Switch
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color
-import com.paypal.messages.config.message.style.PayPalMessageAlign
-import com.paypal.messages.config.message.style.PayPalMessageColor
-import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageStyle
 import com.paypal.messages.config.message.PayPalMessageViewState
+import com.paypal.messages.config.message.style.PayPalMessageAlign
+import com.paypal.messages.config.message.style.PayPalMessageColor
+import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.io.Api
 import com.paypal.messagesdemo.databinding.ActivityMessageBinding
 
@@ -25,7 +21,7 @@ class XmlActivity: AppCompatActivity() {
 	private var logoType: PayPalMessageLogoType = PayPalMessageLogoType.PRIMARY
 	private var color: PayPalMessageColor = PayPalMessageColor.BLACK
 	private var alignment: PayPalMessageAlign = PayPalMessageAlign.LEFT
-	private var offerType: PayPalMessageOfferType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
+	private var offerType: PayPalMessageOfferType? = null
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -88,22 +84,48 @@ class XmlActivity: AppCompatActivity() {
 			}
 		}
 
-		val offerTypeRadioGroup = findViewById<RadioGroup>(R.id.offerTypeRadioGroup)
-		offerTypeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-			when (checkedId) {
-				R.id.offerTypeShortTerm -> {
-					offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
-				}
-				R.id.offerTypeLongTerm -> {
-					offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM
-				}
-				R.id.offerTypePayIn1 -> {
-					offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1
-				}
-				R.id.offerTypeCredit -> {
-					offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
-				}
+		val shortTerm = findViewById<ToggleButton>(R.id.shortTerm)
+		val longTerm = findViewById<ToggleButton>(R.id.longTerm)
+		val payIn1 = findViewById<ToggleButton>(R.id.payIn1)
+		val credit = findViewById<ToggleButton>(R.id.credit)
+
+		fun updateOfferUi (offerName: String, isChecked: Boolean) {
+			shortTerm.isChecked = false
+			longTerm.isChecked = false
+			payIn1.isChecked = false
+			credit.isChecked = false
+			offerType = null
+
+			if ( offerName == "short" && isChecked) {
+				shortTerm.isChecked = true
+				offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
+			} else if ( offerName == "long" && isChecked) {
+				longTerm.isChecked = true
+				offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM
+			} else if ( offerName == "payin1" && isChecked) {
+				payIn1.isChecked = true
+				offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1
+			} else if ( offerName == "credit" && isChecked) {
+				credit.isChecked = true
+				offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
 			}
+
+			payPalMessage.setOfferType(offerType = offerType)
+
+		}
+
+
+		shortTerm.setOnCheckedChangeListener { _, isChecked ->
+			updateOfferUi("short", isChecked)
+		}
+		longTerm.setOnCheckedChangeListener { _, isChecked ->
+			updateOfferUi("long", isChecked)
+		}
+		payIn1.setOnCheckedChangeListener { _, isChecked ->
+			updateOfferUi("payin1", isChecked)
+		}
+		credit.setOnCheckedChangeListener { _, isChecked ->
+			updateOfferUi("credit", isChecked)
 		}
 
 		val amount = findViewById<EditText>(R.id.amount)
@@ -141,7 +163,6 @@ class XmlActivity: AppCompatActivity() {
 				payPalMessage.setBackgroundColor(Color.White.hashCode())
 			}
 
-			payPalMessage.setOfferType(offerType = offerType)
 			payPalMessage.setStyle(PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType))
 			payPalMessage.refresh()
 		}
@@ -153,7 +174,7 @@ class XmlActivity: AppCompatActivity() {
 			logoTypeRadioGroup.check(R.id.stylePrimary)
 			colorRadioGroup.check(R.id.styleBlack)
 			alignmentRadioGroup.check(R.id.styleLeft)
-			offerTypeRadioGroup.check(R.id.offerTypeShortTerm)
+			updateOfferUi("", false)
 			ignoreCache.isChecked = false
 			devTouchpoint.isChecked = false
 			amount.setText("")

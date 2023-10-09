@@ -166,36 +166,30 @@
 				android:orientation="horizontal"
 				android:layout_width="match_parent"
 				android:layout_height="match_parent">
-
-			<RadioGroup
-					android:layout_width="match_parent"
-					android:layout_height="match_parent"
-					android:orientation="horizontal"
-					android:paddingBottom="16dp"
-					android:id="@+id/offerTypeRadioGroup">
-
-				<RadioButton
-						android:text="Short Term"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/offerTypeShortTerm" android:checked="true"/>
-				<RadioButton
-						android:text="Long Term"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/offerTypeLongTerm"/>
-				<RadioButton
-						android:text="Pay in 1"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/offerTypePayIn1"/>
-				<RadioButton
-						android:text="Credit"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/offerTypeCredit"/>
-			</RadioGroup>
-
+			<ToggleButton
+					android:text="Short Term"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:id="@+id/shortTerm" android:layout_weight="1"
+					android:textSize="10sp"
+					android:textOn="Short Term" android:textOff="Short Term"/>
+			<ToggleButton
+					android:text="Long Term"
+					android:layout_width="wrap_content"
+					android:textSize="10sp"
+					android:layout_height="wrap_content" android:id="@+id/longTerm" android:layout_weight="1"
+					android:textOn="Long Term" android:textOff="Long Term"/>
+			<ToggleButton
+					android:text="Pay in 1"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:id="@+id/payIn1" android:layout_weight="1"
+					android:textSize="12sp"
+					android:textOn="Pay in 1" android:textOff="Pay in 1"/>
+			<ToggleButton
+					android:text="Credit"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content" android:id="@+id/credit" android:layout_weight="1"
+					android:textSize="12sp"
+					android:textOn="Credit" android:textOff="Credit"/>
 		</LinearLayout>
 
 		<TableLayout
