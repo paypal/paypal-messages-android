@@ -26,7 +26,7 @@ class PayPalMessageAlignTest {
 
 	@Test
 	fun testInvalidIndex() {
-		assertThrows(IllegalEnumArg::class.java) { PayPalMessageAlign(3) }
+		assertThrows(IllegalEnumArg::class.java) { PayPalMessageAlign(99) }
 	}
 
 	@Test

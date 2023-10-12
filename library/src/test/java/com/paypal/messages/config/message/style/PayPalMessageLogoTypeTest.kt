@@ -32,7 +32,7 @@ class PayPalMessageLogoTypeTest {
 
 	@Test
 	fun testInvalidIndex() {
-		assertThrows(IllegalEnumArg::class.java) { PayPalMessageLogoType(4) }
+		assertThrows(IllegalEnumArg::class.java) { PayPalMessageLogoType(99) }
 	}
 
 	@Test

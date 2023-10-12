@@ -37,7 +37,7 @@ class PayPalMessageColorTest {
 
 	@Test
 	fun testInvalidIndex() {
-		assertThrows(IllegalEnumArg::class.java) { PayPalMessageColor(4) }
+		assertThrows(IllegalEnumArg::class.java) { PayPalMessageColor(99) }
 	}
 
 	@Test

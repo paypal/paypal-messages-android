@@ -52,7 +52,8 @@ dependencies {
 	testImplementation 'com.squareup.okhttp3:mockwebserver:4.8.0'
 	testImplementation 'org.mockito:mockito-core:5.5.0'
 	testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
-	testImplementation 'io.mockk:mockk:1.13.8'
+	testImplementation 'io.mockk:mockk:1.13.7'
+	testImplementation 'io.vertx:vertx-codegen:3.6.0'
 
 	androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 	androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
