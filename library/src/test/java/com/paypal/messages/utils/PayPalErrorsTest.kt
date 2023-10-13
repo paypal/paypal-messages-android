@@ -39,14 +39,6 @@ class PayPalErrorsTest {
 	}
 
 	@Test
-	fun testInvalidCheckoutConfigException() {
-		val exception = PayPalErrors.InvalidCheckoutConfigException("test_message", "test_id")
-
-		assertTrue(exception.message?.contains("Invalid Checkout Config: test_message") ?: false)
-		assertEquals("test_id", exception.debugId)
-	}
-
-	@Test
 	fun testInvalidClientIdException() {
 		val exception = PayPalErrors.InvalidClientIdException("test_message", "test_id")
 

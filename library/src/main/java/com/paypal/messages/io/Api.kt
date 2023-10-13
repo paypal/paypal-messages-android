@@ -2,9 +2,9 @@ package com.paypal.messages.io
 
 import com.google.gson.Gson
 import com.paypal.messages.BuildConfig
-import com.paypal.messages.errors.FailedToFetchDataException
 import com.paypal.messages.logger.TrackingPayload
 import com.paypal.messages.utils.LogCat
+import com.paypal.messages.utils.PayPalErrors
 import okhttp3.Credentials
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -85,7 +85,7 @@ object Api {
 			val bodyJson = response.body?.string()
 			response.close()
 
-			if (code != 200) return ApiResult.Failure(FailedToFetchDataException())
+			if (code != 200) return ApiResult.Failure(PayPalErrors.FailedToFetchDataException("Code was $code"))
 
 			LogCat.debug(TAG, "callMessageDataEndpoint response: $bodyJson")
 			val body = gson.fromJson(bodyJson, ApiMessageData.Response::class.java)
@@ -99,9 +99,11 @@ object Api {
 				ApiResult.getFailureWithDebugId(response.headers)
 			}
 		}
-		catch (exception: IOException) {
+		catch (error: IOException) {
 			// Failed to fetch the data and there is no debugId
-			return ApiResult.Failure(FailedToFetchDataException())
+			return ApiResult.Failure(
+				PayPalErrors.FailedToFetchDataException("Message Data IOException: ${error.message}")
+			)
 		}
 	}
 
@@ -139,8 +141,10 @@ object Api {
 			val hashResponse = gson.fromJson(bodyJson, ApiHashData.Response::class.java)
 			return ApiResult.Success(hashResponse)
 		}
-		catch (error: java.io.IOException) {
-			return ApiResult.Failure(FailedToFetchDataException())
+		catch (error: IOException) {
+			return ApiResult.Failure(
+				PayPalErrors.FailedToFetchDataException("Hash Data IOException: ${error.message}")
+			)
 		}
 	}
 

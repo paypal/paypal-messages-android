@@ -25,7 +25,6 @@ import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.config.modal.ModalEvents
-import com.paypal.messages.errors.BaseException
 import com.paypal.messages.io.Action
 import com.paypal.messages.io.Api
 import com.paypal.messages.io.ApiMessageData
@@ -37,6 +36,7 @@ import com.paypal.messages.logger.Logger
 import com.paypal.messages.logger.TrackingComponent
 import com.paypal.messages.logger.TrackingEvent
 import com.paypal.messages.utils.LogCat
+import com.paypal.messages.utils.PayPalErrors
 import java.util.UUID
 import kotlin.system.measureTimeMillis
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
@@ -111,7 +111,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 *
 	 * This function will update the current onError callback used during the message content update operation
 	 */
-	var onError: (error: BaseException) -> Unit = {}
+	var onError: (error: PayPalErrors.Base) -> Unit = {}
 
 	/**
 	 * Updates the onClick callback used in [MessageConfig] for the current [PayPalMessageView].

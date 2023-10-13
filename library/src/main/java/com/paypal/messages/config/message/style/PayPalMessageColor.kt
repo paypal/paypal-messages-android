@@ -1,7 +1,7 @@
 package com.paypal.messages.config.message.style
 
 import com.paypal.messages.R
-import com.paypal.messages.errors.IllegalEnumArg
+import com.paypal.messages.utils.PayPalErrors
 
 /**
  * [PayPalMessageColor] provides different variations of colors supported by the PayPalMessage component
@@ -21,9 +21,8 @@ enum class PayPalMessageColor(
 	companion object {
 		/**
 		 * Given an [attributeIndex] this will provide the correct [PayPalMessageColor].
-		 * If an invalid [attributeIndex] is provided then it will throw an [IllegalArgumentException].
 		 *
-		 * @throws [IllegalEnumArg] when an invalid index is provided.
+		 * @throws [PayPalErrors.IllegalEnumArg] when an invalid index is provided.
 		 */
 		operator fun invoke(attributeIndex: Int): PayPalMessageColor {
 			return when (attributeIndex) {
@@ -31,7 +30,7 @@ enum class PayPalMessageColor(
 				WHITE.value -> WHITE
 				MONOCHROME.value -> MONOCHROME
 				GRAYSCALE.value -> GRAYSCALE
-				else -> throw IllegalEnumArg("Color", 4)
+				else -> throw PayPalErrors.IllegalEnumArg("Color", 4)
 			}
 		}
 	}

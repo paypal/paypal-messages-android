@@ -1,10 +1,9 @@
 package com.paypal.messages.config.modal
 
-import com.paypal.messages.errors.BaseException
+import com.paypal.messages.utils.PayPalErrors
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class ModalEventsTest {
@@ -18,7 +17,7 @@ class ModalEventsTest {
 		every { onLoadingMock() } answers {}
 		val onSuccessMock = mockk<() -> Unit>("onSuccessMock")
 		every { onSuccessMock() } answers {}
-		val onErrorMock = mockk<(error: BaseException) -> Unit>("onErrorMock")
+		val onErrorMock = mockk<(error: PayPalErrors.Base) -> Unit>("onErrorMock")
 		every { onErrorMock(any()) } answers {}
 		val onCalculateMock = mockk<() -> Unit>("onCalculateMock")
 		every { onCalculateMock() } answers {}
@@ -42,7 +41,7 @@ class ModalEventsTest {
 		modalEvents.onApply()
 		modalEvents.onLoading()
 		modalEvents.onSuccess()
-		modalEvents.onError(BaseException("", null))
+		modalEvents.onError(PayPalErrors.Base("", null))
 		modalEvents.onCalculate()
 		modalEvents.onShow()
 		modalEvents.onClose()

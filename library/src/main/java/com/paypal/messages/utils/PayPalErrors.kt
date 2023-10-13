@@ -13,9 +13,6 @@ object PayPalErrors {
 				"Please use an index that is between 0 and ${enumValues - 1} and try again."
 		)
 
-	class InvalidCheckoutConfigException(message: String, debugId: String? = null) :
-		Base("Invalid Checkout Config: $message", debugId)
-
 	class InvalidClientIdException(message: String, debugId: String? = null) :
 		Base("Invalid ClientID: $message", debugId)
 

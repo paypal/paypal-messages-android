@@ -1,6 +1,6 @@
 package com.paypal.messages.config.message.style
 
-import com.paypal.messages.errors.IllegalEnumArg
+import com.paypal.messages.utils.PayPalErrors
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -32,7 +32,7 @@ class PayPalMessageLogoTypeTest {
 
 	@Test
 	fun testInvalidIndex() {
-		assertThrows(IllegalEnumArg::class.java) { PayPalMessageLogoType(99) }
+		assertThrows(PayPalErrors.IllegalEnumArg::class.java) { PayPalMessageLogoType(99) }
 	}
 
 	@Test

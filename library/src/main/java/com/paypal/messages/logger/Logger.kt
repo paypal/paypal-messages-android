@@ -2,10 +2,10 @@ package com.paypal.messages.logger
 
 import android.content.Context
 import android.provider.Settings
-import com.paypal.messages.errors.InvalidCheckoutConfigException
 import com.paypal.messages.io.Api
 import com.paypal.messages.io.LocalStorage
 import com.paypal.messages.utils.LogCat
+import com.paypal.messages.utils.PayPalErrors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -65,7 +65,7 @@ class Logger private constructor() {
 			resetBasePayload(true)
 		}
 		else {
-			val exception = InvalidCheckoutConfigException()
+			val exception = PayPalErrors.InvalidClientIdException("ClientID was empty")
 			exception.message?.let { LogCat.error(TAG, it, exception) }
 		}
 	}

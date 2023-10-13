@@ -1,6 +1,6 @@
 package com.paypal.messages.config.message
 
-import com.paypal.messages.errors.BaseException
+import com.paypal.messages.utils.PayPalErrors
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -13,7 +13,7 @@ class PayPalMessageViewStateTest {
 		every { onLoadingMock() } answers {}
 		val onSuccessMock = mockk<() -> Unit>("onSuccessMock")
 		every { onSuccessMock() } answers {}
-		val onErrorMock = mockk<(error: BaseException) -> Unit>("onErrorMock")
+		val onErrorMock = mockk<(error: PayPalErrors.Base) -> Unit>("onErrorMock")
 		every { onErrorMock(any()) } answers {}
 
 		val messageViewState = PayPalMessageViewState(
@@ -24,7 +24,7 @@ class PayPalMessageViewStateTest {
 
 		messageViewState.onLoading()
 		messageViewState.onSuccess()
-		messageViewState.onError(BaseException("", null))
+		messageViewState.onError(PayPalErrors.Base("", null))
 
 		verify { onLoadingMock() }
 		verify { onSuccessMock() }

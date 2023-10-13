@@ -1,6 +1,6 @@
 package com.paypal.messages.config.message.style
 
-import com.paypal.messages.errors.IllegalEnumArg
+import com.paypal.messages.utils.PayPalErrors
 
 /**
  * [PayPalMessageLogoType] provides different variations of LogoTypes supported by the PayPalMessage component
@@ -17,7 +17,6 @@ enum class PayPalMessageLogoType(val value: Int) {
 	companion object {
 		/**
 		 * Given an [attributeIndex] this will provide the correct [PayPalMessageLogoType].
-		 * If an invalid [attributeIndex] is provided then it will throw an [IllegalArgumentException].
 		 *
 		 * @throws [IllegalEnumArg] when an invalid index is provided.
 		 */
@@ -27,7 +26,7 @@ enum class PayPalMessageLogoType(val value: Int) {
 				ALTERNATIVE.value -> ALTERNATIVE
 				INLINE.value -> INLINE
 				NONE.value -> NONE
-				else -> throw IllegalEnumArg("LogoType", 4)
+				else -> throw PayPalErrors.IllegalEnumArg("LogoType", 4)
 			}
 		}
 	}
