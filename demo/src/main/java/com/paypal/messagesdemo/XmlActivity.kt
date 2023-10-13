@@ -46,10 +46,10 @@ class XmlActivity : AppCompatActivity() {
 					progressBar.visibility = View.INVISIBLE
 					runOnUiThread {
 						reloadButton.isEnabled = true
-						Toast.makeText(this, it.javaClass.toString() + ":" + it.message + ":" + it.paypalDebugId, Toast.LENGTH_LONG).show()
+						Toast.makeText(this, it.javaClass.toString() + ":" + it.message + ":" + it.debugId, Toast.LENGTH_LONG).show()
 					}
 					it.message?.let { it1 -> Log.d("XmlActivity Error", it1) }
-					it.paypalDebugId?.let { it1 -> Log.d("XmlActivity Error", it1) }
+					it.debugId?.let { it1 -> Log.d("XmlActivity Error", it1) }
 				},
 				onSuccess = {
 					Log.d(TAG, "onSuccess")
