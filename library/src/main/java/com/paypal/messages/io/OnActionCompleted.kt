@@ -1,8 +1,11 @@
 package com.paypal.messages.io
 
+import com.paypal.messages.utils.IgnoreGeneratedTestReport
+
 /**
  * This interface definition is to provide a callback when the [Action] completes
  */
+@IgnoreGeneratedTestReport
 interface OnActionCompleted {
 	/**
 	 * Called when a paypal message content fetch action has completed.

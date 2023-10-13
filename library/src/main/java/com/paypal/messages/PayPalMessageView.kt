@@ -693,7 +693,7 @@ if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_client_id)) {
 			styleTextAlign = this.alignment,
 			messageType = this.data?.meta?.messageType,
 			fdata = this.data?.meta?.fdata,
-			debugId = this.data?.meta?.debug_id,
+			debugId = this.data?.meta?.debugId,
 			creditProductIdentifiers = this.data?.meta?.creditProductIdentifiers as MutableList<String>?,
 			offerCountryCode = this.data?.meta?.offerCountryCode,
 			merchantCountryCode = this.data?.meta?.merchantCountryCode,

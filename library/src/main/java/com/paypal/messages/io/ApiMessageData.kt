@@ -46,7 +46,7 @@ object ApiMessageData {
 		@SerializedName("credit_product_identifiers")
 		val creditProductIdentifiers: List<String>,
 		@SerializedName("debug_id")
-		val debug_id: String,
+		val debugId: String,
 		@SerializedName("fdata")
 		val fdata: String,
 		@SerializedName("tracking_keys")
