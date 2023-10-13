@@ -1,7 +1,7 @@
 package com.paypal.messages.config
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class CurrencyCodeTest {
 	@Test

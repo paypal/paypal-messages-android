@@ -2,8 +2,8 @@ package com.paypal.messages.logger
 
 import android.util.Log
 import com.google.gson.Gson
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class TrackingEventTest {
 	private val eventType = EventType.MESSAGE_CLICK

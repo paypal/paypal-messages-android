@@ -3,8 +3,8 @@ package com.paypal.messages.config.message
 import com.paypal.messages.config.CurrencyCode
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class PayPalMessageDataTest {
 	@Test

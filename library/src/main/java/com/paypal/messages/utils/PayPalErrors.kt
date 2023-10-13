@@ -14,7 +14,7 @@ object PayPalErrors {
 		)
 
 	class InvalidCheckoutConfigException(message: String, debugId: String? = null) :
-		Base("Invalid Checkout Config: $message")
+		Base("Invalid Checkout Config: $message", debugId)
 
 	class InvalidClientIdException(message: String, debugId: String? = null) :
 		Base("Invalid ClientID: $message", debugId)

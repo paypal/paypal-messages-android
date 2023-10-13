@@ -2,9 +2,9 @@ package com.paypal.messages.config.message.style
 
 import com.paypal.messages.R
 import com.paypal.messages.errors.IllegalEnumArg
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertThrows
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Test
 
 class PayPalMessageColorTest {
 	@Test

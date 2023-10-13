@@ -4,7 +4,7 @@ import com.paypal.messages.errors.BaseException
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class PayPalMessageViewStateTest {
 	@Test

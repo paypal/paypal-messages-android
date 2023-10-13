@@ -5,8 +5,8 @@ import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class TrackingComponentTest {
 	private val offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM

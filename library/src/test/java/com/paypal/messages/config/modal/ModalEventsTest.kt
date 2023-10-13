@@ -4,8 +4,8 @@ import com.paypal.messages.errors.BaseException
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class ModalEventsTest {
 	@Test

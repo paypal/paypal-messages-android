@@ -4,8 +4,8 @@ import com.google.gson.Gson
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.ProductGroup
 import com.paypal.messages.config.modal.ModalCloseButton
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class ApiMessageDataTest {

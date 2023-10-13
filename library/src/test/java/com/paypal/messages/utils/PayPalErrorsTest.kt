@@ -1,15 +1,16 @@
 package com.paypal.messages.utils
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 class PayPalErrorsTest {
 
 	@Test
 	fun testBaseException() {
-		val exception = PayPalErrors.Base("test_message", "paypal_debug_id")
+		val exception = PayPalErrors.Base("test_message", "test_id")
 
-		assertEquals("PayPalMessageException\n  debugId: paypal_debug_id\n  message: test_message", exception.message)
+		assertEquals("PayPalMessageException\n  debugId: test_id\n  message: test_message", exception.message)
 		assertEquals("test_id", exception.debugId)
 	}
 
@@ -17,7 +18,9 @@ class PayPalErrorsTest {
 	fun testFailedToFetchDataException() {
 		val exception = PayPalErrors.FailedToFetchDataException("test_message", "test_id")
 
-		assertEquals("Failed to get Message Data", exception.message)
+		assertTrue(
+			exception.message?.contains("Failed to get Message Data: test_message") ?: false
+		)
 		assertEquals("test_id", exception.debugId)
 	}
 
@@ -25,19 +28,21 @@ class PayPalErrorsTest {
 	fun testIllegalEnumArgException() {
 		val exception = PayPalErrors.IllegalEnumArg("enum_name", 10)
 
-		assertEquals(
-			"Attempted to create a enum_name with an invalid index. " +
-				"Please use an index that is between 0 and 9 and try again.",
-			exception.message
+		assertTrue(
+			exception.message?.contains(
+				"Attempted to create a enum_name with an invalid index. " +
+				"Please use an index that is between 0 and 9 and try again."
+			) ?: false,
+			exception.message,
 		)
-		assertEquals("test_id", exception.debugId)
+		assertEquals(null, exception.debugId)
 	}
 
 	@Test
 	fun testInvalidCheckoutConfigException() {
 		val exception = PayPalErrors.InvalidCheckoutConfigException("test_message", "test_id")
 
-		assertEquals("Invalid Checkout Config", exception.message)
+		assertTrue(exception.message?.contains("Invalid Checkout Config: test_message") ?: false)
 		assertEquals("test_id", exception.debugId)
 	}
 
@@ -45,7 +50,7 @@ class PayPalErrorsTest {
 	fun testInvalidClientIdException() {
 		val exception = PayPalErrors.InvalidClientIdException("test_message", "test_id")
 
-		assertEquals("Invalid Client-ID", exception.message)
+		assertTrue(exception.message?.contains("Invalid ClientID: test_message") ?: false)
 		assertEquals("test_id", exception.debugId)
 	}
 
@@ -53,7 +58,7 @@ class PayPalErrorsTest {
 	fun testInvalidResponseException() {
 		val exception = PayPalErrors.InvalidResponseException("test_message", "test_id")
 
-		assertEquals("Invalid Response", exception.message)
+		assertTrue(exception.message?.contains("Invalid Response: test_message") ?: false)
 		assertEquals("test_id", exception.debugId)
 	}
 
@@ -61,7 +66,7 @@ class PayPalErrorsTest {
 	fun testModalFailedToLoadException() {
 		val exception = PayPalErrors.ModalFailedToLoad("test_message", "test_id")
 
-		assertEquals("Modal failed to open: test_message", exception.message)
+		assertTrue(exception.message?.contains("Modal failed to open: test_message") ?: false)
 		assertEquals("test_id", exception.debugId)
 	}
 }

@@ -4,12 +4,12 @@ import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
 import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.logger.Logger
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import org.junit.Assert.assertEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 
 class PayPalMessageConfigTest {
 	@Test

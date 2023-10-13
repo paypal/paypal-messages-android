@@ -1,10 +1,9 @@
 package com.paypal.messages
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class LogoAssetTest {
-
 	@Test
 	fun testStringAssetConstructor() {
 		val resId = R.string.logo_none_label_credit
