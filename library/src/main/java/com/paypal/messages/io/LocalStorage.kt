@@ -21,12 +21,12 @@ class LocalStorage constructor(context: Context) {
 		}
 	}
 
-	var merchantHashData: HashActionResponse?
+	var merchantHashData: ApiHashData.Response?
 		get() {
 			val storage = sharedPrefs.getString("${StorageKeys.MERCHANT_HASH_DATA}", null)
 			LogCat.debug(TAG, "Retrieving hash from local storage:\n$storage")
 			if (storage !== null) {
-				val storageFromString = gson.fromJson(storage, HashActionResponse::class.java)
+				val storageFromString = gson.fromJson(storage, ApiHashData.Response::class.java)
 				LogCat.debug(TAG, "Converted local storage string to json:\n$storageFromString")
 				return storageFromString
 			}

@@ -77,7 +77,7 @@ class Action(private val context: Context) {
 
 		var hash: String? = null
 		if (result is ApiResult.Success<*>) {
-			val data = result.response as HashActionResponse
+			val data = result.response as ApiHashData.Response
 			localStorage.merchantHashData = data
 			hash = localStorage.merchantHash
 		}

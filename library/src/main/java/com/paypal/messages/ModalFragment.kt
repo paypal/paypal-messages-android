@@ -64,8 +64,6 @@ internal class ModalFragment constructor(
 	private var devTouchpoint: Boolean = true
 	private var stageTag: String? = null
 
-	// TODO: Support NATIVE_ANDROID
-	private var integrationIdentifier: String? = null
 	private var inErrorState: Boolean = false
 	private var currentUrl: String? = null
 	private var webView: WebView? = null

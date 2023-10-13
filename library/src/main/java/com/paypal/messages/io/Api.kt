@@ -88,7 +88,7 @@ object Api {
 			if (code != 200) return ApiResult.Failure(FailedToFetchDataException())
 
 			LogCat.debug(TAG, "callMessageDataEndpoint response: $bodyJson")
-			val body = gson.fromJson(bodyJson, ActionResponse::class.java)
+			val body = gson.fromJson(bodyJson, ApiMessageData.Response::class.java)
 
 			val isValidResponse = body?.content != null && body.meta != null
 			return if (isValidResponse) {
@@ -136,7 +136,7 @@ object Api {
 
 			LogCat.debug(TAG, "callMessageHashEndpoint response: $bodyJson")
 
-			val hashResponse = gson.fromJson(bodyJson, HashActionResponse::class.java)
+			val hashResponse = gson.fromJson(bodyJson, ApiHashData.Response::class.java)
 			return ApiResult.Success(hashResponse)
 		}
 		catch (error: java.io.IOException) {

@@ -27,8 +27,8 @@ import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.config.modal.ModalEvents
 import com.paypal.messages.errors.BaseException
 import com.paypal.messages.io.Action
-import com.paypal.messages.io.ActionResponse
 import com.paypal.messages.io.Api
+import com.paypal.messages.io.ApiMessageData
 import com.paypal.messages.io.ApiResult
 import com.paypal.messages.io.OnActionCompleted
 import com.paypal.messages.logger.ComponentType
@@ -78,7 +78,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var alignment: Align = Align.LEFT
 
 	// Full Message Data
-	private var data: ActionResponse? = null
+	private var data: ApiMessageData.Response? = null
 
 	// Message Content
 	private var logo = Logo()
@@ -319,7 +319,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		}
 	}
 
-	private fun showWebView(response: ActionResponse) {
+	private fun showWebView(response: ApiMessageData.Response) {
 		val modal = modal ?: run {
 			val modal = ModalFragment(clientId)
 			// Build modal config
@@ -531,7 +531,7 @@ if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_client_id)) {
 				LogCat.debug(TAG, "onActionCompleted Success")
 				val renderDuration = measureTimeMillis {
 					onSuccess.invoke()
-					this.data = result.response as ActionResponse
+					this.data = result.response as ApiMessageData.Response
 					updateContentValues(result.response)
 					updateMessageUi()
 				}.toInt()
@@ -559,7 +559,7 @@ if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_client_id)) {
 	 * This function updates local values related to the message content
 	 * @param response the response obtained from the message content fetch process
 	 */
-	private fun updateContentValues(response: ActionResponse) {
+	private fun updateContentValues(response: ApiMessageData.Response) {
 		messageContent = formatMessageContent(response, logoType)
 		messageLogoTag = response.meta?.variables?.logoPlaceholder
 		messageDisclaimer = response.content?.default?.disclaimer
@@ -579,11 +579,11 @@ if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_client_id)) {
 	}
 
 	/**
-	 * Formats the message content based on the [ActionResponse] and [LogoType]
+	 * Formats the message content based on the [ApiMessageData.Response] and [LogoType]
 	 * The formatted message would depend on the values provided by the response and will later be used as the content of the [PayPalMessageView] component
 	 */
 	private fun formatMessageContent(
-		response: ActionResponse,
+		response: ApiMessageData.Response,
 		logoType: LogoType,
 	): String {
 		val builder = StringBuilder()
@@ -616,7 +616,7 @@ if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_client_id)) {
 	 * This function setup the [Logo] used as part of the [PayPalMessageView] component content.
 	 * The asset to use and how to locate it will depend on the provided information.
 	 * @param logoAsset the asset to use as part of the component. It can be an image or a string.
-	 * @param logoTag the logo placeholder provided as part of the [ActionResponse]
+	 * @param logoTag the logo placeholder provided as part of the [ApiMessageData.Response]
 	 * @param lineHeight the textview line height use for resizing the image logo assets
 	 */
 	private fun SpannableStringBuilder.setupMessageLogo(
@@ -657,7 +657,7 @@ if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_client_id)) {
 	/**
 	 * This function setups the disclaimer used as part of the [PayPalMessageView] component content.
 	 * @param color the current [Color] that will be used to format the disclaimer text style
-	 * @param disclaimer the disclaimer text provided as part of the [ActionResponse]
+	 * @param disclaimer the disclaimer text provided as part of the [ApiMessageData.Response]
 	 */
 	private fun SpannableStringBuilder.setupDisclaimer(
 		color: Color,

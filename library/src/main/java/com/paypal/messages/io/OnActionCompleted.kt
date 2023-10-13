@@ -7,7 +7,7 @@ interface OnActionCompleted {
 	/**
 	 * Called when a paypal message content fetch action has completed.
 	 *
-	 * @param result - Result of the fetch content action. See [ActionResponse]
+	 * @param result - Result of the fetch content action. See [ApiMessageData.Response]
 	 * for more about the result object.
 	 */
 	fun onActionCompleted(result: ApiResult)
