@@ -25,4 +25,5 @@ jobs:
         run: echo "Install Dependencies"
 
       - name: Run Tests
-        run: echo "Run Tests"
+        run: ./gradlew testDebugUnitTest
+        continue-on-error: false
