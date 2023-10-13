@@ -62,7 +62,10 @@ class ApiMessageDataTest {
 	@Test
 	fun testResponseSerialization() {
 		val json = gson.toJson(response)
-		assertEquals(json, "{\"meta\":{\"credit_product_group\":\"PAYPAL_CREDIT\",\"offer_country_code\":\"US\",\"offer_type\":\"PAY_LATER_SHORT_TERM\",\"message_type\":\"OFFER\",\"modal_close_button\":{\"width\":100,\"height\":100,\"available_width\":200,\"available_height\":200,\"color\":\"#FFFFFF\",\"color_type\":\"solid\"},\"variables\":{\"inline_logo_placeholder\":\"test_logo_placeholder\"},\"merchant_country_code\":\"US\",\"credit_product_identifiers\":[\"test_credit_product_identifier\"],\"debug_id\":\"test_debug_id\",\"fdata\":\"test_fdata\",\"tracking_keys\":[\"test_tracking_key\"],\"originating_instance_id\":\"350e8400-e29b-41d4-a716-446655440000\"},\"content\":{\"default\":{\"main\":\"test_main\",\"disclaimer\":\"test_disclaimer\"},\"generic\":{\"main\":\"test_main\",\"disclaimer\":\"test_disclaimer\"}}}")
+
+		@Suppress("ktlint:standard:max-line-length")
+		val expectedJson = """{"meta":{"credit_product_group":"PAYPAL_CREDIT","offer_country_code":"US","offer_type":"PAY_LATER_SHORT_TERM","message_type":"OFFER","modal_close_button":{"width":100,"height":100,"available_width":200,"available_height":200,"color":"#FFFFFF","color_type":"solid"},"variables":{"inline_logo_placeholder":"test_logo_placeholder"},"merchant_country_code":"US","credit_product_identifiers":["test_credit_product_identifier"],"debug_id":"test_debug_id","fdata":"test_fdata","tracking_keys":["test_tracking_key"],"originating_instance_id":"350e8400-e29b-41d4-a716-446655440000"},"content":{"default":{"main":"test_main","disclaimer":"test_disclaimer"},"generic":{"main":"test_main","disclaimer":"test_disclaimer"}}}"""
+		assertEquals(expectedJson, json)
 	}
 
 	@Test
@@ -74,7 +77,10 @@ class ApiMessageDataTest {
 	@Test
 	fun testContentOptionsSerialization() {
 		val json = gson.toJson(contentOptions)
-		assertEquals(json, "{\"default\":{\"main\":\"test_main\",\"disclaimer\":\"test_disclaimer\"},\"generic\":{\"main\":\"test_main\",\"disclaimer\":\"test_disclaimer\"}}")
+
+		@Suppress("ktlint:standard:max-line-length")
+		val expectedJson = """{"default":{"main":"test_main","disclaimer":"test_disclaimer"},"generic":{"main":"test_main","disclaimer":"test_disclaimer"}}"""
+		assertEquals(expectedJson, json)
 	}
 
 	@Test
@@ -86,7 +92,7 @@ class ApiMessageDataTest {
 	@Test
 	fun testContentDetailsSerialization() {
 		val json = gson.toJson(contentDetails)
-		assertEquals(json, "{\"main\":\"test_main\",\"disclaimer\":\"test_disclaimer\"}")
+		assertEquals(json, """{"main":"test_main","disclaimer":"test_disclaimer"}""")
 	}
 
 	@Test
@@ -107,6 +113,9 @@ class ApiMessageDataTest {
 	@Test
 	fun testMetadataSerialization() {
 		val json = gson.toJson(metadata)
-		assertEquals(json, "{\"credit_product_group\":\"PAYPAL_CREDIT\",\"offer_country_code\":\"US\",\"offer_type\":\"PAY_LATER_SHORT_TERM\",\"message_type\":\"OFFER\",\"modal_close_button\":{\"width\":100,\"height\":100,\"available_width\":200,\"available_height\":200,\"color\":\"#FFFFFF\",\"color_type\":\"solid\"},\"variables\":{\"inline_logo_placeholder\":\"test_logo_placeholder\"},\"merchant_country_code\":\"US\",\"credit_product_identifiers\":[\"test_credit_product_identifier\"],\"debug_id\":\"test_debug_id\",\"fdata\":\"test_fdata\",\"tracking_keys\":[\"test_tracking_key\"],\"originating_instance_id\":\"350e8400-e29b-41d4-a716-446655440000\"}")
+
+		@Suppress("ktlint:standard:max-line-length")
+		val expectedJson = """{"credit_product_group":"PAYPAL_CREDIT","offer_country_code":"US","offer_type":"PAY_LATER_SHORT_TERM","message_type":"OFFER","modal_close_button":{"width":100,"height":100,"available_width":200,"available_height":200,"color":"#FFFFFF","color_type":"solid"},"variables":{"inline_logo_placeholder":"test_logo_placeholder"},"merchant_country_code":"US","credit_product_identifiers":["test_credit_product_identifier"],"debug_id":"test_debug_id","fdata":"test_fdata","tracking_keys":["test_tracking_key"],"originating_instance_id":"350e8400-e29b-41d4-a716-446655440000"}"""
+		assertEquals(expectedJson, json)
 	}
 }

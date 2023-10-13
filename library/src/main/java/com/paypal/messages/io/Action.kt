@@ -15,55 +15,43 @@ class Action(private val context: Context) {
 		CoroutineScope(Dispatchers.IO).launch {
 			val localStorage = LocalStorage(context)
 			val merchantHash: String? = localStorage.merchantHash
-			var newHash: String?
+			val newHash: String?
 
 			if (merchantHash === null) {
-				LogCat.debug(TAG, "Hash does not exist in local storage. Fetching new hash")
+				LogCat.debug(TAG, "No hash in local storage. Fetching new hash")
 				newHash = fetchNewHash(messageConfig)
-
-				val messageData = Api.callMessageDataEndpoint(messageConfig, newHash)
-				withContext(Dispatchers.Main) {
-					onCompleted.onActionCompleted(messageData)
-				}
 			}
-			// If a previously stored hash is available AND cache_flow_disabled is false
 			else if (!localStorage.isCacheFlowDisabled!!) {
 				val ageOfStoredHash = localStorage.ageOfMerchantHash
 				val softTtl = localStorage.softTtl!!
 				val hardTtl = localStorage.hardTtl!!
 
-				// If the stored hash is older than hard_ttl
-				if (ageOfStoredHash < hardTtl) {
-					// the stale value should be ignored and a new hash should be fetched
-					LogCat.debug(TAG, "TTL expired. Fetching new hash.\n$merchantHash")
-					newHash = fetchNewHash(messageConfig)
-
-					val messageData = Api.callMessageDataEndpoint(messageConfig, newHash)
-					withContext(Dispatchers.Main) {
-						onCompleted.onActionCompleted(messageData)
+				newHash = when (ageOfStoredHash) {
+					in hardTtl..Long.MAX_VALUE -> {
+						LogCat.debug(TAG, "Local hash is older than hardTtl. Fetching new hash.")
+						fetchNewHash(messageConfig)
 					}
-				}
-				else if (ageOfStoredHash in softTtl..hardTtl) {
-					LogCat.debug(TAG, "Fetching new hash but still using hash from local storage")
-					val messageData = Api.callMessageDataEndpoint(messageConfig, merchantHash)
-					withContext(Dispatchers.Main) {
-						onCompleted.onActionCompleted(messageData)
+					in softTtl..hardTtl -> {
+						LogCat.debug(
+							TAG, "Local hash is older than softTtl. Using local hash. Storing new hash.",
+						)
+						fetchNewHash(messageConfig)
+						merchantHash
 					}
-				}
-				else {
-					LogCat.debug(TAG, "Retrieving hash from local storage\n$merchantHash")
-					val messageData = Api.callMessageDataEndpoint(messageConfig, merchantHash)
-					withContext(Dispatchers.Main) {
-						onCompleted.onActionCompleted(messageData)
+					else -> {
+						LogCat.debug(TAG, "Local hash is younger than softTtl. Using local hash.")
+						merchantHash
 					}
 				}
 			}
 			else {
-				LogCat.debug(TAG, "Omitting hash")
-				val messageData = Api.callMessageDataEndpoint(messageConfig, null)
-				withContext(Dispatchers.Main) {
-					onCompleted.onActionCompleted(messageData)
-				}
+				LogCat.debug(TAG, "Cache disabled. Omitting hash.")
+				newHash = null
+			}
+
+			val messageData = Api.callMessageDataEndpoint(messageConfig, newHash)
+			withContext(Dispatchers.Main) {
+				onCompleted.onActionCompleted(messageData)
 			}
 		}
 	}

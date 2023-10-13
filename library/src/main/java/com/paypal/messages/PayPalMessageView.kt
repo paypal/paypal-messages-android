@@ -402,9 +402,9 @@ class PayPalMessageView @JvmOverloads constructor(
 		/**
 		 * DATA
 		 */
-if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_client_id)) {
-	clientId = typedArray.getString(R.styleable.PayPalMessageView_paypal_client_id).toString()
-}
+		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_client_id)) {
+			clientId = typedArray.getString(R.styleable.PayPalMessageView_paypal_client_id).toString()
+		}
 
 		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_amount)) {
 			amount = try {

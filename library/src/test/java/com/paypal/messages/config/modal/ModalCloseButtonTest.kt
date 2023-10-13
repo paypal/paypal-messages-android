@@ -16,7 +16,6 @@ class ModalCloseButtonTest {
 
 	@Test
 	fun testConstructor() {
-
 		assertEquals(modalCloseButton.width, 100)
 		assertEquals(modalCloseButton.height, 100)
 		assertEquals(modalCloseButton.availableWidth, 200)
@@ -30,6 +29,9 @@ class ModalCloseButtonTest {
 		val gson = Gson()
 		val json = gson.toJson(modalCloseButton)
 
-		assertEquals(json, "{\"width\":100,\"height\":100,\"available_width\":200,\"available_height\":200,\"color\":\"#FFFFFF\",\"color_type\":\"solid\"}")
+		assertEquals(
+			json,
+			"{\"width\":100,\"height\":100,\"available_width\":200,\"available_height\":200,\"color\":\"#FFFFFF\",\"color_type\":\"solid\"}",
+		)
 	}
 }

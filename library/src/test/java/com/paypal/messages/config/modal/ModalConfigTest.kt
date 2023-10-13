@@ -36,14 +36,16 @@ class ModalConfigTest {
 		assertEquals(modalConfig.devTouchpoint, true)
 		assertEquals(modalConfig.stageTag, "test_tag")
 		assertEquals(modalConfig.events, ModalEvents())
-		assertEquals(modalConfig.modalCloseButton, ModalCloseButton(
-			width = 100,
-			height = 100,
-			availableWidth = 200,
-			availableHeight = 200,
-			color = "#FFFFFF",
-			colorType = "solid",
-		))
+		assertEquals(
+			modalConfig.modalCloseButton,
+			ModalCloseButton(
+				width = 100,
+				height = 100,
+				availableWidth = 200,
+				availableHeight = 200,
+				color = "#FFFFFF",
+				colorType = "solid",
+			),
+		)
 	}
 }
-

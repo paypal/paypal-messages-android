@@ -63,7 +63,6 @@ class TrackingComponentTest {
 	
 	@Test
 	fun testConstructor() {
-
 		assertEquals(offerType, trackingComponent.offerType)
 		assertEquals(amount, trackingComponent.amount)
 		assertEquals(placement, trackingComponent.placement)
@@ -95,8 +94,8 @@ class TrackingComponentTest {
 		val gson = Gson()
 		val json = gson.toJson(trackingComponent)
 
-		assertEquals(json, "{\"offer_type\":\"PAY_LATER_SHORT_TERM\",\"amount\":\"100.00\",\"placement\":\"CART\",\"buyer_country_code\":\"US\",\"channel\":\"NATIVE\",\"style_logo_type\":\"ALTERNATIVE\",\"style_color\":\"MONOCHROME\",\"style_text_align\":\"CENTER\",\"message_type\":\"OFFER\",\"views\":[\"VIEW\"],\"qualified_products\":[\"PRODUCT\"],\"fdata\":\"test_fdata\",\"debug_id\":\"test_debug_id\",\"experimentation_experience_ids\":[\"EXP_1\",\"EXP_2\"],\"experimentation_treatment_ids\":[\"TRT_1\",\"TRT_2\"],\"credit_product_identifiers\":[\"CPI_1\",\"CPI_2\"],\"offer_country_code\":\"US\",\"merchant_country_code\":\"US\",\"type\":\"OFFER\",\"instance_id\":\"test_instance_id\",\"originating_instance_id\":\"test_originating_instance_id\",\"session_id\":\"test_session_id\",\"events\":[{\"event_type\":\"MESSAGE_CLICK\"}],\"__shared__\":{}}")
+		@Suppress("ktlint:standard:max-line-length")
+		val expectedJson = """{"offer_type":"PAY_LATER_SHORT_TERM","amount":"100.00","placement":"CART","buyer_country_code":"US","channel":"NATIVE","style_logo_type":"ALTERNATIVE","style_color":"MONOCHROME","style_text_align":"CENTER","message_type":"OFFER","views":["VIEW"],"qualified_products":["PRODUCT"],"fdata":"test_fdata","debug_id":"test_debug_id","experimentation_experience_ids":["EXP_1","EXP_2"],"experimentation_treatment_ids":["TRT_1","TRT_2"],"credit_product_identifiers":["CPI_1","CPI_2"],"offer_country_code":"US","merchant_country_code":"US","type":"OFFER","instance_id":"test_instance_id","originating_instance_id":"test_originating_instance_id","session_id":"test_session_id","events":[{"event_type":"MESSAGE_CLICK"}],"__shared__":{}}"""
+		assertEquals(expectedJson, json)
 	}
 }
-
-

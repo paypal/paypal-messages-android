@@ -19,7 +19,7 @@ class PayPalErrorsTest {
 		val exception = PayPalErrors.FailedToFetchDataException("test_message", "test_id")
 
 		assertTrue(
-			exception.message?.contains("Failed to get Message Data: test_message") ?: false
+			exception.message?.contains("Failed to get Message Data: test_message") ?: false,
 		)
 		assertEquals("test_id", exception.debugId)
 	}
@@ -31,7 +31,7 @@ class PayPalErrorsTest {
 		assertTrue(
 			exception.message?.contains(
 				"Attempted to create a enum_name with an invalid index. " +
-				"Please use an index that is between 0 and 9 and try again."
+					"Please use an index that is between 0 and 9 and try again.",
 			) ?: false,
 			exception.message,
 		)

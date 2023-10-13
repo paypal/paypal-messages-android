@@ -1,15 +1,7 @@
 package com.paypal.messages.config.message
 
-import com.paypal.messages.config.message.PayPalMessageConfig
-import com.paypal.messages.config.message.PayPalMessageData
-import com.paypal.messages.config.message.style.PayPalMessageAlign
-import com.paypal.messages.logger.Logger
-import org.junit.jupiter.api.Test
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class PayPalMessageConfigTest {
 	@Test
@@ -32,15 +24,15 @@ class PayPalMessageConfigTest {
 		assertEquals(config.events, events)
 	}
 
-//	@Test
+// 	@Test
 	fun testSetGlobalAnalytics() {
 		val name = "integration_name"
 		val version = "integration_version"
 
-//		val mockLogger = mockk<Logger>()
-//		val mockLoggerCompanion = mockk<Logger.Companion>("mockLoggerCompanion")
-//		every { mockLoggerCompanion.getInstance(any()) } returns mockLogger
-//		every { mockLogger.setGlobalAnalytics(name, version) } answers {}
+// 		val mockLogger = mockk<Logger>()
+// 		val mockLoggerCompanion = mockk<Logger.Companion>("mockLoggerCompanion")
+// 		every { mockLoggerCompanion.getInstance(any()) } returns mockLogger
+// 		every { mockLogger.setGlobalAnalytics(name, version) } answers {}
 
 		// Create a PayPalMessageConfig object.
 		val paypalMessageConfig = PayPalMessageConfig(PayPalMessageData(clientId = "1"))
@@ -49,13 +41,13 @@ class PayPalMessageConfigTest {
 		paypalMessageConfig.setGlobalAnalytics(name, version)
 
 		// Verify that the setGlobalAnalytics() method was called on the mock Logger object.
-//		verify { mockLoggerCompanion.getInstance("") }
-//		mockLogger.setGlobalAnalytics(name, version)
-//		verify { mockLogger.setGlobalAnalytics(name, version) }
-//		assertEquals(mockLogger, mockLoggerCompanion.getInstance(""))
-//		val resultNameField = mockLogger.javaClass.getDeclaredField("integrationName")
-//		resultNameField.isAccessible = true
-//		val resultName = resultNameField.get(mockLogger)
-//		assertEquals(name, resultName)
+// 		verify { mockLoggerCompanion.getInstance("") }
+// 		mockLogger.setGlobalAnalytics(name, version)
+// 		verify { mockLogger.setGlobalAnalytics(name, version) }
+// 		assertEquals(mockLogger, mockLoggerCompanion.getInstance(""))
+// 		val resultNameField = mockLogger.javaClass.getDeclaredField("integrationName")
+// 		resultNameField.isAccessible = true
+// 		val resultName = resultNameField.get(mockLogger)
+// 		assertEquals(name, resultName)
 	}
 }

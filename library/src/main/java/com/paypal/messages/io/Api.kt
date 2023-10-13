@@ -78,6 +78,7 @@ object Api {
 	}
 
 	fun callMessageDataEndpoint(config: MessageConfig, hash: String?): ApiResult {
+		LogCat.debug(TAG, "callMessageDataEndpoint hash: $hash")
 		val request = createMessageDataRequest(config, hash)
 		try {
 			val response = client.newCall(request).execute()
@@ -102,7 +103,7 @@ object Api {
 		catch (error: IOException) {
 			// Failed to fetch the data and there is no debugId
 			return ApiResult.Failure(
-				PayPalErrors.FailedToFetchDataException("Message Data IOException: ${error.message}")
+				PayPalErrors.FailedToFetchDataException("Message Data IOException: ${error.message}"),
 			)
 		}
 	}
@@ -143,7 +144,7 @@ object Api {
 		}
 		catch (error: IOException) {
 			return ApiResult.Failure(
-				PayPalErrors.FailedToFetchDataException("Hash Data IOException: ${error.message}")
+				PayPalErrors.FailedToFetchDataException("Hash Data IOException: ${error.message}"),
 			)
 		}
 	}

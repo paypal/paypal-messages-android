@@ -32,4 +32,3 @@ class PayPalMessageDataTest {
 		assertEquals(data.environment, PayPalEnvironment.LOCAL)
 	}
 }
-

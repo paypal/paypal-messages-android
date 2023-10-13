@@ -10,7 +10,7 @@ object PayPalErrors {
 	class IllegalEnumArg(enumName: String, enumValues: Int) :
 		Base(
 			"Attempted to create a $enumName with an invalid index. " +
-				"Please use an index that is between 0 and ${enumValues - 1} and try again."
+				"Please use an index that is between 0 and ${enumValues - 1} and try again.",
 		)
 
 	class InvalidClientIdException(message: String, debugId: String? = null) :

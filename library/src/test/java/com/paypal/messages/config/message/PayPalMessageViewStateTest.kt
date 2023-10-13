@@ -31,4 +31,3 @@ class PayPalMessageViewStateTest {
 		verify { onErrorMock(any()) }
 	}
 }
-

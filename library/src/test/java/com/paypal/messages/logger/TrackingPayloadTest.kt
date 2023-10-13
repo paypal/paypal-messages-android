@@ -53,7 +53,9 @@ class TrackingPayloadTest {
 	fun testSerialization() {
 		val gson = Gson()
 		val json = gson.toJson(trackingPayload)
-		
-		assertEquals(json, "{\"client_id\":\"test_client_id\",\"merchant_id\":\"test_merchant_id\",\"partner_attribution_id\":\"test_partner_attribution_id\",\"merchant_profile_hash\":\"test_merchant_profile_hash\",\"device_id\":\"test_device_id\",\"session_id\":\"test_session_id\",\"instance_id\":\"test_instance_id\",\"integration_name\":\"test_integration_name\",\"integration_type\":\"test_integration_type\",\"integration_version\":\"test_integration_version\",\"lib_version\":\"test_library_version\",\"components\":[]}")
+
+		@Suppress("ktlint:standard:max-line-length")
+		val expectedJson = """{"client_id":"test_client_id","merchant_id":"test_merchant_id","partner_attribution_id":"test_partner_attribution_id","merchant_profile_hash":"test_merchant_profile_hash","device_id":"test_device_id","session_id":"test_session_id","instance_id":"test_instance_id","integration_name":"test_integration_name","integration_type":"test_integration_type","integration_version":"test_integration_version","lib_version":"test_library_version","components":[]}"""
+		assertEquals(expectedJson, json)
 	}
 }

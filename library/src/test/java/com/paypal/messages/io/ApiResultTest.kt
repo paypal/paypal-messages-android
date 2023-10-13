@@ -11,7 +11,7 @@ class ApiResultTest {
 	@Test
 	fun testSuccessToJson() {
 		val success = ApiResult.Success(
-			ApiHashData.Response(null, null, null, null)
+			ApiHashData.Response(null, null, null, null),
 		)
 
 		val json = success.response.toJson()

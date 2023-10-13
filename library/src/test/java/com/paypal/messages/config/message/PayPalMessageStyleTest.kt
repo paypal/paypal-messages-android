@@ -20,4 +20,3 @@ class PayPalMessageStyleTest {
 		assertEquals(messageStyle.textAlign, PayPalMessageAlign.CENTER)
 	}
 }
-

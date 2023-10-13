@@ -30,7 +30,10 @@ class ApiHashDataTest {
 	@Test
 	fun testResponseSerialization() {
 		val json = gson.toJson(response)
-		assertEquals(json, "{\"cache_flow_disabled\":true,\"ttl_soft\":1000,\"ttl_hard\":2000,\"merchant_profile\":{\"hash\":\"test_merchant_profile_hash\"}}")
+		assertEquals(
+			json,
+			"{\"cache_flow_disabled\":true,\"ttl_soft\":1000,\"ttl_hard\":2000,\"merchant_profile\":{\"hash\":\"test_merchant_profile_hash\"}}",
+		)
 	}
 
 	@Test
