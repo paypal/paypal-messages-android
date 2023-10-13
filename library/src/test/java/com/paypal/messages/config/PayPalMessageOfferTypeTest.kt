@@ -32,13 +32,11 @@ class PayPalMessageOfferTypeTest {
 
 	@Test
 	fun testInvalidIndex() {
-		// Assert that an IllegalArgumentException is thrown when an invalid index is provided.
 		assertThrows(IllegalEnumArg::class.java) { PayPalMessageOfferType(99) }
 	}
 
 	@Test
 	fun testFromString() {
-		// Assert that the fromString() method correctly returns the corresponding enum value.
 		assertEquals(PayPalMessageOfferType.PAY_LATER_SHORT_TERM, PayPalMessageOfferType(0))
 		assertEquals(PayPalMessageOfferType.PAY_LATER_LONG_TERM, PayPalMessageOfferType(1))
 		assertEquals(PayPalMessageOfferType.PAY_LATER_PAY_IN_1, PayPalMessageOfferType(2))

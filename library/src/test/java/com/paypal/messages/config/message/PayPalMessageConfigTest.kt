@@ -37,10 +37,10 @@ class PayPalMessageConfigTest {
 		val name = "integration_name"
 		val version = "integration_version"
 
-//		val mockLogger = spyk<Logger>("mockLogger")
+//		val mockLogger = mockk<Logger>()
 //		val mockLoggerCompanion = mockk<Logger.Companion>("mockLoggerCompanion")
 //		every { mockLoggerCompanion.getInstance(any()) } returns mockLogger
-//		every { mockLogger.setGlobalAnalytics(name, version) } returns Unit
+//		every { mockLogger.setGlobalAnalytics(name, version) } answers {}
 
 		// Create a PayPalMessageConfig object.
 		val paypalMessageConfig = PayPalMessageConfig(PayPalMessageData(clientId = "1"))

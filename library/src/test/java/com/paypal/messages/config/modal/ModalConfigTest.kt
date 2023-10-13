@@ -8,7 +8,6 @@ import org.junit.Test
 class ModalConfigTest {
 	@Test
 	fun testConstructor() {
-		// Create a ModalConfig object with valid values.
 		val modalConfig = ModalConfig(
 			amount = 115.00,
 			currency = "USD",
@@ -28,7 +27,6 @@ class ModalConfigTest {
 			),
 		)
 
-		// Assert that the constructor correctly sets all of the properties.
 		assertEquals(modalConfig.amount, 100.00)
 		assertEquals(modalConfig.currency, "USD")
 		assertEquals(modalConfig.buyerCountry, "US")

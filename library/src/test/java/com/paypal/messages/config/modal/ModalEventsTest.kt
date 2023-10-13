@@ -27,7 +27,6 @@ class ModalEventsTest {
 		val onCloseMock = mockk<() -> Unit>("onCloseMock")
 		every { onCloseMock() } answers {}
 
-		// Create a ModalEvents object with valid values.
 		val modalEvents = ModalEvents(
 			onClick = onClickMock,
 			onApply = onApplyMock,
