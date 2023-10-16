@@ -8,6 +8,6 @@ import org.junit.runner.RunWith
 class LoggerTest {
 	@Test
 	fun testSomething() {
-
+		//
 	}
 }

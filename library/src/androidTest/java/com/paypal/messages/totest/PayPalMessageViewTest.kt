@@ -8,6 +8,6 @@ import org.junit.runner.RunWith
 class PayPalMessageViewTest {
 	@Test
 	fun testSomething() {
-
+		//
 	}
 }
