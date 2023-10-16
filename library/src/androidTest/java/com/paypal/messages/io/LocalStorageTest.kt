@@ -18,7 +18,7 @@ class LocalStorageTest {
 			cacheFlowDisabled = false,
 			merchantProfile = ApiHashData.MerchantProfile(hash = "1234567890"),
 			ttlSoft = 1000L,
-			ttlHard = 2000L
+			ttlHard = 2000L,
 		)
 
 		assertEquals("1234567890", localStorage.merchantHash)
