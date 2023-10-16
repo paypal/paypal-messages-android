@@ -1,3 +1,13 @@
 package com.paypal.messages.totest
 
-class ActionTest
+import org.junit.jupiter.api.Test
+import org.junit.platform.runner.JUnitPlatform
+import org.junit.runner.RunWith
+
+@RunWith(JUnitPlatform::class)
+class ActionTest {
+	@Test
+	fun testSomething() {
+
+	}
+}
