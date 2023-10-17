@@ -2,7 +2,6 @@ package com.paypal.messages.utils
 
 import android.util.Log
 
-@IgnoreGeneratedTestReport
 object LogCat {
 	private const val prefix = "PPMessages"
 	private const val SHOW_FULL_MESSAGES = false

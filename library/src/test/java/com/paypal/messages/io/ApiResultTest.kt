@@ -36,4 +36,13 @@ class ApiResultTest {
 
 		assertEquals("test_debug_id", failure.error?.debugId)
 	}
+
+	@Test
+	fun testGetFailureWithNoDebugIdHeader() {
+		val headers = Headers.Builder().build()
+
+		val failure = ApiResult.getFailureWithDebugId(headers) as ApiResult.Failure<*>
+
+		assertEquals(null, failure.error?.debugId)
+	}
 }

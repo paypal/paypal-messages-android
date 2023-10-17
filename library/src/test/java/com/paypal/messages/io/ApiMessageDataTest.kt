@@ -24,7 +24,8 @@ class ApiMessageDataTest {
 		color = "#FFFFFF",
 		colorType = "solid",
 	)
-	private val variables = ApiMessageData.Variables(logoPlaceholder = "test_logo_placeholder")
+	private val logoPlaceholder = "test_logo_placeholder"
+	private val variables = ApiMessageData.Variables(logoPlaceholder)
 	private val merchantCountryCode = "US"
 	private val creditProductIdentifiers = listOf("test_credit_product_identifier")
 	private val debugId = "test_debug_id"
@@ -108,6 +109,7 @@ class ApiMessageDataTest {
 		assertEquals(debugId, metadata.debugId)
 		assertEquals(fdata, metadata.fdata)
 		assertEquals(trackingKeys, metadata.trackingKeys)
+		assertEquals(originatingInstanceId, metadata.originatingInstanceId)
 	}
 
 	@Test
@@ -116,6 +118,19 @@ class ApiMessageDataTest {
 
 		@Suppress("ktlint:standard:max-line-length")
 		val expectedJson = """{"credit_product_group":"PAYPAL_CREDIT","offer_country_code":"US","offer_type":"PAY_LATER_SHORT_TERM","message_type":"OFFER","modal_close_button":{"width":100,"height":100,"available_width":200,"available_height":200,"color":"#FFFFFF","color_type":"solid"},"variables":{"inline_logo_placeholder":"test_logo_placeholder"},"merchant_country_code":"US","credit_product_identifiers":["test_credit_product_identifier"],"debug_id":"test_debug_id","fdata":"test_fdata","tracking_keys":["test_tracking_key"],"originating_instance_id":"350e8400-e29b-41d4-a716-446655440000"}"""
+		assertEquals(expectedJson, json)
+	}
+
+	@Test
+	fun testVariablesConstructor() {
+		assertEquals(logoPlaceholder, variables.logoPlaceholder)
+	}
+
+	@Test
+	fun testVariablesSerialization() {
+		val json = gson.toJson(variables)
+
+		val expectedJson = """{"inline_logo_placeholder":"test_logo_placeholder"}"""
 		assertEquals(expectedJson, json)
 	}
 }

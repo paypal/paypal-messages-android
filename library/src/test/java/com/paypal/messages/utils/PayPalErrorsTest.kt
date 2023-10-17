@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class PayPalErrorsTest {
-
 	@Test
 	fun testBaseException() {
 		val exception = PayPalErrors.Base("test_message", "test_id")

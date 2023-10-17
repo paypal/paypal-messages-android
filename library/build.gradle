@@ -2,6 +2,7 @@ plugins {
   id 'com.android.library'
   id 'org.jetbrains.kotlin.android'
 	id 'de.mannodermaus.android-junit5' version "1.9.3.0"
+	id 'org.jetbrains.kotlinx.kover' version '0.7.4'
 }
 
 android {
@@ -13,15 +14,15 @@ android {
     targetSdk 34
 
 	  versionCode 10000
-	  versionName "1.0.0"
-    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    consumerProguardFiles "consumer-rules.pro"
+	  versionName '1.0.0'
+    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    consumerProguardFiles 'consumer-rules.pro'
 
-	  buildConfigField("String", "INTEGRATION_TYPE", "\"NATIVE_ANDROID\"")
-	  buildConfigField("String", "LIBRARY_VERSION", "\"${versionName}\"")
-	  buildConfigField("String", "STAGE_URL", "\"${System.env.UPSTREAM_ANDROID_STAGE_URL}\"")
-	  buildConfigField("String", "STAGE_VPN_URL", "\"${System.env.UPSTREAM_ANDROID_STAGE_VPN_URL}\"")
-	  buildConfigField("String", "LOCAL_URL", "\"${System.env.UPSTREAM_ANDROID_LOCAL_URL}\"")
+	  buildConfigField('String', 'INTEGRATION_TYPE', "\"NATIVE_ANDROID\"")
+	  buildConfigField('String', 'LIBRARY_VERSION', "\"${versionName}\"")
+	  buildConfigField('String', 'STAGE_URL', "\"${System.env.UPSTREAM_ANDROID_STAGE_URL}\"")
+	  buildConfigField('String', 'STAGE_VPN_URL', "\"${System.env.UPSTREAM_ANDROID_STAGE_VPN_URL}\"")
+	  buildConfigField('String', 'LOCAL_URL', "\"${System.env.UPSTREAM_ANDROID_LOCAL_URL}\"")
   }
 
 	buildFeatures {
@@ -45,7 +46,7 @@ android {
 		unitTests.all {
 			useJUnitPlatform()
 			testLogging {
-				events "passed", "skipped", "failed"
+				events 'passed', 'skipped', 'failed'
 			}
 		}
 	}
@@ -53,6 +54,39 @@ android {
 
 tasks.withType(Test) {
 	useJUnitPlatform()
+}
+
+koverReport {
+	androidReports('debug') {
+		filters {
+//			includes {
+//				classes(
+//					'PayPalErrors\$*'
+//				)
+//			}
+			excludes {
+				classes(
+					// config
+					'*PayPalMessageEvents\$*',
+					'*PayPalMessageViewState\$*',
+					'*ModalEvents\$*',
+					// io
+					'*ApiMessageData',
+					'*ApiHashData',
+					// utils
+					'*LogCat*',
+					'*PayPalErrors',
+					// UI Stuff
+					'*Fragment',
+					'*Fragment\$*',
+					'*Activity',
+					'*Activity\$*',
+					'*.databinding.*',
+					'*.BuildConfig'
+				)
+			}
+		}
+	}
 }
 
 dependencies {
@@ -70,9 +104,10 @@ dependencies {
 
 	androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 	androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-	androidTestImplementation "com.squareup.okhttp3:mockwebserver:4.8.0"
+	androidTestImplementation 'com.squareup.okhttp3:mockwebserver:4.8.0'
 	androidTestImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
 	androidTestImplementation 'org.junit.platform:junit-platform-suite-api:1.10.0'
 	androidTestImplementation 'org.junit.platform:junit-platform-runner:1.10.0'
+	androidTestImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
 	androidTestRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
 }
