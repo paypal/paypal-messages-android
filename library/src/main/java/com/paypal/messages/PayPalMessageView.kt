@@ -59,7 +59,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	context: Context,
 	attributeSet: AttributeSet? = null,
 	defStyleAttr: Int = 0,
-	config: MessageConfig? = null
+	config: MessageConfig? = null,
 ) : LinearLayout(context, attributeSet, defStyleAttr), OnActionCompleted {
 	private val TAG = "PayPalMessage"
 	private var messageTextView: TextView

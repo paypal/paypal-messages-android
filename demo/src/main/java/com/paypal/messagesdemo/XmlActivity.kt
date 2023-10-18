@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageStyle
 import com.paypal.messages.config.message.PayPalMessageViewState
@@ -125,8 +126,8 @@ class XmlActivity : AppCompatActivity() {
 		val stageTag = findViewById<EditText>(R.id.stageTag)
 
 
-		val ignoreCache = findViewById<Switch>(R.id.ignoreCache)
-		val devTouchpoint = findViewById<Switch>(R.id.devTouchpoint)
+		val ignoreCache = findViewById<SwitchMaterial>(R.id.ignoreCache)
+		val devTouchpoint = findViewById<SwitchMaterial>(R.id.devTouchpoint)
 
 		// Get the data from the selected options
 		fun updateMessageData() {
