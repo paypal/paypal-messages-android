@@ -6,7 +6,9 @@ import com.paypal.messages.BuildConfig
 import com.paypal.messages.logger.TrackingPayload
 import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Credentials
 import okhttp3.HttpUrl
@@ -80,7 +82,7 @@ object Api {
 		return request
 	}
 
-	fun callMessageDataEndpoint(config: MessageConfig, hash: String?): ApiResult {
+	private fun callMessageDataEndpoint(config: MessageConfig, hash: String?): ApiResult {
 		LogCat.debug(TAG, "callMessageDataEndpoint hash: $hash")
 		val request = createMessageDataRequest(config, hash)
 		try {
@@ -111,6 +113,50 @@ object Api {
 		}
 	}
 
+	fun getMessageWithHash(
+		context: Context,
+		messageConfig: MessageConfig,
+		onCompleted: OnActionCompleted,
+	) {
+		CoroutineScope(Dispatchers.IO).launch {
+			val localStorage = LocalStorage(context)
+			val merchantHash: String? = localStorage.merchantHash
+			val isCacheEnabled = !localStorage.isCacheFlowDisabled!!
+			val ageOfStoredHash = localStorage.ageOfMerchantHash
+			val softTtl = localStorage.softTtl!!
+			val hardTtl = localStorage.hardTtl!!
+
+			val message = if (merchantHash === null) {
+				"No hash in local storage. Fetching new hash"
+			}
+			else if (isCacheEnabled) {
+				"Local hash is " + when (ageOfStoredHash) {
+					in hardTtl..Long.MAX_VALUE -> "older than hardTtl. Fetching new hash."
+					in softTtl..hardTtl -> "older than softTtl. Using local hash. Storing new hash."
+					else -> "younger than softTtl. Using local hash."
+				}
+			}
+			else {
+				"Cache disabled. Omitting hash."
+			}
+			LogCat.debug(TAG, message)
+
+			var newHash: String? = null
+			if (merchantHash === null) {
+				newHash = getAndStoreNewHash(context, messageConfig)
+			}
+			else if (isCacheEnabled) {
+				if (ageOfStoredHash in softTtl..hardTtl) getAndStoreNewHash(context, messageConfig)
+				newHash = if (ageOfStoredHash > hardTtl) getAndStoreNewHash(context, messageConfig) else merchantHash
+			}
+
+			val messageData = callMessageDataEndpoint(messageConfig, newHash)
+			withContext(Dispatchers.Main) {
+				onCompleted.onActionCompleted(messageData)
+			}
+		}
+	}
+
 	private fun createMessageHashRequest(clientId: String): Request {
 		val request = Request.Builder().apply {
 			header("Accept", "application/json")
@@ -126,7 +172,7 @@ object Api {
 		return request
 	}
 
-	fun callMessageHashEndpoint(clientId: String): ApiResult {
+	private fun callMessageHashEndpoint(clientId: String): ApiResult {
 		val request = createMessageHashRequest(clientId)
 		try {
 			val response = client.newCall(request).execute()
@@ -152,7 +198,7 @@ object Api {
 		}
 	}
 
-	suspend fun getAndStoreNewHash(context: Context, messageConfig: MessageConfig): String? {
+	private suspend fun getAndStoreNewHash(context: Context, messageConfig: MessageConfig): String? {
 		val clientId = messageConfig.data?.clientId ?: ""
 		val localStorage = LocalStorage(context)
 		val result = withContext(Dispatchers.IO) {

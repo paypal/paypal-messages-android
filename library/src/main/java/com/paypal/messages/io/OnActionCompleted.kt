@@ -3,7 +3,7 @@ package com.paypal.messages.io
 import com.paypal.messages.utils.IgnoreGeneratedTestReport
 
 /**
- * This interface definition is to provide a callback when the [Action] completes
+ * This interface definition is to provide a callback when [Api.getMessageWithHash] completes
  */
 @IgnoreGeneratedTestReport
 interface OnActionCompleted {

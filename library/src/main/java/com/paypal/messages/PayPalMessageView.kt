@@ -25,7 +25,6 @@ import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.config.modal.ModalEvents
-import com.paypal.messages.io.Action
 import com.paypal.messages.io.Api
 import com.paypal.messages.io.ApiMessageData
 import com.paypal.messages.io.ApiResult
@@ -499,7 +498,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 */
 
 	/**
-	 * This function updates the message content making use of the [Action] to fetch the data.
+	 * This function updates message content uses [Api.getMessageWithHash] to fetch the data.
 	 */
 	private fun updateMessageContent() {
 		if (!updateInProgress) {
@@ -511,10 +510,9 @@ class PayPalMessageView @JvmOverloads constructor(
 			updateInProgress = true
 			LogCat.debug(TAG, "Firing request to get message")
 
-			val action = Action(context = context)
-
 			requestDuration = measureTimeMillis {
-				action.execute(
+				Api.getMessageWithHash(
+					context,
 					MessageConfig(
 						MessageData(clientId, amount, placement, offerType, buyerCountry, currencyCode),
 						MessageStyle(logoType, color, alignment),
