@@ -3,7 +3,11 @@ package com.paypal.messagesdemo
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.RadioGroup
 import android.widget.Toast
+import android.widget.ToggleButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color
 import com.google.android.material.switchmaterial.SwitchMaterial
@@ -47,34 +51,22 @@ class XmlActivity : AppCompatActivity() {
 
 		val colorRadioGroup = findViewById<RadioGroup>(R.id.colorRadioGroup)
 		colorRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-			when (checkedId) {
-				R.id.styleBlack -> {
-					color = PayPalMessageColor.BLACK
-				}
-				R.id.styleWhite -> {
-					color = PayPalMessageColor.WHITE
-				}
-				R.id.styleMonochrome -> {
-					color = PayPalMessageColor.MONOCHROME
-				}
-				R.id.styleGrayscale -> {
-					color = PayPalMessageColor.GRAYSCALE
-				}
+			color = when (checkedId) {
+				R.id.styleBlack -> PayPalMessageColor.BLACK
+				R.id.styleWhite -> PayPalMessageColor.WHITE
+				R.id.styleMonochrome -> PayPalMessageColor.MONOCHROME
+				R.id.styleGrayscale -> PayPalMessageColor.GRAYSCALE
+				else -> PayPalMessageColor.BLACK
 			}
 		}
 
 		val alignmentRadioGroup = findViewById<RadioGroup>(R.id.alignmentRadioGroup)
 		alignmentRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-			when (checkedId) {
-				R.id.styleLeft -> {
-					alignment = PayPalMessageAlign.LEFT
-				}
-				R.id.styleCenter -> {
-					alignment = PayPalMessageAlign.CENTER
-				}
-				R.id.styleRight -> {
-					alignment = PayPalMessageAlign.RIGHT
-				}
+			alignment = when (checkedId) {
+				R.id.styleLeft -> PayPalMessageAlign.LEFT
+				R.id.styleCenter -> PayPalMessageAlign.CENTER
+				R.id.styleRight -> PayPalMessageAlign.RIGHT
+				else -> PayPalMessageAlign.LEFT
 			}
 		}
 
