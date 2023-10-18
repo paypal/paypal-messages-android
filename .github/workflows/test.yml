@@ -22,5 +22,5 @@ jobs:
           cache: gradle
 
       - name: Run Tests
-        run: ./gradlew testDebugUnitTest
+        run: ./gradlew testReleaseUnitTest
         continue-on-error: false
