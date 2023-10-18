@@ -38,7 +38,7 @@ class XmlActivity : AppCompatActivity() {
 		val payPalMessage = binding.payPalMessage
 		val progressBar = binding.progressBar
 
-		val editedClientId: EditText? = findViewById(R.id.clientId)
+		val clientIdEdit: EditText? = findViewById(R.id.clientId)
 
 		val logoTypeRadioGroup = findViewById<RadioGroup>(R.id.logoTypeRadioGroup)
 		logoTypeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
@@ -114,9 +114,9 @@ class XmlActivity : AppCompatActivity() {
 			updateOfferUi(PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST, isChecked)
 		}
 
-		val amount = findViewById<EditText>(R.id.amount)
-		val buyerCountry = findViewById<EditText>(R.id.buyerCountry)
-		val stageTag = findViewById<EditText>(R.id.stageTag)
+		val amountEdit = findViewById<EditText>(R.id.amount)
+		val buyerCountryEdit = findViewById<EditText>(R.id.buyerCountry)
+		val stageTagEdit = findViewById<EditText>(R.id.stageTag)
 		val ignoreCache = findViewById<SwitchMaterial>(R.id.ignoreCache)
 		val devTouchpoint = findViewById<SwitchMaterial>(R.id.devTouchpoint)
 
@@ -125,35 +125,25 @@ class XmlActivity : AppCompatActivity() {
 			Api.devTouchpoint = devTouchpoint.isChecked
 			Api.ignoreCache = ignoreCache.isChecked
 
-			if ( editedClientId?.text.toString().isNotBlank() ) {
-				payPalMessage.clientId = editedClientId?.text.toString()
+			val clientId = clientIdEdit?.text.toString()
+			payPalMessage.clientId = clientId.ifBlank { "" }
+			if ( clientIdEdit?.text.toString().isNotBlank() ) {
+				payPalMessage.clientId = clientIdEdit?.text.toString()
 			} else {
 				payPalMessage.clientId = ""
 			}
 
-			if ( amount?.text.toString().isNotBlank() ) {
-				payPalMessage.amount = amount?.text.toString().toDouble()
-			} else {
-				payPalMessage.amount = null
-			}
+			val amount = amountEdit?.text.toString()
+			payPalMessage.amount = if (amount.isNotBlank()) amount.toDouble() else null
 
-			if ( buyerCountry?.text.toString().isNotBlank() ) {
-				payPalMessage.buyerCountry = buyerCountry?.text.toString()
-			} else {
-				payPalMessage.buyerCountry = "US"
-			}
+			val buyerCountry = buyerCountryEdit?.text.toString()
+			payPalMessage.buyerCountry = buyerCountry.ifBlank { "US" }
 
-			if ( color === PayPalMessageColor.WHITE ) {
-				payPalMessage.setBackgroundColor(Color.Black.hashCode())
-			} else {
-				payPalMessage.setBackgroundColor(Color.White.hashCode())
-			}
+			val backgroundColor = if (color === PayPalMessageColor.WHITE) Color.Black else Color.White
+			payPalMessage.setBackgroundColor(backgroundColor.hashCode())
 
-			if ( stageTag?.text.toString().isNotBlank() ) {
-				Api.stageTag = stageTag?.text.toString()
-			} else {
-				Api.stageTag = null
-			}
+			val stageTag = stageTagEdit?.text.toString()
+			Api.stageTag = stageTag.ifBlank { null }
 
 			payPalMessage.style = PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType)
 			payPalMessage.refresh()
@@ -169,8 +159,8 @@ class XmlActivity : AppCompatActivity() {
 			updateOfferUi(null, false)
 			ignoreCache.isChecked = false
 			devTouchpoint.isChecked = false
-			amount.setText("")
-			buyerCountry.setText("")
+			amountEdit.setText("")
+			buyerCountryEdit.setText("")
 
 			updateMessageData()
 		}
