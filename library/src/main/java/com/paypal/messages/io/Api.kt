@@ -50,15 +50,15 @@ object Api {
 	}
 
 	private fun HttpUrl.Builder.setMessageDataQuery(config: MessageConfig, hash: String?) {
-		addQueryParameter("client_id", config.data?.clientId)
+		addQueryParameter("client_id", config.data?.clientID)
 		addQueryParameter("devTouchpoint", devTouchpoint.toString())
 		addQueryParameter("ignore_cache", ignoreCache.toString())
-		if ( !stageTag.isNullOrBlank() ) { addQueryParameter("stage_tag", stageTag) }
 		addQueryParameter("env", environment.name.lowercase())
-		addQueryParameter("logo_type", config.style.logoType.name.lowercase())
 		addQueryParameter("instance_id", instanceId.toString())
 		addQueryParameter("session_id", sessionId.toString())
 
+		if ( !stageTag.isNullOrBlank() ) { addQueryParameter("stage_tag", stageTag) }
+		config.style.logoType?.let { addQueryParameter("logo_type", it.name.lowercase()) }
 		config.data?.amount?.let { addQueryParameter("amount", it.toString()) }
 		config.data?.buyerCountry?.let { addQueryParameter("buyer_country", it) }
 		config.data?.currencyCode?.let { addQueryParameter("currency", it.name) }
@@ -70,7 +70,7 @@ object Api {
 	private fun createMessageDataRequest(config: MessageConfig, hash: String?): Request {
 		val request = Request.Builder().apply {
 			header("Accept", "application/json")
-			header("Authorization", Credentials.basic(config.data?.clientId ?: "", ""))
+			header("Authorization", Credentials.basic(config.data?.clientID ?: "", ""))
 			header("x-requested-by", "native-upstream-messages")
 
 			val urlBuilder = Endpoints.messageData.newBuilder()

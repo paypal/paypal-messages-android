@@ -12,8 +12,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.paypal.messages.config.PayPalMessageOfferType
+import com.paypal.messages.config.message.PayPalMessageConfig
+import com.paypal.messages.config.message.PayPalMessageEventsCallbacks
 import com.paypal.messages.config.message.PayPalMessageStyle
-import com.paypal.messages.config.message.PayPalMessageViewState
+import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
 import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
@@ -36,7 +38,7 @@ class XmlActivity : AppCompatActivity() {
 		val payPalMessage = binding.payPalMessage
 		val progressBar = binding.progressBar
 
-		val editedClientId: EditText? = findViewById<EditText>(R.id.clientId)
+		val editedClientId: EditText? = findViewById(R.id.clientId)
 
 		val logoTypeRadioGroup = findViewById<RadioGroup>(R.id.logoTypeRadioGroup)
 		logoTypeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
@@ -96,8 +98,7 @@ class XmlActivity : AppCompatActivity() {
 				offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
 			}
 
-			payPalMessage.setOfferType(offerType = offerType)
-
+			payPalMessage.offerType = offerType
 		}
 
 		shortTerm.setOnCheckedChangeListener { _, isChecked ->
@@ -116,8 +117,6 @@ class XmlActivity : AppCompatActivity() {
 		val amount = findViewById<EditText>(R.id.amount)
 		val buyerCountry = findViewById<EditText>(R.id.buyerCountry)
 		val stageTag = findViewById<EditText>(R.id.stageTag)
-
-
 		val ignoreCache = findViewById<SwitchMaterial>(R.id.ignoreCache)
 		val devTouchpoint = findViewById<SwitchMaterial>(R.id.devTouchpoint)
 
@@ -127,21 +126,21 @@ class XmlActivity : AppCompatActivity() {
 			Api.ignoreCache = ignoreCache.isChecked
 
 			if ( editedClientId?.text.toString().isNotBlank() ) {
-				payPalMessage.setClientId(editedClientId?.text.toString())
+				payPalMessage.clientId = editedClientId?.text.toString()
 			} else {
-				payPalMessage.setClientId("")
+				payPalMessage.clientId = ""
 			}
 
 			if ( amount?.text.toString().isNotBlank() ) {
-				payPalMessage.setAmount(amount?.text.toString().toDouble())
+				payPalMessage.amount = amount?.text.toString().toDouble()
 			} else {
-				payPalMessage.setAmount(null)
+				payPalMessage.amount = null
 			}
 
 			if ( buyerCountry?.text.toString().isNotBlank() ) {
-				payPalMessage.setBuyerCountry(buyerCountry?.text.toString())
+				payPalMessage.buyerCountry = buyerCountry?.text.toString()
 			} else {
-				payPalMessage.setBuyerCountry("US")
+				payPalMessage.buyerCountry = "US"
 			}
 
 			if ( color === PayPalMessageColor.WHITE ) {
@@ -156,7 +155,7 @@ class XmlActivity : AppCompatActivity() {
 				Api.stageTag = null
 			}
 
-			payPalMessage.setStyle(PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType))
+			payPalMessage.style = PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType)
 			payPalMessage.refresh()
 		}
 
@@ -178,42 +177,55 @@ class XmlActivity : AppCompatActivity() {
 
 		// Request message based on options
 		val submitButton = findViewById<Button>(R.id.submit)
-		submitButton.setOnClickListener {
-			updateMessageData()
-		}
+		submitButton.setOnClickListener { updateMessageData() }
 
-		// TODO add example of adding MessageView here instead of in XML
-		payPalMessage.setViewStates(
-			PayPalMessageViewState(
-				onLoading = {
-					Log.d(TAG, "onLoading")
-					progressBar.visibility = View.VISIBLE
-					resetButton.isEnabled = false
-					submitButton.isEnabled = false
-					Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
-				},
-				onError = {
-					Log.d(TAG, "onError")
-					progressBar.visibility = View.INVISIBLE
-					runOnUiThread {
-						resetButton.isEnabled = true
-						submitButton.isEnabled = true
-						Toast.makeText(this, it.javaClass.toString() + ":" + it.message + ":" + it.paypalDebugId, Toast.LENGTH_LONG).show()
-					}
-					it.message?.let { it1 -> Log.d("XmlActivity Error", it1) }
-					it.paypalDebugId?.let { it1 -> Log.d("XmlActivity Error", it1) }
-				},
-				onSuccess = {
-					Log.d(TAG, "onSuccess")
-					progressBar.visibility = View.INVISIBLE
-					runOnUiThread {
-						resetButton.isEnabled = true
-						submitButton.isEnabled = true
-						Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
-					}
-				},
-			),
+		payPalMessage.viewStateCallbacks = PayPalMessageViewStateCallbacks(
+			onLoading = {
+				Log.d(TAG, "onLoading")
+				progressBar.visibility = View.VISIBLE
+				resetButton.isEnabled = false
+				submitButton.isEnabled = false
+				Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
+			},
+			onError = {
+				Log.d(TAG, "onError")
+				progressBar.visibility = View.INVISIBLE
+				runOnUiThread {
+					resetButton.isEnabled = true
+					submitButton.isEnabled = true
+					Toast.makeText(this, it.javaClass.toString() + ":" + it.message + ":" + it.paypalDebugId, Toast.LENGTH_LONG).show()
+				}
+				it.message?.let { it1 -> Log.d("XmlActivity Error", it1) }
+				it.paypalDebugId?.let { it1 -> Log.d("XmlActivity Error", it1) }
+			},
+			onSuccess = {
+				Log.d(TAG, "onSuccess")
+				progressBar.visibility = View.INVISIBLE
+				runOnUiThread {
+					resetButton.isEnabled = true
+					submitButton.isEnabled = true
+					Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
+				}
+			},
 		)
 	}
 
+	/**
+	 * Prevents unused warnings inside of PayPalMessageView and PayPalMessageConfig
+	 */
+	@Suppress("unused")
+	fun useUnusedFunctions() {
+		binding = ActivityMessageBinding.inflate(layoutInflater)
+		setContentView(binding.root)
+
+		val message = binding.payPalMessage
+		val config = PayPalMessageConfig()
+		config.setGlobalAnalytics("", "")
+		message.config = config
+
+		message.placement = ""
+		message.logoType = PayPalMessageLogoType.INLINE
+		message.alignment = PayPalMessageAlign.CENTER
+		message.eventsCallbacks = PayPalMessageEventsCallbacks()
+	}
 }

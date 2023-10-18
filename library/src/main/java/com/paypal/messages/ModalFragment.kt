@@ -31,6 +31,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.paypal.messages.config.Channel
+import com.paypal.messages.config.CurrencyCode
 import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.errors.BaseException
@@ -55,17 +56,41 @@ internal class ModalFragment constructor(
 	private val offsetTop = 50.dp
 
 	private var modalUrl: String? = null
-	private var amount: Double? = null
-	private var currency: String? = null
-	private var buyerCountry: String? = null
-	private var offer: OfferType? = null
+
+	// MODAL CONFIG VALUES
+	var amount: Double? = null
+		set(amountArg) {
+			if (field != amountArg) {
+				field = amountArg
+				setJsValue(name = "amount", value = amountArg)
+			}
+		}
+	var buyerCountry: String? = null
+		set(buyerCountryArg) {
+			if (field != buyerCountryArg) {
+				field = buyerCountryArg
+				setJsValue(name = "buyerCountry", value = buyerCountry)
+			}
+		}
 	private var channel: Channel = Channel.NATIVE
-	private var ignoreCache: Boolean = false
+	var currencyCode: CurrencyCode? = null
+		set(currencyArg) {
+			if (field != currencyArg) {
+				field = currencyArg
+				setJsValue(name = "currency", value = currencyArg.toString())
+			}
+		}
 	private var devTouchpoint: Boolean = true
+	private var ignoreCache: Boolean = false
+	var offerType: OfferType? = null
+		set(offerArg) {
+			if (field != offerArg) {
+				field = offerArg
+				setJsValue(name = "offer", value = offerArg.toString())
+			}
+		}
 	private var stageTag: String? = null
 
-	// TODO: Support NATIVE_ANDROID
-	private var integrationIdentifier: String? = null
 	private var inErrorState: Boolean = false
 	private var currentUrl: String? = null
 	private var webView: WebView? = null
@@ -77,34 +102,6 @@ internal class ModalFragment constructor(
 	private fun <T> setJsValue(name: String, value: T) {
 		LogCat.debug(TAG, "$name changed. Calling actions.updateProps({'$name':$value})")
 		this.webView?.evaluateJavascript("javascript:actions.updateProps({'$name':$value});", null)
-	}
-
-	fun setAmount(amount: Double) {
-		if (this.amount != amount) {
-			this.amount = amount
-			setJsValue(name = "amount", value = amount)
-		}
-	}
-
-	fun setBuyerCountry(buyerCountry: String) {
-		if (this.buyerCountry != buyerCountry) {
-			this.buyerCountry = buyerCountry
-			setJsValue(name = "buyerCountry", value = buyerCountry)
-		}
-	}
-
-	fun setCurrency(currency: String) {
-		if (this.currency != currency) {
-			this.currency = currency
-			setJsValue(name = "currency", value = currency)
-		}
-	}
-
-	fun setOfferType(offerType: OfferType) {
-		if (this.offer != offerType) {
-			this.offer = offerType
-			setJsValue(name = "offer", value = offer.toString())
-		}
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")
@@ -270,16 +267,15 @@ internal class ModalFragment constructor(
 		this.amount = config.amount
 		this.buyerCountry = config.buyerCountry
 		this.channel = config.channel
-		this.currency = config.currency
-		this.devTouchpoint = config.devTouchpoint || false
+		this.currencyCode = config.currencyCode
+		this.devTouchpoint = config.devTouchpoint
 		this.ignoreCache = config.ignoreCache
-		this.offer = config.offer
+		this.offerType = config.offer
 		this.stageTag = config.stageTag
 
 		// Set Callbacks for Modal Actions
 		this.onClick = config.events?.onClick ?: {}
 		this.onLoading = config.events?.onLoading ?: {}
-		this.onSuccess = config.events?.onSuccess ?: {}
 		this.onSuccess = config.events?.onSuccess ?: {}
 		this.onError = config.events?.onError ?: {}
 		this.onCalculate = config.events?.onCalculate ?: {}
@@ -347,7 +343,7 @@ internal class ModalFragment constructor(
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 		logEvent(TrackingEvent(eventType = EventType.MODAL_OPEN))
 		this.onLoading()
-		val url = Api.createModalUrl(clientId, amount, buyerCountry, offer)
+		val url = Api.createModalUrl(clientId, amount, buyerCountry, offerType)
 
 		LogCat.debug(TAG, "Start show process for modal with webView: $webView")
 		val requestDuration = measureTimeMillis {
