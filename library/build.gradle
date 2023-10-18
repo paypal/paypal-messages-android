@@ -71,6 +71,7 @@ koverReport {
 					'*PayPalMessageViewState\$*',
 					'*ModalEvents\$*',
 					// io
+					'*Api$Endpoints',
 					'*ApiMessageData',
 					'*ApiHashData',
 					// utils

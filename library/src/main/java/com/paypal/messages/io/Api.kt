@@ -1,10 +1,13 @@
 package com.paypal.messages.io
 
+import android.content.Context
 import com.google.gson.Gson
 import com.paypal.messages.BuildConfig
 import com.paypal.messages.logger.TrackingPayload
 import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.Credentials
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -147,6 +150,24 @@ object Api {
 				PayPalErrors.FailedToFetchDataException("Hash Data IOException: ${error.message}"),
 			)
 		}
+	}
+
+	suspend fun getAndStoreNewHash(context: Context, messageConfig: MessageConfig): String? {
+		val clientId = messageConfig.data?.clientId ?: ""
+		val localStorage = LocalStorage(context)
+		val result = withContext(Dispatchers.IO) {
+			callMessageHashEndpoint(clientId)
+		}
+
+		var hash: String? = null
+		if (result is ApiResult.Success<*>) {
+			val data = result.response as ApiHashData.Response
+			localStorage.merchantHashData = data
+			hash = localStorage.merchantHash
+		}
+
+		LogCat.debug(TAG, "fetchNewHash hash: $hash")
+		return hash
 	}
 
 	fun createModalUrl(
