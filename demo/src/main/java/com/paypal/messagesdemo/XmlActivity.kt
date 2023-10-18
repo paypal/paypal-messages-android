@@ -3,7 +3,7 @@ package com.paypal.messagesdemo
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.*
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color
 import com.google.android.material.switchmaterial.SwitchMaterial
