@@ -1,12 +1,12 @@
 package com.paypal.messages.io
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.platform.runner.JUnitPlatform
 import org.junit.runner.RunWith
 
-@RunWith(JUnitPlatform::class)
+@RunWith(AndroidJUnit4::class)
 class LocalStorageTest {
 	@Test
 	fun testLocalStorage() {
