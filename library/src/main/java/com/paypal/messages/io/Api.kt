@@ -23,6 +23,9 @@ object Api {
 	private val client = OkHttpClient()
 	private val gson = Gson()
 	var environment = Env.SANDBOX
+	var devTouchpoint: Boolean = false
+	var ignoreCache: Boolean = false
+	var stageTag: String? = null
 	var instanceId: UUID? = null
 	var originatingInstanceId: UUID? = null
 	var sessionId: UUID? = null
@@ -48,11 +51,13 @@ object Api {
 
 	private fun HttpUrl.Builder.setMessageDataQuery(config: MessageConfig, hash: String?) {
 		addQueryParameter("client_id", config.data?.clientID)
-		addQueryParameter("devTouchpoint", "false")
+		addQueryParameter("devTouchpoint", devTouchpoint.toString())
+		addQueryParameter("ignore_cache", ignoreCache.toString())
 		addQueryParameter("env", environment.name.lowercase())
 		addQueryParameter("instance_id", instanceId.toString())
 		addQueryParameter("session_id", sessionId.toString())
 
+		if ( !stageTag.isNullOrBlank() ) { addQueryParameter("stage_tag", stageTag) }
 		config.style.logoType?.let { addQueryParameter("logo_type", it.name.lowercase()) }
 		config.data?.amount?.let { addQueryParameter("amount", it.toString()) }
 		config.data?.buyerCountry?.let { addQueryParameter("buyer_country", it) }

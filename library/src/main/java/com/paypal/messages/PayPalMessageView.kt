@@ -62,7 +62,16 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var messageTextView: TextView
 	private var updateInProgress = false
 
-	// DATA
+	var config: MessageConfig = config ?: MessageConfig()
+		set(configArg) {
+			field = configArg
+			updateFromConfig(configArg)
+			updateMessageContent()
+		}
+
+	/**
+	 * DATA
+	 */
 	var data: MessageData = config?.data ?: MessageData()
 		set(dataArg) {
 			if (field != dataArg) {
@@ -120,7 +129,9 @@ class PayPalMessageView @JvmOverloads constructor(
 			}
 		}
 
-	// STYLE
+	/**
+	 * STYLE
+	 */
 	var style: MessageStyle = config?.style ?: MessageStyle()
 		set(styleArg) {
 			if (field != styleArg) {
@@ -195,23 +206,6 @@ class PayPalMessageView @JvmOverloads constructor(
 		updateMessageContent()
 	}
 
-	/**
-	 * Updates the configuration associated with the [PayPalMessageView] component
-	 *
-	 * This function will also trigger an update in the component to get the new content based on the provided configuration
-	 */
-	fun setConfig(config: MessageConfig?) {
-		updateFromConfig(config)
-		updateMessageContent()
-		LogCat.debug(TAG, "Was Message Configured?") // TODO Remove
-	}
-
-	/**
-	 * ////////////////////////////
-	 * SINGLE CONFIG VALUE SETTERS
-	 * ////////////////////////////
-	 */
-
 	private fun showWebView(response: ActionResponse) {
 		val modal = modal ?: run {
 			val modal = ModalFragment(clientId)
@@ -274,7 +268,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			}
 			// Apply disclaimer style
 			messageDisclaimer?.let { builder.setupDisclaimer(color, it) }
-			// Apply the everything to the text view
+			// Apply everything to the text view
 			messageTextView.apply {
 				visibility = View.VISIBLE
 				setTextColor(ContextCompat.getColor(context, color.colorResId))
