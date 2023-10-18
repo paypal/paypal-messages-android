@@ -35,19 +35,12 @@ class XmlActivity : AppCompatActivity() {
 
 		val logoTypeRadioGroup = findViewById<RadioGroup>(R.id.logoTypeRadioGroup)
 		logoTypeRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-			when (checkedId) {
-				R.id.stylePrimary -> {
-					logoType = PayPalMessageLogoType.PRIMARY
-				}
-				R.id.styleInline -> {
-					logoType = PayPalMessageLogoType.INLINE
-				}
-				R.id.styleAlternative -> {
-					logoType = PayPalMessageLogoType.ALTERNATIVE
-				}
-				R.id.styleNone -> {
-					logoType = PayPalMessageLogoType.NONE
-				}
+			logoType = when (checkedId) {
+				R.id.stylePrimary -> PayPalMessageLogoType.PRIMARY
+				R.id.styleInline -> PayPalMessageLogoType.INLINE
+				R.id.styleAlternative -> PayPalMessageLogoType.ALTERNATIVE
+				R.id.styleNone -> PayPalMessageLogoType.NONE
+				else -> PayPalMessageLogoType.PRIMARY
 			}
 		}
 
@@ -89,23 +82,23 @@ class XmlActivity : AppCompatActivity() {
 		val payIn1 = findViewById<ToggleButton>(R.id.payIn1)
 		val credit = findViewById<ToggleButton>(R.id.credit)
 
-		fun updateOfferUi (offerName: String, isChecked: Boolean) {
+		fun updateOfferUi (offerName: PayPalMessageOfferType?, isChecked: Boolean) {
 			shortTerm.isChecked = false
 			longTerm.isChecked = false
 			payIn1.isChecked = false
 			credit.isChecked = false
 			offerType = null
 
-			if ( offerName == "short" && isChecked) {
+			if ( offerName == PayPalMessageOfferType.PAY_LATER_SHORT_TERM && isChecked) {
 				shortTerm.isChecked = true
 				offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
-			} else if ( offerName == "long" && isChecked) {
+			} else if ( offerName == PayPalMessageOfferType.PAY_LATER_LONG_TERM && isChecked) {
 				longTerm.isChecked = true
 				offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM
-			} else if ( offerName == "payin1" && isChecked) {
+			} else if ( offerName == PayPalMessageOfferType.PAY_LATER_PAY_IN_1 && isChecked) {
 				payIn1.isChecked = true
 				offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1
-			} else if ( offerName == "credit" && isChecked) {
+			} else if ( offerName == PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST && isChecked) {
 				credit.isChecked = true
 				offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
 			}
@@ -114,30 +107,31 @@ class XmlActivity : AppCompatActivity() {
 
 		}
 
-
 		shortTerm.setOnCheckedChangeListener { _, isChecked ->
-			updateOfferUi("short", isChecked)
+			updateOfferUi(PayPalMessageOfferType.PAY_LATER_SHORT_TERM, isChecked)
 		}
 		longTerm.setOnCheckedChangeListener { _, isChecked ->
-			updateOfferUi("long", isChecked)
+			updateOfferUi(PayPalMessageOfferType.PAY_LATER_LONG_TERM, isChecked)
 		}
 		payIn1.setOnCheckedChangeListener { _, isChecked ->
-			updateOfferUi("payin1", isChecked)
+			updateOfferUi(PayPalMessageOfferType.PAY_LATER_PAY_IN_1, isChecked)
 		}
 		credit.setOnCheckedChangeListener { _, isChecked ->
-			updateOfferUi("credit", isChecked)
+			updateOfferUi(PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST, isChecked)
 		}
 
 		val amount = findViewById<EditText>(R.id.amount)
-		val buyerCountry = findViewById<EditText>(R.id.buyercountry)
+		val buyerCountry = findViewById<EditText>(R.id.buyerCountry)
+		val stageTag = findViewById<EditText>(R.id.stageTag)
+
 
 		val ignoreCache = findViewById<Switch>(R.id.ignoreCache)
 		val devTouchpoint = findViewById<Switch>(R.id.devTouchpoint)
 
 		// Get the data from the selected options
 		fun updateMessageData() {
-			Api.devTouchpoint = devTouchpoint.isChecked.toString()
-			Api.ignoreCache = ignoreCache.isChecked.toString()
+			Api.devTouchpoint = devTouchpoint.isChecked
+			Api.ignoreCache = ignoreCache.isChecked
 
 			if ( editedClientId?.text.toString().isNotBlank() ) {
 				payPalMessage.setClientId(editedClientId?.text.toString())
@@ -163,6 +157,12 @@ class XmlActivity : AppCompatActivity() {
 				payPalMessage.setBackgroundColor(Color.White.hashCode())
 			}
 
+			if ( stageTag?.text.toString().isNotBlank() ) {
+				Api.stageTag = stageTag?.text.toString()
+			} else {
+				Api.stageTag = null
+			}
+
 			payPalMessage.setStyle(PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType))
 			payPalMessage.refresh()
 		}
@@ -174,7 +174,7 @@ class XmlActivity : AppCompatActivity() {
 			logoTypeRadioGroup.check(R.id.stylePrimary)
 			colorRadioGroup.check(R.id.styleBlack)
 			alignmentRadioGroup.check(R.id.styleLeft)
-			updateOfferUi("", false)
+			updateOfferUi(null, false)
 			ignoreCache.isChecked = false
 			devTouchpoint.isChecked = false
 			amount.setText("")

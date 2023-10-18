@@ -14,31 +14,26 @@
 			android:padding="16dp"
 	>
 
-		<TableLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content">
-
-			<TableRow
-					android:layout_width="match_parent"
-					android:layout_height="match_parent">
-				<TextView
-						android:text="Client ID"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/clientIdLabel"
-						android:layout_weight="1"
-						android:textSize="16sp"
-						android:textStyle="bold"/>
-				<EditText
-						android:text="@string/client_id"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:inputType="text"
-						android:ems="10"
-						android:id="@+id/clientId"
-						android:hint="Add Client ID"/>
-			</TableRow>
-		</TableLayout>
+		<TableRow
+			android:layout_width="match_parent"
+			android:layout_height="72dp">
+			<TextView
+				android:text="Client ID"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:id="@+id/clientIdLabel"
+				android:layout_weight="1"
+				android:textSize="16sp"
+				android:textStyle="bold"/>
+			<EditText
+				android:text="@string/client_id"
+				android:layout_width="wrap_content"
+				android:layout_height="48dp"
+				android:inputType="text"
+				android:ems="10"
+				android:id="@+id/clientId"
+				android:hint="Add Client ID"/>
+		</TableRow>
 
 		<TextView
 				android:text="Style Options"
@@ -50,107 +45,83 @@
 				android:textStyle="bold"
 				android:textSize="16sp"/>
 
-		<LinearLayout
-				android:orientation="horizontal"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent">
+		<RadioGroup
+			android:layout_width="match_parent"
+			android:layout_height="48dp"
+			android:orientation="horizontal"
+			android:id="@+id/logoTypeRadioGroup">
+			<RadioButton
+				android:text="Primary"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:checked="true"
+				android:id="@+id/stylePrimary"/>
+			<RadioButton
+				android:text="Inline"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:id="@+id/styleInline"/>
+			<RadioButton
+				android:text="Alternative"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:id="@+id/styleAlternative"/>
+			<RadioButton
+				android:text="None"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:id="@+id/styleNone"/>
+		</RadioGroup>
 
-			<RadioGroup
-					android:layout_width="match_parent"
-					android:layout_height="match_parent"
-					android:orientation="horizontal"
-					android:paddingBottom="16dp"
-					android:id="@+id/logoTypeRadioGroup">
-				<RadioButton
-						android:text="Primary"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:checked="true"
-						android:id="@+id/stylePrimary"/>
-				<RadioButton
-						android:text="Inline"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/styleInline"/>
-				<RadioButton
-						android:text="Alternative"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/styleAlternative"/>
-				<RadioButton
-						android:text="None"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/styleNone"/>
-			</RadioGroup>
-		</LinearLayout>
+		<RadioGroup
+			android:layout_width="match_parent"
+			android:layout_height="48dp"
+			android:orientation="horizontal"
+			android:id="@+id/colorRadioGroup">
 
-		<LinearLayout
-				android:orientation="horizontal"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent">
+			<RadioButton
+				android:text="Black"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:id="@+id/styleBlack" android:checked="true"/>
+			<RadioButton
+				android:text="White"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:id="@+id/styleWhite"/>
+			<RadioButton
+				android:text="Monochrome"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:id="@+id/styleMonochrome"/>
+			<RadioButton
+				android:text="Grayscale"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:id="@+id/styleGrayscale"/>
 
-			<RadioGroup
-					android:layout_width="match_parent"
-					android:layout_height="match_parent"
-					android:orientation="horizontal"
-					android:paddingBottom="16dp"
-					android:id="@+id/colorRadioGroup">
-
-				<RadioButton
-						android:text="Black"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/styleBlack" android:checked="true"/>
-				<RadioButton
-						android:text="White"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/styleWhite"/>
-				<RadioButton
-						android:text="Monochrome"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/styleMonochrome"/>
-				<RadioButton
-						android:text="Grayscale"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/styleGrayscale"/>
-
-			</RadioGroup>
-
-		</LinearLayout>
-
-		<LinearLayout
-				android:orientation="horizontal"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent">
-
-			<RadioGroup
-					android:layout_width="match_parent"
-					android:layout_height="match_parent"
-					android:orientation="horizontal"
-					android:paddingBottom="16dp"
-					android:id="@+id/alignmentRadioGroup">
-				<RadioButton
-						android:text="Left"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/styleLeft" android:checked="true"/>
-				<RadioButton
-						android:text="Center"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/styleCenter"/>
-				<RadioButton
-						android:text="Right"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/styleRight"/>
-			</RadioGroup>
-
-		</LinearLayout>
+		</RadioGroup>
+		<RadioGroup
+			android:layout_width="match_parent"
+			android:layout_height="48dp"
+			android:orientation="horizontal"
+			android:id="@+id/alignmentRadioGroup">
+			<RadioButton
+				android:text="Left"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:id="@+id/styleLeft" android:checked="true"/>
+			<RadioButton
+				android:text="Center"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:id="@+id/styleCenter"/>
+			<RadioButton
+				android:text="Right"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:id="@+id/styleRight"/>
+		</RadioGroup>
 
 		<TextView
 				android:text="Offer Type"
@@ -163,117 +134,117 @@
 				android:textSize="16sp"/>
 
 		<LinearLayout
-				android:orientation="horizontal"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent">
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="48dp">
 			<ToggleButton
-					android:text="Short Term"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content" android:id="@+id/shortTerm" android:layout_weight="1"
-					android:textSize="10sp"
-					android:textOn="Short Term" android:textOff="Short Term"/>
+				android:text="Short Term"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent" android:id="@+id/shortTerm" android:layout_weight="1"
+				android:textSize="10sp"
+				android:textOn="Short Term" android:textOff="Short Term"/>
 			<ToggleButton
-					android:text="Long Term"
-					android:layout_width="wrap_content"
-					android:textSize="10sp"
-					android:layout_height="wrap_content" android:id="@+id/longTerm" android:layout_weight="1"
-					android:textOn="Long Term" android:textOff="Long Term"/>
+				android:text="Long Term"
+				android:layout_width="wrap_content"
+				android:textSize="10sp"
+				android:layout_height="match_parent" android:id="@+id/longTerm" android:layout_weight="1"
+				android:textOn="Long Term" android:textOff="Long Term"/>
 			<ToggleButton
-					android:text="Pay in 1"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content" android:id="@+id/payIn1" android:layout_weight="1"
-					android:textSize="12sp"
-					android:textOn="Pay in 1" android:textOff="Pay in 1"/>
+				android:text="Pay in 1"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent" android:id="@+id/payIn1" android:layout_weight="1"
+				android:textSize="12sp"
+				android:textOn="Pay in 1" android:textOff="Pay in 1"/>
 			<ToggleButton
-					android:text="Credit"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content" android:id="@+id/credit" android:layout_weight="1"
-					android:textSize="12sp"
-					android:textOn="Credit" android:textOff="Credit"/>
+				android:text="Credit"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent" android:id="@+id/credit" android:layout_weight="1"
+				android:textSize="12sp"
+				android:textOn="Credit" android:textOff="Credit"/>
 		</LinearLayout>
 
-		<TableLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content">
-
-			<TableRow
-					android:layout_width="match_parent"
-					android:layout_height="match_parent">
-				<TextView
-						android:text="Amount"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/amountLabel"
-						android:layout_weight="1"
-						android:textStyle="bold"
-						android:textSize="16sp"/>
-				<EditText
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:inputType="text"
-						android:ems="10"
-						android:id="@+id/amount"
-						android:hint="0.00"/>
-
-			</TableRow>
-		</TableLayout>
-
-		<TableLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content">
-
-			<TableRow
-					android:layout_width="match_parent"
-					android:layout_height="match_parent">
-
-				<TextView
-						android:text="Buyer Country"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:id="@+id/buyerCountryLabel"
-						android:layout_weight="1"
-						android:textStyle="bold"
-						android:textSize="16sp"/>
-				<EditText
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:inputType="text"
-						android:ems="10"
-						android:id="@+id/buyercountry" android:hint="US"/>
-
-			</TableRow>
-		</TableLayout>
-
-		<TextView
-				android:text="Stage Tag"
-				android:layout_width="match_parent"
+		<TableRow
+			android:layout_width="match_parent"
+			android:layout_height="48dp">
+			<TextView
+				android:text="Amount"
+				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:id="@+id/stageTagLabel"
-				android:paddingTop="16dp"
-				android:paddingBottom="16dp"
+				android:id="@+id/amountLabel"
+				android:layout_weight="1"
 				android:textStyle="bold"
 				android:textSize="16sp"/>
+			<EditText
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:inputType="text"
+				android:ems="10"
+				android:id="@+id/amount"
+				android:hint="0.00"/>
+
+		</TableRow>
+
+		<TableRow
+			android:layout_width="match_parent"
+			android:layout_height="48dp">
+
+			<TextView
+				android:text="Buyer Country"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:id="@+id/buyerCountryLabel"
+				android:layout_weight="1"
+				android:textStyle="bold"
+				android:textSize="16sp"/>
+			<EditText
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:inputType="text"
+				android:ems="10"
+				android:id="@+id/buyerCountry" android:hint="US"/>
+
+		</TableRow>
+		<LinearLayout
+			android:orientation="horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="48dp">
+			<TextView
+				android:text="Stage Tag"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:id="@+id/stageTagLabel"
+				android:layout_weight="1"
+				android:textStyle="bold"
+				android:textSize="16sp"/>
+			<EditText
+				android:text=""
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:inputType="text"
+				android:ems="10"
+				android:id="@+id/stageTag" android:hint="Add Stage Tag"/>
+		</LinearLayout>
 
 		<RadioGroup
-				android:layout_width="match_parent"
+			android:layout_width="match_parent"
+			android:layout_height="48dp"
+			android:orientation="horizontal">
+
+			<Switch
+				android:text="Ignore Cache"
+				android:layout_width="wrap_content"
 				android:layout_height="match_parent"
-				android:orientation="horizontal">
+				android:id="@+id/ignoreCache"
+				android:textStyle="bold"
+				android:layout_weight="1"/>
 
 			<Switch
-					android:text="Ignore Cache"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/ignoreCache"
-					android:textStyle="bold"
-					android:layout_weight="1"/>
-
-			<Switch
-					android:text="Dev Touchpoint"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:id="@+id/devTouchpoint"
-					android:textStyle="bold"
-					android:layout_weight="1"/>
+				android:text="Dev Touchpoint"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:id="@+id/devTouchpoint"
+				android:textStyle="bold"
+				android:layout_weight="1"/>
 
 		</RadioGroup>
 
