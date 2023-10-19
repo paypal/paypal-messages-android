@@ -1,6 +1,7 @@
 package com.paypal.messages.config.modal
 
 import com.paypal.messages.config.Channel
+import com.paypal.messages.config.CurrencyCode
 import com.paypal.messages.config.PayPalMessageOfferType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -10,7 +11,7 @@ class ModalConfigTest {
 	fun testConstructor() {
 		val modalConfig = ModalConfig(
 			amount = 115.00,
-			currency = "USD",
+			currencyCode = CurrencyCode.USD,
 			buyerCountry = "US",
 			offer = PayPalMessageOfferType.PAY_LATER_SHORT_TERM,
 			ignoreCache = true,
@@ -28,7 +29,7 @@ class ModalConfigTest {
 		)
 
 		assertEquals(modalConfig.amount, 115.00)
-		assertEquals(modalConfig.currency, "USD")
+		assertEquals(modalConfig.currencyCode, CurrencyCode.USD)
 		assertEquals(modalConfig.buyerCountry, "US")
 		assertEquals(modalConfig.offer, PayPalMessageOfferType.PAY_LATER_SHORT_TERM)
 		assertEquals(modalConfig.channel, Channel.NATIVE)

@@ -6,7 +6,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 
-class PayPalMessageViewStateTest {
+class PayPalMessageViewStateCallbacksTest {
 	@Test
 	fun testConstructor() {
 		val onLoadingMock = mockk<() -> Unit>("onLoadingMock")
@@ -16,7 +16,7 @@ class PayPalMessageViewStateTest {
 		val onErrorMock = mockk<(error: PayPalErrors.Base) -> Unit>("onErrorMock")
 		every { onErrorMock(any()) } answers {}
 
-		val messageViewState = PayPalMessageViewState(
+		val messageViewState = PayPalMessageViewStateCallbacks(
 			onLoading = onLoadingMock,
 			onSuccess = onSuccessMock,
 			onError = onErrorMock,

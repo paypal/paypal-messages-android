@@ -5,7 +5,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 
-class PayPalMessageEventsTest {
+class PayPalMessageEventsCallbacksTest {
 	@Test
 	fun testConstructor() {
 		val onClickMock = mockk<() -> Unit>("onClickMock")
@@ -13,7 +13,7 @@ class PayPalMessageEventsTest {
 		val onApplyMock = mockk<() -> Unit>("onApplyMock")
 		every { onApplyMock() } answers {}
 
-		val messageEvents = PayPalMessageEvents(
+		val messageEvents = PayPalMessageEventsCallbacks(
 			onClick = onClickMock,
 			onApply = onApplyMock,
 		)

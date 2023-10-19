@@ -10,7 +10,7 @@ class PayPalMessageDataTest {
 	@Test
 	fun testConstructor() {
 		val data = PayPalMessageData(
-			clientId = "client_id_test",
+			clientID = "client_id_test",
 			amount = 115.0,
 			placement = "placement_test",
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
@@ -21,7 +21,7 @@ class PayPalMessageDataTest {
 			environment = PayPalEnvironment.LOCAL,
 		)
 
-		assertEquals(data.clientId, "client_id_test")
+		assertEquals(data.clientID, "client_id_test")
 		assertEquals(data.amount, 115.0)
 		assertEquals(data.placement, "placement_test")
 		assertEquals(data.offerType, PayPalMessageOfferType.PAY_LATER_PAY_IN_1)
