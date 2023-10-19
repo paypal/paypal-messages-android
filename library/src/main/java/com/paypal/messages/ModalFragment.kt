@@ -99,8 +99,8 @@ internal class ModalFragment constructor(
 	private var instanceId = UUID.randomUUID()
 
 	private fun <T> setJsValue(name: String, value: T) {
-		LogCat.debug(TAG, "$name changed. Calling actions.updateProps({'$name':$value})")
-		this.webView?.evaluateJavascript("javascript:actions.updateProps({'$name':$value});", null)
+		LogCat.debug(TAG, "$name changed. Calling actions.updateProps({'$name':'$value'})")
+		this.webView?.evaluateJavascript("javascript:actions.updateProps({'$name':'$value'});", null)
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")

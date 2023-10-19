@@ -98,7 +98,8 @@ object Api {
 
 			if (code != 200) return ApiResult.Failure(PayPalErrors.FailedToFetchDataException("Code was $code"))
 
-			LogCat.debug(TAG, "callMessageDataEndpoint response: $bodyJson")
+			val bodyJsonNoFdata = bodyJson?.replace(""""fdata":".*?"""".toRegex(), "")
+			LogCat.debug(TAG, "callMessageDataEndpoint response: $bodyJsonNoFdata")
 			val body = gson.fromJson(bodyJson, ApiMessageData.Response::class.java)
 
 			val isValidResponse = body?.content != null && body.meta != null
@@ -246,7 +247,8 @@ object Api {
 			post(json.toRequestBody("application/json".toMediaType()))
 		}.build()
 
-		LogCat.debug(TAG, "createLoggerRequest: $request\npayloadJson: $json")
+		val jsonNoFdata = json.replace(""""fdata":".*?"""".toRegex(), "")
+		LogCat.debug(TAG, "createLoggerRequest: $request\npayloadJson: $jsonNoFdata")
 		return request
 	}
 
