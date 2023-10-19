@@ -77,23 +77,26 @@ class XmlActivity : AppCompatActivity() {
 		val payIn1 = findViewById<ToggleButton>(R.id.payIn1)
 		val credit = findViewById<ToggleButton>(R.id.credit)
 
-		fun updateOfferUi (offerName: PayPalMessageOfferType?, isChecked: Boolean) {
+		fun updateOfferUi(offerName: PayPalMessageOfferType?, isChecked: Boolean) {
 			shortTerm.isChecked = false
 			longTerm.isChecked = false
 			payIn1.isChecked = false
 			credit.isChecked = false
 			offerType = null
 
-			if ( offerName == PayPalMessageOfferType.PAY_LATER_SHORT_TERM && isChecked) {
+			if (offerName == PayPalMessageOfferType.PAY_LATER_SHORT_TERM && isChecked) {
 				shortTerm.isChecked = true
 				offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
-			} else if ( offerName == PayPalMessageOfferType.PAY_LATER_LONG_TERM && isChecked) {
+			}
+			else if (offerName == PayPalMessageOfferType.PAY_LATER_LONG_TERM && isChecked) {
 				longTerm.isChecked = true
 				offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM
-			} else if ( offerName == PayPalMessageOfferType.PAY_LATER_PAY_IN_1 && isChecked) {
+			}
+			else if (offerName == PayPalMessageOfferType.PAY_LATER_PAY_IN_1 && isChecked) {
 				payIn1.isChecked = true
 				offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1
-			} else if ( offerName == PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST && isChecked) {
+			}
+			else if (offerName == PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST && isChecked) {
 				credit.isChecked = true
 				offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
 			}
@@ -127,9 +130,10 @@ class XmlActivity : AppCompatActivity() {
 
 			val clientId = clientIdEdit?.text.toString()
 			payPalMessage.clientId = clientId.ifBlank { "" }
-			if ( clientIdEdit?.text.toString().isNotBlank() ) {
+			if (clientIdEdit?.text.toString().isNotBlank()) {
 				payPalMessage.clientId = clientIdEdit?.text.toString()
-			} else {
+			}
+			else {
 				payPalMessage.clientId = ""
 			}
 
@@ -145,7 +149,8 @@ class XmlActivity : AppCompatActivity() {
 			val stageTag = stageTagEdit?.text.toString()
 			Api.stageTag = stageTag.ifBlank { null }
 
-			payPalMessage.style = PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType)
+			payPalMessage.style =
+				PayPalMessageStyle(textAlign = alignment, color = color, logoType = logoType)
 			payPalMessage.refresh()
 		}
 
@@ -183,7 +188,8 @@ class XmlActivity : AppCompatActivity() {
 				runOnUiThread {
 					resetButton.isEnabled = true
 					submitButton.isEnabled = true
-					Toast.makeText(this, it.javaClass.toString() + ":" + it.message + ":" + it.debugId, Toast.LENGTH_LONG).show()
+					Toast.makeText(this, it.javaClass.toString() + ":" + it.message + ":" + it.debugId, Toast.LENGTH_LONG)
+						.show()
 				}
 				it.message?.let { it1 -> Log.d("XmlActivity Error", it1) }
 				it.debugId?.let { it1 -> Log.d("XmlActivity Error", it1) }
