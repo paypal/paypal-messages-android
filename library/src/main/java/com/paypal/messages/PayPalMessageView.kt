@@ -81,7 +81,6 @@ class PayPalMessageView @JvmOverloads constructor(
 					modal?.currencyCode = dataArg.currencyCode
 					modal?.offerType = dataArg.offerType
 				}
-				updateMessageContent()
 			}
 		}
 	var clientId: String = data.clientID
@@ -133,10 +132,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 */
 	var style: MessageStyle = config?.style ?: MessageStyle()
 		set(styleArg) {
-			if (field != styleArg) {
-				field = styleArg
-				updateMessageUi()
-			}
+			if (field != styleArg) field = styleArg
 		}
 	var color: Color = Color.BLACK
 		get() = style.color ?: Color.BLACK

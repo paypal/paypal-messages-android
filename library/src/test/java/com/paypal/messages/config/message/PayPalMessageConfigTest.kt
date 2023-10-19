@@ -8,20 +8,20 @@ class PayPalMessageConfigTest {
 	fun testConstructor() {
 		val data = PayPalMessageData()
 		val style = PayPalMessageStyle()
-		val viewState = PayPalMessageViewState()
-		val events = PayPalMessageEvents()
+		val viewStateCallbacks = PayPalMessageViewStateCallbacks()
+		val eventsCallbacks = PayPalMessageEventsCallbacks()
 
 		val config = PayPalMessageConfig(
 			data = data,
 			style = style,
-			viewState = viewState,
-			events = events,
+			viewStateCallbacks = viewStateCallbacks,
+			eventsCallbacks = eventsCallbacks,
 		)
 
 		assertEquals(config.data, data)
 		assertEquals(config.style, style)
-		assertEquals(config.viewState, viewState)
-		assertEquals(config.events, events)
+		assertEquals(config.viewStateCallbacks, viewStateCallbacks)
+		assertEquals(config.eventsCallbacks, eventsCallbacks)
 	}
 
 // 	@Test
@@ -35,7 +35,7 @@ class PayPalMessageConfigTest {
 // 		every { mockLogger.setGlobalAnalytics(name, version) } answers {}
 
 		// Create a PayPalMessageConfig object.
-		val paypalMessageConfig = PayPalMessageConfig(PayPalMessageData(clientId = "1"))
+		val paypalMessageConfig = PayPalMessageConfig(PayPalMessageData(clientID = "1"))
 
 		// Set the integration name and version.
 		paypalMessageConfig.setGlobalAnalytics(name, version)
