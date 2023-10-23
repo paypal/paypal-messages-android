@@ -9,7 +9,7 @@ import kotlin.math.roundToInt
 
 @RunWith(AndroidJUnit4::class)
 class IntTest {
- 	@Test
+	@Test
 	fun testDpExtension() {
 		val basicInteger = 10
 		val expectedDp = (basicInteger * Resources.getSystem().displayMetrics.density).roundToInt()
