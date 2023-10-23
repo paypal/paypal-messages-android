@@ -67,21 +67,28 @@ koverReport {
 			excludes {
 				classes(
 					// config
-					'*PayPalMessageEvents\$*',
-					'*PayPalMessageViewState\$*',
-					'*ModalEvents\$*',
+					'com.paypal.messages.config.message.PayPalMessageEventsCallbacks\$*',
+					'com.paypal.messages.config.message.PayPalMessageViewStateCallbacks\$*',
+					'com.paypal.messages.config.modal.ModalEvents\$*',
+					// extensions,
+					'com.paypal.messages.extensions.*',
 					// io
-					'*Api$Endpoints',
-					'*ApiMessageData',
-					'*ApiHashData',
+					'com.paypal.messages.io.Api$Endpoints',
+					'com.paypal.messages.io.ApiMessageData',
+					'com.paypal.messages.io.ApiHashData',
+					'com.paypal.messages.io.LocalStorage*',
+					// logger,
+					'com.paypal.messages.logger.Logger*',
 					// utils
-					'*LogCat*',
-					'*PayPalErrors',
+					'com.paypal.messages.utils.LogCat*',
+					'com.paypal.messages.utils.PayPalErrors',
 					// UI Stuff
 					'*Fragment',
 					'*Fragment\$*',
 					'*Activity',
 					'*Activity\$*',
+					'com.paypal.messages.PayPalMessageView*',
+					'com.paypal.messages.RoundedWebView',
 					'*.databinding.*',
 					'*.BuildConfig'
 				)
