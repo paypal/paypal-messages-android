@@ -1,6 +1,6 @@
 package com.paypal.messages.config.message.style
 
-import com.paypal.messages.errors.IllegalEnumArg
+import com.paypal.messages.utils.PayPalErrors
 
 /**
  * [PayPalMessageAlign] provides different variations of text alignments supported by the PayPalMessage component
@@ -16,16 +16,15 @@ enum class PayPalMessageAlign(val value: Int) {
 	companion object {
 		/**
 		 * Given an [attributeIndex] this will provide the correct [PayPalMessageAlign].
-		 * If an invalid [attributeIndex] is provided then it will throw an [IllegalArgumentException].
 		 *
-		 * @throws [IllegalArgumentException] when an invalid index is provided.
+		 * @throws [PayPalErrors.IllegalEnumArg] when an invalid index is provided.
 		 */
 		operator fun invoke(attributeIndex: Int): PayPalMessageAlign {
 			return when (attributeIndex) {
 				LEFT.value -> LEFT
 				CENTER.value -> CENTER
 				RIGHT.value -> RIGHT
-				else -> throw IllegalEnumArg("LogoAlignment", 3)
+				else -> throw PayPalErrors.IllegalEnumArg("LogoAlignment", 3)
 			}
 		}
 	}

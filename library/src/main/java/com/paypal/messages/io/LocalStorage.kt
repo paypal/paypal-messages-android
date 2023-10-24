@@ -10,6 +10,7 @@ class LocalStorage constructor(context: Context) {
 	private val sharedPrefs = context.getSharedPreferences(key, Context.MODE_PRIVATE)
 	private val currentTimestamp = System.currentTimeMillis() / 1000
 	private val gson = Gson()
+	private var isFirstRetrieval = true
 
 	enum class StorageKeys(private val keyName: String) {
 		MERCHANT_HASH_DATA("merchantProfileHashData"),
@@ -21,13 +22,20 @@ class LocalStorage constructor(context: Context) {
 		}
 	}
 
-	var merchantHashData: HashActionResponse?
+	var merchantHashData: ApiHashData.Response?
 		get() {
 			val storage = sharedPrefs.getString("${StorageKeys.MERCHANT_HASH_DATA}", null)
-			LogCat.debug(TAG, "Retrieving hash from local storage:\n$storage")
 			if (storage !== null) {
-				val storageFromString = gson.fromJson(storage, HashActionResponse::class.java)
-				LogCat.debug(TAG, "Converted local storage string to json:\n$storageFromString")
+				val storageFromString = gson.fromJson(storage, ApiHashData.Response::class.java)
+				if (isFirstRetrieval) {
+					LogCat.debug(
+						TAG,
+						"Converted storage string:\n" +
+							"  storage string: $storage\n" +
+							"  Api Hash Data : $storageFromString",
+					)
+					isFirstRetrieval = false
+				}
 				return storageFromString
 			}
 			return null
@@ -38,6 +46,7 @@ class LocalStorage constructor(context: Context) {
 			editor.putString("${StorageKeys.MERCHANT_HASH_DATA}", hashDataArg?.toJson())
 			editor.apply()
 			timestamp = currentTimestamp
+			isFirstRetrieval = true
 		}
 
 	val isCacheFlowDisabled: Boolean?
@@ -48,7 +57,7 @@ class LocalStorage constructor(context: Context) {
 		get() = merchantHashData?.ttlSoft
 	val hardTtl: Long?
 		get() = merchantHashData?.ttlHard
-	var timestamp: Long
+	private var timestamp: Long
 		get() = sharedPrefs.getLong("${StorageKeys.TIMESTAMP}", currentTimestamp)
 		set(timestampArg) {
 			val editor = sharedPrefs.edit()

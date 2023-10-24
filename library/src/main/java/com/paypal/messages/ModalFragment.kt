@@ -34,8 +34,6 @@ import com.paypal.messages.config.Channel
 import com.paypal.messages.config.CurrencyCode
 import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.config.modal.ModalConfig
-import com.paypal.messages.errors.BaseException
-import com.paypal.messages.errors.ModalFailedToLoad
 import com.paypal.messages.extensions.dp
 import com.paypal.messages.io.Api
 import com.paypal.messages.logger.ComponentType
@@ -44,6 +42,7 @@ import com.paypal.messages.logger.Logger
 import com.paypal.messages.logger.TrackingComponent
 import com.paypal.messages.logger.TrackingEvent
 import com.paypal.messages.utils.LogCat
+import com.paypal.messages.utils.PayPalErrors
 import java.net.URI
 import java.util.UUID
 import kotlin.system.measureTimeMillis
@@ -100,8 +99,8 @@ internal class ModalFragment constructor(
 	private var instanceId = UUID.randomUUID()
 
 	private fun <T> setJsValue(name: String, value: T) {
-		LogCat.debug(TAG, "$name changed. Calling actions.updateProps({'$name':$value})")
-		this.webView?.evaluateJavascript("javascript:actions.updateProps({'$name':$value});", null)
+		LogCat.debug(TAG, "$name changed. Calling actions.updateProps({'$name':'$value'})")
+		this.webView?.evaluateJavascript("javascript:actions.updateProps({'$name':'$value'});", null)
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")
@@ -289,7 +288,7 @@ internal class ModalFragment constructor(
 
 	// Handles showing the error screen when the browser errors
 	fun handleError(error: WebResourceError?) {
-		val errorName = ModalFailedToLoad::class.java.simpleName
+		val errorName = PayPalErrors.ModalFailedToLoad::class.java.simpleName
 		val errorDescription = "Browser Error ${error?.description}"
 		LogCat.debug(TAG, "$errorName - $errorDescription")
 
@@ -297,7 +296,7 @@ internal class ModalFragment constructor(
 		openModalInBrowser()
 		this.dismiss()
 		inErrorState = true
-		this.onError(ModalFailedToLoad(errorDescription))
+		this.onError(PayPalErrors.ModalFailedToLoad(errorDescription))
 		logEvent(
 			TrackingEvent(
 				eventType = EventType.MODAL_ERROR,
@@ -309,7 +308,7 @@ internal class ModalFragment constructor(
 
 	// Handles showing the error screen when there's an HTTP error
 	fun handleError(error: WebResourceResponse?) {
-		val errorName = ModalFailedToLoad::class.java.simpleName
+		val errorName = PayPalErrors.ModalFailedToLoad::class.java.simpleName
 		val errorDescription = "HTTP Error ${error?.statusCode}, ${error?.reasonPhrase}"
 		LogCat.debug(TAG, "$errorName - $errorDescription")
 
@@ -317,7 +316,7 @@ internal class ModalFragment constructor(
 		openModalInBrowser()
 		this.dismiss()
 		inErrorState = true
-		this.onError(ModalFailedToLoad(errorDescription))
+		this.onError(PayPalErrors.ModalFailedToLoad(errorDescription))
 		logEvent(
 			TrackingEvent(
 				eventType = EventType.MODAL_ERROR,
@@ -463,7 +462,7 @@ internal class ModalFragment constructor(
 	// Callbacks used in Modal
 	var onLoading: () -> Unit = {}
 	private var onSuccess: () -> Unit = {}
-	var onError: (error: BaseException) -> Unit = {}
+	var onError: (error: PayPalErrors.Base) -> Unit = {}
 	var onApply: () -> Unit = {}
 
 	// Grab from Message

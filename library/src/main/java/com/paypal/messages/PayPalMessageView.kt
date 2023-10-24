@@ -22,10 +22,8 @@ import androidx.core.content.res.use
 import com.paypal.messages.config.CurrencyCode
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.config.modal.ModalEvents
-import com.paypal.messages.errors.BaseException
-import com.paypal.messages.io.Action
-import com.paypal.messages.io.ActionResponse
 import com.paypal.messages.io.Api
+import com.paypal.messages.io.ApiMessageData
 import com.paypal.messages.io.ApiResult
 import com.paypal.messages.io.OnActionCompleted
 import com.paypal.messages.logger.ComponentType
@@ -34,6 +32,7 @@ import com.paypal.messages.logger.Logger
 import com.paypal.messages.logger.TrackingComponent
 import com.paypal.messages.logger.TrackingEvent
 import com.paypal.messages.utils.LogCat
+import com.paypal.messages.utils.PayPalErrors
 import java.util.UUID
 import kotlin.system.measureTimeMillis
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
@@ -62,7 +61,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var messageTextView: TextView
 	private var updateInProgress = false
 
-	var config: MessageConfig = config ?: MessageConfig()
+	var config: MessageConfig = config ?: MessageConfig(data = MessageData())
 		set(configArg) {
 			field = configArg
 			updateFromConfig(configArg)
@@ -82,7 +81,6 @@ class PayPalMessageView @JvmOverloads constructor(
 					modal?.currencyCode = dataArg.currencyCode
 					modal?.offerType = dataArg.offerType
 				}
-				updateMessageContent()
 			}
 		}
 	var clientId: String = data.clientID
@@ -134,10 +132,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 */
 	var style: MessageStyle = config?.style ?: MessageStyle()
 		set(styleArg) {
-			if (field != styleArg) {
-				field = styleArg
-				updateMessageUi()
-			}
+			if (field != styleArg) field = styleArg
 		}
 	var color: Color = Color.BLACK
 		get() = style.color ?: Color.BLACK
@@ -164,7 +159,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var onSuccess: () -> Unit
 		get() = viewStateCallbacks.onSuccess
 		set(onSuccessArg) { viewStateCallbacks.onSuccess = onSuccessArg }
-	var onError: (error: BaseException) -> Unit
+	var onError: (error: PayPalErrors.Base) -> Unit
 		get() = viewStateCallbacks.onError
 		set(onErrorArg) { viewStateCallbacks.onError = onErrorArg }
 
@@ -179,7 +174,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		set(onApplyArg) { eventsCallbacks.onApply = onApplyArg }
 
 	// Full Message Data
-	private var actionResponseData: ActionResponse? = null
+	private var messageDataResponse: ApiMessageData.Response? = null
 
 	// Message Content
 	private var logo = Logo()
@@ -206,7 +201,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		updateMessageContent()
 	}
 
-	private fun showWebView(response: ActionResponse) {
+	private fun showWebView(response: ApiMessageData.Response) {
 		val modal = modal ?: run {
 			val modal = ModalFragment(clientId)
 			// Build modal config
@@ -374,7 +369,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	}
 
 	/**
-	 * This function updates the message content making use of the [Action] to fetch the data.
+	 * This function updates message content uses [Api.getMessageWithHash] to fetch the data.
 	 */
 	private fun updateMessageContent() {
 		if (!updateInProgress) {
@@ -386,10 +381,12 @@ class PayPalMessageView @JvmOverloads constructor(
 			updateInProgress = true
 			LogCat.debug(TAG, "Firing request to get message")
 
-			val action = Action(context = context)
-
 			requestDuration = measureTimeMillis {
-				action.execute(MessageConfig(data = data, style = style), this)
+				Api.getMessageWithHash(
+					context,
+					MessageConfig(data = data, style = style),
+					this,
+				)
 			}.toInt()
 		}
 	}
@@ -400,7 +397,7 @@ class PayPalMessageView @JvmOverloads constructor(
 				LogCat.debug(TAG, "onActionCompleted Success")
 				val renderDuration = measureTimeMillis {
 					viewStateCallbacks.onSuccess.invoke()
-					this.actionResponseData = result.response as ActionResponse
+					this.messageDataResponse = result.response as ApiMessageData.Response
 					updateContentValues(result.response)
 					updateMessageUi()
 				}.toInt()
@@ -428,7 +425,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 * This function updates local values related to the message content
 	 * @param response the response obtained from the message content fetch process
 	 */
-	private fun updateContentValues(response: ActionResponse) {
+	private fun updateContentValues(response: ApiMessageData.Response) {
 		messageContent = formatMessageContent(response, logoType)
 		messageLogoTag = response.meta?.variables?.logoPlaceholder
 		messageDisclaimer = response.content?.default?.disclaimer
@@ -448,11 +445,11 @@ class PayPalMessageView @JvmOverloads constructor(
 	}
 
 	/**
-	 * Formats the message content based on the [ActionResponse] and [LogoType]
+	 * Formats the message content based on the [ApiMessageData.Response] and [LogoType]
 	 * The formatted message would depend on the values provided by the response and will later be used as the content of the [PayPalMessageView] component
 	 */
 	private fun formatMessageContent(
-		response: ActionResponse,
+		response: ApiMessageData.Response,
 		logoType: LogoType,
 	): String {
 		val builder = StringBuilder()
@@ -485,7 +482,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 * This function setup the [Logo] used as part of the [PayPalMessageView] component content.
 	 * The asset to use and how to locate it will depend on the provided information.
 	 * @param logoAsset the asset to use as part of the component. It can be an image or a string.
-	 * @param logoTag the logo placeholder provided as part of the [ActionResponse]
+	 * @param logoTag the logo placeholder provided as part of the [ApiMessageData.Response]
 	 * @param lineHeight the textview line height use for resizing the image logo assets
 	 */
 	private fun SpannableStringBuilder.setupMessageLogo(
@@ -526,7 +523,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	/**
 	 * This function setups the disclaimer used as part of the [PayPalMessageView] component content.
 	 * @param color the current [Color] that will be used to format the disclaimer text style
-	 * @param disclaimer the disclaimer text provided as part of the [ActionResponse]
+	 * @param disclaimer the disclaimer text provided as part of the [ApiMessageData.Response]
 	 */
 	private fun SpannableStringBuilder.setupDisclaimer(
 		color: Color,
@@ -560,12 +557,12 @@ class PayPalMessageView @JvmOverloads constructor(
 			styleLogoType = this.logoType,
 			styleColor = this.color,
 			styleTextAlign = this.alignment,
-			messageType = this.actionResponseData?.meta?.messageType,
-			fdata = this.actionResponseData?.meta?.fdata,
-			debugId = this.actionResponseData?.meta?.debug_id,
-			creditProductIdentifiers = this.actionResponseData?.meta?.creditProductIdentifiers as MutableList<String>?,
-			offerCountryCode = this.actionResponseData?.meta?.offerCountryCode,
-			merchantCountryCode = this.actionResponseData?.meta?.merchantCountryCode,
+			messageType = this.messageDataResponse?.meta?.messageType,
+			fdata = this.messageDataResponse?.meta?.fdata,
+			debugId = this.messageDataResponse?.meta?.debugId,
+			creditProductIdentifiers = this.messageDataResponse?.meta?.creditProductIdentifiers as MutableList<String>?,
+			offerCountryCode = this.messageDataResponse?.meta?.offerCountryCode,
+			merchantCountryCode = this.messageDataResponse?.meta?.merchantCountryCode,
 			type = ComponentType.MESSAGE.toString(),
 			instanceId = Api.instanceId.toString(),
 			originatingInstanceId = Api.originatingInstanceId.toString(),

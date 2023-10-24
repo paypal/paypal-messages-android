@@ -10,7 +10,7 @@ import com.paypal.messages.logger.Logger
  * @param eventsCallbacks - [PayPalMessageEventsCallbacks] model with callbacks used to track the interaction with the message component
  */
 data class PayPalMessageConfig(
-	var data: PayPalMessageData? = null,
+	var data: PayPalMessageData,
 	var style: PayPalMessageStyle = PayPalMessageStyle(),
 	var viewStateCallbacks: PayPalMessageViewStateCallbacks? = null,
 	var eventsCallbacks: PayPalMessageEventsCallbacks? = null,
@@ -19,6 +19,8 @@ data class PayPalMessageConfig(
 		integrationName: String,
 		integrationVersion: String,
 	) {
-		Logger.getInstance(data?.clientID ?: "").setGlobalAnalytics(integrationName, integrationVersion)
+		if (data.clientID != "") {
+			Logger.getInstance(data.clientID).setGlobalAnalytics(integrationName, integrationVersion)
+		}
 	}
 }
