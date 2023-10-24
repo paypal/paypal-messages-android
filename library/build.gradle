@@ -73,7 +73,7 @@ koverReport {
 					// extensions,
 					'com.paypal.messages.extensions.*',
 					// io
-					'com.paypal.messages.io.Api$Endpoints',
+					'com.paypal.messages.io.Api\$Endpoints',
 					'com.paypal.messages.io.ApiMessageData',
 					'com.paypal.messages.io.ApiHashData',
 					'com.paypal.messages.io.LocalStorage*',

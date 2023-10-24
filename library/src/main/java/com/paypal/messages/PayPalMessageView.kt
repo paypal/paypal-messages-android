@@ -61,7 +61,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var messageTextView: TextView
 	private var updateInProgress = false
 
-	var config: MessageConfig = config ?: MessageConfig()
+	var config: MessageConfig = config ?: MessageConfig(data = MessageData())
 		set(configArg) {
 			field = configArg
 			updateFromConfig(configArg)

@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageConfig
+import com.paypal.messages.config.message.PayPalMessageData
 import com.paypal.messages.config.message.PayPalMessageEventsCallbacks
 import com.paypal.messages.config.message.PayPalMessageStyle
 import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
@@ -215,7 +216,7 @@ class XmlActivity : AppCompatActivity() {
 		setContentView(binding.root)
 
 		val message = binding.payPalMessage
-		val config = PayPalMessageConfig()
+		val config = PayPalMessageConfig(data = PayPalMessageData())
 		config.setGlobalAnalytics("", "")
 		message.config = config
 
