@@ -20,15 +20,10 @@ import androidx.core.content.res.getFloatOrThrow
 import androidx.core.content.res.getIntOrThrow
 import androidx.core.content.res.use
 import com.paypal.messages.config.CurrencyCode
-import com.paypal.messages.config.message.style.PayPalMessageAlign
-import com.paypal.messages.config.message.style.PayPalMessageColor
-import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.config.modal.ModalEvents
-import com.paypal.messages.errors.BaseException
-import com.paypal.messages.io.Action
-import com.paypal.messages.io.ActionResponse
 import com.paypal.messages.io.Api
+import com.paypal.messages.io.ApiMessageData
 import com.paypal.messages.io.ApiResult
 import com.paypal.messages.io.OnActionCompleted
 import com.paypal.messages.logger.ComponentType
@@ -37,14 +32,15 @@ import com.paypal.messages.logger.Logger
 import com.paypal.messages.logger.TrackingComponent
 import com.paypal.messages.logger.TrackingEvent
 import com.paypal.messages.utils.LogCat
+import com.paypal.messages.utils.PayPalErrors
 import java.util.UUID
 import kotlin.system.measureTimeMillis
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
 import com.paypal.messages.config.message.PayPalMessageData as MessageData
-import com.paypal.messages.config.message.PayPalMessageEvents as MessageEvents
+import com.paypal.messages.config.message.PayPalMessageEventsCallbacks as MessageEvents
 import com.paypal.messages.config.message.PayPalMessageStyle as MessageStyle
-import com.paypal.messages.config.message.PayPalMessageViewState as MessageViewState
+import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks as MessageViewState
 import com.paypal.messages.config.message.style.PayPalMessageAlign as Align
 import com.paypal.messages.config.message.style.PayPalMessageColor as Color
 import com.paypal.messages.config.message.style.PayPalMessageLogoType as LogoType
@@ -63,22 +59,122 @@ class PayPalMessageView @JvmOverloads constructor(
 ) : LinearLayout(context, attributeSet, defStyleAttr), OnActionCompleted {
 	private val TAG = "PayPalMessage"
 	private var messageTextView: TextView
-
-	// Config values
-	private var clientId: String = config?.data?.clientId ?: ""
 	private var updateInProgress = false
-	private var amount: Double? = null
-	private var placement: String? = null
-	private var offerType: OfferType? = null
-	private var buyerCountry: String? = null
-	private var currencyCode: CurrencyCode? = null
+
+	var config: MessageConfig = config ?: MessageConfig(data = MessageData())
+		set(configArg) {
+			field = configArg
+			updateFromConfig(configArg)
+			updateMessageContent()
+		}
+
+	/**
+	 * DATA
+	 */
+	var data: MessageData = config?.data ?: MessageData()
+		set(dataArg) {
+			if (field != dataArg) {
+				field = dataArg
+				if (modal != null) {
+					modal?.amount = dataArg.amount
+					modal?.buyerCountry = dataArg.buyerCountry
+					modal?.currencyCode = dataArg.currencyCode
+					modal?.offerType = dataArg.offerType
+				}
+			}
+		}
+	var clientId: String = data.clientID
+		get() = data.clientID
+		set(clientIdArg) {
+			// TODO call out null/empty client ID
+			if (field != clientIdArg) data = data.merge(MessageData(clientID = clientIdArg))
+		}
+	var amount: Double? = data.amount
+		get() = data.amount
+		set(amountArg) {
+			if (field != amountArg) {
+				data = data.merge(MessageData(amount = amountArg))
+				modal?.amount = amountArg
+			}
+		}
+	var placement: String? = data.placement
+		get() = data.placement
+		set(placementArg) {
+			if (field != placementArg) data = data.merge(MessageData(placement = placementArg))
+		}
+	var offerType: OfferType? = data.offerType
+		get() = data.offerType
+		set(offerArg) {
+			if (field != offerArg) {
+				data = data.merge(MessageData(offerType = offerArg))
+				modal?.offerType = offerArg
+			}
+		}
+	var buyerCountry: String? = data.buyerCountry
+		get() = data.buyerCountry
+		set(buyerCountryArg) {
+			if (field != buyerCountryArg) {
+				data = data.merge(MessageData(buyerCountry = buyerCountryArg))
+				modal?.buyerCountry = buyerCountry
+			}
+		}
+	private var currencyCode: CurrencyCode? = data.currencyCode
+		get() = data.currencyCode
+		set(currencyCodeArg) {
+			if (field != currencyCodeArg) {
+				data = data.merge(MessageData(currencyCode = currencyCodeArg))
+				modal?.currencyCode = currencyCodeArg
+			}
+		}
+
+	/**
+	 * STYLE
+	 */
+	var style: MessageStyle = config?.style ?: MessageStyle()
+		set(styleArg) {
+			if (field != styleArg) field = styleArg
+		}
 	var color: Color = Color.BLACK
-		private set
-	private var logoType: LogoType = LogoType.PRIMARY
-	private var alignment: Align = Align.LEFT
+		get() = style.color ?: Color.BLACK
+		set(colorArg) {
+			if (field != colorArg) style = style.merge(MessageStyle(color = colorArg))
+		}
+	var logoType: LogoType = LogoType.PRIMARY
+		get() = style.logoType ?: LogoType.PRIMARY
+		set(logoTypeArg) {
+			if (field != logoTypeArg) style = style.merge(MessageStyle(logoType = logoTypeArg))
+		}
+	var alignment: Align = Align.LEFT
+		get() = style.textAlign ?: Align.LEFT
+		set(alignmentArg) {
+			if (field != alignmentArg) style = style.merge(MessageStyle(textAlign = alignmentArg))
+		}
+
+	// VIEW STATE CALLBACKS
+	// Updates the specific view state callbacks for the current PayPalMessageView
+	var viewStateCallbacks: MessageViewState = config?.viewStateCallbacks ?: MessageViewState()
+	private var onLoading: () -> Unit
+		get() = viewStateCallbacks.onLoading
+		set(onLoadingArg) { viewStateCallbacks.onLoading = onLoadingArg }
+	private var onSuccess: () -> Unit
+		get() = viewStateCallbacks.onSuccess
+		set(onSuccessArg) { viewStateCallbacks.onSuccess = onSuccessArg }
+	var onError: (error: PayPalErrors.Base) -> Unit
+		get() = viewStateCallbacks.onError
+		set(onErrorArg) { viewStateCallbacks.onError = onErrorArg }
+
+	// EVENTS CALLBACKS
+	// Updates the specific events callbacks for the current PayPalMessageView
+	var eventsCallbacks: MessageEvents = config?.eventsCallbacks ?: MessageEvents()
+	private var onClick: () -> Unit
+		get() = eventsCallbacks.onClick
+		set(onClickArg) { eventsCallbacks.onClick = onClickArg }
+	private var onApply: () -> Unit
+		get() = eventsCallbacks.onApply
+		set(onApplyArg) { eventsCallbacks.onApply = onApplyArg }
 
 	// Full Message Data
-	private var data: ActionResponse? = null
+	private var messageDataResponse: ApiMessageData.Response? = null
 
 	// Message Content
 	private var logo = Logo()
@@ -91,41 +187,6 @@ class PayPalMessageView @JvmOverloads constructor(
 
 	// Stats
 	private var requestDuration: Int? = null
-
-	/**
-	 * Updates the onLoading callback used in [MessageConfig] for the current [PayPalMessageView].
-	 *
-	 * This function will update the current onLoading callback used during the message content update operation
-	 */
-	private var onLoading: () -> Unit = {}
-
-	/**
-	 * Updates the onSuccess callback used in [MessageConfig] for the current [PayPalMessageView].
-	 *
-	 * This function will update the current onSuccess callback used during the message content update operation
-	 */
-	private var onSuccess: () -> Unit = {}
-
-	/**
-	 * Updates the onError callback used in [MessageConfig] for the current [PayPalMessageView].
-	 *
-	 * This function will update the current onError callback used during the message content update operation
-	 */
-	var onError: (error: BaseException) -> Unit = {}
-
-	/**
-	 * Updates the onClick callback used in [MessageConfig] for the current [PayPalMessageView].
-	 *
-	 * This function will update the current onClick callback used for interaction with the [PayPalMessageView] component
-	 */
-	private var onClick: () -> Unit = {}
-
-	/**
-	 * Updates the onApply callback used in [MessageConfig] for the current [PayPalMessageView].
-	 *
-	 * This function will update the current onApply callback used for interaction with the [PayPalMessageView] component
-	 */
-	private var onApply: () -> Unit = {}
 
 	init {
 		LayoutInflater.from(context).inflate(R.layout.paypal_message_view, this, true)
@@ -140,203 +201,24 @@ class PayPalMessageView @JvmOverloads constructor(
 		updateMessageContent()
 	}
 
-	/**
-	 * Updates the configuration associated with the [PayPalMessageView] component
-	 *
-	 * This function will also trigger an update in the component to get the new content based on the provided configuration
-	 */
-	fun setConfig(config: MessageConfig?) {
-		updateFromConfig(config)
-		updateMessageContent()
-		LogCat.debug(TAG, "Was Message Configured?") // TODO Remove
-	}
-
-	/**
-	 * ///////////////////////////////////
-	 * COMPLETE CONFIG CATEGORIES SETTERS
-	 * //////////////////////////////////
-	 */
-
-	fun setClientId(clientId: String) {
-		this.clientId = clientId
-	}
-
-	/**
-	 * Update the [MessageConfig] data currently associated with the [PayPalMessageView] component
-	 *
-	 * This function will also trigger an update in the component to get the new content based on the provided configuration
-	 */
-	fun setData(data: MessageData?) {
-		amount = data?.amount
-		placement = data?.placement
-		offerType = data?.offerType
-		buyerCountry = data?.buyerCountry
-		currencyCode = data?.currencyCode
-
-		// Update modal properties if it exists
-		if (modal != null) {
-			amount?.let { modal?.setAmount(it) }
-//      offerType?.let { modal?.setOfferType(it) }
-			buyerCountry?.let { modal?.setBuyerCountry(it) }
-			currencyCode?.let { modal?.setCurrency(it.toString()) }
-		}
-
-		updateMessageContent()
-	}
-
-	/**
-	 * Update the [MessageConfig] event callbacks currently associated with the [PayPalMessageView] component
-	 *
-	 * This function will also trigger an update in the component to get the new content based on the provided configuration
-	 */
-	fun setActionEventCallbacks(events: MessageEvents) {
-		onClick = events.onClick
-		onApply = events.onApply
-	}
-
-	/**
-	 * Update the [MessageConfig] view state callbacks currently associated with the [PayPalMessageView] component
-	 *
-	 * This function will also trigger an update in the component to get the new content based on the provided configuration
-	 */
-	fun setViewStateCallbacks(viewState: MessageViewState) {
-		onSuccess = viewState.onSuccess
-		onError = viewState.onError
-		onLoading = viewState.onLoading
-	}
-
-	/**
-	 * Update the [MessageConfig] style currently associated with the [PayPalMessageView] component
-	 *
-	 * This function will also trigger an update in the component to get the new content based on the provided configuration
-	 */
-	fun setStyle(style: MessageStyle?) {
-		color = style?.color ?: Color.BLACK
-		alignment = style?.textAlign ?: Align.LEFT
-		logoType = style?.logoType ?: LogoType.PRIMARY
-		updateMessageContent()
-	}
-
-	/**
-	 * ////////////////////////////
-	 * SINGLE CONFIG VALUE SETTERS
-	 * ////////////////////////////
-	 */
-
-	/**
-	 * Updates the amount used in [MessageConfig] for the current [PayPalMessageView].
-	 *
-	 * This function will also trigger an update in the component content to reflect the changes with the [MessageConfig] updated amount
-	 */
-	fun setAmount(amount: Double?) {
-		if (this.amount != amount) {
-			this.amount = amount
-			// Update modal properties if it exists
-			if (amount != null) {
-				modal?.setAmount(amount)
-			}
-			updateMessageContent()
-		}
-	}
-
-	/**
-	 * Updates the placement used in [MessageConfig] for the current [PayPalMessageView].
-	 *
-	 * This function will also trigger an update in the component content to reflect the changes with the [MessageConfig] updated placement
-	 */
-	fun setPlacement(placement: String?) {
-		if (this.placement != placement) {
-			this.placement = placement
-			updateMessageContent()
-		}
-	}
-
-	/**
-	 * Updates the offerType used in [MessageConfig] for the current [PayPalMessageView].
-	 *
-	 * This function will also trigger an update in the component content to reflect the changes with the [MessageConfig] updated offerType
-	 */
-	fun setOfferType(offerType: OfferType?) {
-		if (this.offerType != offerType) {
-			this.offerType = offerType
-			// Update modal properties if it exists
-//                if (offerType != null) {
-//                    modal?.setOfferType(offerType)
-//                }
-			updateMessageContent()
-		}
-	}
-
-	/**
-	 * Updates the buyerCountry used in [MessageConfig] for the current [PayPalMessageView].
-	 *
-	 * This function will also trigger an update in the component content to reflect the changes with the [MessageConfig] updated buyerCountry
-	 */
-	fun setBuyerCountry(buyerCountry: String?) {
-		if (this.buyerCountry != buyerCountry) {
-			this.buyerCountry = buyerCountry
-			// Update modal properties if it exists
-			if (buyerCountry != null) {
-				modal?.setBuyerCountry(buyerCountry)
-			}
-			updateMessageContent()
-		}
-	}
-
-	/**
-	 * Updates the color used in [MessageConfig] for the current [PayPalMessageView].
-	 *
-	 * This function will change the component current style to reflect the changes with the provided color
-	 */
-	fun setColor(color: Color?) {
-		if (this.color != color) {
-			this.color = color ?: Color.BLACK
-			updateMessageUi()
-		}
-	}
-
-	/**
-	 * Updates the logotype used in [MessageConfig] for the current [PayPalMessageView].
-	 *
-	 * This function will also trigger an update in the component content to reflect the changes with the provided logotype
-	 */
-	fun setLogoType(logoType: LogoType?) {
-		if (this.logoType != logoType) {
-			this.logoType = logoType ?: LogoType.PRIMARY
-			updateMessageContent()
-		}
-	}
-
-	/**
-	 * Updates the color used in [MessageConfig] for the current [PayPalMessageView].
-	 *
-	 * This function will change the component current style to reflect the changes with the provided text alignment
-	 */
-	fun setTextAlignment(alignment: Align?) {
-		if (this.alignment != alignment) {
-			this.alignment = alignment ?: Align.LEFT
-			updateMessageUi()
-		}
-	}
-
-	private fun showWebView(response: ActionResponse) {
+	private fun showWebView(response: ApiMessageData.Response) {
 		val modal = modal ?: run {
 			val modal = ModalFragment(clientId)
 			// Build modal config
 			val modalConfig = ModalConfig(
-				amount = amount,
-				currency = currencyCode.toString(),
-				buyerCountry = buyerCountry,
-				offer = offerType,
+				amount = data.amount,
+				currencyCode = data.currencyCode,
+				buyerCountry = data.buyerCountry,
+				offer = data.offerType,
 				ignoreCache = false,
 				devTouchpoint = false,
 				stageTag = null,
 				events = ModalEvents(
-					onApply = onApply,
-					onClick = onClick,
-					onError = onError,
+					onApply = eventsCallbacks.onApply,
+					onClick = eventsCallbacks.onClick,
+					onError = viewStateCallbacks.onError,
 				),
-				modalCloseButton = this.data?.meta?.modalCloseButton!!,
+				modalCloseButton = response.meta?.modalCloseButton!!,
 			)
 
 			modal.init(modalConfig)
@@ -381,7 +263,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			}
 			// Apply disclaimer style
 			messageDisclaimer?.let { builder.setupDisclaimer(color, it) }
-			// Apply the everything to the text view
+			// Apply everything to the text view
 			messageTextView.apply {
 				visibility = View.VISIBLE
 				setTextColor(ContextCompat.getColor(context, color.colorResId))
@@ -438,7 +320,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		 * STYLE
 		 */
 		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_text_color)) {
-			color = PayPalMessageColor(
+			color = Color(
 				typedArray.getInt(
 					R.styleable.PayPalMessageView_paypal_text_color,
 					Color.BLACK.value,
@@ -447,7 +329,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		}
 
 		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_logo_type)) {
-			logoType = PayPalMessageLogoType(
+			logoType = LogoType(
 				typedArray.getInt(
 					R.styleable.PayPalMessageView_paypal_logo_type,
 					LogoType.PRIMARY.value,
@@ -456,7 +338,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		}
 
 		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_text_align)) {
-			alignment = PayPalMessageAlign(
+			alignment = Align(
 				typedArray.getInt(
 					R.styleable.PayPalMessageView_paypal_text_align,
 					Align.LEFT.value,
@@ -470,7 +352,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 */
 	private fun updateFromConfig(config: MessageConfig?) {
 		LogCat.debug(TAG, "updateFromConfig:\n$config")
-		clientId = config?.data?.clientId ?: ""
+		clientId = config?.data?.clientID ?: ""
 		amount = config?.data?.amount
 		placement = config?.data?.placement
 		offerType = config?.data?.offerType
@@ -479,27 +361,15 @@ class PayPalMessageView @JvmOverloads constructor(
 		color = config?.style?.color ?: Color.BLACK
 		alignment = config?.style?.textAlign ?: Align.LEFT
 		logoType = config?.style?.logoType ?: LogoType.PRIMARY
-		onError = config?.viewState?.onError ?: {}
-		onSuccess = config?.viewState?.onSuccess ?: {}
-		onLoading = config?.viewState?.onLoading ?: {}
-		onApply = config?.events?.onApply ?: {}
-		onClick = config?.events?.onClick ?: {}
-	}
-
-	fun setViewStates(viewState: MessageViewState) {
-		onLoading = viewState.onLoading
-		onError = viewState.onError
-		onSuccess = viewState.onSuccess
+		onError = config?.viewStateCallbacks?.onError ?: {}
+		onSuccess = config?.viewStateCallbacks?.onSuccess ?: {}
+		onLoading = config?.viewStateCallbacks?.onLoading ?: {}
+		onApply = config?.eventsCallbacks?.onApply ?: {}
+		onClick = config?.eventsCallbacks?.onClick ?: {}
 	}
 
 	/**
-	 * //////////////////////
-	 * UPDATE MESSAGE CONTENT
-	 * /////////////////////
-	 */
-
-	/**
-	 * This function updates the message content making use of the [Action] to fetch the data.
+	 * This function updates message content uses [Api.getMessageWithHash] to fetch the data.
 	 */
 	private fun updateMessageContent() {
 		if (!updateInProgress) {
@@ -511,14 +381,10 @@ class PayPalMessageView @JvmOverloads constructor(
 			updateInProgress = true
 			LogCat.debug(TAG, "Firing request to get message")
 
-			val action = Action(context = context)
-
 			requestDuration = measureTimeMillis {
-				action.execute(
-					MessageConfig(
-						MessageData(clientId, amount, placement, offerType, buyerCountry, currencyCode),
-						MessageStyle(logoType, color, alignment),
-					),
+				Api.getMessageWithHash(
+					context,
+					MessageConfig(data = data, style = style),
 					this,
 				)
 			}.toInt()
@@ -530,8 +396,8 @@ class PayPalMessageView @JvmOverloads constructor(
 			is ApiResult.Success<*> -> {
 				LogCat.debug(TAG, "onActionCompleted Success")
 				val renderDuration = measureTimeMillis {
-					onSuccess.invoke()
-					this.data = result.response as ActionResponse
+					viewStateCallbacks.onSuccess.invoke()
+					this.messageDataResponse = result.response as ApiMessageData.Response
 					updateContentValues(result.response)
 					updateMessageUi()
 				}.toInt()
@@ -559,7 +425,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 * This function updates local values related to the message content
 	 * @param response the response obtained from the message content fetch process
 	 */
-	private fun updateContentValues(response: ActionResponse) {
+	private fun updateContentValues(response: ApiMessageData.Response) {
 		messageContent = formatMessageContent(response, logoType)
 		messageLogoTag = response.meta?.variables?.logoPlaceholder
 		messageDisclaimer = response.content?.default?.disclaimer
@@ -579,11 +445,11 @@ class PayPalMessageView @JvmOverloads constructor(
 	}
 
 	/**
-	 * Formats the message content based on the [ActionResponse] and [LogoType]
+	 * Formats the message content based on the [ApiMessageData.Response] and [LogoType]
 	 * The formatted message would depend on the values provided by the response and will later be used as the content of the [PayPalMessageView] component
 	 */
 	private fun formatMessageContent(
-		response: ActionResponse,
+		response: ApiMessageData.Response,
 		logoType: LogoType,
 	): String {
 		val builder = StringBuilder()
@@ -616,7 +482,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 * This function setup the [Logo] used as part of the [PayPalMessageView] component content.
 	 * The asset to use and how to locate it will depend on the provided information.
 	 * @param logoAsset the asset to use as part of the component. It can be an image or a string.
-	 * @param logoTag the logo placeholder provided as part of the [ActionResponse]
+	 * @param logoTag the logo placeholder provided as part of the [ApiMessageData.Response]
 	 * @param lineHeight the textview line height use for resizing the image logo assets
 	 */
 	private fun SpannableStringBuilder.setupMessageLogo(
@@ -657,7 +523,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	/**
 	 * This function setups the disclaimer used as part of the [PayPalMessageView] component content.
 	 * @param color the current [Color] that will be used to format the disclaimer text style
-	 * @param disclaimer the disclaimer text provided as part of the [ActionResponse]
+	 * @param disclaimer the disclaimer text provided as part of the [ApiMessageData.Response]
 	 */
 	private fun SpannableStringBuilder.setupDisclaimer(
 		color: Color,
@@ -691,12 +557,12 @@ class PayPalMessageView @JvmOverloads constructor(
 			styleLogoType = this.logoType,
 			styleColor = this.color,
 			styleTextAlign = this.alignment,
-			messageType = this.data?.meta?.messageType,
-			fdata = this.data?.meta?.fdata,
-			debugId = this.data?.meta?.debug_id,
-			creditProductIdentifiers = this.data?.meta?.creditProductIdentifiers as MutableList<String>?,
-			offerCountryCode = this.data?.meta?.offerCountryCode,
-			merchantCountryCode = this.data?.meta?.merchantCountryCode,
+			messageType = this.messageDataResponse?.meta?.messageType,
+			fdata = this.messageDataResponse?.meta?.fdata,
+			debugId = this.messageDataResponse?.meta?.debugId,
+			creditProductIdentifiers = this.messageDataResponse?.meta?.creditProductIdentifiers as MutableList<String>?,
+			offerCountryCode = this.messageDataResponse?.meta?.offerCountryCode,
+			merchantCountryCode = this.messageDataResponse?.meta?.merchantCountryCode,
 			type = ComponentType.MESSAGE.toString(),
 			instanceId = Api.instanceId.toString(),
 			originatingInstanceId = Api.originatingInstanceId.toString(),

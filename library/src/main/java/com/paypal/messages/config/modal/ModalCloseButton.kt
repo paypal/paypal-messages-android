@@ -2,7 +2,6 @@ package com.paypal.messages.config.modal
 
 import com.google.gson.annotations.SerializedName
 
-// TODO remove set values once modalCloseButton is in prod
 data class ModalCloseButton(
 	@SerializedName("width")
 	val width: Int,

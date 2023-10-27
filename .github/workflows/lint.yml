@@ -20,3 +20,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
+
+      - name: Run Lint
+        run: ./gradlew ktLint
+        continue-on-error: true
+
+      - name: Get Lint Reports
+        uses: yutailang0119/action-ktlint@v3
+        with:
+          report-path: build/reports/ktlint/*.xml
+        continue-on-error: false

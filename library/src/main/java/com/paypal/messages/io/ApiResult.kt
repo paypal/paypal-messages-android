@@ -1,8 +1,7 @@
 package com.paypal.messages.io
 
 import com.google.gson.Gson
-import com.paypal.messages.errors.BaseException
-import com.paypal.messages.errors.InvalidResponseException
+import com.paypal.messages.utils.PayPalErrors
 import okhttp3.Headers
 
 sealed class ApiResult {
@@ -12,16 +11,15 @@ sealed class ApiResult {
 		}
 	}
 
-	val isSuccess: Boolean
-		get() = this is Success<*>
-
 	data class Success<T : ApiResponse>(val response: T) : ApiResult()
-	data class Failure<T : BaseException?>(val error: T) : ApiResult()
+	data class Failure<T : PayPalErrors.Base?>(val error: T) : ApiResult()
 
 	companion object {
 		fun getFailureWithDebugId(headers: Headers): ApiResult {
 			val headersMap = headers.toMultimap()
-			val error = headersMap["Paypal-Debug-Id"]?.firstOrNull()?.let { InvalidResponseException(it) }
+			val error = headersMap["Paypal-Debug-Id"]?.firstOrNull()?.let {
+				PayPalErrors.InvalidResponseException("", it)
+			}
 			return Failure(error)
 		}
 	}

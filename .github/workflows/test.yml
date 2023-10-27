@@ -21,8 +21,6 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Install Dependencies
-        run: echo "Install Dependencies"
-
       - name: Run Tests
-        run: echo "Run Tests"
+        run: ./gradlew testReleaseUnitTest
+        continue-on-error: false

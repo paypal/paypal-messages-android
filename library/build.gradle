@@ -1,6 +1,8 @@
 plugins {
   id 'com.android.library'
   id 'org.jetbrains.kotlin.android'
+	id 'de.mannodermaus.android-junit5' version "1.9.3.0"
+	id 'org.jetbrains.kotlinx.kover' version '0.7.4'
 }
 
 android {
@@ -12,15 +14,15 @@ android {
     targetSdk 34
 
 	  versionCode 10000
-	  versionName "1.0.0"
-    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    consumerProguardFiles "consumer-rules.pro"
+	  versionName '1.0.0'
+    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    consumerProguardFiles 'consumer-rules.pro'
 
-	  buildConfigField("String", "INTEGRATION_TYPE", "\"NATIVE_ANDROID\"")
-	  buildConfigField("String", "LIBRARY_VERSION", "\"${versionName}\"")
-	  buildConfigField("String", "STAGE_URL", "\"${System.env.UPSTREAM_ANDROID_STAGE_URL}\"")
-	  buildConfigField("String", "STAGE_VPN_URL", "\"${System.env.UPSTREAM_ANDROID_STAGE_VPN_URL}\"")
-	  buildConfigField("String", "LOCAL_URL", "\"${System.env.UPSTREAM_ANDROID_LOCAL_URL}\"")
+	  buildConfigField('String', 'INTEGRATION_TYPE', "\"NATIVE_ANDROID\"")
+	  buildConfigField('String', 'LIBRARY_VERSION', "\"${versionName}\"")
+	  buildConfigField('String', 'STAGE_URL', "\"${System.env.UPSTREAM_ANDROID_STAGE_URL}\"")
+	  buildConfigField('String', 'STAGE_VPN_URL', "\"${System.env.UPSTREAM_ANDROID_STAGE_VPN_URL}\"")
+	  buildConfigField('String', 'LOCAL_URL', "\"${System.env.UPSTREAM_ANDROID_LOCAL_URL}\"")
   }
 
 	buildFeatures {
@@ -39,18 +41,76 @@ android {
   kotlinOptions {
     jvmTarget = '1.8'
   }
+
+	testOptions {
+		unitTests.all {
+			useJUnitPlatform()
+			testLogging {
+				events 'passed', 'skipped', 'failed'
+			}
+		}
+	}
+}
+
+tasks.withType(Test) {
+	useJUnitPlatform()
+}
+
+koverReport {
+	androidReports('debug') {
+		filters {
+//			includes {
+//				classes(
+//					'PayPalErrors\$*'
+//				)
+//			}
+			excludes {
+				classes(
+					// config
+					'com.paypal.messages.config.message.PayPalMessageEventsCallbacks\$*',
+					'com.paypal.messages.config.message.PayPalMessageViewStateCallbacks\$*',
+					'com.paypal.messages.config.modal.ModalEvents\$*',
+					// extensions,
+					'com.paypal.messages.extensions.*',
+					// io
+					'com.paypal.messages.io.Api\$Endpoints',
+					'com.paypal.messages.io.ApiMessageData',
+					'com.paypal.messages.io.ApiHashData',
+					'com.paypal.messages.io.LocalStorage*',
+					// logger,
+					'com.paypal.messages.logger.Logger*',
+					// utils
+					'com.paypal.messages.utils.LogCat*',
+					'com.paypal.messages.utils.PayPalErrors',
+					// UI Stuff
+					'*Fragment',
+					'*Fragment\$*',
+					'*Activity',
+					'*Activity\$*',
+					'com.paypal.messages.PayPalMessageView*',
+					'com.paypal.messages.RoundedWebView',
+					'*.databinding.*',
+					'*.BuildConfig'
+				)
+			}
+		}
+	}
 }
 
 dependencies {
 	implementation 'androidx.core:core-ktx:1.12.0'
 	implementation 'androidx.appcompat:appcompat:1.6.1'
-	implementation 'com.google.android.material:material:1.9.0'
-	implementation 'com.google.code.gson:gson:2.8.9'
+	implementation 'com.google.android.material:material:1.10.0'
+	implementation 'com.google.code.gson:gson:2.9.1'
 	implementation 'com.squareup.okhttp3:okhttp:4.8.0'
 
-	testImplementation 'junit:junit:4.13.2'
-	testImplementation "com.squareup.okhttp3:mockwebserver:4.8.0"
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+	testImplementation 'com.squareup.okhttp3:mockwebserver:4.8.0'
+	testImplementation 'org.mockito:mockito-core:5.5.0'
+	testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
+	testImplementation 'io.mockk:mockk:1.13.7'
+
 	androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 	androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-	androidTestImplementation "com.squareup.okhttp3:mockwebserver:4.8.0"
+	androidTestImplementation 'com.squareup.okhttp3:mockwebserver:4.8.0'
 }

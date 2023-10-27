@@ -1,6 +1,6 @@
 package com.paypal.messages.config
 
-import com.paypal.messages.errors.IllegalEnumArg
+import com.paypal.messages.utils.PayPalErrors
 
 /**
  * [PayPalMessageOfferType] provides different variations of OfferTypes supported by the PayPalMessage component
@@ -17,9 +17,8 @@ enum class PayPalMessageOfferType(val value: Int) {
 	companion object {
 		/**
 		 * Given an [attributeIndex] this will provide the correct [PayPalMessageOfferType].
-		 * If an invalid [attributeIndex] is provided then it will throw an [IllegalArgumentException].
 		 *
-		 * @throws [IllegalArgumentException] when an invalid index is provided.
+		 * @throws [PayPalErrors.IllegalEnumArg] when an invalid index is provided.
 		 */
 		operator fun invoke(attributeIndex: Int): PayPalMessageOfferType {
 			return when (attributeIndex) {
@@ -27,7 +26,7 @@ enum class PayPalMessageOfferType(val value: Int) {
 				PAY_LATER_LONG_TERM.value -> PAY_LATER_LONG_TERM
 				PAY_LATER_PAY_IN_1.value -> PAY_LATER_PAY_IN_1
 				PAYPAL_CREDIT_NO_INTEREST.value -> PAYPAL_CREDIT_NO_INTEREST
-				else -> throw IllegalEnumArg("OfferType", 3)
+				else -> throw PayPalErrors.IllegalEnumArg("OfferType", 3)
 			}
 		}
 	}
