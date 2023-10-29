@@ -12,7 +12,7 @@ import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.LinearLayout
+import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -56,7 +56,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	attributeSet: AttributeSet? = null,
 	defStyleAttr: Int = 0,
 	config: MessageConfig? = null,
-) : LinearLayout(context, attributeSet, defStyleAttr), OnActionCompleted {
+) : FrameLayout(context, attributeSet, defStyleAttr), OnActionCompleted {
 	private val TAG = "PayPalMessage"
 	private var messageTextView: TextView
 	private var updateInProgress = false
@@ -83,7 +83,7 @@ class PayPalMessageView @JvmOverloads constructor(
 				}
 			}
 		}
-	var clientId: String = data.clientID
+	var clientID: String = data.clientID
 		get() = data.clientID
 		set(clientIdArg) {
 			// TODO call out null/empty client ID
@@ -203,7 +203,7 @@ class PayPalMessageView @JvmOverloads constructor(
 
 	private fun showWebView(response: ApiMessageData.Response) {
 		val modal = modal ?: run {
-			val modal = ModalFragment(clientId)
+			val modal = ModalFragment(clientID)
 			// Build modal config
 			val modalConfig = ModalConfig(
 				amount = data.amount,
@@ -285,7 +285,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		 * DATA
 		 */
 		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_client_id)) {
-			clientId = typedArray.getString(R.styleable.PayPalMessageView_paypal_client_id).toString()
+			clientID = typedArray.getString(R.styleable.PayPalMessageView_paypal_client_id).toString()
 		}
 
 		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_amount)) {
@@ -352,7 +352,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 */
 	private fun updateFromConfig(config: MessageConfig?) {
 		LogCat.debug(TAG, "updateFromConfig:\n$config")
-		clientId = config?.data?.clientID ?: ""
+		clientID = config?.data?.clientID ?: ""
 		amount = config?.data?.amount
 		placement = config?.data?.placement
 		offerType = config?.data?.offerType
@@ -570,6 +570,6 @@ class PayPalMessageView @JvmOverloads constructor(
 			events = mutableListOf(event),
 		)
 
-		Logger.getInstance(clientId = clientId).log(context, component)
+		Logger.getInstance(clientId = clientID).log(context, component)
 	}
 }
