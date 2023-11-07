@@ -187,7 +187,7 @@ class XmlActivity : AppCompatActivity() {
 		binding = ActivityMessageBinding.inflate(layoutInflater)
 		setContentView(binding.root)
 
-		val config = PayPalMessageConfig(data = PayPalMessageData())
+		val config = PayPalMessageConfig(data = PayPalMessageData(clientID = "someClientID"))
 		val message = PayPalMessageView(context = this, config = config)
 		config.setGlobalAnalytics("", "")
 		message.config = config
@@ -198,5 +198,6 @@ class XmlActivity : AppCompatActivity() {
 		message.alignment = PayPalMessageAlign.CENTER
 		message.eventsCallbacks = PayPalMessageEventsCallbacks()
 		message.viewStateCallbacks = PayPalMessageViewStateCallbacks()
+		EnvVars.getClientId(PayPalEnvironment.STAGE)
 	}
 }

@@ -276,6 +276,12 @@
 				app:layout_constraintTop_toTopOf="parent" />
 		</androidx.constraintlayout.widget.ConstraintLayout>
 
+<!--		<com.paypal.messages.PayPalMessageView-->
+<!--			android:layout_width="match_parent"-->
+<!--			android:layout_height="80dp"-->
+<!--			app:paypal_client_id="@string/client_id"-->
+<!--			/>-->
+
 		<LinearLayout
 			android:orientation="horizontal"
 			android:layout_width="match_parent"

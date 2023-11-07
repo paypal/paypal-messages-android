@@ -65,7 +65,6 @@ object Api {
 		addQueryParameter("client_id", config.data.clientID)
 		addQueryParameter("devTouchpoint", devTouchpoint.toString())
 		addQueryParameter("ignore_cache", ignoreCache.toString())
-		addQueryParameter("env", environment.name.lowercase())
 		addQueryParameter("instance_id", instanceId.toString())
 		addQueryParameter("session_id", sessionId.toString())
 
@@ -82,7 +81,6 @@ object Api {
 	private fun createMessageDataRequest(config: MessageConfig, hash: String?): Request {
 		val request = Request.Builder().apply {
 			header("Accept", "application/json")
-			header("Authorization", Credentials.basic(config.data.clientID, ""))
 			header("x-requested-by", "native-upstream-messages")
 
 			val urlBuilder = Endpoints.messageData.newBuilder()
@@ -172,7 +170,6 @@ object Api {
 	private fun createMessageHashRequest(clientId: String): Request {
 		val request = Request.Builder().apply {
 			header("Accept", "application/json")
-			header("Authorization", Credentials.basic(clientId, ""))
 			header("x-requested-by", "native-upstream-messages")
 
 			val urlBuilder = Endpoints.messageHash.newBuilder()
