@@ -45,7 +45,7 @@ class XmlActivity : AppCompatActivity() {
 			config = PayPalMessageConfig(
 				data = PayPalMessageData(
 					clientID = getString(R.string.client_id),
-					environment = environment
+					environment = environment,
 				),
 				viewStateCallbacks = PayPalMessageViewStateCallbacks(
 					onLoading = {
@@ -74,7 +74,7 @@ class XmlActivity : AppCompatActivity() {
 							Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
 						}
 					},
-				)
+				),
 			),
 		)
 		payPalMessage.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
@@ -154,10 +154,10 @@ class XmlActivity : AppCompatActivity() {
 
 			payPalMessage.data = PayPalMessageData(
 				clientId, amount = amount, buyerCountry = buyerCountry, offerType = offerType,
-				environment = environment
+				environment = environment,
 			)
 			payPalMessage.style = PayPalMessageStyle(
-				textAlign = alignment, color = color, logoType = logoType
+				textAlign = alignment, color = color, logoType = logoType,
 			)
 			payPalMessage.refresh()
 		}

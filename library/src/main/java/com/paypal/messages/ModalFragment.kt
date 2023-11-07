@@ -146,12 +146,12 @@ internal class ModalFragment constructor(
 		}
 
 		webView.webChromeClient = object : WebChromeClient() {
-				override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
-					val source = "${consoleMessage.sourceId()}:${consoleMessage.lineNumber()}"
-					LogCat.debug(TAG, "\n$source:\n  ${consoleMessage.message()}\n")
-					return super.onConsoleMessage(consoleMessage)
-				}
+			override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
+				val source = "${consoleMessage.sourceId()}:${consoleMessage.lineNumber()}"
+				LogCat.debug(TAG, "\n$source:\n  ${consoleMessage.message()}\n")
+				return super.onConsoleMessage(consoleMessage)
 			}
+		}
 
 		webView.webViewClient = object : WebViewClient() {
 			// TODO remove for production
