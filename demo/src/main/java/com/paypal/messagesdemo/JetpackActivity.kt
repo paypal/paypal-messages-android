@@ -70,8 +70,18 @@ import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.io.Api
 import kotlinx.coroutines.Delay
 import java.util.logging.Handler
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+
 
 class JetpackActivity : ComponentActivity() {
+	private var backgroundColor: Color = Color.White
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
@@ -162,8 +172,9 @@ class JetpackActivity : ComponentActivity() {
 						ColorOptions(messageView)
 						AlignmentOptions(messageView)
 
-						Row {
+						Column {
 							Text (text = "Offer Type")
+							OfferButtons(messageView)
 						}
 
 						// Amount
@@ -229,7 +240,9 @@ class JetpackActivity : ComponentActivity() {
 						}
 
 						AndroidView(
-							modifier = Modifier.fillMaxWidth(),
+							modifier = Modifier
+								.background(color = backgroundColor)
+								.fillMaxWidth(),
 							factory = { _ ->
 								messageView
 							}
@@ -238,56 +251,35 @@ class JetpackActivity : ComponentActivity() {
 						IgnoreCacheSwitch()
 						DevTouchpointSwitch()
 
-						FilledButtonExample(text = "Reset", onClick = { resetButton(messageView) })
-						FilledButtonExample(text = "Submit", onClick = { updateMessageData(messageView) })
-
+						FilledButton(text = "Reset", onClick = { resetButton(messageView) })
+						FilledButton(text = "Submit", onClick = { updateMessageData(messageView) })
 
 					}
 				}
 			}
 		}
 	}
-}
 
-@Composable
-fun PayPalMessagingView(clientId: String) {
-	Column(
-		modifier = Modifier.padding(16.dp).fillMaxWidth()
-	) {
-		Box(
-			modifier = Modifier.fillMaxWidth()
-		) {
-			if (clientId.isNotEmpty()) {
-				val config = PayPalMessageConfig(
-					data = PayPalMessageData(clientID = clientId)
-				)
-
-				AndroidView(
-					factory = { context ->
-						val messageView = PayPalMessageView(context, config = config)
-						messageView.viewStateCallbacks = PayPalMessageViewStateCallbacks(
-								onLoading = {
-									Log.d("TAG", "onLoading")
-								},
-								onError = {
-									Log.d("TAG", "onError")
-								},
-								onSuccess = {
-									Log.d("TAG", "onSuccess")
-								}
-							)
-
-						messageView
-
-					}
-				)
-			}
+	fun updateMessageData(messageView: PayPalMessageView) {
+		if ( messageView.color === PayPalMessageColor.WHITE ) {
+			backgroundColor = Color.Black
 		}
+
+		messageView.refresh()
+	}
+
+	fun resetButton(messageView: PayPalMessageView) {
+		messageView.amount = null
+		messageView.offerType = null
+		messageView.alignment = PayPalMessageAlign.LEFT
+		messageView.color = PayPalMessageColor.BLACK
+		messageView.refresh()
+		backgroundColor = Color.White
 	}
 }
 
 @Composable
-fun FilledButtonExample(onClick: () -> Unit, text: String) {
+fun FilledButton(onClick: () -> Unit, text: String) {
 	var isButtonClicked by remember { mutableStateOf(false) }
 	Button(
 //		elevation = Dp(1F),
@@ -302,17 +294,6 @@ fun FilledButtonExample(onClick: () -> Unit, text: String) {
 //			)
 	) {
 		Text(text)
-	}
-}
-
-@Composable
-fun OutlinedButtonExample(onClick: () -> Unit) {
-//	var elevation: ButtonElevation = ButtonElevation()
-	OutlinedButton(
-//		elevation = elevation,
-		onClick = { onClick() },
-	) {
-		Text("Outlined")
 	}
 }
 
@@ -510,58 +491,81 @@ fun DevTouchpointSwitch() {
 }
 
 @Composable
-fun BasicTextFieldDemo() {
-	var text by remember { mutableStateOf(TextFieldValue()) }
+fun OfferButtons(messageView: PayPalMessageView) {
+	var button1Enabled by remember { mutableStateOf(false) }
+	var button2Enabled by remember { mutableStateOf(false) }
+	var button3Enabled by remember { mutableStateOf(false) }
+	var button4Enabled by remember { mutableStateOf(false) }
 
-	BasicTextField(
-		value = text,
-		onValueChange = {
-			text = it
+	Row() {
+		ToggleButton(
+			toggledState = button1Enabled,
+			text = "Short Term",
+			onClick = {
+				messageView.offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
+				button1Enabled = !button1Enabled
+				button2Enabled = false
+				button3Enabled = false
+				button4Enabled = false
+			}
+		)
+		ToggleButton(
+			toggledState = button2Enabled,
+			text = "Long Term",
+
+			onClick = {
+				messageView.offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM
+				button1Enabled = false
+				button2Enabled = !button2Enabled
+				button3Enabled = false
+				button4Enabled = false
+			}
+		)
+		ToggleButton(
+			toggledState = button3Enabled,
+			text = "Pay in 1",
+			onClick = {
+				messageView.offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1
+				button1Enabled = false
+				button2Enabled = false
+				button3Enabled = !button3Enabled
+				button4Enabled = false
+			}
+		)
+		ToggleButton(
+			toggledState = button4Enabled,
+			text = "Credit",
+			onClick = {
+				messageView.offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
+				button1Enabled = false
+				button2Enabled = false
+				button3Enabled = false
+				button4Enabled = !button4Enabled
+			}
+		)
+	}
+}
+
+@Composable
+fun ToggleButton( toggledState: Boolean, text: String, onClick: () -> Unit) {
+
+	Button(
+//			shape = RoundedCornerShape(8.dp),
+		colors = when(toggledState) {
+			true -> ButtonDefaults.outlinedButtonColors()
+			else -> ButtonDefaults.elevatedButtonColors()
 		},
-		modifier = Modifier.padding(16.dp)
-	)
-}
-
-//class ToggleButtonViewModel : ViewModel() {
-//	var toggleState by remember { mutableStateOf(false) }
-//
-//	fun toggle() {
-//		toggleState = !toggleState
-//	}
-//}
-
-//@Composable
-//fun ToggleButton(viewModel: ToggleButtonViewModel = viewModel()) {
-//	val toggleState = viewModel.toggleState
-//
-//	Column(
-//		modifier = Modifier
-//			.fillMaxSize()
-//			.background(MaterialTheme.colorScheme.primary)
-//			.padding(16.dp),
-//		verticalArrangement = Arrangement.Center
-//	) {
-//		androidx.compose.material3.Switch(
-//			checked = toggleState,
-//			onCheckedChange = {
-//				viewModel.toggle()
-//			},
-//			colors = androidx.compose.material3.SwitchDefaults.colors(
-//				checkedThumbColor = Color.White,
-//				checkedTrackColor = Color.Green,
-//				uncheckedTrackColor = Color.Gray
-//			)
-//		)
-//	}
-//}
-
-fun updateMessageData(messageView: PayPalMessageView) {
-	messageView.refresh()
-}
-
-fun resetButton(messageView: PayPalMessageView) {
-	messageView.amount = null
-	messageView.offerType = null
-	messageView.alignment = PayPalMessageAlign.LEFT
-	messageView.refresh()
+		elevation = ButtonDefaults.elevatedButtonElevation(),
+		contentPadding = PaddingValues(start = 6.dp, top = 0.dp, end = 12.dp, bottom = 0.dp),
+		modifier = Modifier
+			.height(IntrinsicSize.Max),
+//				.border(
+//					width = 2.dp, // Border width
+//					color = Color.LightGray, // Border color
+////					shape = MaterialTheme.shapes.small
+//				),
+		onClick = onClick
+	) {
+		Text(text)
+	}
 }
