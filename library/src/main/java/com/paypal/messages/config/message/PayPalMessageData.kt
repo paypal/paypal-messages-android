@@ -1,6 +1,5 @@
 package com.paypal.messages.config.message
 
-import com.paypal.messages.config.CurrencyCode
 import com.paypal.messages.io.Api
 import com.paypal.messages.config.PayPalEnvironment as Environment
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
@@ -16,7 +15,6 @@ data class PayPalMessageData(
 	var partnerAttributionID: String? = null,
 	var amount: Double? = null,
 	var buyerCountry: String? = null,
-	var currencyCode: CurrencyCode? = null,
 	var offerType: OfferType? = null,
 	var placement: String? = null,
 	var environment: Environment? = null,
@@ -32,7 +30,6 @@ data class PayPalMessageData(
 			partnerAttributionID = newData.partnerAttributionID ?: this.partnerAttributionID,
 			amount = newData.amount ?: this.amount,
 			buyerCountry = newData.buyerCountry ?: this.buyerCountry,
-			currencyCode = newData.currencyCode ?: this.currencyCode,
 			offerType = newData.offerType ?: this.offerType,
 			placement = newData.placement ?: this.placement,
 			environment = newData.environment ?: this.environment,

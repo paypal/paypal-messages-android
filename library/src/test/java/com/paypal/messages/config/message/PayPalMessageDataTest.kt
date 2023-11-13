@@ -1,6 +1,5 @@
 package com.paypal.messages.config.message
 
-import com.paypal.messages.config.CurrencyCode
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -15,7 +14,6 @@ class PayPalMessageDataTest {
 			placement = "placement_test",
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 			buyerCountry = "buyer_country_test",
-			currencyCode = CurrencyCode.AUD,
 			merchantID = "merchant_id_test",
 			partnerAttributionID = "partner_attribution_id_test",
 			environment = PayPalEnvironment.LOCAL,
@@ -26,19 +24,17 @@ class PayPalMessageDataTest {
 		assertEquals(data.placement, "placement_test")
 		assertEquals(data.offerType, PayPalMessageOfferType.PAY_LATER_PAY_IN_1)
 		assertEquals(data.buyerCountry, "buyer_country_test")
-		assertEquals(data.currencyCode, CurrencyCode.AUD)
 		assertEquals(data.merchantID, "merchant_id_test")
 		assertEquals(data.partnerAttributionID, "partner_attribution_id_test")
 		assertEquals(data.environment, PayPalEnvironment.LOCAL)
 	}
 
-	val oldData = PayPalMessageData(
+	private val oldData = PayPalMessageData(
 		clientID = "test_client_id",
 		merchantID = "test_merchant_id",
 		partnerAttributionID = "test_partner_attribution_id",
 		amount = 115.0,
 		buyerCountry = "ES",
-		currencyCode = CurrencyCode.EUR,
 		offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 		placement = "test_placement",
 		environment = PayPalEnvironment.LOCAL,
@@ -59,7 +55,6 @@ class PayPalMessageDataTest {
 			partnerAttributionID = "test_partner_attribution_id",
 			amount = 115.0,
 			buyerCountry = "ES",
-			currencyCode = CurrencyCode.EUR,
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 			placement = "test_placement",
 			environment = PayPalEnvironment.LOCAL,
@@ -73,7 +68,6 @@ class PayPalMessageDataTest {
 			partnerAttributionID = "test_partner_attribution_id",
 			amount = 115.0,
 			buyerCountry = "ES",
-			currencyCode = CurrencyCode.EUR,
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 			placement = "test_placement",
 			environment = PayPalEnvironment.LOCAL,
@@ -87,7 +81,6 @@ class PayPalMessageDataTest {
 			partnerAttributionID = "new_partner_attribution_id",
 			amount = 115.0,
 			buyerCountry = "ES",
-			currencyCode = CurrencyCode.EUR,
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 			placement = "test_placement",
 			environment = PayPalEnvironment.LOCAL,
@@ -103,7 +96,6 @@ class PayPalMessageDataTest {
 			partnerAttributionID = "test_partner_attribution_id",
 			amount = 1.15,
 			buyerCountry = "ES",
-			currencyCode = CurrencyCode.EUR,
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 			placement = "test_placement",
 			environment = PayPalEnvironment.LOCAL,
@@ -117,7 +109,6 @@ class PayPalMessageDataTest {
 			partnerAttributionID = "test_partner_attribution_id",
 			amount = 115.0,
 			buyerCountry = "US",
-			currencyCode = CurrencyCode.EUR,
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 			placement = "test_placement",
 			environment = PayPalEnvironment.LOCAL,
@@ -125,27 +116,12 @@ class PayPalMessageDataTest {
 		val actualBuyerCountryData = oldData.merge(PayPalMessageData(buyerCountry = "US"))
 		assertEquals(expectedBuyerCountryData, actualBuyerCountryData)
 
-		val expectedCurrencyCodeData = PayPalMessageData(
-			clientID = "test_client_id",
-			merchantID = "test_merchant_id",
-			partnerAttributionID = "test_partner_attribution_id",
-			amount = 115.0,
-			buyerCountry = "ES",
-			currencyCode = CurrencyCode.AUD,
-			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
-			placement = "test_placement",
-			environment = PayPalEnvironment.LOCAL,
-		)
-		val actualCurrencyCodeData = oldData.merge(PayPalMessageData(currencyCode = CurrencyCode.AUD))
-		assertEquals(expectedCurrencyCodeData, actualCurrencyCodeData)
-
 		val expectedOfferTypeData = PayPalMessageData(
 			clientID = "test_client_id",
 			merchantID = "test_merchant_id",
 			partnerAttributionID = "test_partner_attribution_id",
 			amount = 115.0,
 			buyerCountry = "ES",
-			currencyCode = CurrencyCode.EUR,
 			offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST,
 			placement = "test_placement",
 			environment = PayPalEnvironment.LOCAL,
@@ -161,7 +137,6 @@ class PayPalMessageDataTest {
 			partnerAttributionID = "test_partner_attribution_id",
 			amount = 115.0,
 			buyerCountry = "ES",
-			currencyCode = CurrencyCode.EUR,
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 			placement = "new_placement",
 			environment = PayPalEnvironment.LOCAL,
@@ -175,7 +150,6 @@ class PayPalMessageDataTest {
 			partnerAttributionID = "test_partner_attribution_id",
 			amount = 115.0,
 			buyerCountry = "ES",
-			currencyCode = CurrencyCode.EUR,
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 			placement = "test_placement",
 			environment = PayPalEnvironment.STAGE,
@@ -192,7 +166,6 @@ class PayPalMessageDataTest {
 			partnerAttributionID = "test_partner_attribution_id",
 			amount = 115.0,
 			buyerCountry = "ES",
-			currencyCode = CurrencyCode.EUR,
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 			placement = "test_placement",
 			environment = PayPalEnvironment.LOCAL,
