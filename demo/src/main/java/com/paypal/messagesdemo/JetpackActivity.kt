@@ -1,86 +1,52 @@
 package com.paypal.messagesdemo
 
 import android.os.Bundle
-import android.util.Log
-import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
-import com.paypal.messages.Logo
-import com.paypal.messages.LogoAsset
 import com.paypal.messages.PayPalMessageView
 import com.paypal.messages.config.PayPalEnvironment
-import com.paypal.messages.config.ProductGroup
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messagesdemo.ui.BasicTheme
-
-import android.view.ViewGroup
-import android.widget.RadioGroup
-import android.widget.ScrollView
 import android.widget.Toast
-import android.widget.ToggleButton
 import androidx.compose.foundation.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.fragment.app.Fragment
 import androidx.compose.foundation.layout.Column
-
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.state.ToggleableState
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.*
-import androidx.lifecycle.ViewModel
-//import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.material3.ButtonElevation
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.*
 import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.io.Api
-import kotlinx.coroutines.Delay
-import java.util.logging.Handler
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 
+fun toSentenceCase(input: String): String {
+	// Convert the string to lowercase and split it into words
+	val words = input.toLowerCase().split(" ")
+
+	// Capitalize the first letter of each word and join them back into a string
+	val sentenceCase = words.joinToString(" ") { it.capitalize() }
+
+	return sentenceCase
+}
 
 class JetpackActivity : ComponentActivity() {
-	private var backgroundColor: Color = Color.White
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -88,6 +54,14 @@ class JetpackActivity : ComponentActivity() {
 		setContent {
 			BasicTheme {
 				val context = LocalContext.current
+				var backgroundColor by remember { mutableStateOf(Color.White) }
+				val colorGroupOptions = listOf(
+					toSentenceCase(PayPalMessageColor.BLACK.name),
+					toSentenceCase(PayPalMessageColor.WHITE.name),
+					toSentenceCase(PayPalMessageColor.MONOCHROME.name),
+					toSentenceCase(PayPalMessageColor.GRAYSCALE.name)
+				)
+				var messageColor by remember { mutableStateOf(colorGroupOptions[0])}
 
 				val messageView = PayPalMessageView(context,
 					config = PayPalMessageConfig(
@@ -122,6 +96,65 @@ class JetpackActivity : ComponentActivity() {
 						)
 					)
 				)
+
+
+				@Composable
+				fun ColorOptions(messageView: PayPalMessageView, colorGroupOptions: List<String>, selected: String, onSelect: (text: String) -> Unit) {
+					val onSelectedChange = onSelect
+
+					Row (
+						horizontalArrangement = Arrangement.SpaceEvenly
+					) {
+						colorGroupOptions.forEach { text ->
+
+							Row(
+								modifier = Modifier
+									.height(intrinsicSize = IntrinsicSize.Max)
+									.padding(end = Dp(8.0F))
+									.selectable(
+										selected = (text == selected),
+										onClick = { onSelectedChange(text) }
+									),
+							) {
+								RadioButton (
+									selected = (text == selected),
+									onClick = { onSelectedChange(text) },
+									modifier = Modifier
+										.padding(end = Dp(0F))
+										.size(Dp(24f))
+								)
+								Text(
+									text = text,
+									fontSize = 16.sp,
+									modifier = Modifier
+										.align(Alignment.CenterVertically)
+								)
+							}
+
+						}
+					}
+				}
+
+				fun updateMessageData() {
+
+					if ( messageView.color === PayPalMessageColor.WHITE ) {
+						backgroundColor = Color.Black
+					} else {
+						backgroundColor = Color.White
+					}
+
+					messageView.refresh()
+				}
+
+				fun resetButton(messageView: PayPalMessageView) {
+					messageView.amount = null
+					messageView.offerType = null
+					messageView.alignment = PayPalMessageAlign.LEFT
+					messageColor = "Black"
+					messageView.color = PayPalMessageColor.BLACK
+					println("set color: ${messageView.color}")
+					updateMessageData()
+				}
 
 				// A surface container using the 'background' color from the theme
 				Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -169,13 +202,24 @@ class JetpackActivity : ComponentActivity() {
 						Text("Style Options")
 
 						LogoOptions(messageView)
-						ColorOptions(messageView)
+
+
+						ColorOptions(
+							messageView = messageView,
+							colorGroupOptions = colorGroupOptions,
+							selected = messageColor,
+							onSelect = { text: String ->
+								// Sets the Radio UI element
+								messageColor = text.toString()
+
+								// Sets style color option
+								messageView.color = PayPalMessageColor.valueOf(messageColor.uppercase())
+								println("\nmessage view set to ${messageView.color}")
+						})
 						AlignmentOptions(messageView)
 
-						Column {
-							Text (text = "Offer Type")
-							OfferButtons(messageView)
-						}
+						Text (text = "Offer Type")
+						OfferButtons(messageView)
 
 						// Amount
 						Row (
@@ -252,7 +296,7 @@ class JetpackActivity : ComponentActivity() {
 						DevTouchpointSwitch()
 
 						FilledButton(text = "Reset", onClick = { resetButton(messageView) })
-						FilledButton(text = "Submit", onClick = { updateMessageData(messageView) })
+						FilledButton(text = "Submit", onClick = { updateMessageData() })
 
 					}
 				}
@@ -260,22 +304,7 @@ class JetpackActivity : ComponentActivity() {
 		}
 	}
 
-	fun updateMessageData(messageView: PayPalMessageView) {
-		if ( messageView.color === PayPalMessageColor.WHITE ) {
-			backgroundColor = Color.Black
-		}
 
-		messageView.refresh()
-	}
-
-	fun resetButton(messageView: PayPalMessageView) {
-		messageView.amount = null
-		messageView.offerType = null
-		messageView.alignment = PayPalMessageAlign.LEFT
-		messageView.color = PayPalMessageColor.BLACK
-		messageView.refresh()
-		backgroundColor = Color.White
-	}
 }
 
 @Composable
@@ -345,59 +374,6 @@ fun LogoOptions(messageView: PayPalMessageView) {
 				)
 			}
 
-
-		}
-	}
-}
-
-@Composable
-fun ColorOptions(messageView: PayPalMessageView) {
-	var selected by remember { mutableStateOf("Black") }
-
-	val radioGroupOptions = listOf("Black", "White", "Monochorme", "Grayscale")
-	val onSelectedChange = { text: String ->
-		selected = text
-		messageView.color = when ( text.toString() ) {
-			"Black" -> PayPalMessageColor.BLACK
-			"White" -> PayPalMessageColor.WHITE
-			"Monochorme" -> PayPalMessageColor.MONOCHROME
-			"Grayscale" -> PayPalMessageColor.GRAYSCALE
-			else -> PayPalMessageColor.BLACK
-		}
-	}
-
-	Row (
-		horizontalArrangement = Arrangement.SpaceEvenly
-	) {
-		radioGroupOptions.forEach { text ->
-
-			Row(
-				modifier = Modifier
-					.height(intrinsicSize = IntrinsicSize.Max)
-					.padding(end = Dp(8.0F))
-					.selectable(
-						selected = (text == selected),
-						onClick = { onSelectedChange(text) }
-					),
-			) {
-				RadioButton (
-					selected = (text == selected),
-					onClick = { onSelectedChange(text) },
-					modifier = Modifier
-						.padding(end = Dp(0F))
-//						.background(color = Color.Black)
-						.size(Dp(24f))
-				)
-				Text(
-					text = text,
-					fontSize = 16.sp,
-//					color = Color.White,
-					modifier = Modifier
-//						.background(color = Color.Black)
-						.align(Alignment.CenterVertically),
-
-					)
-			}
 
 		}
 	}
