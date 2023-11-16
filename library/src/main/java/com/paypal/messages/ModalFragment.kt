@@ -393,9 +393,9 @@ internal class ModalFragment constructor(
 		val shared = jsonElementToMutableMap(sharedJson)
 		when (name) {
 			"onClick" -> {
-				val linkName = args.get("link_name")?.asString
-				val linkSrc = args.get("link_src")?.asString
-				if (linkName == "Apply Now") {
+				val pageViewLinkName = args.get("page_view_link_name")?.asString
+				val pageViewLinkSource = args.get("page_view_link_source")?.asString
+				if (pageViewLinkName == "Apply Now") {
 					this.onApply()
 				}
 				else {
@@ -404,8 +404,8 @@ internal class ModalFragment constructor(
 				logEvent(
 					TrackingEvent(
 						eventType = EventType.MODAL_CLICK,
-						linkSrc = linkSrc,
-						linkName = linkName,
+						pageViewLinkSource = pageViewLinkSource,
+						pageViewLinkName = pageViewLinkName,
 					),
 					shared,
 				)
@@ -477,7 +477,7 @@ internal class ModalFragment constructor(
 			buyerCountryCode = this.buyerCountry,
 			type = ComponentType.MODAL.toString(),
 			instanceId = this.instanceId.toString(),
-			events = mutableListOf(event),
+			componentEvents = mutableListOf(event),
 			__shared__ = dynamicKeys,
 		)
 

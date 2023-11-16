@@ -436,8 +436,8 @@ class PayPalMessageView @JvmOverloads constructor(
 			logEvent(
 				TrackingEvent(
 					eventType = EventType.MESSAGE_CLICK,
-					linkName = "banner_wrapper",
-					linkSrc = "message",
+					pageViewLinkName = "banner_wrapper",
+					pageViewLinkSource = "message",
 				),
 			)
 			showWebView(response)
@@ -567,7 +567,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			instanceId = Api.instanceId.toString(),
 			originatingInstanceId = Api.originatingInstanceId.toString(),
 			sessionId = Api.sessionId.toString(),
-			events = mutableListOf(event),
+			componentEvents = mutableListOf(event),
 		)
 
 		Logger.getInstance(clientId = clientId).log(context, component)

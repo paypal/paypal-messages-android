@@ -8,8 +8,8 @@ class TrackingEventTest {
 	private val eventType = EventType.MESSAGE_CLICK
 	private val renderDuration = 100
 	private val requestDuration = 200
-	private val linkName = "test_link_name"
-	private val linkSrc = "test_link_src"
+	private val pageViewLinkName = "test_link_name"
+	private val pageViewLinkSource = "test_link_src"
 	private val data = "test_data"
 	private val errorName = "test_error_name"
 	private val errorDescription = "test_error_description"
@@ -18,8 +18,8 @@ class TrackingEventTest {
 		eventType = eventType,
 		renderDuration = renderDuration,
 		requestDuration = requestDuration,
-		linkName = linkName,
-		linkSrc = linkSrc,
+		pageViewLinkName = pageViewLinkName,
+		pageViewLinkSource = pageViewLinkSource,
 		data = data,
 		errorName = errorName,
 		errorDescription = errorDescription,
@@ -30,8 +30,8 @@ class TrackingEventTest {
 		assertEquals(eventType, trackingEvent.eventType)
 		assertEquals(renderDuration, trackingEvent.renderDuration)
 		assertEquals(requestDuration, trackingEvent.requestDuration)
-		assertEquals(linkName, trackingEvent.linkName)
-		assertEquals(linkSrc, trackingEvent.linkSrc)
+		assertEquals(pageViewLinkName, trackingEvent.pageViewLinkName)
+		assertEquals(pageViewLinkSource, trackingEvent.pageViewLinkSource)
 		assertEquals(data, trackingEvent.data)
 		assertEquals(errorName, trackingEvent.errorName)
 		assertEquals(errorDescription, trackingEvent.errorDescription)

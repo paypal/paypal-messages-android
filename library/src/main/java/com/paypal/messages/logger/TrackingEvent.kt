@@ -9,10 +9,10 @@ data class TrackingEvent(
 	var renderDuration: Int? = null,
 	@SerializedName("request_duration")
 	var requestDuration: Int? = null,
-	@SerializedName("link_name")
-	var linkName: String? = null,
-	@SerializedName("link_src")
-	var linkSrc: String? = null,
+	@SerializedName("page_view_link_name")
+	var pageViewLinkName: String? = null,
+	@SerializedName("page_view_link_source")
+	var pageViewLinkSource: String? = null,
 	@SerializedName("data")
 	var data: String? = null,
 	@SerializedName("error_name")
