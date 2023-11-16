@@ -3,6 +3,7 @@ package com.paypal.messages.io
 import android.content.Context
 import com.google.gson.Gson
 import com.paypal.messages.BuildConfig
+import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.logger.TrackingPayload
 import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
@@ -46,12 +47,20 @@ object Api {
 
 		private val rootUrl = ROOT_URLS[environment]
 		private val presentmentUrl = if (environment === Env.LOCAL) "$rootUrl:8000" else "$rootUrl"
-		private val loggerUrl = if (environment === Env.LOCAL) "$rootUrl:9090" else "$rootUrl"
+		private val loggerBase: String = when (environment) {
+			Env.LIVE -> "https://api.paypal.com"
+			Env.SANDBOX -> "https://api.sandbox.paypal.com"
+			Env.STAGE -> "$rootUrl"
+			Env.STAGE_VPN -> "$rootUrl"
+			Env.LOCAL ->"$rootUrl:9090"
+			else -> "https://api.sandbox.paypal.com"
+		}
+		val loggerEnd = "v1/credit/upstream-messaging-events"
 
 		val messageData = "$presentmentUrl/credit-presentment/native/message".toHttpUrl()
 		val messageHash = "$presentmentUrl/credit-presentment/merchant-profile".toHttpUrl()
 		val modalData = "$presentmentUrl/credit-presentment/lander/modal".toHttpUrl()
-		val logger = "$loggerUrl/track/native".toHttpUrl()
+		val logger = "$loggerBase/$loggerEnd".toHttpUrl()
 	}
 
 	private fun HttpUrl.Builder.setMessageDataQuery(config: MessageConfig, hash: String?) {
