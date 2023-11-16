@@ -3,7 +3,6 @@ package com.paypal.messages.io
 import android.content.Context
 import com.google.gson.Gson
 import com.paypal.messages.BuildConfig
-import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.logger.TrackingPayload
 import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
@@ -52,8 +51,7 @@ object Api {
 			Env.SANDBOX -> "https://api.sandbox.paypal.com"
 			Env.STAGE -> "$rootUrl"
 			Env.STAGE_VPN -> "$rootUrl"
-			Env.LOCAL ->"$rootUrl:9090"
-			else -> "https://api.sandbox.paypal.com"
+			Env.LOCAL -> "$rootUrl:9090"
 		}
 		val loggerEnd = "v1/credit/upstream-messaging-events"
 
