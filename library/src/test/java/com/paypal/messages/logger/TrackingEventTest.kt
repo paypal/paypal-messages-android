@@ -43,7 +43,7 @@ class TrackingEventTest {
 		val json = gson.toJson(trackingEvent)
 
 		@Suppress("ktlint:standard:max-line-length")
-		val expectedJson = """{"event_type":"MESSAGE_CLICK","render_duration":100,"request_duration":200,"link_name":"test_link_name","link_src":"test_link_src","data":"test_data","error_name":"test_error_name","error_description":"test_error_description"}"""
+		val expectedJson = """{"event_type":"MESSAGE_CLICK","render_duration":100,"request_duration":200,"page_view_link_name":"test_link_name","page_view_link_source":"test_link_src","data":"test_data","error_name":"test_error_name","error_description":"test_error_description"}"""
 		assertEquals(expectedJson, json)
 	}
 }
