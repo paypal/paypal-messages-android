@@ -39,7 +39,7 @@ class TrackingPayloadTest {
 		source = "urn:paypal:event-src:v1:android:messages",
 		datacontenttype = "application/json",
 		dataschema = "ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json",
-		data = trackingPayload
+		data = trackingPayload,
 	)
 
 	@Test
@@ -48,7 +48,10 @@ class TrackingPayloadTest {
 		assertEquals(cloudWrappedEvent.type, "com.paypal.credit.upstream-presentment.v1")
 		assertEquals(cloudWrappedEvent.source, "urn:paypal:event-src:v1:android:messages")
 		assertEquals(cloudWrappedEvent.datacontenttype, "application/json")
-		assertEquals(cloudWrappedEvent.dataschema, "ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json")
+		assertEquals(
+			cloudWrappedEvent.dataschema,
+			"ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json",
+		)
 		assertEquals(clientId, cloudWrappedEvent.data.clientId)
 		assertEquals(merchantId, cloudWrappedEvent.data.merchantId)
 		assertEquals(partnerAttributionId, cloudWrappedEvent.data.partnerAttributionId)

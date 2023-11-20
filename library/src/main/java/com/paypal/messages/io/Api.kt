@@ -3,6 +3,7 @@ package com.paypal.messages.io
 import android.content.Context
 import com.google.gson.Gson
 import com.paypal.messages.BuildConfig
+import com.paypal.messages.logger.CloudEvent
 import com.paypal.messages.logger.TrackingPayload
 import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
@@ -22,7 +23,6 @@ import java.util.UUID
 import com.paypal.messages.config.PayPalEnvironment as Env
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
-import com.paypal.messages.logger.CloudEvent
 
 object Api {
 	private const val TAG = "Api"
