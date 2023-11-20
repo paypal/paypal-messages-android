@@ -22,3 +22,10 @@ tasks.register('ktFormat', FormatTask) {
   source files('demo/src', 'library/src')
   report = file('build/reports/ktlint/format-report.txt')
 }
+
+project.ext.name = "messages"
+project.ext.version = rootProject.version
+project.ext.pom_name = "PayPalMessages Android"
+project.ext.pom_desc = "Library for integration of PayPal Credit Messages onto your app."
+
+apply from: rootProject.file("gradle/gradle-publish.gradle")
