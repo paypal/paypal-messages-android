@@ -22,6 +22,7 @@ import java.util.UUID
 import com.paypal.messages.config.PayPalEnvironment as Env
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
+import com.paypal.messages.logger.CloudEvent
 
 object Api {
 	private const val TAG = "Api"
@@ -259,8 +260,7 @@ object Api {
 	}
 
 	fun callLoggerEndpoint(payload: TrackingPayload) {
-		// TODO, Ensure __shared__ property is correctly converted and added to json payload
-		val json = gson.toJson(payload)
+		val json = gson.toJson(CloudEvent(data = payload))
 		val request = createLoggerRequest(json)
 		val response = client.newCall(request).execute()
 		response.body?.string()?.let { LogCat.debug(TAG, "callLoggerEndpoint response: $it") }
