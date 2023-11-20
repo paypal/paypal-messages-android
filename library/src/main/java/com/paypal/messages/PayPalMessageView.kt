@@ -19,7 +19,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.getFloatOrThrow
 import androidx.core.content.res.getIntOrThrow
 import androidx.core.content.res.use
-import com.paypal.messages.config.CurrencyCode
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.config.modal.ModalEvents
 import com.paypal.messages.io.Api
@@ -78,7 +77,6 @@ class PayPalMessageView @JvmOverloads constructor(
 				if (modal != null) {
 					modal?.amount = dataArg.amount
 					modal?.buyerCountry = dataArg.buyerCountry
-					modal?.currencyCode = dataArg.currencyCode
 					modal?.offerType = dataArg.offerType
 				}
 			}
@@ -116,14 +114,6 @@ class PayPalMessageView @JvmOverloads constructor(
 			if (field != buyerCountryArg) {
 				data = data.merge(MessageData(buyerCountry = buyerCountryArg))
 				modal?.buyerCountry = buyerCountry
-			}
-		}
-	private var currencyCode: CurrencyCode? = data.currencyCode
-		get() = data.currencyCode
-		set(currencyCodeArg) {
-			if (field != currencyCodeArg) {
-				data = data.merge(MessageData(currencyCode = currencyCodeArg))
-				modal?.currencyCode = currencyCodeArg
 			}
 		}
 
@@ -207,7 +197,6 @@ class PayPalMessageView @JvmOverloads constructor(
 			// Build modal config
 			val modalConfig = ModalConfig(
 				amount = data.amount,
-				currencyCode = data.currencyCode,
 				buyerCountry = data.buyerCountry,
 				offer = data.offerType,
 				ignoreCache = false,
@@ -357,7 +346,6 @@ class PayPalMessageView @JvmOverloads constructor(
 		placement = config?.data?.placement
 		offerType = config?.data?.offerType
 		buyerCountry = config?.data?.buyerCountry
-		currencyCode = config?.data?.currencyCode
 		color = config?.style?.color ?: Color.BLACK
 		alignment = config?.style?.textAlign ?: Align.LEFT
 		logoType = config?.style?.logoType ?: LogoType.PRIMARY

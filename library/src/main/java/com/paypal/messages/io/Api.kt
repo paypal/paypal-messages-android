@@ -66,7 +66,6 @@ object Api {
 		config.style.logoType?.let { addQueryParameter("logo_type", it.name.lowercase()) }
 		config.data?.amount?.let { addQueryParameter("amount", it.toString()) }
 		config.data?.buyerCountry?.let { addQueryParameter("buyer_country", it) }
-		config.data?.currencyCode?.let { addQueryParameter("currency", it.name) }
 		config.data?.offerType?.let { addQueryParameter("offer", it.name) }
 
 		hash?.let { addQueryParameter("merchant_config", it) }

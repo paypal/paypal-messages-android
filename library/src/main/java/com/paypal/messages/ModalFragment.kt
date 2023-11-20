@@ -31,7 +31,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.paypal.messages.config.Channel
-import com.paypal.messages.config.CurrencyCode
 import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.extensions.dp
@@ -72,13 +71,6 @@ internal class ModalFragment constructor(
 			}
 		}
 	private var channel: Channel = Channel.NATIVE
-	var currencyCode: CurrencyCode? = null
-		set(currencyArg) {
-			if (field != currencyArg) {
-				field = currencyArg
-				setJsValue(name = "currency", value = currencyArg.toString())
-			}
-		}
 	private var devTouchpoint: Boolean = true
 	private var ignoreCache: Boolean = false
 	var offerType: OfferType? = null
@@ -266,7 +258,6 @@ internal class ModalFragment constructor(
 		this.amount = config.amount
 		this.buyerCountry = config.buyerCountry
 		this.channel = config.channel
-		this.currencyCode = config.currencyCode
 		this.devTouchpoint = config.devTouchpoint
 		this.ignoreCache = config.ignoreCache
 		this.offerType = config.offer
