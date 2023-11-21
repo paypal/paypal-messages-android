@@ -33,6 +33,7 @@ class TrackingPayloadTest {
 		components = components,
 	)
 	@Test
+
 	fun testConstructor() {
 		assertEquals(clientId, trackingPayload.clientId)
 		assertEquals(merchantId, trackingPayload.merchantId)
