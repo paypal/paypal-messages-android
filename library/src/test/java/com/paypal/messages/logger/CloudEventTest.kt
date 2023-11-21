@@ -17,8 +17,13 @@ class CloudEventTest {
 	private val integrationVersion = "test_integration_version"
 	private val libraryVersion = "test_library_version"
 	private val components = mutableListOf<TrackingComponent>()
+	private val specversion = "1.0"
+	private val type = "com.paypal.credit.upstream-presentment.v1"
+	private val source = "urn:paypal:event-src:v1:android:messages"
+	private val datacontenttype = "application/json"
+	private val dataschema = "ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json"
 
-	private val trackingPayload = TrackingPayload(
+	private val data = TrackingPayload(
 		clientId = clientId,
 		merchantId = merchantId,
 		partnerAttributionId = partnerAttributionId,
@@ -34,24 +39,22 @@ class CloudEventTest {
 	)
 
 	private val cloudWrappedEvent = CloudEvent(
-		specversion = "1.0",
-		type = "com.paypal.credit.upstream-presentment.v1",
-		source = "urn:paypal:event-src:v1:android:messages",
-		datacontenttype = "application/json",
-		dataschema = "ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json",
-		data = trackingPayload,
+		specversion = specversion,
+		type = type,
+		source = source,
+		datacontenttype = datacontenttype,
+		dataschema = dataschema,
+		data = data,
 	)
 
 	@Test
 	fun testConstructor() {
-		assertEquals(cloudWrappedEvent.specversion, "1.0")
-		assertEquals(cloudWrappedEvent.type, "com.paypal.credit.upstream-presentment.v1")
-		assertEquals(cloudWrappedEvent.source, "urn:paypal:event-src:v1:android:messages")
-		assertEquals(cloudWrappedEvent.datacontenttype, "application/json")
-		assertEquals(
-			cloudWrappedEvent.dataschema,
-			"ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json",
-		)
+		assertEquals(cloudWrappedEvent.specversion, specversion)
+		assertEquals(cloudWrappedEvent.type, type)
+		assertEquals(cloudWrappedEvent.source, source)
+		assertEquals(cloudWrappedEvent.datacontenttype, datacontenttype)
+		assertEquals(cloudWrappedEvent.dataschema, dataschema)
+		assertEquals(cloudWrappedEvent.data, data)
 	}
 
 	@Test
