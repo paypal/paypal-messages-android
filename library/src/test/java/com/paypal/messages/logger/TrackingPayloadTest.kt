@@ -32,8 +32,8 @@ class TrackingPayloadTest {
 		libraryVersion = libraryVersion,
 		components = components,
 	)
-	@Test
 
+	@Test
 	fun testConstructor() {
 		assertEquals(clientId, trackingPayload.clientId)
 		assertEquals(merchantId, trackingPayload.merchantId)
