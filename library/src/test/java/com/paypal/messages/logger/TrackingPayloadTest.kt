@@ -32,7 +32,7 @@ class TrackingPayloadTest {
 		libraryVersion = libraryVersion,
 		components = components,
 	)
-
+	
 	@Test
 	fun testConstructor() {
 		assertEquals(clientId, trackingPayload.clientId)
