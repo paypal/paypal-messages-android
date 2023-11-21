@@ -33,37 +33,20 @@ class TrackingPayloadTest {
 		components = components,
 	)
 
-	private val cloudWrappedEvent = CloudEvent(
-		specversion = "1.0",
-		type = "com.paypal.credit.upstream-presentment.v1",
-		source = "urn:paypal:event-src:v1:android:messages",
-		datacontenttype = "application/json",
-		dataschema = "ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json",
-		data = trackingPayload,
-	)
-
 	@Test
 	fun testConstructor() {
-		assertEquals(cloudWrappedEvent.specversion, "1.0")
-		assertEquals(cloudWrappedEvent.type, "com.paypal.credit.upstream-presentment.v1")
-		assertEquals(cloudWrappedEvent.source, "urn:paypal:event-src:v1:android:messages")
-		assertEquals(cloudWrappedEvent.datacontenttype, "application/json")
-		assertEquals(
-			cloudWrappedEvent.dataschema,
-			"ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json",
-		)
-		assertEquals(clientId, cloudWrappedEvent.data.clientId)
-		assertEquals(merchantId, cloudWrappedEvent.data.merchantId)
-		assertEquals(partnerAttributionId, cloudWrappedEvent.data.partnerAttributionId)
-		assertEquals(merchantProfileHash, cloudWrappedEvent.data.merchantProfileHash)
-		assertEquals(deviceId, cloudWrappedEvent.data.deviceId)
-		assertEquals(sessionId, cloudWrappedEvent.data.sessionId)
-		assertEquals(instanceId, cloudWrappedEvent.data.instanceId)
-		assertEquals(integrationName, cloudWrappedEvent.data.integrationName)
-		assertEquals(integrationType, cloudWrappedEvent.data.integrationType)
-		assertEquals(integrationVersion, cloudWrappedEvent.data.integrationVersion)
-		assertEquals(libraryVersion, cloudWrappedEvent.data.libraryVersion)
-		assertEquals(components, cloudWrappedEvent.data.components)
+		assertEquals(clientId, trackingEvent.clientId)
+		assertEquals(merchantId, trackingEvent.merchantId)
+		assertEquals(partnerAttributionId, trackingEvent.partnerAttributionId)
+		assertEquals(merchantProfileHash, trackingEvent.merchantProfileHash)
+		assertEquals(deviceId, trackingEvent.deviceId)
+		assertEquals(sessionId, trackingEvent.sessionId)
+		assertEquals(instanceId, trackingEvent.instanceId)
+		assertEquals(integrationName, trackingEvent.integrationName)
+		assertEquals(integrationType, trackingEvent.integrationType)
+		assertEquals(integrationVersion, trackingEvent.integrationVersion)
+		assertEquals(libraryVersion, trackingEvent.libraryVersion)
+		assertEquals(components, trackingEvent.components)
 	}
 
 	@Test
