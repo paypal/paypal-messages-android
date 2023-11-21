@@ -33,20 +33,21 @@ class TrackingPayloadTest {
 		components = components,
 	)
 
+
 	@Test
 	fun testConstructor() {
-		assertEquals(clientId, trackingEvent.clientId)
-		assertEquals(merchantId, trackingEvent.merchantId)
-		assertEquals(partnerAttributionId, trackingEvent.partnerAttributionId)
-		assertEquals(merchantProfileHash, trackingEvent.merchantProfileHash)
-		assertEquals(deviceId, trackingEvent.deviceId)
-		assertEquals(sessionId, trackingEvent.sessionId)
-		assertEquals(instanceId, trackingEvent.instanceId)
-		assertEquals(integrationName, trackingEvent.integrationName)
-		assertEquals(integrationType, trackingEvent.integrationType)
-		assertEquals(integrationVersion, trackingEvent.integrationVersion)
-		assertEquals(libraryVersion, trackingEvent.libraryVersion)
-		assertEquals(components, trackingEvent.components)
+		assertEquals(clientId, trackingPayload.clientId)
+		assertEquals(merchantId, trackingPayload.merchantId)
+		assertEquals(partnerAttributionId, trackingPayload.partnerAttributionId)
+		assertEquals(merchantProfileHash, trackingPayload.merchantProfileHash)
+		assertEquals(deviceId, trackingPayload.deviceId)
+		assertEquals(sessionId, trackingPayload.sessionId)
+		assertEquals(instanceId, trackingPayload.instanceId)
+		assertEquals(integrationName, trackingPayload.integrationName)
+		assertEquals(integrationType, trackingPayload.integrationType)
+		assertEquals(integrationVersion, trackingPayload.integrationVersion)
+		assertEquals(libraryVersion, trackingPayload.libraryVersion)
+		assertEquals(components, trackingPayload.components)
 	}
 
 	@Test
