@@ -21,6 +21,8 @@ class CloudEventTest {
 	private val type = "com.paypal.credit.upstream-presentment.v1"
 	private val source = "urn:paypal:event-src:v1:android:messages"
 	private val datacontenttype = "application/json"
+
+	@Suppress("ktlint:standard:max-line-length")
 	private val dataschema = "ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json"
 
 	private val data = TrackingPayload(
