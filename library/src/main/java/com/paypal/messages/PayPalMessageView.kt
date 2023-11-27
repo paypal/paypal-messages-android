@@ -96,11 +96,13 @@ class PayPalMessageView @JvmOverloads constructor(
 				data = data.merge(MessageData(amount = amountArg))
 				modal?.amount = amountArg
 			}
+			field = amountArg
 		}
 	var placement: String? = data.placement
 		get() = data.placement
 		set(placementArg) {
 			if (field != placementArg) data = data.merge(MessageData(placement = placementArg))
+			field = placementArg
 		}
 	var offerType: OfferType? = data.offerType
 		get() = data.offerType
@@ -109,6 +111,7 @@ class PayPalMessageView @JvmOverloads constructor(
 				data = data.merge(MessageData(offerType = offerArg))
 				modal?.offerType = offerArg
 			}
+			field = offerArg
 		}
 	var buyerCountry: String? = data.buyerCountry
 		get() = data.buyerCountry
@@ -138,16 +141,19 @@ class PayPalMessageView @JvmOverloads constructor(
 		get() = style.color ?: Color.BLACK
 		set(colorArg) {
 			if (field != colorArg) style = style.merge(MessageStyle(color = colorArg))
+			field = colorArg
 		}
 	var logoType: LogoType = LogoType.PRIMARY
 		get() = style.logoType ?: LogoType.PRIMARY
 		set(logoTypeArg) {
 			if (field != logoTypeArg) style = style.merge(MessageStyle(logoType = logoTypeArg))
+			field = logoTypeArg
 		}
 	var alignment: Align = Align.LEFT
 		get() = style.textAlign ?: Align.LEFT
 		set(alignmentArg) {
 			if (field != alignmentArg) style = style.merge(MessageStyle(textAlign = alignmentArg))
+			field = alignmentArg
 		}
 
 	// VIEW STATE CALLBACKS
