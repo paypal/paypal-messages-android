@@ -24,11 +24,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.*
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.*
@@ -54,6 +57,10 @@ class JetpackActivity : ComponentActivity() {
 		setContent {
 			BasicTheme {
 				val context = LocalContext.current
+
+				// Client ID
+
+				// Style Color
 				var backgroundColor by remember { mutableStateOf(Color.White) }
 				val colorGroupOptions = listOf(
 					toSentenceCase(PayPalMessageColor.BLACK.name),
@@ -62,6 +69,31 @@ class JetpackActivity : ComponentActivity() {
 					toSentenceCase(PayPalMessageColor.GRAYSCALE.name)
 				)
 				var messageColor by remember { mutableStateOf(colorGroupOptions[0])}
+
+				// Style Logo
+				val logoGroupOptions = listOf(
+					toSentenceCase(PayPalMessageLogoType.PRIMARY.name),
+					toSentenceCase(PayPalMessageLogoType.INLINE.name),
+					toSentenceCase(PayPalMessageLogoType.ALTERNATIVE.name),
+					toSentenceCase(PayPalMessageLogoType.NONE.name)
+				)
+				var messageLogo by remember { mutableStateOf(logoGroupOptions[0])}
+
+				// Style Aligntment
+				val alignmentGroupOptions = listOf(
+					toSentenceCase(PayPalMessageAlign.LEFT.name),
+					toSentenceCase(PayPalMessageAlign.CENTER.name),
+					toSentenceCase(PayPalMessageAlign.RIGHT.name)
+				)
+				var messageAlignment by remember { mutableStateOf(alignmentGroupOptions[0])}
+
+				// Offer Type
+
+				var amount by remember { mutableStateOf("") }
+				var buyerCountry by remember { mutableStateOf("") }
+				var stageTag by remember { mutableStateOf("") }
+				// ignore cache
+				// dev touchpoint
 
 				val messageView = PayPalMessageView(context,
 					config = PayPalMessageConfig(
@@ -97,62 +129,47 @@ class JetpackActivity : ComponentActivity() {
 					)
 				)
 
-
-				@Composable
-				fun ColorOptions(messageView: PayPalMessageView, colorGroupOptions: List<String>, selected: String, onSelect: (text: String) -> Unit) {
-					val onSelectedChange = onSelect
-
-					Row (
-						horizontalArrangement = Arrangement.SpaceEvenly
-					) {
-						colorGroupOptions.forEach { text ->
-
-							Row(
-								modifier = Modifier
-									.height(intrinsicSize = IntrinsicSize.Max)
-									.padding(end = Dp(8.0F))
-									.selectable(
-										selected = (text == selected),
-										onClick = { onSelectedChange(text) }
-									),
-							) {
-								RadioButton (
-									selected = (text == selected),
-									onClick = { onSelectedChange(text) },
-									modifier = Modifier
-										.padding(end = Dp(0F))
-										.size(Dp(24f))
-								)
-								Text(
-									text = text,
-									fontSize = 16.sp,
-									modifier = Modifier
-										.align(Alignment.CenterVertically)
-								)
-							}
-
-						}
-					}
-				}
-
 				fun updateMessageData() {
 
-					if ( messageView.color === PayPalMessageColor.WHITE ) {
+					if ( PayPalMessageColor.valueOf(messageColor.uppercase()) === PayPalMessageColor.WHITE ) {
 						backgroundColor = Color.Black
 					} else {
 						backgroundColor = Color.White
 					}
 
+					messageView.color = PayPalMessageColor.valueOf(messageColor.uppercase())
+					messageView.logoType = PayPalMessageLogoType.valueOf(messageLogo.uppercase())
+					messageView.alignment = PayPalMessageAlign.valueOf((messageAlignment.uppercase()))
+					// offer type
+
+					messageView.amount = amount.toDouble() ?: null
+					messageView.buyerCountry = buyerCountry
+					Api.stageTag = stageTag
+
+					// ignore cache
+
+					// dev touchpoint
+
 					messageView.refresh()
 				}
 
-				fun resetButton(messageView: PayPalMessageView) {
-					messageView.amount = null
-					messageView.offerType = null
-					messageView.alignment = PayPalMessageAlign.LEFT
-					messageColor = "Black"
-					messageView.color = PayPalMessageColor.BLACK
-					println("set color: ${messageView.color}")
+				fun resetButton() {
+					messageColor = colorGroupOptions[0]
+					messageLogo = logoGroupOptions[0]
+					messageAlignment = alignmentGroupOptions[0]
+					// offer type
+
+					// amount
+					amount = ""
+
+					// country
+
+					// stage tag
+
+					// ignore cache
+
+					// dev touchpoint
+
 					updateMessageData()
 				}
 
@@ -201,87 +218,45 @@ class JetpackActivity : ComponentActivity() {
 
 						Text("Style Options")
 
-						LogoOptions(messageView)
-
+						LogoOptions(
+							logoGroupOptions = logoGroupOptions,
+							selected = messageLogo,
+							onSelected = { text: String ->
+								messageLogo = text.toString()
+							}
+						)
 
 						ColorOptions(
-							messageView = messageView,
 							colorGroupOptions = colorGroupOptions,
 							selected = messageColor,
-							onSelect = { text: String ->
-								// Sets the Radio UI element
+							onSelected = { text: String ->
 								messageColor = text.toString()
+							}
+						)
 
-								// Sets style color option
-								messageView.color = PayPalMessageColor.valueOf(messageColor.uppercase())
-								println("\nmessage view set to ${messageView.color}")
-						})
-						AlignmentOptions(messageView)
+						AlignmentOptions(
+							alignmentGroupOptions = alignmentGroupOptions,
+							selected = messageAlignment,
+							onSelected = { text: String ->
+								messageAlignment = text.toString()
+							}
+						)
 
-						Text (text = "Offer Type")
+						Text ("Offer Type")
+
 						OfferButtons(messageView)
 
-						// Amount
-						Row (
-							modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)
-						) {
-							Text(text = "Amount", fontSize = TextUnit(value = 32.0F, type = TextUnitType(type = 1)))
-							var text by remember { mutableStateOf(TextFieldValue("")) }
+						AmountField(
+							amount = amount,
+							onChange = { amount = it }
+						)
 
-							TextField(
-								value = text,
-								onValueChange = {
-									text = it
-									messageView.amount = it.text.toDouble()
-								},
-								placeholder = { Text(text = "0.00") },
-								modifier = Modifier
-									.height(Dp(value = 64F))
-									.padding(all = 1.dp)
-							)
+						BuyerCountryField(
+							country = buyerCountry,
+							onChange = { buyerCountry = it }
+						)
 
-						}
-
-						// Buyer Country
-						Row (
-							modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)
-						) {
-							Text(text = "Buyer Country", fontSize = TextUnit(value = 32.0F, type = TextUnitType(type = 1)))
-							var text by remember { mutableStateOf(TextFieldValue("")) }
-
-							TextField(
-								value = text,
-								onValueChange = {
-									text = it
-									messageView.buyerCountry = it.text.toString()
-								},
-								placeholder = { Text(text = "US") },
-								modifier = Modifier
-									.height(Dp(value = 64F))
-									.padding(all = 1.dp)
-							)
-
-						}
-
-						// Stage Tag
-						Row (
-							modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)
-						) {
-							Text(text = "Stage Tag", fontSize = TextUnit(value = 32.0F, type = TextUnitType(type = 1)))
-							var text by remember { mutableStateOf(TextFieldValue("")) }
-
-							TextField(
-								value = text,
-								onValueChange = {
-									text = it
-									Api.stageTag = it.text.toString()
-								},
-								modifier = Modifier
-									.height(Dp(value = 64F))
-									.padding(all = 1.dp)
-							)
-
-						}
+						StageTagField(stageTag, onChange = { stageTag = it })
 
 						AndroidView(
 							modifier = Modifier
@@ -295,7 +270,7 @@ class JetpackActivity : ComponentActivity() {
 						IgnoreCacheSwitch()
 						DevTouchpointSwitch()
 
-						FilledButton(text = "Reset", onClick = { resetButton(messageView) })
+						FilledButton(text = "Reset", onClick = { resetButton() })
 						FilledButton(text = "Submit", onClick = { updateMessageData() })
 
 					}
@@ -303,43 +278,11 @@ class JetpackActivity : ComponentActivity() {
 			}
 		}
 	}
-
-
 }
 
 @Composable
-fun FilledButton(onClick: () -> Unit, text: String) {
-	var isButtonClicked by remember { mutableStateOf(false) }
-	Button(
-//		elevation = Dp(1F),
-		onClick = {
-			onClick()
-			isButtonClicked = !isButtonClicked
-		},
-//		modifier = Modifier
-//			.graphicsLayer(
-//				scaleX = if (isButtonClicked) 1.2f else 1f,
-//				scaleY = if (isButtonClicked) 1.2f else 1f
-//			)
-	) {
-		Text(text)
-	}
-}
-
-@Composable
-fun LogoOptions(messageView: PayPalMessageView) {
-	var selected by remember { mutableStateOf("Primary") }
-	val radioGroupOptions = listOf("Primary", "Inline", "Alternative", "None")
-	val onSelectedChange = { text: String ->
-		selected = text
-		messageView.logoType = when ( text.toString() ) {
-			"Primary" -> PayPalMessageLogoType.PRIMARY
-			"Inline" -> PayPalMessageLogoType.INLINE
-			"Alternative" -> PayPalMessageLogoType.ALTERNATIVE
-			"None" -> PayPalMessageLogoType.NONE
-			else -> PayPalMessageLogoType.PRIMARY
-		}
-	}
+fun LogoOptions( logoGroupOptions: List<String>, selected: String, onSelected: (text: String) -> Unit ) {
+	val radioGroupOptions = logoGroupOptions
 
 	Row (
 		horizontalArrangement = Arrangement.SpaceEvenly
@@ -352,12 +295,12 @@ fun LogoOptions(messageView: PayPalMessageView) {
 					.padding(end = Dp(8.0F))
 					.selectable(
 						selected = (text == selected),
-						onClick = { onSelectedChange(text) }
+						onClick = { onSelected(text) }
 					),
 			) {
 				RadioButton (
 					selected = (text == selected),
-					onClick = { onSelectedChange(text) },
+					onClick = { onSelected(text) },
 					modifier = Modifier
 						.padding(end = Dp(0F))
 //						.background(color = Color.Black)
@@ -380,28 +323,12 @@ fun LogoOptions(messageView: PayPalMessageView) {
 }
 
 @Composable
-fun AlignmentOptions(messageView: PayPalMessageView) {
-	var selected by remember { mutableStateOf("Left") }
-
-	val radioGroupOptions = listOf("Left", "Center", "Right")
-	val onSelectedChange = { text: String ->
-		selected = text
-
-		println("alignment options")
-		println(text)
-
-		messageView.alignment = when ( text.toString() ) {
-			"left" -> PayPalMessageAlign.LEFT
-			"Center" -> PayPalMessageAlign.CENTER
-			"Right" -> PayPalMessageAlign.RIGHT
-			else -> PayPalMessageAlign.LEFT
-		}
-	}
+fun ColorOptions(colorGroupOptions: List<String>, selected: String, onSelected: (text: String) -> Unit) {
 
 	Row (
 		horizontalArrangement = Arrangement.SpaceEvenly
 	) {
-		radioGroupOptions.forEach { text ->
+		colorGroupOptions.forEach { text ->
 
 			Row(
 				modifier = Modifier
@@ -409,12 +336,48 @@ fun AlignmentOptions(messageView: PayPalMessageView) {
 					.padding(end = Dp(8.0F))
 					.selectable(
 						selected = (text == selected),
-						onClick = { onSelectedChange(text) }
+						onClick = { onSelected(text) }
 					),
 			) {
 				RadioButton (
 					selected = (text == selected),
-					onClick = { onSelectedChange(text) },
+					onClick = { onSelected(text) },
+					modifier = Modifier
+						.padding(end = Dp(0F))
+						.size(Dp(24f))
+				)
+				Text(
+					text = text,
+					fontSize = 16.sp,
+					modifier = Modifier
+						.align(Alignment.CenterVertically)
+				)
+			}
+
+		}
+	}
+}
+
+@Composable
+fun AlignmentOptions(alignmentGroupOptions: List<String>, selected: String, onSelected: (text: String) -> Unit) {
+
+	Row (
+		horizontalArrangement = Arrangement.SpaceEvenly
+	) {
+		alignmentGroupOptions.forEach { text ->
+
+			Row(
+				modifier = Modifier
+					.height(intrinsicSize = IntrinsicSize.Max)
+					.padding(end = Dp(8.0F))
+					.selectable(
+						selected = (text == selected),
+						onClick = { onSelected(text) }
+					),
+			) {
+				RadioButton (
+					selected = (text == selected),
+					onClick = { onSelected(text) },
 					modifier = Modifier
 						.padding(end = Dp(0F))
 //						.background(color = Color.Black)
@@ -431,8 +394,68 @@ fun AlignmentOptions(messageView: PayPalMessageView) {
 					)
 			}
 
-
 		}
+	}
+}
+
+@Composable
+fun AmountField(amount: String, onChange: (text: String) -> Unit){
+
+	Row (
+		modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)
+	) {
+		Text(text = "Amount", fontSize = TextUnit(value = 32.0F, type = TextUnitType(type = 1)))
+
+		TextField(
+			value = amount,
+			onValueChange = onChange,
+			placeholder = { Text(text = "0.00") },
+			keyboardOptions = KeyboardOptions.Default.copy(
+				keyboardType = KeyboardType.Number,
+				imeAction = ImeAction.Done
+			),
+			modifier = Modifier
+				.height(Dp(value = 64F))
+				.padding(all = 1.dp)
+		)
+
+	}
+}
+
+@Composable
+fun BuyerCountryField(country: String, onChange: (text: String) -> Unit){
+	Row (
+		modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)
+	) {
+		Text(text = "Buyer Country", fontSize = TextUnit(value = 32.0F, type = TextUnitType(type = 1)))
+
+		TextField(
+			value = country,
+			onValueChange = onChange,
+			placeholder = { Text(text = "US") },
+			modifier = Modifier
+				.height(Dp(value = 64F))
+				.padding(all = 1.dp)
+		)
+
+	}
+}
+
+@Composable
+fun StageTagField( stageTag: String, onChange: (text: String) -> Unit){
+	Row (
+		modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)
+	) {
+		Text(text = "Stage Tag", fontSize = TextUnit(value = 32.0F, type = TextUnitType(type = 1)))
+
+		TextField(
+			value = stageTag,
+			onValueChange = onChange,
+			modifier = Modifier
+				.height(Dp(value = 64F))
+				.padding(all = 1.dp)
+		)
+
 	}
 }
 
@@ -541,6 +564,19 @@ fun ToggleButton( toggledState: Boolean, text: String, onClick: () -> Unit) {
 ////					shape = MaterialTheme.shapes.small
 //				),
 		onClick = onClick
+	) {
+		Text(text)
+	}
+}
+
+@Composable
+fun FilledButton(onClick: () -> Unit, text: String) {
+	var isButtonClicked by remember { mutableStateOf(false) }
+	Button(
+		onClick = {
+			onClick()
+			isButtonClicked = !isButtonClicked
+		},
 	) {
 		Text(text)
 	}
