@@ -23,11 +23,11 @@ data class TrackingPayload(
 	@SerializedName("instance_id")
 	val instanceId: String = UUID.randomUUID().toString(),
 	@SerializedName("integration_name")
-	val integrationName: String,
+	var integrationName: String,
 	@SerializedName("integration_type")
 	val integrationType: String = BuildConfig.INTEGRATION_TYPE,
 	@SerializedName("integration_version")
-	val integrationVersion: String,
+	var integrationVersion: String,
 	@SerializedName("lib_version")
 	val libraryVersion: String = BuildConfig.LIBRARY_VERSION,
 	// Event Groups

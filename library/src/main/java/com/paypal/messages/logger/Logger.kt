@@ -13,8 +13,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class Logger private constructor() {
-	private var integrationName: String = ""
-	private var integrationVersion: String = ""
+	var integrationName: String = ""
+		private set
+	var integrationVersion: String = ""
+		private set
 
 	companion object {
 		private const val TAG: String = "Logger"
@@ -35,7 +37,8 @@ class Logger private constructor() {
 		}
 	}
 
-	private var payload: TrackingPayload? = null
+	var payload: TrackingPayload? = null
+		private set
 
 	// When we instantiate our class for the first time, there are some global vars we can set right
 	// away, and don't need to rely on the message class
@@ -76,6 +79,8 @@ class Logger private constructor() {
 	) {
 		this.integrationName = integrationName
 		this.integrationVersion = integrationVersion
+		this.payload?.integrationName = integrationName
+		this.payload?.integrationVersion = integrationVersion
 	}
 
 	// Need to be able to append multiple events to a single payload, adding a modal event could
@@ -108,6 +113,7 @@ class Logger private constructor() {
 			this.payload?.components?.add(component)
 		}
 
+		this.payload?.merchantProfileHash = LocalStorage(context).merchantHash
 		this.payload?.let { sendEvent(context, it) }
 	}
 
