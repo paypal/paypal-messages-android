@@ -1,17 +1,21 @@
 package com.paypal.messages.logger
 
+import com.google.gson.annotations.SerializedName
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.UUID
 
 data class CloudEvent(
-	val specversion: String = "1.0",
+	@SerializedName("specversion")
+	val specVersion: String = "1.0",
 	val id: UUID = UUID.randomUUID(),
 	val type: String = "com.paypal.credit.upstream-presentment.v1",
 	val source: String = "urn:paypal:event-src:v1:android:messages",
-	val datacontenttype: String = "application/json",
+	@SerializedName("datacontenttype")
+	val dataContentType: String = "application/json",
 	@Suppress("ktlint:standard:max-line-length")
-	val dataschema: String = "ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json",
+	@SerializedName("dataschema")
+	val dataSchema: String = "ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json",
 	var time: String = "",
 	val data: TrackingPayload,
 ) {

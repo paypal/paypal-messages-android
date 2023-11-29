@@ -17,13 +17,13 @@ class CloudEventTest {
 	private val integrationVersion = "test_integration_version"
 	private val libraryVersion = "test_library_version"
 	private val components = mutableListOf<TrackingComponent>()
-	private val specversion = "1.0"
+	private val specVersion = "1.0"
 	private val type = "com.paypal.credit.upstream-presentment.v1"
 	private val source = "urn:paypal:event-src:v1:android:messages"
-	private val datacontenttype = "application/json"
+	private val dataContentType = "application/json"
 
 	@Suppress("ktlint:standard:max-line-length")
-	private val dataschema = "ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json"
+	private val dataSchema = "ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json"
 
 	private val data = TrackingPayload(
 		clientId = clientId,
@@ -41,21 +41,21 @@ class CloudEventTest {
 	)
 
 	private val cloudWrappedEvent = CloudEvent(
-		specversion = specversion,
+		specVersion = specVersion,
 		type = type,
 		source = source,
-		datacontenttype = datacontenttype,
-		dataschema = dataschema,
+		dataContentType = dataContentType,
+		dataSchema = dataSchema,
 		data = data,
 	)
 
 	@Test
 	fun testConstructor() {
-		assertEquals(cloudWrappedEvent.specversion, specversion)
+		assertEquals(cloudWrappedEvent.specVersion, specVersion)
 		assertEquals(cloudWrappedEvent.type, type)
 		assertEquals(cloudWrappedEvent.source, source)
-		assertEquals(cloudWrappedEvent.datacontenttype, datacontenttype)
-		assertEquals(cloudWrappedEvent.dataschema, dataschema)
+		assertEquals(cloudWrappedEvent.dataContentType, dataContentType)
+		assertEquals(cloudWrappedEvent.dataSchema, dataSchema)
 		assertEquals(cloudWrappedEvent.data, data)
 	}
 
