@@ -55,7 +55,7 @@ object Api {
 	}
 
 	private fun HttpUrl.Builder.setMessageDataQuery(config: MessageConfig, hash: String?) {
-		addQueryParameter("client_id", config.data?.clientID)
+		addQueryParameter("client_id", config.data.clientID)
 		addQueryParameter("devTouchpoint", devTouchpoint.toString())
 		addQueryParameter("ignore_cache", ignoreCache.toString())
 		addQueryParameter("env", environment.name.lowercase())
@@ -64,10 +64,10 @@ object Api {
 
 		if (!stageTag.isNullOrBlank()) { addQueryParameter("stage_tag", stageTag) }
 		config.style.logoType?.let { addQueryParameter("logo_type", it.name.lowercase()) }
-		config.data?.amount?.let { addQueryParameter("amount", it.toString()) }
-		config.data?.buyerCountry?.let { addQueryParameter("buyer_country", it) }
-		config.data?.currencyCode?.let { addQueryParameter("currency", it.name) }
-		config.data?.offerType?.let { addQueryParameter("offer", it.name) }
+		config.data.amount?.let { addQueryParameter("amount", it.toString()) }
+		config.data.buyerCountry?.let { addQueryParameter("buyer_country", it) }
+		config.data.currencyCode?.let { addQueryParameter("currency", it.name) }
+		config.data.offerType?.let { addQueryParameter("offer", it.name) }
 
 		hash?.let { addQueryParameter("merchant_config", it) }
 	}
@@ -75,7 +75,7 @@ object Api {
 	private fun createMessageDataRequest(config: MessageConfig, hash: String?): Request {
 		val request = Request.Builder().apply {
 			header("Accept", "application/json")
-			header("Authorization", Credentials.basic(config.data?.clientID ?: "", ""))
+			header("Authorization", Credentials.basic(config.data.clientID, ""))
 			header("x-requested-by", "native-upstream-messages")
 
 			val urlBuilder = Endpoints.messageData.newBuilder()
@@ -204,7 +204,7 @@ object Api {
 	}
 
 	private suspend fun getAndStoreNewHash(context: Context, messageConfig: MessageConfig): String? {
-		val clientId = messageConfig.data?.clientID ?: ""
+		val clientId = messageConfig.data.clientID
 		val localStorage = LocalStorage(context)
 		val result = withContext(Dispatchers.IO) {
 			callMessageHashEndpoint(clientId)
