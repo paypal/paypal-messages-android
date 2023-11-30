@@ -6,10 +6,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class PayPalMessageDataTest {
+	private val initialClientID = "test_client_id"
+	
 	@Test
 	fun testConstructor() {
 		val data = PayPalMessageData(
-			clientID = "client_id_test",
+			clientID = initialClientID,
 			amount = 115.0,
 			placement = "placement_test",
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
@@ -19,7 +21,7 @@ class PayPalMessageDataTest {
 			environment = PayPalEnvironment.LOCAL,
 		)
 
-		assertEquals(data.clientID, "client_id_test")
+		assertEquals(data.clientID, initialClientID)
 		assertEquals(data.amount, 115.0)
 		assertEquals(data.placement, "placement_test")
 		assertEquals(data.offerType, PayPalMessageOfferType.PAY_LATER_PAY_IN_1)
@@ -30,7 +32,7 @@ class PayPalMessageDataTest {
 	}
 
 	private val oldData = PayPalMessageData(
-		clientID = "test_client_id",
+		clientID = initialClientID,
 		merchantID = "test_merchant_id",
 		partnerAttributionID = "test_partner_attribution_id",
 		amount = 115.0,
@@ -43,7 +45,7 @@ class PayPalMessageDataTest {
 	@Test
 	fun testMergeWithNoParams() {
 		val expectedData = oldData.copy()
-		val actualData = oldData.merge(PayPalMessageData())
+		val actualData = oldData.merge(PayPalMessageData(initialClientID))
 		assertEquals(expectedData, actualData)
 	}
 
@@ -63,7 +65,7 @@ class PayPalMessageDataTest {
 		assertEquals(expectedClientIdData, actualClientIdData)
 
 		val expectedMerchantIdData = PayPalMessageData(
-			clientID = "test_client_id",
+			clientID = initialClientID,
 			merchantID = "new_merchant_id",
 			partnerAttributionID = "test_partner_attribution_id",
 			amount = 115.0,
@@ -72,11 +74,11 @@ class PayPalMessageDataTest {
 			placement = "test_placement",
 			environment = PayPalEnvironment.LOCAL,
 		)
-		val actualMerchantIdData = oldData.merge(PayPalMessageData(merchantID = "new_merchant_id"))
+		val actualMerchantIdData = oldData.merge(PayPalMessageData(initialClientID, merchantID = "new_merchant_id"))
 		assertEquals(expectedMerchantIdData, actualMerchantIdData)
 		
 		val expectedPartnerAttributionIdData = PayPalMessageData(
-			clientID = "test_client_id",
+			clientID = initialClientID,
 			merchantID = "test_merchant_id",
 			partnerAttributionID = "new_partner_attribution_id",
 			amount = 115.0,
@@ -86,12 +88,12 @@ class PayPalMessageDataTest {
 			environment = PayPalEnvironment.LOCAL,
 		)
 		val actualPartnerAttributionIdData = oldData.merge(
-			PayPalMessageData(partnerAttributionID = "new_partner_attribution_id"),
+			PayPalMessageData(initialClientID, partnerAttributionID = "new_partner_attribution_id"),
 		)
 		assertEquals(expectedPartnerAttributionIdData, actualPartnerAttributionIdData)
 		
 		val expectedAmountData = PayPalMessageData(
-			clientID = "test_client_id",
+			clientID = initialClientID,
 			merchantID = "test_merchant_id",
 			partnerAttributionID = "test_partner_attribution_id",
 			amount = 1.15,
@@ -100,11 +102,11 @@ class PayPalMessageDataTest {
 			placement = "test_placement",
 			environment = PayPalEnvironment.LOCAL,
 		)
-		val actualAmountData = oldData.merge(PayPalMessageData(amount = 1.15))
+		val actualAmountData = oldData.merge(PayPalMessageData(initialClientID, amount = 1.15))
 		assertEquals(expectedAmountData, actualAmountData)
 
 		val expectedBuyerCountryData = PayPalMessageData(
-			clientID = "test_client_id",
+			clientID = initialClientID,
 			merchantID = "test_merchant_id",
 			partnerAttributionID = "test_partner_attribution_id",
 			amount = 115.0,
@@ -113,11 +115,11 @@ class PayPalMessageDataTest {
 			placement = "test_placement",
 			environment = PayPalEnvironment.LOCAL,
 		)
-		val actualBuyerCountryData = oldData.merge(PayPalMessageData(buyerCountry = "US"))
+		val actualBuyerCountryData = oldData.merge(PayPalMessageData(initialClientID, buyerCountry = "US"))
 		assertEquals(expectedBuyerCountryData, actualBuyerCountryData)
 
 		val expectedOfferTypeData = PayPalMessageData(
-			clientID = "test_client_id",
+			clientID = initialClientID,
 			merchantID = "test_merchant_id",
 			partnerAttributionID = "test_partner_attribution_id",
 			amount = 115.0,
@@ -127,12 +129,12 @@ class PayPalMessageDataTest {
 			environment = PayPalEnvironment.LOCAL,
 		)
 		val actualOfferTypeData = oldData.merge(
-			PayPalMessageData(offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST),
+			PayPalMessageData(initialClientID, offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST),
 		)
 		assertEquals(expectedOfferTypeData, actualOfferTypeData)
 
 		val expectedPlacementData = PayPalMessageData(
-			clientID = "test_client_id",
+			clientID = initialClientID,
 			merchantID = "test_merchant_id",
 			partnerAttributionID = "test_partner_attribution_id",
 			amount = 115.0,
@@ -141,11 +143,11 @@ class PayPalMessageDataTest {
 			placement = "new_placement",
 			environment = PayPalEnvironment.LOCAL,
 		)
-		val actualPlacementData = oldData.merge(PayPalMessageData(placement = "new_placement"))
+		val actualPlacementData = oldData.merge(PayPalMessageData(initialClientID, placement = "new_placement"))
 		assertEquals(expectedPlacementData, actualPlacementData)
 
 		val expectedEnvironmentData = PayPalMessageData(
-			clientID = "test_client_id",
+			clientID = initialClientID,
 			merchantID = "test_merchant_id",
 			partnerAttributionID = "test_partner_attribution_id",
 			amount = 115.0,
@@ -154,7 +156,7 @@ class PayPalMessageDataTest {
 			placement = "test_placement",
 			environment = PayPalEnvironment.STAGE,
 		)
-		val actualEnvironmentData = oldData.merge(PayPalMessageData(environment = PayPalEnvironment.STAGE))
+		val actualEnvironmentData = oldData.merge(PayPalMessageData(initialClientID, environment = PayPalEnvironment.STAGE))
 		assertEquals(expectedEnvironmentData, actualEnvironmentData)
 	}
 

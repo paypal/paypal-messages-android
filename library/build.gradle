@@ -26,6 +26,7 @@ android {
   }
 
 	buildFeatures {
+		buildConfig = true
 		viewBinding = true
 	}
   buildTypes {
@@ -77,6 +78,7 @@ koverReport {
 					'com.paypal.messages.io.ApiMessageData',
 					'com.paypal.messages.io.ApiHashData',
 					'com.paypal.messages.io.LocalStorage*',
+					'com.paypal.messages.io.OnActionCompleted',
 					// logger,
 					'com.paypal.messages.logger.Logger*',
 					// utils

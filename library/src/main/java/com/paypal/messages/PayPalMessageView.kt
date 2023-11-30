@@ -12,7 +12,7 @@ import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.LinearLayout
+import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -54,13 +54,13 @@ class PayPalMessageView @JvmOverloads constructor(
 	context: Context,
 	attributeSet: AttributeSet? = null,
 	defStyleAttr: Int = 0,
-	config: MessageConfig? = null,
-) : LinearLayout(context, attributeSet, defStyleAttr), OnActionCompleted {
+	config: MessageConfig = MessageConfig(MessageData(clientID = "")),
+) : FrameLayout(context, attributeSet, defStyleAttr), OnActionCompleted {
 	private val TAG = "PayPalMessage"
 	private var messageTextView: TextView
 	private var updateInProgress = false
 
-	var config: MessageConfig = config ?: MessageConfig(data = MessageData())
+	var config: MessageConfig = config.copy()
 		set(configArg) {
 			field = configArg
 			updateFromConfig(configArg)
@@ -70,7 +70,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	/**
 	 * DATA
 	 */
-	var data: MessageData = config?.data ?: MessageData()
+	var data: MessageData = this.config.data
 		set(dataArg) {
 			if (field != dataArg) {
 				field = dataArg
@@ -81,46 +81,37 @@ class PayPalMessageView @JvmOverloads constructor(
 				}
 			}
 		}
-	var clientId: String = data.clientID
+	var clientID: String = data.clientID
 		get() = data.clientID
-		set(clientIdArg) {
-			// TODO call out null/empty client ID
-			if (field != clientIdArg) data = data.merge(MessageData(clientID = clientIdArg))
+		set(arg) {
+			if (arg === "") LogCat.error(TAG, "ClientID is an empty string")
+			if (field != arg) data = data.merge(MessageData(clientID = arg))
 		}
 	var amount: Double? = data.amount
 		get() = data.amount
-		set(amountArg) {
-			if (field != amountArg) {
-				data = data.merge(MessageData(amount = amountArg))
-				modal?.amount = amountArg
-			}
+		set(arg) {
+			if (field != arg) data = data.merge(MessageData(clientID = clientID, amount = arg))
 		}
 	var placement: String? = data.placement
 		get() = data.placement
-		set(placementArg) {
-			if (field != placementArg) data = data.merge(MessageData(placement = placementArg))
+		set(arg) {
+			if (field != arg) data = data.merge(MessageData(clientID = clientID, placement = arg))
 		}
 	var offerType: OfferType? = data.offerType
 		get() = data.offerType
-		set(offerArg) {
-			if (field != offerArg) {
-				data = data.merge(MessageData(offerType = offerArg))
-				modal?.offerType = offerArg
-			}
+		set(arg) {
+			if (field != arg) data = data.merge(MessageData(clientID = clientID, offerType = arg))
 		}
 	var buyerCountry: String? = data.buyerCountry
 		get() = data.buyerCountry
-		set(buyerCountryArg) {
-			if (field != buyerCountryArg) {
-				data = data.merge(MessageData(buyerCountry = buyerCountryArg))
-				modal?.buyerCountry = buyerCountry
-			}
+		set(arg) {
+			if (field != arg) data = data.merge(MessageData(clientID = clientID, buyerCountry = arg))
 		}
 
 	/**
 	 * STYLE
 	 */
-	var style: MessageStyle = config?.style ?: MessageStyle()
+	var style: MessageStyle = config.style
 		set(styleArg) {
 			if (field != styleArg) field = styleArg
 		}
@@ -142,7 +133,7 @@ class PayPalMessageView @JvmOverloads constructor(
 
 	// VIEW STATE CALLBACKS
 	// Updates the specific view state callbacks for the current PayPalMessageView
-	var viewStateCallbacks: MessageViewState = config?.viewStateCallbacks ?: MessageViewState()
+	var viewStateCallbacks: MessageViewState = config.viewStateCallbacks ?: MessageViewState()
 	private var onLoading: () -> Unit
 		get() = viewStateCallbacks.onLoading
 		set(onLoadingArg) { viewStateCallbacks.onLoading = onLoadingArg }
@@ -155,7 +146,7 @@ class PayPalMessageView @JvmOverloads constructor(
 
 	// EVENTS CALLBACKS
 	// Updates the specific events callbacks for the current PayPalMessageView
-	var eventsCallbacks: MessageEvents = config?.eventsCallbacks ?: MessageEvents()
+	var eventsCallbacks: MessageEvents = config.eventsCallbacks ?: MessageEvents()
 	private var onClick: () -> Unit
 		get() = eventsCallbacks.onClick
 		set(onClickArg) { eventsCallbacks.onClick = onClickArg }
@@ -186,14 +177,15 @@ class PayPalMessageView @JvmOverloads constructor(
 		context.obtainStyledAttributes(attributeSet, R.styleable.PayPalMessageView).use { typedArray ->
 			updateFromAttributes(typedArray)
 		}
-		config?.let { updateFromConfig(it) }
+		if (config.data.clientID === "") LogCat.error(TAG, "ClientID is an empty string")
+		updateFromConfig(config)
 		Api.sessionId = UUID.randomUUID()
 		updateMessageContent()
 	}
 
 	private fun showWebView(response: ApiMessageData.Response) {
 		val modal = modal ?: run {
-			val modal = ModalFragment(clientId)
+			val modal = ModalFragment(clientID)
 			// Build modal config
 			val modalConfig = ModalConfig(
 				amount = data.amount,
@@ -274,7 +266,9 @@ class PayPalMessageView @JvmOverloads constructor(
 		 * DATA
 		 */
 		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_client_id)) {
-			clientId = typedArray.getString(R.styleable.PayPalMessageView_paypal_client_id).toString()
+			clientID = typedArray.getString(R.styleable.PayPalMessageView_paypal_client_id).toString()
+			// throw error here if clientID is empty
+			// PayPalErrors.InvalidClientIdException()
 		}
 
 		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_amount)) {
@@ -341,7 +335,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 */
 	private fun updateFromConfig(config: MessageConfig?) {
 		LogCat.debug(TAG, "updateFromConfig:\n$config")
-		clientId = config?.data?.clientID ?: ""
+		clientID = config?.data?.clientID ?: ""
 		amount = config?.data?.amount
 		placement = config?.data?.placement
 		offerType = config?.data?.offerType
@@ -558,6 +552,6 @@ class PayPalMessageView @JvmOverloads constructor(
 			componentEvents = mutableListOf(event),
 		)
 
-		Logger.getInstance(clientId = clientId).log(context, component)
+		Logger.getInstance(clientId = clientID).log(context, component)
 	}
 }

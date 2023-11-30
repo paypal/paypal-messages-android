@@ -124,38 +124,31 @@ internal class ModalFragment constructor(
 
 		// If we already have a WebView, don't reset it
 		LogCat.debug(TAG, "Configuring WebView Settings and Handlers")
+		val modalFragment = this
 		val webView = rootView.findViewById<RoundedWebView>(R.id.ModalWebView)
+		webView.apply {
+			// Set the bottom margin here instead of in XML so it is controlled in one single location.
+			// The offset shifts the modal down, so a bottom margin keeps the scrollable space on screen.
+			(layoutParams as RelativeLayout.LayoutParams).apply { bottomMargin = offsetTop }
 
-		// Programmatically set bottom margin instead of in XML since we also apply it to the
-		// dialog behavior below to control it in a single location. The expanded offset below shifts
-		// the whole modal down, so we offset that by applying a margin to the bottom of the WebView
-		// which keeps the scrollable space on screen
-		webView.layoutParams = (webView.layoutParams as RelativeLayout.LayoutParams).apply {
-			bottomMargin = offsetTop
+			settings.javaScriptEnabled = true
+			settings.domStorageEnabled = true
+			settings.allowContentAccess = true
+			addJavascriptInterface(modalFragment, "Android")
 		}
 
-		webView.settings.javaScriptEnabled = true
-		webView.settings.domStorageEnabled = true
-		webView.settings.allowContentAccess
-		webView.addJavascriptInterface(this, "Android")
-		// For Debugging
 		webView.webChromeClient = object : WebChromeClient() {
 			override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
 				val source = "${consoleMessage.sourceId()}:${consoleMessage.lineNumber()}"
-				LogCat.debug(TAG, "$source: ${consoleMessage.message()}")
+				LogCat.debug(TAG, "\n$source:\n  ${consoleMessage.message()}\n")
 				return super.onConsoleMessage(consoleMessage)
 			}
 		}
 
-		// Configure WebView
 		webView.webViewClient = object : WebViewClient() {
 			// TODO remove for production
 			@SuppressLint("WebViewClientOnReceivedSslError")
-			override fun onReceivedSslError(
-				view: WebView,
-				handler: SslErrorHandler,
-				error: SslError,
-			) {
+			override fun onReceivedSslError(v: WebView, handler: SslErrorHandler, e: SslError) {
 				LogCat.debug(TAG, "Bypassing SSL check")
 				handler.proceed()
 			}
