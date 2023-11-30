@@ -97,6 +97,7 @@ class JetpackActivity : ComponentActivity() {
 				var offerButton2 by remember { mutableStateOf(false) }
 				var offerButton3 by remember { mutableStateOf(false) }
 				var offerButton4 by remember { mutableStateOf(false) }
+				var offerType: PayPalMessageOfferType? by remember { mutableStateOf(null) }
 
 				var amount: String by remember { mutableStateOf("") }
 				var buyerCountry: String  by remember { mutableStateOf("") }
@@ -148,15 +149,22 @@ class JetpackActivity : ComponentActivity() {
 					messageView.color = PayPalMessageColor.valueOf(messageColor.uppercase())
 					messageView.logoType = PayPalMessageLogoType.valueOf(messageLogo.uppercase())
 					messageView.alignment = PayPalMessageAlign.valueOf((messageAlignment.uppercase()))
+					messageView.offerType = offerType
 
-					messageView.amount = when ( amount.isBlank() ) {
-						true -> null
-						false -> amount.toDouble()
+					messageView.amount = amount.let{
+						if (it.isBlank()){
+							null
+						} else {
+							it.toDouble()
+
+						}
 					}
-
-					messageView.buyerCountry = when(  buyerCountry.isBlank() ) {
-						true -> null
-						false ->  buyerCountry
+					messageView.buyerCountry = buyerCountry.let{
+						if(it.isBlank()){
+							null
+						}else {
+							buyerCountry
+						}
 					}
 
 					Api.stageTag = stageTag
@@ -171,11 +179,11 @@ class JetpackActivity : ComponentActivity() {
 					messageLogo = logoGroupOptions[0]
 					messageAlignment = alignmentGroupOptions[0]
 
-					messageView.offerType = null
 					offerButton1 = false
 					offerButton2 = false
 					offerButton3 = false
 					offerButton4 = false
+					offerType = null
 
 					amount = ""
 					buyerCountry = ""
@@ -236,7 +244,7 @@ class JetpackActivity : ComponentActivity() {
 							offerButton1 = offerButton1,
 							offer1 = "Short Term",
 							offerButton1Click = {
-								messageView.offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
+								offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
 								offerButton1 = !offerButton1
 								offerButton2 = false
 								offerButton3 = false
@@ -245,7 +253,7 @@ class JetpackActivity : ComponentActivity() {
 							offerButton2 = offerButton2,
 							offer2 = "Long Term",
 							offerButton2Click = {
-								messageView.offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM
+								offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM
 								offerButton1 = false
 								offerButton2 = !offerButton2
 								offerButton3 = false
@@ -254,7 +262,7 @@ class JetpackActivity : ComponentActivity() {
 							offerButton3 = offerButton3,
 							offer3 = "Pay in 1",
 							offerButton3Click = {
-								messageView.offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1
+								offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1
 								offerButton1 = false
 								offerButton2 = false
 								offerButton3 = !offerButton3
@@ -263,7 +271,7 @@ class JetpackActivity : ComponentActivity() {
 							offerButton4 = offerButton4,
 							offer4 = "Credit",
 							offerButton4Click = {
-								messageView.offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
+								offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
 								offerButton1 = false
 								offerButton2 = false
 								offerButton3 = false
