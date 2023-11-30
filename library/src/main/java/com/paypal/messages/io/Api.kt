@@ -108,32 +108,18 @@ object Api {
 		CoroutineScope(ioDispatcher).launch {
 			val localStorage = LocalStorage(context)
 			val merchantHash: String? = localStorage.merchantHash
-			val ageOfStoredHash = localStorage.ageOfMerchantHash
-			val softTtl = localStorage.softTtl ?: 0
-			val hardTtl = localStorage.hardTtl ?: 0
+			val merchantHashState = localStorage.getMerchantHashState()
+			LogCat.debug(TAG, merchantHashState.message)
 
-			val message = if (merchantHash === null) {
-				"No hash in local storage. Fetching new hash"
-			}
-			else if (!localStorage.isCacheFlowDisabled!!) {
-				"Local hash is $ageOfStoredHash old and " + when (ageOfStoredHash) {
-					in hardTtl..Long.MAX_VALUE -> "older than hardTtl. Fetching new hash."
-					in softTtl..hardTtl -> "older than softTtl. Using local hash. Storing new hash."
-					else -> "younger than softTtl. Using local hash."
+			val newHash: String? = when (merchantHashState) {
+				LocalStorage.State.NO_HASH -> getAndStoreNewHash(context, messageConfig)
+				LocalStorage.State.HASH_OLDER_THAN_HARD_TTL -> getAndStoreNewHash(context, messageConfig)
+				LocalStorage.State.HASH_BETWEEN_SOFT_AND_HARD_TTL -> {
+					getAndStoreNewHash(context, messageConfig)
+					merchantHash
 				}
-			}
-			else {
-				"Cache disabled. Omitting hash."
-			}
-			LogCat.debug(TAG, message)
-
-			var newHash: String? = null
-			if (merchantHash === null) {
-				newHash = getAndStoreNewHash(context, messageConfig)
-			}
-			else if (!localStorage.isCacheFlowDisabled!!) {
-				if (ageOfStoredHash in softTtl..hardTtl) getAndStoreNewHash(context, messageConfig)
-				newHash = if (ageOfStoredHash > hardTtl) getAndStoreNewHash(context, messageConfig) else merchantHash
+				LocalStorage.State.HASH_YOUNGER_THAN_SOFT_TTL -> merchantHash
+				else -> null
 			}
 
 			val messageData = callMessageDataEndpoint(messageConfig, newHash)
