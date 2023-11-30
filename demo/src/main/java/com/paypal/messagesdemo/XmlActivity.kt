@@ -167,6 +167,8 @@ class XmlActivity : AppCompatActivity() {
 			logoTypeRadioGroup.check(R.id.stylePrimary)
 			colorRadioGroup.check(R.id.styleBlack)
 			alignmentRadioGroup.check(R.id.styleLeft)
+			offerType = null
+			offerTypeRadioGroup.clearCheck()
 			ignoreCache.isChecked = false
 			devTouchpoint.isChecked = false
 			amountEdit.setText("")

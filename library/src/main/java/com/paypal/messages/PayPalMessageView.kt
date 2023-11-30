@@ -19,7 +19,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.getFloatOrThrow
 import androidx.core.content.res.getIntOrThrow
 import androidx.core.content.res.use
-import com.paypal.messages.config.CurrencyCode
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.config.modal.ModalEvents
 import com.paypal.messages.io.Api
@@ -78,7 +77,6 @@ class PayPalMessageView @JvmOverloads constructor(
 				if (modal != null) {
 					modal?.amount = dataArg.amount
 					modal?.buyerCountry = dataArg.buyerCountry
-					modal?.currencyCode = dataArg.currencyCode
 					modal?.offerType = dataArg.offerType
 				}
 			}
@@ -108,11 +106,6 @@ class PayPalMessageView @JvmOverloads constructor(
 		get() = data.buyerCountry
 		set(arg) {
 			if (field != arg) data = data.merge(MessageData(clientID = clientID, buyerCountry = arg))
-		}
-	private var currencyCode: CurrencyCode? = data.currencyCode
-		get() = data.currencyCode
-		set(arg) {
-			if (field != arg) data = data.merge(MessageData(clientID = clientID, currencyCode = arg))
 		}
 
 	/**
@@ -196,7 +189,6 @@ class PayPalMessageView @JvmOverloads constructor(
 			// Build modal config
 			val modalConfig = ModalConfig(
 				amount = data.amount,
-				currencyCode = data.currencyCode,
 				buyerCountry = data.buyerCountry,
 				offer = data.offerType,
 				ignoreCache = false,
@@ -348,7 +340,6 @@ class PayPalMessageView @JvmOverloads constructor(
 		placement = config?.data?.placement
 		offerType = config?.data?.offerType
 		buyerCountry = config?.data?.buyerCountry
-		currencyCode = config?.data?.currencyCode
 		color = config?.style?.color ?: Color.BLACK
 		alignment = config?.style?.textAlign ?: Align.LEFT
 		logoType = config?.style?.logoType ?: LogoType.PRIMARY
@@ -427,8 +418,8 @@ class PayPalMessageView @JvmOverloads constructor(
 			logEvent(
 				TrackingEvent(
 					eventType = EventType.MESSAGE_CLICK,
-					linkName = "banner_wrapper",
-					linkSrc = "message",
+					pageViewLinkName = "banner_wrapper",
+					pageViewLinkSource = "message",
 				),
 			)
 			showWebView(response)
@@ -558,7 +549,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			instanceId = Api.instanceId.toString(),
 			originatingInstanceId = Api.originatingInstanceId.toString(),
 			sessionId = Api.sessionId.toString(),
-			events = mutableListOf(event),
+			componentEvents = mutableListOf(event),
 		)
 
 		Logger.getInstance(clientId = clientID).log(context, component)

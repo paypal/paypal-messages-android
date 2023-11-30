@@ -31,7 +31,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.paypal.messages.config.Channel
-import com.paypal.messages.config.CurrencyCode
 import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.extensions.dp
@@ -72,13 +71,6 @@ internal class ModalFragment constructor(
 			}
 		}
 	private var channel: Channel = Channel.NATIVE
-	var currencyCode: CurrencyCode? = null
-		set(currencyArg) {
-			if (field != currencyArg) {
-				field = currencyArg
-				setJsValue(name = "currency", value = currencyArg.toString())
-			}
-		}
 	private var devTouchpoint: Boolean = true
 	private var ignoreCache: Boolean = false
 	var offerType: OfferType? = null
@@ -259,7 +251,6 @@ internal class ModalFragment constructor(
 		this.amount = config.amount
 		this.buyerCountry = config.buyerCountry
 		this.channel = config.channel
-		this.currencyCode = config.currencyCode
 		this.devTouchpoint = config.devTouchpoint
 		this.ignoreCache = config.ignoreCache
 		this.offerType = config.offer
@@ -386,9 +377,9 @@ internal class ModalFragment constructor(
 		val shared = jsonElementToMutableMap(sharedJson)
 		when (name) {
 			"onClick" -> {
-				val linkName = args.get("link_name")?.asString
-				val linkSrc = args.get("link_src")?.asString
-				if (linkName == "Apply Now") {
+				val pageViewLinkName = args.get("page_view_link_name")?.asString
+				val pageViewLinkSource = args.get("page_view_link_source")?.asString
+				if (pageViewLinkName == "Apply Now") {
 					this.onApply()
 				}
 				else {
@@ -397,8 +388,8 @@ internal class ModalFragment constructor(
 				logEvent(
 					TrackingEvent(
 						eventType = EventType.MODAL_CLICK,
-						linkSrc = linkSrc,
-						linkName = linkName,
+						pageViewLinkSource = pageViewLinkSource,
+						pageViewLinkName = pageViewLinkName,
 					),
 					shared,
 				)
@@ -470,7 +461,7 @@ internal class ModalFragment constructor(
 			buyerCountryCode = this.buyerCountry,
 			type = ComponentType.MODAL.toString(),
 			instanceId = this.instanceId.toString(),
-			events = mutableListOf(event),
+			componentEvents = mutableListOf(event),
 			__shared__ = dynamicKeys,
 		)
 
