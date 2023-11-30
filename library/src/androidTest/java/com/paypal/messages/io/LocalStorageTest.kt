@@ -26,4 +26,29 @@ class LocalStorageTest {
 		assertEquals(1000L, localStorage.softTtl)
 		assertEquals(2000L, localStorage.hardTtl)
 	}
+
+	@Test
+	fun testMerchantHashStateNoHash() {
+
+	}
+
+	@Test
+	fun testMerchantHashStateHashOlderThanHardTtl() {
+
+	}
+
+	@Test
+	fun testMerchantHashStateHashBetweenSoftAndHardTtl() {
+
+	}
+
+	@Test
+	fun testMerchantHashStateHashYoungerThanSoftTtl() {
+
+	}
+
+	@Test
+	fun testMerchantHashStateCacheDisabled() {
+
+	}
 }
