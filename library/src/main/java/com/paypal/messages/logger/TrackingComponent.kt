@@ -60,8 +60,8 @@ data class TrackingComponent(
 	val originatingInstanceId: String? = null,
 	@SerializedName("session_id")
 	val sessionId: String? = null,
-	@SerializedName("events")
-	val events: MutableList<TrackingEvent>,
+	@SerializedName("component_events")
+	val componentEvents: MutableList<TrackingEvent>,
 
 	// Dynamic Properties, not serialized by default
 	val __shared__: MutableMap<String, Any>? = mutableMapOf(),
