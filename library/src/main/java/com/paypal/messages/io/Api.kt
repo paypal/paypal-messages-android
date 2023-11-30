@@ -116,7 +116,7 @@ object Api {
 				"No hash in local storage. Fetching new hash"
 			}
 			else if (!localStorage.isCacheFlowDisabled!!) {
-				"Local hash is " + when (ageOfStoredHash) {
+				"Local hash is $ageOfStoredHash old and " + when (ageOfStoredHash) {
 					in hardTtl..Long.MAX_VALUE -> "older than hardTtl. Fetching new hash."
 					in softTtl..hardTtl -> "older than softTtl. Using local hash. Storing new hash."
 					else -> "younger than softTtl. Using local hash."

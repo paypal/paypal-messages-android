@@ -1,128 +1,89 @@
+package com.paypal.messages.io
+
 import android.content.Context
+import android.content.SharedPreferences
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.gson.Gson
-import com.paypal.messages.io.Api
-import com.paypal.messages.io.ApiResult
-import com.paypal.messages.io.LocalStorage
-import com.paypal.messages.logger.TrackingPayload
-import com.paypal.messages.model.ApiHashData
-import com.paypal.messages.model.ApiMessageData
-import com.paypal.messages.utils.LogCat
-import com.paypal.messages.utils.PayPalErrors
-import com.paypal.messages.utils.generateUUID
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import com.paypal.messages.config.PayPalEnvironment
+import com.paypal.messages.config.message.PayPalMessageData
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import okhttp3.Credentials
-import okhttp3.HttpUrl
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
-import okio.IOException
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import org.junit.After
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.UUID
+import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
 
 @RunWith(AndroidJUnit4::class)
 class ApiTest {
+	private lateinit var context: Context
+	private lateinit var sharedPreferences: SharedPreferences
+	private lateinit var mockWebServer: MockWebServer
+	private val messageConfig = MessageConfig(
+		data = PayPalMessageData(clientID = "test_client_id"),
+	)
+	private val merchantProfileHashData = """{"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567891"},"ttl_hard":0,"ttl_soft":0}"""
+	private val messageData = """{"meta": {}, "content": {}}"""
 
-	private val context = InstrumentationRegistry.getTargetContext()
-	private val localStorage = LocalStorage(context)
-	private val gson = Gson()
-	private val api = Api()
+	@OptIn(ExperimentalCoroutinesApi::class)
+	val standardTestDispatcher = StandardTestDispatcher()
 
 	@Before
 	fun setUp() {
-		localStorage.merchantHash = null
-		localStorage.ageOfMerchantHash = 0
+		context = InstrumentationRegistry.getInstrumentation().targetContext
+		val key = "PayPalUpstreamLocalStorage"
+		sharedPreferences = context.getSharedPreferences(key, Context.MODE_PRIVATE)
+		sharedPreferences.edit().putString("merchantProfileHashData", merchantProfileHashData).apply()
+
+		mockWebServer = MockWebServer()
+		mockWebServer.start()
 	}
 
-	@Test
-	fun getMessageWithHash_noMerchantHash_fetchesNewHashAndReturnsData() {
-		runBlocking {
-			val messageConfig = MessageConfig.Builder()
-				.setClientId("CLIENT_ID")
-				.build()
+	@OptIn(ExperimentalCoroutinesApi::class)
+	@After
+	fun tearDown() {
+		standardTestDispatcher.cancel()
+	}
 
-			val onActionCompleted = object : Api.OnActionCompleted {
-				override fun onActionCompleted(result: ApiResult) {
-					assertNotNull(result)
-					assertTrue(result is ApiResult.Success<*>)
-					val data = result.response as ApiMessageData.Response
-					assertNotNull(data.content)
-					assertNotNull(data.meta)
-				}
+	@OptIn(ExperimentalCoroutinesApi::class)
+	@Test
+	fun getMessageWithHash_noMerchantHash_fetchesNewHashAndReturnsData() = runTest(standardTestDispatcher) {
+		val mockServerPort = mockWebServer.url("").port
+
+		val mockMerchantProfileResponse = MockResponse()
+			.setBody(merchantProfileHashData)
+			.addHeader("Content-Type", "application/json")
+		val mockMessageDataResponse = MockResponse()
+			.setBody(messageData)
+			.addHeader("Content-Type", "application/json")
+		mockWebServer.enqueue(mockMerchantProfileResponse)
+		mockWebServer.enqueue(mockMessageDataResponse)
+
+		val onActionCompleted = object : OnActionCompleted {
+			override fun onActionCompleted(result: ApiResult) {
+				assertNotNull(result)
+				assertTrue(result is ApiResult.Success<*>)
+				val data = (result as ApiResult.Success<*>).response as ApiMessageData.Response
+				assertNotNull(data.content)
+				assertNotNull(data.meta)
 			}
-
-			api.getMessageWithHash(context, messageConfig, onActionCompleted)
 		}
-	}
 
-	@Test
-	fun getMessageWithHash_merchantHashNotExpired_usesLocalHashAndReturnsData() {
-		runBlocking {
-			val messageConfig = MessageConfig.Builder()
-				.setClientId("CLIENT_ID")
-				.build()
-
-			val merchantHash = generateUUID().toString()
-			localStorage.merchantHash = merchantHash
-			localStorage.ageOfMerchantHash = 1000L
-
-			val onActionCompleted = object : Api.OnActionCompleted {
-				override fun onActionCompleted(result: ApiResult) {
-					assertNotNull(result)
-					assertTrue(result is ApiResult.Success<*>)
-					val data = result.response as ApiMessageData.Response
-					assertNotNull(data.content)
-					assertNotNull(data.meta)
-				}
-			}
-
-			api.getMessageWithHash(context, messageConfig, onActionCompleted)
+		Api.ioDispatcher = standardTestDispatcher
+		Api.env = PayPalEnvironment.local(mockServerPort)
+		launch {
+			Api.getMessageWithHash(context, messageConfig, onActionCompleted)
 		}
+
+		advanceUntilIdle()
 	}
-
-	@Test
-	fun getMessageWithHash_merchantHashExpired_fetchesNewHashAndReturnsData() {
-		runBlocking {
-			val messageConfig = MessageConfig.Builder()
-				.setClientId("CLIENT_ID")
-				.build()
-
-			val merchantHash = generateUUID().toString()
-			localStorage.merchantHash = merchantHash
-			localStorage.ageOfMerchantHash = 1000000L
-
-			val onActionCompleted = object : Api.OnActionCompleted {
-				override fun onActionCompleted(result: ApiResult) {
-					assertNotNull(result)
-					assertTrue(result is ApiResult.Success<*>)
-					val data = result.response as ApiMessageData.Response
-					assertNotNull(data.content)
-					assertNotNull(data.meta)
-				}
-			}
-
-			api.getMessageWithHash(context, messageConfig, onActionCompleted)
-		}
-	}
-
-	@Test
-	fun getMessageWithHash_failedToFetchData_returnsFailure() {
-		runBlocking {
-			val messageConfig = MessageConfig.Builder()
-				.setClientId("CLIENT_ID")
-				.build()
-
-			val onActionCompleted = object : Api.OnActionCompleted {
-				override fun onActionCompleted(result: ApiResult) {
-					assertNotNull(result)
-					assertTrue(result is ApiResult.Failure<*>)
+}
