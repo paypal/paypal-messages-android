@@ -98,8 +98,8 @@ class Logger private constructor() {
 		val oldComponent = this.payload?.components?.find { it.instanceId == component.instanceId }
 
 		if (oldComponent != null) {
-			val oldEvents = oldComponent.events
-			component.events.addAll(0, oldEvents)
+			val oldEvents = oldComponent.componentEvents
+			component.componentEvents.addAll(0, oldEvents)
 
 			val index = this.payload?.components?.indexOfFirst { it.instanceId == component.instanceId }
 
@@ -126,7 +126,7 @@ class Logger private constructor() {
 			val localStorage = LocalStorage(context)
 			val hash = localStorage.merchantHash
 			val payloadSummary = finalPayload.components.joinToString("\n") {
-				val eventsString = it.events.joinToString { event -> event.eventType.toString() }
+				val eventsString = it.componentEvents.joinToString { event -> event.eventType.toString() }
 				"  type: ${it.type}\n  instanceId: ${it.instanceId}\n  events: $eventsString\n"
 			}
 			LogCat.debug(TAG, "merchantHash: ${hash}\npayloadSummary:\n$payloadSummary")

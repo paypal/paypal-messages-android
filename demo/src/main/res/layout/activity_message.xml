@@ -124,45 +124,53 @@
 				android:id="@+id/styleRight"/>
 		</RadioGroup>
 
-		<TextView
-			android:text="Offer Type"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:id="@+id/offerTypeLabel"
-			android:paddingTop="12dp"
-			android:paddingBottom="12dp"
-			android:textStyle="bold"
-			android:textSize="16sp"/>
-
 		<LinearLayout
-			android:orientation="horizontal"
 			android:layout_width="match_parent"
-			android:layout_height="48dp">
-			<ToggleButton
+			android:layout_height="48dp"
+			android:orientation="horizontal"
+			android:id="@+id/offerNoneRadioGroup">
+			<TextView
+				android:text="Offer Type"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:id="@+id/offerTypeLabel"
+				android:paddingTop="12dp"
+				android:paddingBottom="12dp"
+				android:layout_marginRight="12dp"
+				android:textStyle="bold"
+				android:textSize="16sp"/>
+			<Button
+				android:text="Clear"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:id="@+id/clearOfferTypeButton"/>
+		</LinearLayout>
+		<RadioGroup
+			android:layout_width="match_parent"
+			android:layout_height="48dp"
+			android:orientation="horizontal"
+			android:id="@+id/offerTypeRadioGroup">
+			<RadioButton
 				android:text="Short Term"
 				android:layout_width="wrap_content"
-				android:layout_height="match_parent" android:id="@+id/shortTerm" android:layout_weight="1"
-				android:textSize="11sp"
-				android:textOn="Short Term" android:textOff="Short Term"/>
-			<ToggleButton
+				android:layout_height="match_parent"
+				android:id="@+id/offerShortTerm"/>
+			<RadioButton
 				android:text="Long Term"
 				android:layout_width="wrap_content"
-				android:textSize="11sp"
-				android:layout_height="match_parent" android:id="@+id/longTerm" android:layout_weight="1"
-				android:textOn="Long Term" android:textOff="Long Term"/>
-			<ToggleButton
+				android:layout_height="match_parent"
+				android:id="@+id/offerLongTerm"/>
+			<RadioButton
 				android:text="Pay in 1"
 				android:layout_width="wrap_content"
-				android:layout_height="match_parent" android:id="@+id/payIn1" android:layout_weight="1"
-				android:textSize="12sp"
-				android:textOn="Pay in 1" android:textOff="Pay in 1"/>
-			<ToggleButton
+				android:layout_height="match_parent"
+				android:id="@+id/offerPayIn1"/>
+			<RadioButton
 				android:text="Credit"
 				android:layout_width="wrap_content"
-				android:layout_height="match_parent" android:id="@+id/credit" android:layout_weight="1"
-				android:textSize="12sp"
-				android:textOn="Credit" android:textOff="Credit"/>
-		</LinearLayout>
+				android:layout_height="match_parent"
+				android:id="@+id/offerCredit"/>
+		</RadioGroup>
 
 		<TableRow
 			android:layout_width="match_parent"
@@ -253,30 +261,26 @@
 
 		<androidx.constraintlayout.widget.ConstraintLayout
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:paddingTop="24dp">
-			<com.paypal.messages.PayPalMessageView
-				android:id="@+id/payPalMessage"
-				android:layout_width="0dp"
-				android:layout_height="0dp"
-				app:layout_constraintTop_toTopOf="parent"
-				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintEnd_toEndOf="parent"
-				app:layout_constraintBottom_toBottomOf="parent"
-				app:paypal_client_id="@string/client_id"
-				android:tag="PayPal"/>
+			android:layout_height="80dp"
+			android:paddingTop="24dp"
+			android:id="@+id/messageWrapper">
+
 			<ProgressBar
 				android:id="@+id/progressBar"
 				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
+				android:layout_height="match_parent"
 				android:indeterminate="true"
-				android:visibility="invisible"
-				app:layout_constraintTop_toTopOf="parent"
-				app:layout_constraintStart_toStartOf="parent"
+				android:visibility="visible"
 				app:layout_constraintEnd_toEndOf="parent"
-				app:layout_constraintBottom_toBottomOf="parent"
-			/>
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toTopOf="parent" />
 		</androidx.constraintlayout.widget.ConstraintLayout>
+
+<!--		<com.paypal.messages.PayPalMessageView-->
+<!--			android:layout_width="match_parent"-->
+<!--			android:layout_height="80dp"-->
+<!--			app:paypal_client_id="@string/client_id"-->
+<!--			/>-->
 
 		<LinearLayout
 			android:orientation="horizontal"
