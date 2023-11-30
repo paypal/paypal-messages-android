@@ -152,6 +152,7 @@ class XmlActivity : AppCompatActivity() {
 			val backgroundColor = if (color === PayPalMessageColor.WHITE) Color.Black else Color.White
 			payPalMessage.setBackgroundColor(backgroundColor.hashCode())
 
+			// TODO: verify/fix offer type not working as expected
 			payPalMessage.data = PayPalMessageData(
 				clientId, amount = amount, buyerCountry = buyerCountry, offerType = offerType,
 				environment = environment,
