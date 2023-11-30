@@ -2,7 +2,6 @@ package com.paypal.messages.io
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.paypal.messages.config.PayPalEnvironment
@@ -31,6 +30,8 @@ class ApiTest {
 	private val messageConfig = MessageConfig(
 		data = PayPalMessageData(clientID = "test_client_id"),
 	)
+
+	@Suppress("ktlint:standard:max-line-length")
 	private val merchantProfileHashData = """{"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567891"},"ttl_hard":0,"ttl_soft":0}"""
 	private val messageData = """{"meta": {}, "content": {}}"""
 

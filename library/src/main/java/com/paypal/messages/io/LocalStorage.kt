@@ -71,7 +71,7 @@ class LocalStorage constructor(context: Context) {
 		NO_HASH("No hash in local storage. Fetching new hash"),
 		HASH_OLDER_THAN_HARD_TTL("Local hash is older than hardTtl. Fetching new hash."),
 		HASH_BETWEEN_SOFT_AND_HARD_TTL(
-			"Local hash is older than softTtl. Using local hash. Storing new hash."
+			"Local hash is older than softTtl. Using local hash. Storing new hash.",
 		),
 		HASH_YOUNGER_THAN_SOFT_TTL("Local hash is younger than softTtl. Using local hash."),
 		CACHE_DISABLED("Cache disabled. Omitting hash."),

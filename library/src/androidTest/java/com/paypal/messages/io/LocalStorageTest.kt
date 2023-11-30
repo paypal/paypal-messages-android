@@ -29,26 +29,26 @@ class LocalStorageTest {
 
 	@Test
 	fun testMerchantHashStateNoHash() {
-
+//
 	}
 
 	@Test
 	fun testMerchantHashStateHashOlderThanHardTtl() {
-
+//
 	}
 
 	@Test
 	fun testMerchantHashStateHashBetweenSoftAndHardTtl() {
-
+//
 	}
 
 	@Test
 	fun testMerchantHashStateHashYoungerThanSoftTtl() {
-
+//
 	}
 
 	@Test
 	fun testMerchantHashStateCacheDisabled() {
-
+//
 	}
 }

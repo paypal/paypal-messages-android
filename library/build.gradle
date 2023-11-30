@@ -70,7 +70,7 @@ koverReport {
 					'com.paypal.messages.config.message.PayPalMessageViewStateCallbacks\$*',
 					'com.paypal.messages.config.modal.ModalEvents\$*',
 					// extensions,
-					'com.paypal.messages.extensions.*',
+					'com.paypal.messages.extensions.Int*',
 					// io
 					'com.paypal.messages.io.Api\$Endpoints',
 					'com.paypal.messages.io.ApiMessageData',

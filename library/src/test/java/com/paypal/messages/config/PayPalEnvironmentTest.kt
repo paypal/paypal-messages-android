@@ -38,11 +38,11 @@ class PayPalEnvironmentTest {
 	@Test
 	fun testPresentmentUrls() {
 		assertEquals(
-			"http://10.0.2.2:8443/credit-presentment/native/message",
+			"http://localhost:8443/credit-presentment/native/message",
 			Env.local().url(Env.Endpoints.MESSAGE_DATA).toString(),
 		)
 		assertEquals(
-			"http://10.0.2.2:1234/credit-presentment/native/message",
+			"http://localhost:1234/credit-presentment/native/message",
 			Env.local(1234).url(Env.Endpoints.MESSAGE_DATA).toString(),
 		)
 		assertEquals(
@@ -62,11 +62,11 @@ class PayPalEnvironmentTest {
 	@Test
 	fun testLoggerUrls() {
 		assertEquals(
-			"http://10.0.2.2:8443/v1/credit/upstream-messaging-events",
+			"http://localhost:8443/v1/credit/upstream-messaging-events",
 			Env.local().url(Env.Endpoints.LOGGER).toString(),
 		)
 		assertEquals(
-			"http://10.0.2.2:1234/v1/credit/upstream-messaging-events",
+			"http://localhost:1234/v1/credit/upstream-messaging-events",
 			Env.local(1234).url(Env.Endpoints.LOGGER).toString(),
 		)
 		assertEquals(
