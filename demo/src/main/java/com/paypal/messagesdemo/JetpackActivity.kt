@@ -1,6 +1,8 @@
 package com.paypal.messagesdemo
 
+import android.content.ContentValues.TAG
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -17,19 +19,20 @@ import androidx.compose.foundation.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.*
@@ -38,6 +41,7 @@ import com.paypal.messages.config.message.*
 import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.io.Api
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 
 fun toSentenceCase(input: String): String {
 	// Convert the string to lowercase and split it into words
@@ -59,6 +63,7 @@ class JetpackActivity : ComponentActivity() {
 				val context = LocalContext.current
 
 				// Client ID
+				var clientId: String by remember { mutableStateOf("B_Aksh3K8UpGwAs_Ngi0ahNHJja2bsxqtuqmhRAm944xzM-p6Qkq9JbqFc2yTz2Fg5WYtcW1QEu_tHDVuI") }
 
 				// Style Color
 				var backgroundColor by remember { mutableStateOf(Color.White) }
@@ -88,40 +93,41 @@ class JetpackActivity : ComponentActivity() {
 				var messageAlignment by remember { mutableStateOf(alignmentGroupOptions[0])}
 
 				// Offer Type
+				var offerButton1 by remember { mutableStateOf(false) }
+				var offerButton2 by remember { mutableStateOf(false) }
+				var offerButton3 by remember { mutableStateOf(false) }
+				var offerButton4 by remember { mutableStateOf(false) }
 
-				var amount by remember { mutableStateOf("") }
-				var buyerCountry by remember { mutableStateOf("") }
-				var stageTag by remember { mutableStateOf("") }
-				// ignore cache
-				// dev touchpoint
+				var amount: String by remember { mutableStateOf("") }
+				var buyerCountry: String  by remember { mutableStateOf("") }
+				var stageTag: String by remember { mutableStateOf("") }
+				var ignoreCache: Boolean by remember { mutableStateOf(false) }
+				var devTouchpoint: Boolean by remember { mutableStateOf(false) }
+
+				var buttonEnabled: Boolean by remember { mutableStateOf(true) }
 
 				val messageView = PayPalMessageView(context,
 					config = PayPalMessageConfig(
-						data = PayPalMessageData(clientID = "B_Aksh3K8UpGwAs_Ngi0ahNHJja2bsxqtuqmhRAm944xzM-p6Qkq9JbqFc2yTz2Fg5WYtcW1QEu_tHDVuI", environment = PayPalEnvironment.SANDBOX),
+						data = PayPalMessageData(clientID = clientId, environment = PayPalEnvironment.SANDBOX),
 						viewStateCallbacks = PayPalMessageViewStateCallbacks(
 							onLoading = {
 //								progressBar.visibility = View.VISIBLE
-//								resetButton.isEnabled = false
-//								submitButton.isEnabled = false
+								buttonEnabled = false
 								Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
 							},
 							onError = {
-//								Log.d(TAG, "onError")
+								Log.d(TAG, "onError")
 //								progressBar.visibility = View.INVISIBLE
 								runOnUiThread {
-//									resetButton.isEnabled = true
-//									submitButton.isEnabled = true
+									buttonEnabled = true
 									Toast.makeText(this, it.javaClass.toString() + ":" + it.message, Toast.LENGTH_LONG).show()
 								}
-//								it.message?.let { it1 -> Log.d("XmlActivity Error", it1) }
-//								it.paypalDebugId?.let { it1 -> Log.d("XmlActivity Error", it1) }
 							},
 							onSuccess = {
-//								Log.d(TAG, "onSuccess")
+								Log.d(TAG, "onSuccess")
 //								progressBar.visibility = View.INVISIBLE
 								runOnUiThread {
-//									resetButton.isEnabled = true
-//									submitButton.isEnabled = true
+									buttonEnabled = true
 									Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
 								}
 							},
@@ -130,6 +136,8 @@ class JetpackActivity : ComponentActivity() {
 				)
 
 				fun updateMessageData() {
+
+					messageView.clientId = clientId
 
 					if ( PayPalMessageColor.valueOf(messageColor.uppercase()) === PayPalMessageColor.WHITE ) {
 						backgroundColor = Color.Black
@@ -140,15 +148,20 @@ class JetpackActivity : ComponentActivity() {
 					messageView.color = PayPalMessageColor.valueOf(messageColor.uppercase())
 					messageView.logoType = PayPalMessageLogoType.valueOf(messageLogo.uppercase())
 					messageView.alignment = PayPalMessageAlign.valueOf((messageAlignment.uppercase()))
-					// offer type
 
-					messageView.amount = amount.toDouble() ?: null
-					messageView.buyerCountry = buyerCountry
+					messageView.amount = when ( amount.isBlank() ) {
+						true -> null
+						false -> amount.toDouble()
+					}
+
+					messageView.buyerCountry = when(  buyerCountry.isBlank() ) {
+						true -> null
+						false ->  buyerCountry
+					}
+
 					Api.stageTag = stageTag
-
-					// ignore cache
-
-					// dev touchpoint
+					Api.ignoreCache = ignoreCache
+					Api.devTouchpoint = devTouchpoint
 
 					messageView.refresh()
 				}
@@ -157,66 +170,43 @@ class JetpackActivity : ComponentActivity() {
 					messageColor = colorGroupOptions[0]
 					messageLogo = logoGroupOptions[0]
 					messageAlignment = alignmentGroupOptions[0]
-					// offer type
 
-					// amount
+					messageView.offerType = null
+					offerButton1 = false
+					offerButton2 = false
+					offerButton3 = false
+					offerButton4 = false
+
 					amount = ""
-
-					// country
-
-					// stage tag
-
-					// ignore cache
-
-					// dev touchpoint
+					buyerCountry = ""
+					stageTag = ""
+					ignoreCache = false
+					devTouchpoint = false
 
 					updateMessageData()
 				}
 
 				// A surface container using the 'background' color from the theme
-				Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+				Surface(modifier = Modifier.fillMaxSize().padding(start = 12.dp, end = 12.dp), color = MaterialTheme.colorScheme.background) {
 					Column (
 						modifier = Modifier.verticalScroll(state = rememberScrollState())
 					){
 
-						Row {
-							Text (text = "Message Configuration")
-						}
+						Text(text = "Message Configuration", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
 
-						// Client ID
-						// TODO Change back to Row, Make Input look better
-						Column (
-							modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)
-						) {
-							Text( text = "Client Id", fontSize = TextUnit(value = 32.0F, type = TextUnitType(type = 1)))
-							var text by remember { mutableStateOf(TextFieldValue( messageView.clientId)) }
+						ClientIdField(
+							text = "Client ID",
+							clientId = clientId,
+							onChange = {
+								clientId = it
+							}
+						)
 
-//							BasicTextField(
-//								value = text,
-//								onValueChange = {
-//									text = it
-//								},
-//								textStyle = TextStyle(fontSize = 16.sp, color = Color.Black),
-//								modifier = Modifier
-//									.fillMaxWidth() // To make the TextField occupy the full width
-//									.padding(4.dp) // Customize the padding here
-////									.background(Color(239f, 239f, 239f))
-//							)
-							TextField(
-								value = text,
-								onValueChange = {
-									text = it
-									messageView.clientId = it.text.toString()
-								},
-								placeholder = { Text(text = "Client Id") },
-								modifier = Modifier
-									.height(Dp(value = 64F))
-									.padding(all = 1.dp)
-							)
-
-						}
-
-						Text("Style Options")
+						Text(text = "Style Options", fontSize = 14.sp, fontWeight = FontWeight.Bold,
+							modifier = Modifier
+								.width(125.dp)
+								.height(intrinsicSize = IntrinsicSize.Max)
+						)
 
 						LogoOptions(
 							logoGroupOptions = logoGroupOptions,
@@ -242,9 +232,44 @@ class JetpackActivity : ComponentActivity() {
 							}
 						)
 
-						Text ("Offer Type")
-
-						OfferButtons(messageView)
+						OfferButtons(
+							offerButton1 = offerButton1,
+							offer1 = "Short Term",
+							offerButton1Click = {
+								messageView.offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
+								offerButton1 = !offerButton1
+								offerButton2 = false
+								offerButton3 = false
+								offerButton4 = false
+							},
+							offerButton2 = offerButton2,
+							offer2 = "Long Term",
+							offerButton2Click = {
+								messageView.offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM
+								offerButton1 = false
+								offerButton2 = !offerButton2
+								offerButton3 = false
+								offerButton4 = false
+							},
+							offerButton3 = offerButton3,
+							offer3 = "Pay in 1",
+							offerButton3Click = {
+								messageView.offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1
+								offerButton1 = false
+								offerButton2 = false
+								offerButton3 = !offerButton3
+								offerButton4 = false
+							},
+							offerButton4 = offerButton4,
+							offer4 = "Credit",
+							offerButton4Click = {
+								messageView.offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
+								offerButton1 = false
+								offerButton2 = false
+								offerButton3 = false
+								offerButton4 = !offerButton4
+							}
+						)
 
 						AmountField(
 							amount = amount,
@@ -258,8 +283,17 @@ class JetpackActivity : ComponentActivity() {
 
 						StageTagField(stageTag, onChange = { stageTag = it })
 
+						Row (
+							horizontalArrangement = Arrangement.SpaceBetween,
+							modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+						){
+							IgnoreCacheSwitch(ignoreCache = ignoreCache, onChange = { ignoreCache = it })
+							DevTouchpointSwitch(devTouchpoint = devTouchpoint, onChange = { devTouchpoint = it })
+						}
+
 						AndroidView(
 							modifier = Modifier
+								.padding(top = 16.dp, bottom = 32.dp, start = 8.dp, end = 8.dp)
 								.background(color = backgroundColor)
 								.fillMaxWidth(),
 							factory = { _ ->
@@ -267,11 +301,13 @@ class JetpackActivity : ComponentActivity() {
 							}
 						)
 
-						IgnoreCacheSwitch()
-						DevTouchpointSwitch()
-
-						FilledButton(text = "Reset", onClick = { resetButton() })
-						FilledButton(text = "Submit", onClick = { updateMessageData() })
+						Row (
+							horizontalArrangement = Arrangement.SpaceBetween,
+							modifier = Modifier.fillMaxWidth()
+						){
+							FilledButton(text = "Reset", onClick = { resetButton() }, buttonEnabled = buttonEnabled)
+							FilledButton(text = "Submit", onClick = { updateMessageData() }, buttonEnabled = buttonEnabled)
+						}
 
 					}
 				}
@@ -281,54 +317,35 @@ class JetpackActivity : ComponentActivity() {
 }
 
 @Composable
-fun LogoOptions( logoGroupOptions: List<String>, selected: String, onSelected: (text: String) -> Unit ) {
-	val radioGroupOptions = logoGroupOptions
-
+fun ClientIdField(clientId: String, onChange: (text: String) -> Unit, text: String) {
 	Row (
-		horizontalArrangement = Arrangement.SpaceEvenly
+		modifier = Modifier.padding(vertical = 16.dp)
 	) {
-		radioGroupOptions.forEach { text ->
+		Text(text = text, fontSize = 14.sp, fontWeight = FontWeight.Bold,
+			modifier = Modifier
+				.width(125.dp)
+				.height(intrinsicSize = IntrinsicSize.Max)
+				.align(Alignment.CenterVertically)
+		)
 
-			Row(
-				modifier = Modifier
-					.height(intrinsicSize = IntrinsicSize.Max)
-					.padding(end = Dp(8.0F))
-					.selectable(
-						selected = (text == selected),
-						onClick = { onSelected(text) }
-					),
-			) {
-				RadioButton (
-					selected = (text == selected),
-					onClick = { onSelected(text) },
-					modifier = Modifier
-						.padding(end = Dp(0F))
-//						.background(color = Color.Black)
-						.size(Dp(24f))
-				)
-				Text(
-					text = text,
-					fontSize = 16.sp,
-//					color = Color.White,
-					modifier = Modifier
-//						.background(color = Color.Black)
-						.align(Alignment.CenterVertically),
+		StyledTextField(
+			value = clientId,
+			onChange = onChange,
+			placeholder = text
+		)
 
-				)
-			}
-
-
-		}
 	}
 }
 
 @Composable
-fun ColorOptions(colorGroupOptions: List<String>, selected: String, onSelected: (text: String) -> Unit) {
+fun LogoOptions( logoGroupOptions: List<String>, selected: String, onSelected: (text: String) -> Unit ) {
+	val radioGroupOptions = logoGroupOptions
 
 	Row (
-		horizontalArrangement = Arrangement.SpaceEvenly
+		horizontalArrangement = Arrangement.SpaceEvenly,
+		modifier = Modifier.padding(top = 8.dp)
 	) {
-		colorGroupOptions.forEach { text ->
+		radioGroupOptions.forEach { text ->
 
 			Row(
 				modifier = Modifier
@@ -353,18 +370,18 @@ fun ColorOptions(colorGroupOptions: List<String>, selected: String, onSelected: 
 						.align(Alignment.CenterVertically)
 				)
 			}
-
 		}
 	}
 }
 
 @Composable
-fun AlignmentOptions(alignmentGroupOptions: List<String>, selected: String, onSelected: (text: String) -> Unit) {
+fun ColorOptions(colorGroupOptions: List<String>, selected: String, onSelected: (text: String) -> Unit) {
 
 	Row (
-		horizontalArrangement = Arrangement.SpaceEvenly
+		horizontalArrangement = Arrangement.SpaceEvenly,
+		modifier = Modifier.padding(vertical = 4.dp)
 	) {
-		alignmentGroupOptions.forEach { text ->
+		colorGroupOptions.forEach { text ->
 
 			Row(
 				modifier = Modifier
@@ -380,17 +397,50 @@ fun AlignmentOptions(alignmentGroupOptions: List<String>, selected: String, onSe
 					onClick = { onSelected(text) },
 					modifier = Modifier
 						.padding(end = Dp(0F))
-//						.background(color = Color.Black)
 						.size(Dp(24f))
 				)
 				Text(
 					text = text,
-					fontSize = 16.sp,
-//					color = Color.White,
+					fontSize = 14.sp,
 					modifier = Modifier
-//						.background(color = Color.Black)
-						.align(Alignment.CenterVertically),
+						.align(Alignment.CenterVertically)
+				)
+			}
+		}
+	}
+}
 
+@Composable
+fun AlignmentOptions(alignmentGroupOptions: List<String>, selected: String, onSelected: (text: String) -> Unit) {
+
+	Row (
+		horizontalArrangement = Arrangement.SpaceEvenly,
+		modifier = Modifier.padding(vertical = 4.dp)
+	) {
+
+		alignmentGroupOptions.forEach { text ->
+			Row(
+				modifier = Modifier
+					.height(intrinsicSize = IntrinsicSize.Max)
+					.padding(end = Dp(8.0F))
+					.selectable(
+						selected = (text == selected),
+						onClick = { onSelected(text) }
+					),
+			) {
+				RadioButton (
+					selected = (text == selected),
+					onClick = { onSelected(text) },
+					modifier = Modifier
+						.padding(end = Dp(0F))
+						.size(Dp(24f))
+				)
+
+				Text(
+					text = text,
+					fontSize = 16.sp,
+					modifier = Modifier
+						.align(Alignment.CenterVertically)
 					)
 			}
 
@@ -399,43 +449,95 @@ fun AlignmentOptions(alignmentGroupOptions: List<String>, selected: String, onSe
 }
 
 @Composable
+fun OfferButtons(
+	offerButton1: Boolean,
+	offer1: String,
+	offerButton1Click: () -> Unit,
+	offerButton2: Boolean,
+	offer2: String,
+	offerButton2Click: () -> Unit,
+	offerButton3: Boolean,
+	offer3: String,
+	offerButton3Click: () -> Unit,
+	offerButton4: Boolean,
+	offer4: String,
+	offerButton4Click: () -> Unit,
+) {
+
+	Column( modifier = Modifier.padding(top = 16.dp, bottom = 8.dp) ) {
+		Text(text = "Offer Type", fontSize = 14.sp, fontWeight = FontWeight.Bold,
+			modifier = Modifier
+				.width(125.dp)
+				.height(intrinsicSize = IntrinsicSize.Max)
+		)
+
+		Row( modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 12.dp), horizontalArrangement = Arrangement.SpaceBetween ) {
+
+			ToggleButton(
+				toggledState = offerButton1,
+				text = offer1,
+				onClick = offerButton1Click
+			)
+			ToggleButton(
+				toggledState = offerButton2,
+				text = offer2,
+				onClick = offerButton2Click
+			)
+			ToggleButton(
+				toggledState = offerButton3,
+				text = offer3,
+				onClick = offerButton3Click
+			)
+			ToggleButton(
+				toggledState = offerButton4,
+				text = offer4,
+				onClick = offerButton4Click
+			)
+		}
+	}
+}
+
+@Composable
 fun AmountField(amount: String, onChange: (text: String) -> Unit){
 
-	Row (
-		modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)
-	) {
-		Text(text = "Amount", fontSize = TextUnit(value = 32.0F, type = TextUnitType(type = 1)))
+	Row(
+			modifier = Modifier.padding(vertical = 8.dp)
+	){
 
-		TextField(
-			value = amount,
-			onValueChange = onChange,
-			placeholder = { Text(text = "0.00") },
-			keyboardOptions = KeyboardOptions.Default.copy(
-				keyboardType = KeyboardType.Number,
-				imeAction = ImeAction.Done
-			),
+		Text(text = "Amount", fontSize = 14.sp, fontWeight = FontWeight.Bold,
 			modifier = Modifier
-				.height(Dp(value = 64F))
-				.padding(all = 1.dp)
+				.width(125.dp)
+				.height(intrinsicSize = IntrinsicSize.Max)
+				.align(Alignment.CenterVertically)
+		)
+
+		StyledTextField(
+			value = amount,
+			onChange = onChange,
+			placeholder = "US",
+			keyboardType = KeyboardType.Number
 		)
 
 	}
+
 }
 
 @Composable
 fun BuyerCountryField(country: String, onChange: (text: String) -> Unit){
 	Row (
-		modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)
+		modifier = Modifier.padding(vertical = 9.dp)
 	) {
-		Text(text = "Buyer Country", fontSize = TextUnit(value = 32.0F, type = TextUnitType(type = 1)))
-
-		TextField(
-			value = country,
-			onValueChange = onChange,
-			placeholder = { Text(text = "US") },
+		Text(text = "Buyer Country", fontSize = 14.sp, fontWeight = FontWeight.Bold,
 			modifier = Modifier
-				.height(Dp(value = 64F))
-				.padding(all = 1.dp)
+				.width(125.dp)
+				.height(intrinsicSize = IntrinsicSize.Max)
+				.align(Alignment.CenterVertically)
+		)
+
+		StyledTextField(
+			value = country,
+			onChange = onChange,
+			placeholder = "US"
 		)
 
 	}
@@ -444,125 +546,64 @@ fun BuyerCountryField(country: String, onChange: (text: String) -> Unit){
 @Composable
 fun StageTagField( stageTag: String, onChange: (text: String) -> Unit){
 	Row (
-		modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)
+		modifier = Modifier.padding(vertical = 8.dp)
 	) {
-		Text(text = "Stage Tag", fontSize = TextUnit(value = 32.0F, type = TextUnitType(type = 1)))
-
-		TextField(
-			value = stageTag,
-			onValueChange = onChange,
+		Text(text = "Stage Tag", fontSize = 14.sp, fontWeight = FontWeight.Bold,
 			modifier = Modifier
-				.height(Dp(value = 64F))
-				.padding(all = 1.dp)
+				.width(125.dp)
+				.height(intrinsicSize = IntrinsicSize.Max)
+				.align(Alignment.CenterVertically)
+		)
+
+		StyledTextField(
+			value = stageTag,
+			onChange = onChange,
+			placeholder = "US"
 		)
 
 	}
 }
 
 @Composable
-fun IgnoreCacheSwitch() {
-	var checked by remember { mutableStateOf(false) }
-
-	Switch(
-		checked = checked,
-		onCheckedChange = {
-			checked = it
-			Api.ignoreCache = it
-		}
-	)
-
-	Text (text = "Ignore Cache")
-}
-
-@Composable
-fun DevTouchpointSwitch() {
-	var checked by remember { mutableStateOf(false) }
-
-	Switch(
-		checked = checked,
-		onCheckedChange = {
-			checked = it
-			Api.devTouchpoint = it
-		}
-	)
-
-	Text (text = "Dev Touchpoint")
-}
-
-@Composable
-fun OfferButtons(messageView: PayPalMessageView) {
-	var button1Enabled by remember { mutableStateOf(false) }
-	var button2Enabled by remember { mutableStateOf(false) }
-	var button3Enabled by remember { mutableStateOf(false) }
-	var button4Enabled by remember { mutableStateOf(false) }
-
-	Row() {
-		ToggleButton(
-			toggledState = button1Enabled,
-			text = "Short Term",
-			onClick = {
-				messageView.offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
-				button1Enabled = !button1Enabled
-				button2Enabled = false
-				button3Enabled = false
-				button4Enabled = false
-			}
+fun IgnoreCacheSwitch(ignoreCache: Boolean, onChange: (text: Boolean) -> Unit) {
+	Row {
+		Switch(
+			checked = ignoreCache,
+			onCheckedChange = onChange
 		)
-		ToggleButton(
-			toggledState = button2Enabled,
-			text = "Long Term",
 
-			onClick = {
-				messageView.offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM
-				button1Enabled = false
-				button2Enabled = !button2Enabled
-				button3Enabled = false
-				button4Enabled = false
-			}
-		)
-		ToggleButton(
-			toggledState = button3Enabled,
-			text = "Pay in 1",
-			onClick = {
-				messageView.offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1
-				button1Enabled = false
-				button2Enabled = false
-				button3Enabled = !button3Enabled
-				button4Enabled = false
-			}
-		)
-		ToggleButton(
-			toggledState = button4Enabled,
-			text = "Credit",
-			onClick = {
-				messageView.offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
-				button1Enabled = false
-				button2Enabled = false
-				button3Enabled = false
-				button4Enabled = !button4Enabled
-			}
-		)
+		Text (text = "Ignore Cache", fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterVertically).padding(start = 8.dp))
 	}
+}
+
+@Composable
+fun DevTouchpointSwitch(devTouchpoint: Boolean, onChange: (text: Boolean) -> Unit) {
+
+	Row{
+		Switch(
+			checked = devTouchpoint,
+			onCheckedChange = onChange
+		)
+
+		Text (text = "Dev Touchpoint", fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterVertically).padding(start = 8.dp))
+	}
+
 }
 
 @Composable
 fun ToggleButton( toggledState: Boolean, text: String, onClick: () -> Unit) {
 
 	Button(
-//			shape = RoundedCornerShape(8.dp),
 		colors = when(toggledState) {
 			true -> ButtonDefaults.outlinedButtonColors()
 			else -> ButtonDefaults.elevatedButtonColors()
 		},
 		elevation = ButtonDefaults.elevatedButtonElevation(),
+		shape = RectangleShape,
 		contentPadding = PaddingValues(start = 6.dp, top = 0.dp, end = 12.dp, bottom = 0.dp),
 		modifier = Modifier
+			.width(96.dp)
 			.height(IntrinsicSize.Max),
-//				.border(
-//					width = 2.dp, // Border width
-//					color = Color.LightGray, // Border color
-////					shape = MaterialTheme.shapes.small
-//				),
 		onClick = onClick
 	) {
 		Text(text)
@@ -570,14 +611,44 @@ fun ToggleButton( toggledState: Boolean, text: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun FilledButton(onClick: () -> Unit, text: String) {
+fun FilledButton(onClick: () -> Unit, text: String, buttonEnabled: Boolean) {
 	var isButtonClicked by remember { mutableStateOf(false) }
 	Button(
+		modifier = Modifier.width(intrinsicSize = IntrinsicSize.Min),
+		enabled = buttonEnabled,
 		onClick = {
 			onClick()
 			isButtonClicked = !isButtonClicked
 		},
 	) {
 		Text(text)
+	}
+}
+
+@Composable
+fun StyledTextField(value: String, onChange: (text: String) -> Unit, placeholder: String, keyboardType: KeyboardType? = KeyboardType.Text){
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.height(36.dp)
+			.background(
+				Color.LightGray,
+				RectangleShape
+			)
+	){
+		BasicTextField(
+			value = value,
+			onValueChange = onChange,
+			singleLine = true,
+			textStyle =  MaterialTheme.typography.bodyMedium,
+			keyboardOptions = KeyboardOptions.Default.copy(
+				keyboardType = keyboardType ?: KeyboardType.Text,
+				imeAction = ImeAction.Done
+			),
+			modifier = Modifier
+				.fillMaxWidth()
+				.fillMaxHeight()
+				.padding(start = 4.dp, end = 4.dp, top = 8.dp)
+		)
 	}
 }
