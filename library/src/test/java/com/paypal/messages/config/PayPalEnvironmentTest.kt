@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import com.paypal.messages.config.PayPalEnvironment as Env
 
-class PayPalEnvironmentTwoTest {
+class PayPalEnvironmentTest {
 	@Test
 	fun testLive() {
 		assertEquals(Env.LIVE.toString(), "LIVE")
@@ -51,11 +51,11 @@ class PayPalEnvironmentTwoTest {
 		)
 		assertEquals(
 			"https://www.sandbox.paypal.com/credit-presentment/merchant-profile",
-			Env.SANDBOX.url(Env.Endpoints.MERCHANT_PROFILE).toString()
+			Env.SANDBOX.url(Env.Endpoints.MERCHANT_PROFILE).toString(),
 		)
 		assertEquals(
 			"https://www.paypal.com/credit-presentment/native/message",
-			Env.LIVE.url(Env.Endpoints.MESSAGE_DATA).toString()
+			Env.LIVE.url(Env.Endpoints.MESSAGE_DATA).toString(),
 		)
 	}
 
@@ -75,11 +75,11 @@ class PayPalEnvironmentTwoTest {
 		)
 		assertEquals(
 			"https://api.sandbox.paypal.com/v1/credit/upstream-messaging-events",
-			Env.SANDBOX.url(Env.Endpoints.LOGGER).toString()
+			Env.SANDBOX.url(Env.Endpoints.LOGGER).toString(),
 		)
 		assertEquals(
 			"https://api.paypal.com/v1/credit/upstream-messaging-events",
-			Env.LIVE.url(Env.Endpoints.LOGGER).toString()
+			Env.LIVE.url(Env.Endpoints.LOGGER).toString(),
 		)
 	}
 }

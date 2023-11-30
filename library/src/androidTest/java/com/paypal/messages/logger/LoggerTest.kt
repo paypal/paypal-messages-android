@@ -1,19 +1,13 @@
 package com.paypal.messages.logger
 
 import android.content.Context
-//import android.content.SharedPreferences
-//import android.provider.Settings
-import androidx.test.rule.ActivityTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-//import org.mockito.Mockito.mock
-//import org.mockito.Mockito.when
 
 @RunWith(AndroidJUnit4::class)
 class LoggerTest {

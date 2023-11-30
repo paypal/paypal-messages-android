@@ -1,8 +1,6 @@
 package com.paypal.messages
 
 import android.widget.TextView
-//import androidx.test.ext.junit.rules.ActivityScenarioRule
-//import androidx.test.rule.ActivityTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.paypal.messages.config.PayPalMessageOfferType
@@ -11,18 +9,17 @@ import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.io.ApiMessageData
 import com.paypal.messages.io.ApiResult
 import org.junit.Assert.assertTrue
-//import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 class PayPalMessageViewTest {
-//	@get:Rule
-//	val activityTestRule = ActivityTestRule(TestActivity::class.java)
+// 	@get:Rule
+// 	val activityTestRule = ActivityTestRule(TestActivity::class.java)
 //
-//	@get:Rule
-//	val activityScenarioRule = ActivityScenarioRule(TestActivity::class.java)
+// 	@get:Rule
+// 	val activityScenarioRule = ActivityScenarioRule(TestActivity::class.java)
 
 	private val defaultMain = "Test main"
 	private val defaultDisclaimer = "Test disclaimer"
@@ -33,14 +30,19 @@ class PayPalMessageViewTest {
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 			messageType = "",
 			modalCloseButton = ModalCloseButton(
-				0, 0, 0, 0, "", "",
+				0,
+				0,
+				0,
+				0,
+				"",
+				"",
 			),
 			variables = ApiMessageData.Variables(logoPlaceholder = ""),
 			merchantCountryCode = "",
-			creditProductIdentifiers = List(0) {""},
+			creditProductIdentifiers = List(0) { "" },
 			debugId = "",
 			fdata = "",
-			trackingKeys = List(0) {""},
+			trackingKeys = List(0) { "" },
 			originatingInstanceId = UUID.randomUUID(),
 		),
 		content = ApiMessageData.ContentOptions(

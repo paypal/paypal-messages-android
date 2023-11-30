@@ -7,7 +7,7 @@ enum class PayPalEnvironment {
 	LOCAL,
 	STAGE,
 	SANDBOX,
-	LIVE
+	LIVE,
 	;
 
 	val isProduction: Boolean
@@ -47,8 +47,7 @@ enum class PayPalEnvironment {
 		MESSAGE_DATA("credit-presentment/native/message"),
 		MODAL_DATA("credit-presentment/lander/modal"),
 		MERCHANT_PROFILE("credit-presentment/merchant-profile"),
-		LOGGER("v1/credit/upstream-messaging-events")
-		;
+		LOGGER("v1/credit/upstream-messaging-events"),
 	}
 
 	fun url(endpoint: Endpoints): HttpUrl {
