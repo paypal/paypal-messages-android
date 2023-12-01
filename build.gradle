@@ -7,6 +7,7 @@ plugins {
   id 'com.android.library' version '8.0.2' apply false
   id 'org.jetbrains.kotlin.android' version '1.8.22' apply false
   id 'org.jmailen.kotlinter' version '3.16.0'
+  id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
 }
 
 tasks.register('ktLint', LintTask) {
@@ -23,8 +24,25 @@ tasks.register('ktFormat', FormatTask) {
   report = file('build/reports/ktlint/format-report.txt')
 }
 
-project.ext.name = "messages"
-project.ext.version = rootProject.version
+version "0.0.1-SNAPSHOT" // we add it here so that nexus automatically chooses staging or snapshot repo
+
+nexusPublishing {
+	repositories {
+		sonatype {
+			username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
+			password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
+			repositoryDescription = "Paypal Android SDK"
+			packageGroup = "com.paypal"
+		}
+	}
+	transitionCheckOptions {
+		// give nexus sonatype more time to close the staging repository
+		delayBetween.set(Duration.ofSeconds(20))
+	}
+}
+
+project.ext.name = "PayPalMessages"
+project.ext.version = "0.0.1"
 project.ext.pom_name = "PayPalMessages Android"
 project.ext.pom_desc = "Library for integration of PayPal Credit Messages onto your app."
 
