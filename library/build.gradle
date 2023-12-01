@@ -1,5 +1,6 @@
 plugins {
   id 'com.android.library'
+  id 'kotlin-android'
   id 'org.jetbrains.kotlin.android'
   id 'de.mannodermaus.android-junit5' version "1.9.3.0"
   id 'org.jetbrains.kotlinx.kover' version '0.7.4'
@@ -134,13 +135,32 @@ nexusPublishing {
 }
 
 android {
-  buildTypes {
-      release {
-          version = android.defaultConfig.versionName 
-          minifyEnabled false
-          proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-      }
-  }
+    compileSdk 31
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 31
+        versionCode 1
+        versionName modules.sdkVersionName
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            version = android.defaultConfig.versionName // had to add this to get the version in the build
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 }
 
 project.ext.name = "PayPalMessages"

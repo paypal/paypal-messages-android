@@ -41,14 +41,20 @@ nexusPublishing {
 	}
 }
 
-android {
-  buildTypes {
-      release {
-          version = android.defaultConfig.versionName 
-          minifyEnabled false
-          proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-      }
-  }
+buildTypes {
+  ext.modules = [
+    "sdkVersionName"      : "1.0.1-SNAPSHOT",
+    "sdkVersionCode"      : 18,
+    "androidMinSdkVersion": 21,
+    "androidTargetVersion": 30
+  ]
+
+  ext.versions = [
+    "kotlin"    : "1.8.21",
+    "compose"   : "1.4.7",
+    "navigation": "2.3.5",
+    "hilt"      : "2.44"
+  ]
 }
 
 project.ext.name = "PayPalMessages"
