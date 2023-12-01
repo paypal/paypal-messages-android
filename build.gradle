@@ -41,12 +41,14 @@ nexusPublishing {
 	}
 }
 
-buildTypes {
-    release {
-        version = android.defaultConfig.versionName 
-        minifyEnabled false
-        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-    }
+android {
+  buildTypes {
+      release {
+          version = android.defaultConfig.versionName 
+          minifyEnabled false
+          proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+      }
+  }
 }
 
 project.ext.name = "PayPalMessages"
