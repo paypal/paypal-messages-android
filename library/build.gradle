@@ -8,41 +8,45 @@ plugins {
 }
 
 android {
-  namespace 'com.paypal.messages'
-  compileSdk 34
+	namespace 'com.paypal.messages'
+	compileSdk 34
 
-  defaultConfig {
-    minSdk 23
-    targetSdk 34
+	defaultConfig {
+		minSdk 23
+		targetSdk 34
 
-	  versionCode 10000
-	  versionName '1.0.0'
-    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-    consumerProguardFiles 'consumer-rules.pro'
+		versionCode 10000
+		versionName '1.0.0'
+		testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+		consumerProguardFiles 'consumer-rules.pro'
 
-	  buildConfigField('String', 'INTEGRATION_TYPE', "\"NATIVE_ANDROID\"")
-	  buildConfigField('String', 'LIBRARY_VERSION', "\"${versionName}\"")
-	  buildConfigField('String', 'STAGE_URL', "\"${System.env.UPSTREAM_ANDROID_STAGE_URL}\"")
-	  buildConfigField('String', 'STAGE_VPN_URL', "\"${System.env.UPSTREAM_ANDROID_STAGE_VPN_URL}\"")
-	  buildConfigField('String', 'LOCAL_URL', "\"${System.env.UPSTREAM_ANDROID_LOCAL_URL}\"")
-  }
+		buildConfigField('String', 'INTEGRATION_TYPE', "\"NATIVE_ANDROID\"")
+		buildConfigField('String', 'LIBRARY_VERSION', "\"${versionName}\"")
+		buildConfigField('String', 'STAGE_URL', "\"${System.env.UPSTREAM_ANDROID_STAGE_URL}\"")
+		buildConfigField('String', 'STAGE_VPN_URL', "\"${System.env.UPSTREAM_ANDROID_STAGE_VPN_URL}\"")
+		buildConfigField('String', 'LOCAL_URL', "\"${System.env.UPSTREAM_ANDROID_LOCAL_URL}\"")
+	}
 
 	buildFeatures {
 		viewBinding = true
 	}
-  buildTypes {
-    release {
-      minifyEnabled false
-      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-    }
-  }
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
-  }
-  kotlinOptions {
-    jvmTarget = '1.8'
-  }
+
+	buildTypes {
+		release {
+			version = android.defaultConfig.versionName // had to add this to get the version in the build
+			minifyEnabled false
+			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+		}
+	}
+
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_1_8
+		targetCompatibility JavaVersion.VERSION_1_8
+	}
+
+	kotlinOptions {
+		jvmTarget = '1.8'
+	}
 
 	testOptions {
 		unitTests.all {
@@ -117,54 +121,8 @@ dependencies {
 	androidTestImplementation 'com.squareup.okhttp3:mockwebserver:4.8.0'
 }
 
-version "0.0.1-SNAPSHOT" // we add it here so that nexus automatically chooses staging or snapshot repo
-
-nexusPublishing {
-	repositories {
-		sonatype {
-			username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
-			password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
-			repositoryDescription = "Paypal Android SDK"
-			packageGroup = "com.paypal"
-		}
-	}
-	transitionCheckOptions {
-		// give nexus sonatype more time to close the staging repository
-		delayBetween.set(Duration.ofSeconds(20))
-	}
-}
-
-android {
-    compileSdk 31
-
-    defaultConfig {
-        minSdk 21
-        targetSdk 31
-        versionCode 1
-        versionName modules.sdkVersionName
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles "consumer-rules.pro"
-    }
-
-    buildTypes {
-        release {
-            version = android.defaultConfig.versionName // had to add this to get the version in the build
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-}
-
 project.ext.name = "PayPalMessages"
-project.ext.version = "0.0.1"
+project.ext.version = "0.0.1-alpha"
 project.ext.pom_name = "PayPalMessages Android"
 project.ext.pom_desc = "Library for integration of PayPal Credit Messages onto your app."
 

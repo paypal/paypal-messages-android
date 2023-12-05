@@ -24,7 +24,7 @@ tasks.register('ktFormat', FormatTask) {
   report = file('build/reports/ktlint/format-report.txt')
 }
 
-version "0.0.1-SNAPSHOT" // we add it here so that nexus automatically chooses staging or snapshot repo
+version "0.0.1-alpha-SNAPSHOT" // we add it here so that nexus automatically chooses staging or snapshot repo
 
 nexusPublishing {
 	repositories {
@@ -43,7 +43,7 @@ nexusPublishing {
 
 buildTypes {
   ext.modules = [
-    "sdkVersionName"      : "1.0.1-SNAPSHOT",
+    "sdkVersionName"      : "1.0.1-alpha-SNAPSHOT",
     "sdkVersionCode"      : 18,
     "androidMinSdkVersion": 21,
     "androidTargetVersion": 30
@@ -56,10 +56,3 @@ buildTypes {
     "hilt"      : "2.44"
   ]
 }
-
-project.ext.name = "PayPalMessages"
-project.ext.version = "0.0.1"
-project.ext.pom_name = "PayPalMessages Android"
-project.ext.pom_desc = "Library for integration of PayPal Credit Messages onto your app."
-
-apply from: rootProject.file("gradle/gradle-publish.gradle")
