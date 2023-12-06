@@ -120,9 +120,9 @@ dependencies {
 	androidTestImplementation 'com.squareup.okhttp3:mockwebserver:4.8.0'
 }
 
-project.ext.name = "PayPalMessages"
+project.ext.name = "paypal-messages"
 project.ext.version = "0.0.1-alpha"
-project.ext.pom_name = "PayPalMessages Android"
+project.ext.pom_name = "PayPal Messages"
 project.ext.pom_desc = "Library for integration of PayPal Credit Messages onto your app."
 
 apply from: rootProject.file("gradle/gradle-publish.gradle")
