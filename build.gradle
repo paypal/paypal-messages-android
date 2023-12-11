@@ -24,6 +24,7 @@ plugins {
   id 'org.jetbrains.kotlin.android' version '1.8.22' apply false
   id 'org.jmailen.kotlinter' version '3.16.0'
   id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
+	id 'signing'
 }
 
 tasks.register('ktLint', LintTask) {
