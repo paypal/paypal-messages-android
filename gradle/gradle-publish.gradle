@@ -45,7 +45,6 @@ afterEvaluate {
     }
 
     signing {
-        useGpgCmd()
         sign publishing.publications
         sign configurations.archives
     }
