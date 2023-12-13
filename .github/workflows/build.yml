@@ -42,8 +42,5 @@ jobs:
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
 
-      # Only library assets are needed for the build step
-      - name: Build with Gradle
-        run: ./gradlew :${{ matrix.codebase }}:assemble
-
       - run: echo "Build status report=${{ job.status }}."
+
