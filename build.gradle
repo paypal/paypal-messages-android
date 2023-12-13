@@ -4,7 +4,7 @@ import org.jmailen.gradle.kotlinter.tasks.FormatTask
 
 buildscript {
 	ext.modules = [
-		"sdkVersionName"      : "1.0.1-alpha-SNAPSHOT",
+		"sdkVersionName"      : "1.0.1-SNAPSHOT",
 		"sdkVersionCode"      : 18,
 		"androidMinSdkVersion": 21,
 		"androidTargetVersion": 30
@@ -41,7 +41,7 @@ tasks.register('ktFormat', FormatTask) {
   report = file('build/reports/ktlint/format-report.txt')
 }
 
-version "0.0.1-alpha-SNAPSHOT" // we add it here so that nexus automatically chooses staging or snapshot repo
+version "1.0.0-alpha.0-SNAPSHOT" // we add it here so that nexus automatically chooses staging or snapshot repo
 
 nexusPublishing {
 	repositories {

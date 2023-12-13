@@ -123,7 +123,7 @@ dependencies {
 }
 
 project.ext.name = "paypal-messages"
-project.ext.version = "0.0.1-alpha"
+project.ext.version = "1.0.0-alpha.0"
 project.ext.pom_name = "PayPal Messages"
 project.ext.pom_desc = "Library for integration of PayPal Credit Messages onto your app."
 
