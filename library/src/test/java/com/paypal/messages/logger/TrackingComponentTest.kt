@@ -32,7 +32,7 @@ class TrackingComponentTest {
 	private val instanceId = "test_instance_id"
 	private val originatingInstanceId = "test_originating_instance_id"
 	private val sessionId = "test_session_id"
-	private val events = mutableListOf(TrackingEvent(EventType.MESSAGE_CLICK))
+	private val componentEvents = mutableListOf(TrackingEvent(EventType.MESSAGE_CLICK))
 
 	private val trackingComponent = TrackingComponent(
 		offerType = offerType,
@@ -58,9 +58,9 @@ class TrackingComponentTest {
 		instanceId = instanceId,
 		originatingInstanceId = originatingInstanceId,
 		sessionId = sessionId,
-		events = events,
+		componentEvents = componentEvents,
 	)
-	
+
 	@Test
 	fun testConstructor() {
 		assertEquals(offerType, trackingComponent.offerType)
@@ -86,7 +86,7 @@ class TrackingComponentTest {
 		assertEquals(instanceId, trackingComponent.instanceId)
 		assertEquals(originatingInstanceId, trackingComponent.originatingInstanceId)
 		assertEquals(sessionId, trackingComponent.sessionId)
-		assertEquals(events, trackingComponent.events)
+		assertEquals(componentEvents, trackingComponent.componentEvents)
 	}
 
 	@Test
@@ -95,7 +95,7 @@ class TrackingComponentTest {
 		val json = gson.toJson(trackingComponent)
 
 		@Suppress("ktlint:standard:max-line-length")
-		val expectedJson = """{"offer_type":"PAY_LATER_SHORT_TERM","amount":"100.00","placement":"CART","buyer_country_code":"US","channel":"NATIVE","style_logo_type":"ALTERNATIVE","style_color":"MONOCHROME","style_text_align":"CENTER","message_type":"OFFER","views":["VIEW"],"qualified_products":["PRODUCT"],"fdata":"test_fdata","debug_id":"test_debug_id","experimentation_experience_ids":["EXP_1","EXP_2"],"experimentation_treatment_ids":["TRT_1","TRT_2"],"credit_product_identifiers":["CPI_1","CPI_2"],"offer_country_code":"US","merchant_country_code":"US","type":"OFFER","instance_id":"test_instance_id","originating_instance_id":"test_originating_instance_id","session_id":"test_session_id","events":[{"event_type":"MESSAGE_CLICK"}],"__shared__":{}}"""
+		val expectedJson = """{"offer_type":"PAY_LATER_SHORT_TERM","amount":"100.00","placement":"CART","buyer_country_code":"US","channel":"NATIVE","style_logo_type":"ALTERNATIVE","style_color":"MONOCHROME","style_text_align":"CENTER","message_type":"OFFER","views":["VIEW"],"qualified_products":["PRODUCT"],"fdata":"test_fdata","debug_id":"test_debug_id","experimentation_experience_ids":["EXP_1","EXP_2"],"experimentation_treatment_ids":["TRT_1","TRT_2"],"credit_product_identifiers":["CPI_1","CPI_2"],"offer_country_code":"US","merchant_country_code":"US","type":"OFFER","instance_id":"test_instance_id","originating_instance_id":"test_originating_instance_id","session_id":"test_session_id","component_events":[{"event_type":"MESSAGE_CLICK"}],"__shared__":{}}"""
 		assertEquals(expectedJson, json)
 	}
 }

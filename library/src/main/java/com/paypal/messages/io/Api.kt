@@ -3,6 +3,7 @@ package com.paypal.messages.io
 import android.content.Context
 import com.google.gson.Gson
 import com.paypal.messages.BuildConfig
+import com.paypal.messages.logger.CloudEvent
 import com.paypal.messages.logger.TrackingPayload
 import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
@@ -10,7 +11,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.Credentials
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
@@ -36,38 +36,46 @@ object Api {
 	var sessionId: UUID? = null
 
 	object Endpoints {
-		private val ROOT_URLS = mapOf(
-			Env.LIVE to "https://www.paypal.com",
-			Env.SANDBOX to "https://www.sandbox.paypal.com",
-			Env.STAGE to BuildConfig.STAGE_URL,
-			Env.STAGE_VPN to BuildConfig.STAGE_VPN_URL,
-			Env.LOCAL to BuildConfig.LOCAL_URL,
-		)
+		private val presentmentRoot: String
+			get() = when (environment) {
+				Env.LIVE -> "https://www.paypal.com"
+				Env.SANDBOX -> "https://www.sandbox.paypal.com"
+				Env.STAGE -> BuildConfig.STAGE_URL
+				Env.STAGE_VPN -> BuildConfig.STAGE_VPN_URL
+				Env.LOCAL -> "${BuildConfig.LOCAL_URL}:8000"
+			}
 
-		private val rootUrl = ROOT_URLS[environment]
-		private val presentmentUrl = if (environment === Env.LOCAL) "$rootUrl:8000" else "$rootUrl"
-		private val loggerUrl = if (environment === Env.LOCAL) "$rootUrl:9090" else "$rootUrl"
+		private val loggerRoot: String
+			get() = when (environment) {
+				Env.LIVE -> "https://api.paypal.com"
+				Env.SANDBOX -> "https://api.sandbox.paypal.com"
+				Env.STAGE -> BuildConfig.STAGE_URL
+				Env.STAGE_VPN -> BuildConfig.STAGE_VPN_URL
+				Env.LOCAL -> "${BuildConfig.LOCAL_URL}:9090"
+			}
 
-		val messageData = "$presentmentUrl/credit-presentment/native/message".toHttpUrl()
-		val messageHash = "$presentmentUrl/credit-presentment/merchant-profile".toHttpUrl()
-		val modalData = "$presentmentUrl/credit-presentment/lander/modal".toHttpUrl()
-		val logger = "$loggerUrl/track/native".toHttpUrl()
+		val messageData
+			get() = "$presentmentRoot/credit-presentment/native/message".toHttpUrl()
+		val messageHash
+			get() = "$presentmentRoot/credit-presentment/merchant-profile".toHttpUrl()
+		val modalData
+			get() = "$presentmentRoot/credit-presentment/lander/modal".toHttpUrl()
+		val logger
+			get() = "$loggerRoot/v1/credit/upstream-messaging-events".toHttpUrl()
 	}
 
 	private fun HttpUrl.Builder.setMessageDataQuery(config: MessageConfig, hash: String?) {
-		addQueryParameter("client_id", config.data?.clientID)
+		addQueryParameter("client_id", config.data.clientID)
 		addQueryParameter("devTouchpoint", devTouchpoint.toString())
 		addQueryParameter("ignore_cache", ignoreCache.toString())
-		addQueryParameter("env", environment.name.lowercase())
 		addQueryParameter("instance_id", instanceId.toString())
 		addQueryParameter("session_id", sessionId.toString())
 
 		if (!stageTag.isNullOrBlank()) { addQueryParameter("stage_tag", stageTag) }
 		config.style.logoType?.let { addQueryParameter("logo_type", it.name.lowercase()) }
-		config.data?.amount?.let { addQueryParameter("amount", it.toString()) }
-		config.data?.buyerCountry?.let { addQueryParameter("buyer_country", it) }
-		config.data?.currencyCode?.let { addQueryParameter("currency", it.name) }
-		config.data?.offerType?.let { addQueryParameter("offer", it.name) }
+		config.data.amount?.let { addQueryParameter("amount", it.toString()) }
+		config.data.buyerCountry?.let { addQueryParameter("buyer_country", it) }
+		config.data.offerType?.let { addQueryParameter("offer", it.name) }
 
 		hash?.let { addQueryParameter("merchant_config", it) }
 	}
@@ -75,7 +83,6 @@ object Api {
 	private fun createMessageDataRequest(config: MessageConfig, hash: String?): Request {
 		val request = Request.Builder().apply {
 			header("Accept", "application/json")
-			header("Authorization", Credentials.basic(config.data?.clientID ?: "", ""))
 			header("x-requested-by", "native-upstream-messages")
 
 			val urlBuilder = Endpoints.messageData.newBuilder()
@@ -83,7 +90,8 @@ object Api {
 			url(urlBuilder.build())
 		}.build()
 
-		LogCat.debug(TAG, "getMessageDataRequest: $request")
+		val query = request.url.query?.replace("&", "\n  ")
+		LogCat.debug(TAG, "getMessageDataRequest:\n  $request\n  $query")
 		return request
 	}
 
@@ -165,7 +173,6 @@ object Api {
 	private fun createMessageHashRequest(clientId: String): Request {
 		val request = Request.Builder().apply {
 			header("Accept", "application/json")
-			header("Authorization", Credentials.basic(clientId, ""))
 			header("x-requested-by", "native-upstream-messages")
 
 			val urlBuilder = Endpoints.messageHash.newBuilder()
@@ -204,7 +211,7 @@ object Api {
 	}
 
 	private suspend fun getAndStoreNewHash(context: Context, messageConfig: MessageConfig): String? {
-		val clientId = messageConfig.data?.clientID ?: ""
+		val clientId = messageConfig.data.clientID
 		val localStorage = LocalStorage(context)
 		val result = withContext(Dispatchers.IO) {
 			callMessageHashEndpoint(clientId)
@@ -252,8 +259,7 @@ object Api {
 	}
 
 	fun callLoggerEndpoint(payload: TrackingPayload) {
-		// TODO, Ensure __shared__ property is correctly converted and added to json payload
-		val json = gson.toJson(payload)
+		val json = gson.toJson(CloudEvent(data = payload))
 		val request = createLoggerRequest(json)
 		val response = client.newCall(request).execute()
 		response.body?.string()?.let { LogCat.debug(TAG, "callLoggerEndpoint response: $it") }

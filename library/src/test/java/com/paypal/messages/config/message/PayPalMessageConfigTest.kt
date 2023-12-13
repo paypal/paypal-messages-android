@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 class PayPalMessageConfigTest {
 	@Test
 	fun testConstructor() {
-		val data = PayPalMessageData()
+		val data = PayPalMessageData(clientID = "1")
 		val style = PayPalMessageStyle()
 		val viewStateCallbacks = PayPalMessageViewStateCallbacks()
 		val eventsCallbacks = PayPalMessageEventsCallbacks()

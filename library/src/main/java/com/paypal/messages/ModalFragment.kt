@@ -31,7 +31,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import com.paypal.messages.config.Channel
-import com.paypal.messages.config.CurrencyCode
 import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.extensions.dp
@@ -72,13 +71,6 @@ internal class ModalFragment constructor(
 			}
 		}
 	private var channel: Channel = Channel.NATIVE
-	var currencyCode: CurrencyCode? = null
-		set(currencyArg) {
-			if (field != currencyArg) {
-				field = currencyArg
-				setJsValue(name = "currency", value = currencyArg.toString())
-			}
-		}
 	private var devTouchpoint: Boolean = true
 	private var ignoreCache: Boolean = false
 	var offerType: OfferType? = null
@@ -132,38 +124,31 @@ internal class ModalFragment constructor(
 
 		// If we already have a WebView, don't reset it
 		LogCat.debug(TAG, "Configuring WebView Settings and Handlers")
+		val modalFragment = this
 		val webView = rootView.findViewById<RoundedWebView>(R.id.ModalWebView)
+		webView.apply {
+			// Set the bottom margin here instead of in XML so it is controlled in one single location.
+			// The offset shifts the modal down, so a bottom margin keeps the scrollable space on screen.
+			(layoutParams as RelativeLayout.LayoutParams).apply { bottomMargin = offsetTop }
 
-		// Programmatically set bottom margin instead of in XML since we also apply it to the
-		// dialog behavior below to control it in a single location. The expanded offset below shifts
-		// the whole modal down, so we offset that by applying a margin to the bottom of the WebView
-		// which keeps the scrollable space on screen
-		webView.layoutParams = (webView.layoutParams as RelativeLayout.LayoutParams).apply {
-			bottomMargin = offsetTop
+			settings.javaScriptEnabled = true
+			settings.domStorageEnabled = true
+			settings.allowContentAccess = true
+			addJavascriptInterface(modalFragment, "Android")
 		}
 
-		webView.settings.javaScriptEnabled = true
-		webView.settings.domStorageEnabled = true
-		webView.settings.allowContentAccess
-		webView.addJavascriptInterface(this, "Android")
-		// For Debugging
 		webView.webChromeClient = object : WebChromeClient() {
 			override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
 				val source = "${consoleMessage.sourceId()}:${consoleMessage.lineNumber()}"
-				LogCat.debug(TAG, "$source: ${consoleMessage.message()}")
+				LogCat.debug(TAG, "\n$source:\n  ${consoleMessage.message()}\n")
 				return super.onConsoleMessage(consoleMessage)
 			}
 		}
 
-		// Configure WebView
 		webView.webViewClient = object : WebViewClient() {
 			// TODO remove for production
 			@SuppressLint("WebViewClientOnReceivedSslError")
-			override fun onReceivedSslError(
-				view: WebView,
-				handler: SslErrorHandler,
-				error: SslError,
-			) {
+			override fun onReceivedSslError(v: WebView, handler: SslErrorHandler, e: SslError) {
 				LogCat.debug(TAG, "Bypassing SSL check")
 				handler.proceed()
 			}
@@ -266,7 +251,6 @@ internal class ModalFragment constructor(
 		this.amount = config.amount
 		this.buyerCountry = config.buyerCountry
 		this.channel = config.channel
-		this.currencyCode = config.currencyCode
 		this.devTouchpoint = config.devTouchpoint
 		this.ignoreCache = config.ignoreCache
 		this.offerType = config.offer
@@ -393,9 +377,9 @@ internal class ModalFragment constructor(
 		val shared = jsonElementToMutableMap(sharedJson)
 		when (name) {
 			"onClick" -> {
-				val linkName = args.get("link_name")?.asString
-				val linkSrc = args.get("link_src")?.asString
-				if (linkName == "Apply Now") {
+				val pageViewLinkName = args.get("page_view_link_name")?.asString
+				val pageViewLinkSource = args.get("page_view_link_source")?.asString
+				if (pageViewLinkName == "Apply Now") {
 					this.onApply()
 				}
 				else {
@@ -404,8 +388,8 @@ internal class ModalFragment constructor(
 				logEvent(
 					TrackingEvent(
 						eventType = EventType.MODAL_CLICK,
-						linkSrc = linkSrc,
-						linkName = linkName,
+						pageViewLinkSource = pageViewLinkSource,
+						pageViewLinkName = pageViewLinkName,
 					),
 					shared,
 				)
@@ -477,7 +461,7 @@ internal class ModalFragment constructor(
 			buyerCountryCode = this.buyerCountry,
 			type = ComponentType.MODAL.toString(),
 			instanceId = this.instanceId.toString(),
-			events = mutableListOf(event),
+			componentEvents = mutableListOf(event),
 			__shared__ = dynamicKeys,
 		)
 
