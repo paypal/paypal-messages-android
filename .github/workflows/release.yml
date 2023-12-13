@@ -1,10 +1,12 @@
 name: Release
 on:
-  workflow_dispatch: {}
-  push:
-    branches:
-      - main
-
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release'
+        required: true
+env:
+  SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
 jobs:
   lint:
     uses: paypal/paypal-messages-android/.github/workflows/lint.yml@release
@@ -52,6 +54,31 @@ jobs:
       - name: Publish to Maven
         run: echo "Publish to Maven"
 
+  #First we build
+  build_aar:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Set up Java 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'microsoft'
+          #After decoding the secret key, place the file in ~ /. Gradle/ secring.gpg
+      - name: Decode Signing Key
+        uses: ./.github/actions/decode_signing_key_action
+        with:
+          signing_key_file: ${{ secrets.SIGNING_KEY_FILE }}
+          signing_file_path: ${{ env.SIGNING_KEY_FILE_PATH }}
+      - name: Assemble
+        run: ./gradlew --stacktrace assemble
+        env:
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
+
   # after build and unit tests are finished, publish all modules at once
   # to help reduce the probability of failure when interacting with sonatype servers
   publish_all_modules:
@@ -71,9 +98,9 @@ jobs:
         with:
           signing_key_file: ${{ secrets.SIGNING_KEY_FILE }}
           signing_file_path: ${{ env.SIGNING_KEY_FILE_PATH }}
-      - name: Update Version
-        run: |
-          ./gradlew -PversionParam=${{ github.event.inputs.version }} changeReleaseVersion
+      # - name: Update Version
+      #   run: |
+      #     ./gradlew -PversionParam=${{ github.event.inputs.version }} changeReleaseVersion
       - name: Publish All Modules
         uses: ./.github/actions/publish_all_modules
         with:
