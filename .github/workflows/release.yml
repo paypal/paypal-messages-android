@@ -8,14 +8,14 @@ env:
   SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
 
 jobs:
-  # lint:
-  #   uses: ./.github/workflows/lint.yml
+  lint:
+    uses: ./.github/workflows/lint.yml
 
-  # test:
-  #   uses: ./.github/workflows/test.yml
+  test:
+    uses: ./.github/workflows/test.yml
 
-  # build:
-  #   uses: ./.github/workflows/build.yml
+  build:
+    uses: ./.github/workflows/build.yml
 
   build:
     name: Build
