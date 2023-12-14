@@ -57,7 +57,7 @@ jobs:
 
   release:
     name: Release
-    needs: [lint, test, build]
+    needs: [build]
     runs-on: ubuntu-latest
 
     permissions:
@@ -95,7 +95,7 @@ jobs:
   # after build and unit tests are finished, publish all modules at once
   # to help reduce the probability of failure when interacting with sonatype servers
   publish_all_modules:
-    needs: [lint, test, build]
+    needs: [build]
     name: Publish All Modules To Sonatype
     runs-on: ubuntu-latest
     steps:
