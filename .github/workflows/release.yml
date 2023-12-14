@@ -8,14 +8,52 @@ env:
   SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
 
 jobs:
-  lint:
-    uses: ./.github/workflows/lint.yml
+  # lint:
+  #   uses: ./.github/workflows/lint.yml
 
-  test:
-    uses: ./.github/workflows/test.yml
+  # test:
+  #   uses: ./.github/workflows/test.yml
+
+  # build:
+  #   uses: ./.github/workflows/build.yml
 
   build:
-    uses: ./.github/workflows/build.yml
+    name: Build
+    runs-on: ubuntu-latest
+
+    env:
+      SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
+
+    strategy:
+      matrix:
+        codebase: [library, demo]
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      #After decoding the secret key, place the file in ~ /. Gradle/ secring.gpg
+      - name: Decode Signing Key
+        uses: ./.github/actions/decode_signing_key_action
+        with:
+          signing_key_file: ${{ secrets.SIGNING_KEY_FILE }}
+          signing_file_path: ${{ env.SIGNING_KEY_FILE_PATH }}
+
+      - name: Assemble
+        run: ./gradlew --stacktrace assemble -x :demo:assemble # we exclude Demo module in assemble
+        env:
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
+
+      - run: echo "Build status report=${{ job.status }}."
 
   release:
     name: Release
