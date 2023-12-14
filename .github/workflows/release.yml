@@ -6,17 +6,17 @@ env:
 
 jobs:
   lint:
-    uses: paypal/paypal-messages-android/.github/workflows/lint.yml@feat/pre-release-pack-2627
+    uses: ./.github/workflows/lint.yml
 
   test:
-    uses: paypal/paypal-messages-android/.github/workflows/test.yml@feat/pre-release-pack-2627
+    uses: ./.github/workflows/test.yml
 
   build:
-    uses: paypal/paypal-messages-android/.github/workflows/build.yml@feat/pre-release-pack-2627
+    uses: ./.github/workflows/build.yml
 
   release:
     name: Release
-    needs: [linting, tests, build]
+    needs: [lint, test, build]
     runs-on: ubuntu-latest
 
     permissions:
@@ -53,7 +53,7 @@ jobs:
   # after build and unit tests are finished, publish all modules at once
   # to help reduce the probability of failure when interacting with sonatype servers
   publish_all_modules:
-    needs: [linting, tests, build]
+    needs: [lint, test, build]
     name: Publish All Modules To Sonatype
     runs-on: ubuntu-latest
     steps:
