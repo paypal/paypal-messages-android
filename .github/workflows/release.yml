@@ -1,6 +1,7 @@
 name: Release
 on:
   workflow_dispatch: {}
+  workflow_call: {}
 env:
   SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
 
