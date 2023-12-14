@@ -7,13 +7,13 @@ env:
 
 jobs:
   lint:
-    uses: ./.github/workflows/lint.yml@feat/pre-release-pack-2627
+    uses: ./.github/workflows/lint.yml@release
 
   test:
-    uses: ./.github/workflows/test.yml@feat/pre-release-pack-2627
+    uses: ./.github/workflows/test.yml@release
 
   build:
-    uses: ./.github/workflows/build.yml@feat/pre-release-pack-2627
+    uses: ./.github/workflows/build.yml@release
 
   release:
     name: Release
