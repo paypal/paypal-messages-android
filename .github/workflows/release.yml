@@ -1,19 +1,18 @@
 name: Release
 on:
   workflow_dispatch: {}
-  workflow_call: {}
 env:
   SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
 
 jobs:
   lint:
-    uses: ./.github/workflows/lint.yml@release
+    uses: paypal/paypal-messages-android/.github/workflows/lint.yml@feat/pre-release-pack-2627
 
   test:
-    uses: ./.github/workflows/test.yml@release
+    uses: paypal/paypal-messages-android/.github/workflows/test.yml@feat/pre-release-pack-2627
 
   build:
-    uses: ./.github/workflows/build.yml@release
+    uses: paypal/paypal-messages-android/.github/workflows/build.yml@feat/pre-release-pack-2627
 
   release:
     name: Release
