@@ -3,6 +3,7 @@ on:
   workflow_dispatch: {}
 env:
   SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
+
 jobs:
   lint:
     uses: paypal/paypal-messages-android/.github/workflows/lint.yml@release
@@ -42,14 +43,13 @@ jobs:
         run: |
           npm i -g @semantic-release/exec @semantic-release/changelog @semantic-release/git conventional-changelog-conventionalcommits@6.1.0
 
-      - name: GitHub Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release@21
+      # - name: GitHub Release
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: npx semantic-release@21
 
       - name: Publish to Maven
         run: echo "Publish to Maven"
-
   # after build and unit tests are finished, publish all modules at once
   # to help reduce the probability of failure when interacting with sonatype servers
   publish_all_modules:
