@@ -6,13 +6,13 @@ env:
 
 jobs:
   lint:
-    uses: paypal/paypal-messages-android/.github/workflows/lint.yml@release
+    uses: paypal/paypal-messages-android/.github/workflows/lint.yml
 
   test:
-    uses: paypal/paypal-messages-android/.github/workflows/test.yml@release
+    uses: paypal/paypal-messages-android/.github/workflows/test.yml
 
   build:
-    uses: paypal/paypal-messages-android/.github/workflows/build.yml@release
+    uses: paypal/paypal-messages-android/.github/workflows/build.yml
 
   release:
     name: Release
