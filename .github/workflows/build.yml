@@ -4,9 +4,15 @@ on:
   workflow_dispatch: {}
   workflow_call:
     secrets:
-      SIGNING_KEY_ID: {}
-      SIGNING_KEY_FILE: {}
-      SIGNING_KEY_PASSWORD: {}
+      SIGNING_KEY_ID:
+        description: 'Secret Key ID'
+        required: true
+      SIGNING_KEY_FILE:
+        description: 'Secret Key'
+        required: true
+      SIGNING_KEY_PASSWORD:
+        description: 'Secret Password'
+        required: true
 
 concurrency:
   group: build-${{ github.event.number }}
