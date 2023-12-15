@@ -50,6 +50,7 @@ jobs:
 
       - name: Publish to Maven
         run: echo "Publish to Maven"
+
   # after build and unit tests are finished, publish all modules at once
   # to help reduce the probability of failure when interacting with sonatype servers
   publish_all_modules:

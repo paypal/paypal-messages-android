@@ -1,5 +1,12 @@
 name: Build
-on: [pull_request, workflow_dispatch, workflow_call]
+on:
+  pull_request: {}
+  workflow_dispatch: {}
+  workflow_call:
+    secrets:
+      SIGNING_KEY_ID: {}
+      SIGNING_KEY_FILE: {}
+      SIGNING_KEY_PASSWORD: {}
 
 concurrency:
   group: build-${{ github.event.number }}
