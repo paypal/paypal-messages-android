@@ -78,7 +78,7 @@ class LocalStorageTest {
 			ttlSoft = 10L,
 			ttlHard = 20L,
 		)
-	setTimestampToSecondsFromNow(-15)
+		setTimestampToSecondsFromNow(-15)
 
 		val actualHashState = localStorage.getMerchantHashState()
 		assertEquals(LocalStorage.State.HASH_BETWEEN_SOFT_AND_HARD_TTL, actualHashState)
@@ -94,7 +94,7 @@ class LocalStorageTest {
 			ttlSoft = 10L,
 			ttlHard = 20L,
 		)
-	setTimestampToSecondsFromNow(-5)
+		setTimestampToSecondsFromNow(-5)
 
 		val actualHashState = localStorage.getMerchantHashState()
 		assertEquals(LocalStorage.State.HASH_YOUNGER_THAN_SOFT_TTL, actualHashState)
