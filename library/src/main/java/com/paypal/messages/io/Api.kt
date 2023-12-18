@@ -51,7 +51,7 @@ object Api {
 		hash?.let { addQueryParameter("merchant_config", it) }
 	}
 
-	private fun createMessageDataRequest(config: MessageConfig, hash: String?): Request {
+	internal fun createMessageDataRequest(config: MessageConfig, hash: String?): Request {
 		val request = Request.Builder().apply {
 			header("Accept", "application/json")
 			header("x-requested-by", "native-upstream-messages")
@@ -66,7 +66,7 @@ object Api {
 		return request
 	}
 
-	private fun callMessageDataEndpoint(config: MessageConfig, hash: String?): ApiResult {
+	internal fun callMessageDataEndpoint(config: MessageConfig, hash: String?): ApiResult {
 		LogCat.debug(TAG, "callMessageDataEndpoint hash: $hash")
 		val request = createMessageDataRequest(config, hash)
 		try {
@@ -127,7 +127,7 @@ object Api {
 		}
 	}
 
-	private fun createMessageHashRequest(clientId: String): Request {
+	internal fun createMessageHashRequest(clientId: String): Request {
 		val request = Request.Builder().apply {
 			header("Accept", "application/json")
 			header("x-requested-by", "native-upstream-messages")
@@ -141,7 +141,7 @@ object Api {
 		return request
 	}
 
-	private fun callMessageHashEndpoint(clientId: String): ApiResult {
+	internal fun callMessageHashEndpoint(clientId: String): ApiResult {
 		val request = createMessageHashRequest(clientId)
 		try {
 			val response = client.newCall(request).execute()
@@ -204,7 +204,7 @@ object Api {
 		return url
 	}
 
-	private fun createLoggerRequest(json: String): Request {
+	internal fun createLoggerRequest(json: String): Request {
 		val request = Request.Builder().apply {
 			url(env.url(Env.Endpoints.LOGGER))
 			post(json.toRequestBody("application/json".toMediaType()))
