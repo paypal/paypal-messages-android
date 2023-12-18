@@ -5,7 +5,11 @@ import android.content.SharedPreferences
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.paypal.messages.config.PayPalEnvironment
+import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageData
+import com.paypal.messages.config.message.PayPalMessageStyle
+import com.paypal.messages.utils.LogCat
+import com.paypal.messages.utils.PayPalErrors
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -15,11 +19,13 @@ import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import kotlin.reflect.typeOf
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
 
 @RunWith(AndroidJUnit4::class)
@@ -55,10 +61,99 @@ class ApiTest {
 		standardTestDispatcher.cancel()
 	}
 
+	@Test
+	fun testCreateMessageDataRequestWithNoData() {
+		val messageDataRequest = Api.createMessageDataRequest(messageConfig, null)
+
+		@Suppress("ktlint:standard:max-line-length")
+		val expectedPath = "credit-presentment/native/message?client_id=test_client_id&devTouchpoint=false&ignore_cache=false&instance_id=null&session_id=null"
+		assertTrue(messageDataRequest.url.toString().contains(expectedPath))
+	}
+
+	@Test
+	fun testCreateMessageDataRequestWithAllData() {
+		val config = MessageConfig(
+			data = PayPalMessageData(clientID = "test_client_id", amount = 1.0, buyerCountry = "US", offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1),
+			style = PayPalMessageStyle(),
+		)
+		val messageDataRequest = Api.createMessageDataRequest(config, "hash")
+
+		@Suppress("ktlint:standard:max-line-length")
+		val expectedPath = "credit-presentment/native/message?client_id=test_client_id&devTouchpoint=false&ignore_cache=false&instance_id=null&session_id=null&amount=1.0&buyer_country=US&offer=PAY_LATER_PAY_IN_1&merchant_config=hash"
+		assertTrue(messageDataRequest.url.toString().contains(expectedPath))
+	}
+
 	@OptIn(ExperimentalCoroutinesApi::class)
 	@Test
-	fun getMessageWithHash_noMerchantHash_fetchesNewHashAndReturnsData() = runTest(standardTestDispatcher) {
+	fun testCallMessageDataEndpointWith404() = runTest(standardTestDispatcher) {
 		val mockServerPort = mockWebServer.url("").port
+		Api.env = PayPalEnvironment.local(mockServerPort)
+
+		val mockMessageDataResponse = MockResponse()
+			.setResponseCode(404)
+			.setBody(messageData)
+			.addHeader("Content-Type", "application/json")
+		mockWebServer.enqueue(mockMessageDataResponse)
+
+		launch {
+			val result = Api.callMessageDataEndpoint(messageConfig, null)
+			assertTrue(result is ApiResult.Failure<*>)
+			val error = (result as ApiResult.Failure<*>).error
+			assertTrue(error is PayPalErrors.FailedToFetchDataException)
+			assertTrue(error?.message?.contains("Code was 404") ?: false)
+		}
+	}
+
+	@OptIn(ExperimentalCoroutinesApi::class)
+	@Test
+	fun testCallMessageDataEndpointWithBadData() = runTest(standardTestDispatcher) {
+		val mockServerPort = mockWebServer.url("").port
+		Api.env = PayPalEnvironment.local(mockServerPort)
+
+		val mockMessageDataResponse = MockResponse()
+			.setResponseCode(200)
+			.setBody("{}")
+			.addHeader("Paypal-Debug-Id", "12345")
+			.addHeader("Content-Type", "application/json")
+		mockWebServer.enqueue(mockMessageDataResponse)
+
+		launch {
+			val result = Api.callMessageDataEndpoint(messageConfig, null)
+			assertTrue(result is ApiResult.Failure<*>)
+			val error = (result as ApiResult.Failure<*>).error
+			assertTrue(error is PayPalErrors.InvalidResponseException)
+			assertTrue(error?.message?.contains("12345") ?: false)
+			assertTrue(error?.message?.contains("Invalid Response") ?: false)
+		}
+	}
+
+	@OptIn(ExperimentalCoroutinesApi::class)
+	@Test
+	fun testCallMessageDataEndpointWithGoodData() = runTest(standardTestDispatcher) {
+		val mockServerPort = mockWebServer.url("").port
+		Api.env = PayPalEnvironment.local(mockServerPort)
+
+		val mockMessageDataResponse = MockResponse()
+			.setResponseCode(200)
+			.setBody(messageData)
+			.addHeader("Content-Type", "application/json")
+		mockWebServer.enqueue(mockMessageDataResponse)
+
+		launch {
+			val result = Api.callMessageDataEndpoint(messageConfig, null)
+			assertTrue(result is ApiResult.Success<*>)
+			val response = (result as ApiResult.Success<*>).response
+			assertTrue(response.toJson().contains("content"))
+			assertTrue(response.toJson().contains("meta"))
+		}
+	}
+
+	@OptIn(ExperimentalCoroutinesApi::class)
+	@Test
+	fun testGetMessageWithHash() = runTest(standardTestDispatcher) {
+		val mockServerPort = mockWebServer.url("").port
+		Api.ioDispatcher = standardTestDispatcher
+		Api.env = PayPalEnvironment.local(mockServerPort)
 
 		val mockMerchantProfileResponse = MockResponse()
 			.setBody(merchantProfileHashData)
@@ -79,12 +174,90 @@ class ApiTest {
 			}
 		}
 
-		Api.ioDispatcher = standardTestDispatcher
-		Api.env = PayPalEnvironment.local(mockServerPort)
 		launch {
 			Api.getMessageWithHash(context, messageConfig, onActionCompleted)
+
+			this.cancel()
 		}
 
 		advanceUntilIdle()
+	}
+
+	@Test
+	fun testCreateMessageHashRequest() {
+		val request = Api.createMessageHashRequest("test_client_id")
+
+		@Suppress("ktlint:standard:max-line-length")
+		val expectedPath = "credit-presentment/merchant-profile?client_id=test_client_id"
+		assertTrue(request.url.toString().contains(expectedPath))
+	}
+
+	@OptIn(ExperimentalCoroutinesApi::class)
+	@Test
+	fun testCallMessageHashEndpointWithFailure() = runTest(standardTestDispatcher) {
+		val mockServerPort = mockWebServer.url("").port
+		Api.env = PayPalEnvironment.local(mockServerPort)
+
+		val mockHashDataResponse = MockResponse()
+			.setResponseCode(404)
+			.setBody(merchantProfileHashData)
+			.addHeader("Paypal-Debug-Id", "12345")
+			.addHeader("Content-Type", "application/json")
+		mockWebServer.enqueue(mockHashDataResponse)
+
+		launch {
+			val result = Api.callMessageHashEndpoint("test_client_id")
+			assertTrue(result is ApiResult.Failure<*>)
+			val error = (result as ApiResult.Failure<*>).error
+			assertTrue(error is PayPalErrors.InvalidResponseException)
+			assertTrue(error?.message?.contains("12345") ?: false)
+			assertTrue(error?.message?.contains("Invalid Response") ?: false)
+		}
+	}
+
+	@OptIn(ExperimentalCoroutinesApi::class)
+	@Test
+	fun testCallMessageHashEndpointWithSuccess() = runTest(standardTestDispatcher) {
+		val mockServerPort = mockWebServer.url("").port
+		Api.env = PayPalEnvironment.local(mockServerPort)
+
+		val mockHashDataResponse = MockResponse()
+			.setResponseCode(200)
+			.setBody(merchantProfileHashData)
+			.addHeader("Content-Type", "application/json")
+		mockWebServer.enqueue(mockHashDataResponse)
+
+		launch {
+			val result = Api.callMessageHashEndpoint("test_client_id")
+			assertTrue(result is ApiResult.Success<*>)
+			val response = (result as ApiResult.Success<*>).response
+			LogCat.debug("TEST", response.toJson())
+			assertTrue(response.toJson().contains("cache_flow_disabled"))
+			assertTrue(response.toJson().contains("ttl_soft"))
+			assertTrue(response.toJson().contains("ttl_hard"))
+			assertTrue(response.toJson().contains("merchant_profile"))
+			assertTrue(response.toJson().contains("hash"))
+		}
+	}
+
+	@Test
+	fun testCreateModalUrl() {
+		val url = Api.createModalUrl(
+			clientId = "",
+			amount = 1.0,
+			buyerCountry = "US",
+			offer = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
+		)
+
+		@Suppress("ktlint:standard:max-line-length")
+		val expectedPath = "credit-presentment/lander/modal?client_id=&integration_type=NATIVE_ANDROID&features=native-modal&amount=1.0&buyer_country=US&offer=PAY_LATER_PAY_IN_1"
+		assertTrue(url.contains(expectedPath))
+	}
+
+	@Test
+	fun testCreateLoggerRequest() {
+		val request = Api.createLoggerRequest("{}")
+		val expectedPath = "v1/credit/upstream-messaging-events"
+		assertTrue(request.url.toString().contains(expectedPath))
 	}
 }
