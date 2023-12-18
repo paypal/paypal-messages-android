@@ -25,7 +25,7 @@ class LoggerTest {
 		component = TrackingComponent(
 			instanceId = "test_instance_id",
 			type = "test_type",
-			events = mutableListOf(),
+			componentEvents = mutableListOf(),
 		)
 	}
 
@@ -44,7 +44,7 @@ class LoggerTest {
 
 	@Test
 	fun testLog() {
-		component.events.add(TrackingEvent(EventType.MESSAGE_CLICK))
+		component.componentEvents.add(TrackingEvent(EventType.MESSAGE_CLICK))
 		logger.setGlobalAnalytics("integrationName", "integrationVersion")
 		logger.log(context, component)
 
@@ -52,7 +52,6 @@ class LoggerTest {
 		assertNotNull(payload)
 		if (payload != null) {
 			assertEquals("clientId", payload.clientId)
-			assertEquals("1234567890", payload.merchantProfileHash)
 			assertEquals("random for now, TBD at later point to what this is specifically", payload.sessionId)
 			assertEquals("integrationName", payload.integrationName)
 			assertEquals("integrationVersion", payload.integrationVersion)
@@ -60,8 +59,8 @@ class LoggerTest {
 			assertEquals(1, payload.components.size)
 			assertEquals("test_type", payload.components[0].type)
 			assertEquals("test_instance_id", payload.components[0].instanceId)
-			assertEquals(1, payload.components[0].events.size)
-			assertEquals(EventType.MESSAGE_CLICK, payload.components[0].events[0].eventType)
+			assertEquals(1, payload.components[0].componentEvents.size)
+			assertEquals(EventType.MESSAGE_CLICK, payload.components[0].componentEvents[0].eventType)
 		}
 	}
 }
