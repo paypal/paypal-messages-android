@@ -18,6 +18,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.IOException
 import java.util.UUID
+import kotlin.system.measureTimeMillis
 import com.paypal.messages.config.PayPalEnvironment as Env
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
@@ -113,7 +114,7 @@ object Api {
 				LocalStorage.State.NO_HASH -> getAndStoreNewHash(context, messageConfig)
 				LocalStorage.State.HASH_OLDER_THAN_HARD_TTL -> getAndStoreNewHash(context, messageConfig)
 				LocalStorage.State.HASH_BETWEEN_SOFT_AND_HARD_TTL -> {
-					getAndStoreNewHash(context, messageConfig)
+					launch { getAndStoreNewHash(context, messageConfig) }
 					merchantHash
 				}
 				LocalStorage.State.HASH_YOUNGER_THAN_SOFT_TTL -> merchantHash
