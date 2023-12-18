@@ -10,7 +10,7 @@ afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
-                tasks.named("generateMetadataFileForReleasePublication").configure { dependsOn("androidSourcesJar") }
+                tasks.named("generateMetadataFileForReleasePublication").configure { input("androidSourcesJar") }
                 groupId group
                 version project.ext.version
                 artifactId project.ext.name
