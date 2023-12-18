@@ -18,42 +18,42 @@ jobs:
       SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
       SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
-  release:
-    name: Release
-    needs: [lint, test, build]
-    runs-on: ubuntu-latest
+  # release:
+  #   name: Release
+  #   needs: [lint, test, build]
+  #   runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
+  #   permissions:
+  #     contents: write
+  #     issues: write
+  #     pull-requests: write
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          # pulls all commits (needed for semantic release to correctly version)
-          fetch-depth: '0'
-          persist-credentials: false
+  #   steps:
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v3
+  #       with:
+  #         # pulls all commits (needed for semantic release to correctly version)
+  #         fetch-depth: '0'
+  #         persist-credentials: false
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: gradle
+  #     - name: Set up JDK 17
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         java-version: '17'
+  #         distribution: 'temurin'
+  #         cache: gradle
 
-      - name: Install Dependencies
-        run: |
-          npm i -g @semantic-release/exec @semantic-release/changelog @semantic-release/git conventional-changelog-conventionalcommits@6.1.0
+  #     - name: Install Dependencies
+  #       run: |
+  #         npm i -g @semantic-release/exec @semantic-release/changelog @semantic-release/git conventional-changelog-conventionalcommits@6.1.0
 
-      # - name: GitHub Release
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: npx semantic-release@21
+  #     # - name: GitHub Release
+  #     #   env:
+  #     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     #   run: npx semantic-release@21
 
-      - name: Publish to Maven
-        run: echo "Publish to Maven"
+  #     - name: Publish to Maven
+  #       run: echo "Publish to Maven"
 
   # after build and unit tests are finished, publish all modules at once
   # to help reduce the probability of failure when interacting with sonatype servers
