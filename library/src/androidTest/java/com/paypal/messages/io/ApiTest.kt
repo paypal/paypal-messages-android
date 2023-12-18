@@ -19,13 +19,11 @@ import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import kotlin.reflect.typeOf
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
 
 @RunWith(AndroidJUnit4::class)
@@ -73,7 +71,12 @@ class ApiTest {
 	@Test
 	fun testCreateMessageDataRequestWithAllData() {
 		val config = MessageConfig(
-			data = PayPalMessageData(clientID = "test_client_id", amount = 1.0, buyerCountry = "US", offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1),
+			data = PayPalMessageData(
+				clientID = "test_client_id",
+				amount = 1.0,
+				buyerCountry = "US",
+				offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
+			),
 			style = PayPalMessageStyle(),
 		)
 		val messageDataRequest = Api.createMessageDataRequest(config, "hash")
