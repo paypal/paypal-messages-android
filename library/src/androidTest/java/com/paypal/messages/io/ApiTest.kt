@@ -64,7 +64,7 @@ class ApiTest {
 	fun testCreateMessageDataRequestWithNoData() {
 		val messageDataRequest = Api.createMessageDataRequest(messageConfig, null)
 		val url = messageDataRequest.url.toString()
-		LogCat.debug("API TEST", "no data url: $url")
+		LogCat.info("API TEST", "no data url: $url")
 
 		val expectedPath = "credit-presentment/native/message"
 		val expectedQueryParts = arrayOf(
@@ -93,7 +93,7 @@ class ApiTest {
 		)
 		val messageDataRequest = Api.createMessageDataRequest(config, "hash")
 		val url = messageDataRequest.url.toString()
-		LogCat.debug("API TEST", "all data url: $url")
+		LogCat.info("API TEST", "all data url: $url")
 
 		val expectedPath = "credit-presentment/native/message"
 		val expectedQueryParts = arrayOf(
