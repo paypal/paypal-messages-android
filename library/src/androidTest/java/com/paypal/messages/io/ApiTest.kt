@@ -76,6 +76,11 @@ class ApiTest {
 		)
 
 		assertTrue(url.contains(expectedPath))
+		assertTrue(url.contains("client_id=test_client_id"))
+		assertTrue(url.contains("devTouchpoint=false"))
+		assertTrue(url.contains("ignore_cache=false"))
+		assertTrue(url.contains("instance_id=null"))
+		assertTrue(url.contains("session_id=null"))
 		expectedQueryParts.forEach { assertTrue(url.contains(it)) }
 	}
 
@@ -109,6 +114,15 @@ class ApiTest {
 		)
 
 		assertTrue(url.contains(expectedPath))
+		assertTrue(url.contains("client_id=test_client_id"))
+		assertTrue(url.contains("devTouchpoint=false"))
+		assertTrue(url.contains("ignore_cache=false"))
+		assertTrue(url.contains("instance_id=null"))
+		assertTrue(url.contains("session_id=null"))
+		assertTrue(url.contains("amount=1.0"))
+		assertTrue(url.contains("buyer_country=US"))
+		assertTrue(url.contains("offer=PAY_LATER_PAY_IN_1"))
+		assertTrue(url.contains("merchant_config=hash"))
 		expectedQueryParts.forEach { assertTrue(url.contains(it)) }
 	}
 
