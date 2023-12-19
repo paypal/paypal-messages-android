@@ -21,7 +21,7 @@ class LoggerTest {
 		val sharedPreferences = context.getSharedPreferences("com.paypal.messages", Context.MODE_PRIVATE)
 		sharedPreferences.edit().putString("merchantHash", "1234567890").apply()
 
-		logger = Logger.getInstance("clientId")
+		logger = Logger.getInstance("test_client_id")
 		component = TrackingComponent(
 			instanceId = "test_instance_id",
 			type = "test_type",
@@ -36,26 +36,26 @@ class LoggerTest {
 
 	@Test
 	fun testSetGlobalAnalytics() {
-		logger.setGlobalAnalytics("integrationName", "integrationVersion")
+		logger.setGlobalAnalytics("test_integration_name", "test_integration_version")
 
-		assertEquals("integrationName", logger.integrationName)
-		assertEquals("integrationVersion", logger.integrationVersion)
+		assertEquals("test_integration_name", logger.integrationName)
+		assertEquals("test_integration_version", logger.integrationVersion)
 	}
 
 	// TODO: Figure out why this test passes locally but fails in the CI
-	// @Test
+	@Test
 	fun testLog() {
 		component.componentEvents.add(TrackingEvent(EventType.MESSAGE_CLICK))
-		logger.setGlobalAnalytics("integrationName", "integrationVersion")
+		logger.setGlobalAnalytics("test_integration_name", "test_integration_version")
 		logger.log(context, component)
 
 		val payload = logger.payload
 		assertNotNull(payload)
 		if (payload != null) {
-			assertEquals("clientId", payload.clientId)
-			assertEquals("random for now, TBD at later point to what this is specifically", payload.sessionId)
-			assertEquals("integrationName", payload.integrationName)
-			assertEquals("integrationVersion", payload.integrationVersion)
+			assertEquals("test_client_id", payload.clientId)
+			assertEquals("random_session_id", payload.sessionId)
+			assertEquals("test_integration_name", payload.integrationName)
+			assertEquals("test_integration_version", payload.integrationVersion)
 
 			assertEquals(1, payload.components.size)
 			assertEquals("test_type", payload.components[0].type)

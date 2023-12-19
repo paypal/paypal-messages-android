@@ -59,7 +59,6 @@ class ApiTest {
 		standardTestDispatcher.cancel()
 	}
 
-	// TODO: Figure out why this test passes locally but fails in the CI
 	@Test
 	fun testCreateMessageDataRequestWithNoData() {
 		val messageDataRequest = Api.createMessageDataRequest(messageConfig, null)
@@ -84,7 +83,6 @@ class ApiTest {
 		expectedQueryParts.forEach { assertTrue(url.contains(it)) }
 	}
 
-	// TODO: Figure out why this test passes locally but fails in the CI
 	@Test
 	fun testCreateMessageDataRequestWithAllData() {
 		val config = MessageConfig(

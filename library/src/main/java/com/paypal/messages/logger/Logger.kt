@@ -56,7 +56,7 @@ class Logger private constructor() {
 			merchantProfileHash = null,
 			deviceId = Settings.Secure.ANDROID_ID,
 			// TODO Determine SessionId for Logger
-			sessionId = "random for now, TBD at later point to what this is specifically",
+			sessionId = "random_session_id",
 			integrationName = integrationName,
 			integrationVersion = integrationVersion,
 			components = mutableListOf(),
