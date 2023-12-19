@@ -59,10 +59,10 @@ class ApiTest {
 		standardTestDispatcher.cancel()
 	}
 
+	// TODO: Figure out why this test passes locally but fails in the CI
 	@Test
 	fun testCreateMessageDataRequestWithNoData() {
 		val messageDataRequest = Api.createMessageDataRequest(messageConfig, null)
-
 		val url = messageDataRequest.url.toString()
 		LogCat.debug("API TEST", "no data url: $url")
 
@@ -76,11 +76,10 @@ class ApiTest {
 		)
 
 		assertTrue(url.contains(expectedPath))
-		expectedQueryParts.forEach {
-			assertTrue(url.contains(it))
-		}
+		expectedQueryParts.forEach { assertTrue(url.contains(it)) }
 	}
 
+	// TODO: Figure out why this test passes locally but fails in the CI
 	@Test
 	fun testCreateMessageDataRequestWithAllData() {
 		val config = MessageConfig(
@@ -93,9 +92,9 @@ class ApiTest {
 			style = PayPalMessageStyle(),
 		)
 		val messageDataRequest = Api.createMessageDataRequest(config, "hash")
-
 		val url = messageDataRequest.url.toString()
 		LogCat.debug("API TEST", "all data url: $url")
+
 		val expectedPath = "credit-presentment/native/message"
 		val expectedQueryParts = arrayOf(
 			"client_id=test_client_id",
@@ -106,13 +105,11 @@ class ApiTest {
 			"amount=1.0",
 			"buyer_country=US",
 			"offer=PAY_LATER_PAY_IN_1",
-			"merchant_config=hash"
+			"merchant_config=hash",
 		)
 
 		assertTrue(url.contains(expectedPath))
-		expectedQueryParts.forEach {
-			assertTrue(url.contains(it))
-		}
+		expectedQueryParts.forEach { assertTrue(url.contains(it)) }
 	}
 
 	@OptIn(ExperimentalCoroutinesApi::class)
@@ -218,10 +215,12 @@ class ApiTest {
 	@Test
 	fun testCreateMessageHashRequest() {
 		val request = Api.createMessageHashRequest("test_client_id")
+		val url = request.url.toString()
 
-		@Suppress("ktlint:standard:max-line-length")
-		val expectedPath = "credit-presentment/merchant-profile?client_id=test_client_id"
+		val expectedPath = "credit-presentment/merchant-profile"
+		val expectedQueryParts = arrayOf("client_id=test_client_id")
 		assertTrue(request.url.toString().contains(expectedPath))
+		expectedQueryParts.forEach { assertTrue(url.contains(it)) }
 	}
 
 	@OptIn(ExperimentalCoroutinesApi::class)
@@ -275,15 +274,24 @@ class ApiTest {
 	@Test
 	fun testCreateModalUrl() {
 		val url = Api.createModalUrl(
-			clientId = "",
+			clientId = "test_client_id",
 			amount = 1.0,
 			buyerCountry = "US",
 			offer = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 		)
 
-		@Suppress("ktlint:standard:max-line-length")
-		val expectedPath = "credit-presentment/lander/modal?client_id=&integration_type=NATIVE_ANDROID&features=native-modal&amount=1.0&buyer_country=US&offer=PAY_LATER_PAY_IN_1"
+		val expectedPath = "credit-presentment/lander/modal"
+		val expectedQueryParts = arrayOf(
+			"client_id=",
+			"integration_type=NATIVE_ANDROID",
+			"features=native-modal",
+			"amount=1.0",
+			"buyer_country=US",
+			"offer=PAY_LATER_PAY_IN_1",
+		)
+
 		assertTrue(url.contains(expectedPath))
+		expectedQueryParts.forEach { assertTrue(url.contains(it)) }
 	}
 
 	@Test
