@@ -7,7 +7,6 @@ plugins {
 }
 
 android {
-	namespace 'com.paypal.messages'
 	compileSdk 34
 
 	defaultConfig {
