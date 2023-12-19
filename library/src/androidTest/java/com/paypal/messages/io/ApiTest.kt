@@ -71,16 +71,16 @@ class ApiTest {
 			"client_id=test_client_id",
 			"devTouchpoint=false",
 			"ignore_cache=false",
-			"instance_id=null",
-			"session_id=null",
+			"instance_id",
+			"session_id",
 		)
 
 		assertTrue(url.contains(expectedPath))
 		assertTrue(url.contains("client_id=test_client_id"))
 		assertTrue(url.contains("devTouchpoint=false"))
 		assertTrue(url.contains("ignore_cache=false"))
-		assertTrue(url.contains("instance_id=null"))
-		assertTrue(url.contains("session_id=null"))
+		assertTrue(url.contains("instance_id"))
+		assertTrue(url.contains("session_id"))
 		expectedQueryParts.forEach { assertTrue(url.contains(it)) }
 	}
 
@@ -105,8 +105,8 @@ class ApiTest {
 			"client_id=test_client_id",
 			"devTouchpoint=false",
 			"ignore_cache=false",
-			"instance_id=null",
-			"session_id=null",
+			"instance_id",
+			"session_id",
 			"amount=1.0",
 			"buyer_country=US",
 			"offer=PAY_LATER_PAY_IN_1",
@@ -117,8 +117,8 @@ class ApiTest {
 		assertTrue(url.contains("client_id=test_client_id"))
 		assertTrue(url.contains("devTouchpoint=false"))
 		assertTrue(url.contains("ignore_cache=false"))
-		assertTrue(url.contains("instance_id=null"))
-		assertTrue(url.contains("session_id=null"))
+		assertTrue(url.contains("instance_id"))
+		assertTrue(url.contains("session_id"))
 		assertTrue(url.contains("amount=1.0"))
 		assertTrue(url.contains("buyer_country=US"))
 		assertTrue(url.contains("offer=PAY_LATER_PAY_IN_1"))
