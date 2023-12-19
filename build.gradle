@@ -46,6 +46,8 @@ version "1.0.0-alpha.0-SNAPSHOT" // we add it here so that nexus automatically c
 nexusPublishing {
 	repositories {
 		sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
 			username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
 			password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
 			repositoryDescription = "Paypal Android SDK"
