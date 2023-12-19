@@ -104,6 +104,19 @@ koverReport {
 	}
 }
 
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        mavenLocal()
+
+        maven {
+            url 'https://s01.oss.sonatype.org/content/repositories/snapshots/'
+        }
+
+    }
+}
+
 dependencies {
 	implementation 'androidx.core:core-ktx:1.12.0'
 	implementation 'androidx.appcompat:appcompat:1.6.1'
