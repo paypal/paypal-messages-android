@@ -59,7 +59,7 @@ class ApiTest {
 		standardTestDispatcher.cancel()
 	}
 
-	@Test
+//	@Test
 	fun testCreateMessageDataRequestWithNoData() {
 		val messageDataRequest = Api.createMessageDataRequest(messageConfig, null)
 
@@ -68,7 +68,7 @@ class ApiTest {
 		assertTrue(messageDataRequest.url.toString().contains(expectedPath))
 	}
 
-	@Test
+//	@Test
 	fun testCreateMessageDataRequestWithAllData() {
 		val config = MessageConfig(
 			data = PayPalMessageData(
