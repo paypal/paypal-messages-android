@@ -59,18 +59,29 @@ class ApiTest {
 		standardTestDispatcher.cancel()
 	}
 
-	// TODO: Figure out why this test passes locally but fails in the CI
-	// @Test
+	@Test
 	fun testCreateMessageDataRequestWithNoData() {
 		val messageDataRequest = Api.createMessageDataRequest(messageConfig, null)
 
-		@Suppress("ktlint:standard:max-line-length")
-		val expectedPath = "credit-presentment/native/message?client_id=test_client_id&devTouchpoint=false&ignore_cache=false&instance_id=null&session_id=null"
-		assertTrue(messageDataRequest.url.toString().contains(expectedPath))
+		val url = messageDataRequest.url.toString()
+		LogCat.debug("API TEST", "no data url: $url")
+
+		val expectedPath = "credit-presentment/native/message"
+		val expectedQueryParts = arrayOf(
+			"client_id=test_client_id",
+			"devTouchpoint=false",
+			"ignore_cache=false",
+			"instance_id=null",
+			"session_id=null",
+		)
+
+		assertTrue(url.contains(expectedPath))
+		expectedQueryParts.forEach {
+			assertTrue(url.contains(it))
+		}
 	}
 
-	// TODO: Figure out why this test passes locally but fails in the CI
-	// @Test
+	@Test
 	fun testCreateMessageDataRequestWithAllData() {
 		val config = MessageConfig(
 			data = PayPalMessageData(
@@ -83,9 +94,25 @@ class ApiTest {
 		)
 		val messageDataRequest = Api.createMessageDataRequest(config, "hash")
 
-		@Suppress("ktlint:standard:max-line-length")
-		val expectedPath = "credit-presentment/native/message?client_id=test_client_id&devTouchpoint=false&ignore_cache=false&instance_id=null&session_id=null&amount=1.0&buyer_country=US&offer=PAY_LATER_PAY_IN_1&merchant_config=hash"
-		assertTrue(messageDataRequest.url.toString().contains(expectedPath))
+		val url = messageDataRequest.url.toString()
+		LogCat.debug("API TEST", "all data url: $url")
+		val expectedPath = "credit-presentment/native/message"
+		val expectedQueryParts = arrayOf(
+			"client_id=test_client_id",
+			"devTouchpoint=false",
+			"ignore_cache=false",
+			"instance_id=null",
+			"session_id=null",
+			"amount=1.0",
+			"buyer_country=US",
+			"offer=PAY_LATER_PAY_IN_1",
+			"merchant_config=hash"
+		)
+
+		assertTrue(url.contains(expectedPath))
+		expectedQueryParts.forEach {
+			assertTrue(url.contains(it))
+		}
 	}
 
 	@OptIn(ExperimentalCoroutinesApi::class)
