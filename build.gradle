@@ -50,7 +50,7 @@ nexusPublishing {
             snapshotRepositoryUrl.set(uri("https://oss.sonatype.org/content/repositories/snapshots/"))
 			username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
 			password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
-			repositoryDescription = "Paypal Android SDK"
+			repositoryDescription = "Paypal Messages"
 			packageGroup = "com.paypal"
 		}
 	}

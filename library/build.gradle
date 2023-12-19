@@ -15,7 +15,7 @@ android {
 		targetSdk 34
 
 		versionCode 10000
-		versionName '1.0.0'
+		versionName "1.0.0-alpha.0-SNAPSHOT"
 		testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 		consumerProguardFiles 'consumer-rules.pro'
 
@@ -123,7 +123,7 @@ dependencies {
 }
 
 project.ext.name = "paypal-messages"
-project.ext.version = "1.0.0-alpha.0"
+project.ext.version = "1.0.0-alpha.0-SNAPSHOT"
 project.ext.pom_name = "PayPal Messages"
 project.ext.pom_desc = "Library for integration of PayPal Credit Messages onto your app."
 
