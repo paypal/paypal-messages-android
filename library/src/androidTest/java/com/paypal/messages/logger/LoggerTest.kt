@@ -42,7 +42,7 @@ class LoggerTest {
 		assertEquals("integrationVersion", logger.integrationVersion)
 	}
 
-//	@Test
+	@Test
 	fun testLog() {
 		component.componentEvents.add(TrackingEvent(EventType.MESSAGE_CLICK))
 		logger.setGlobalAnalytics("integrationName", "integrationVersion")
