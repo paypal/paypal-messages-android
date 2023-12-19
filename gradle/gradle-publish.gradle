@@ -5,12 +5,15 @@ apply plugin: 'signing'
 ext["signing.keyId"] = System.getenv('SIGNING_KEY_ID') ?: ''
 ext["signing.password"] = System.getenv('SIGNING_KEY_PASSWORD') ?: ''
 ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_KEY_FILE') ?: ''
+ext {
+    ossrhUsername = System.getenv('SONATYPE_NEXUS_USERNAME')
+    ossrhPassword = System.getenv('SONATYPE_NEXUS_PASSWORD')
+}
 
 afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
-                // tasks.named("generateMetadataFileForReleasePublication").configure { dependsOn("androidSourcesJar") }
                 groupId group
                 version project.ext.version
                 artifactId project.ext.name
@@ -40,6 +43,14 @@ afterEvaluate {
                         developerConnection = POM_SCM_DEV_CONNECTION
                         url = POM_SCM_URL
                     }
+                }
+
+                repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
+                }
+
+                snapshotRepository(url: "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
+                    authentication(userName: ossrhUsername, password: ossrhPassword)
                 }
             }
         }
