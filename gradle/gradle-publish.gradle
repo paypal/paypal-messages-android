@@ -10,6 +10,7 @@ afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
+                generateMetadataFileForReleasePublication.dependsOn androidSourcesJar
                 groupId group
                 version project.ext.version
                 artifactId project.ext.name
