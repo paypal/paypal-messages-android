@@ -42,11 +42,6 @@ afterEvaluate {
                 }
 
             }
-
-            singleVariant("release") {
-                withJavadocJar()
-                withSourcesJar()
-            }
         }
     }
 
