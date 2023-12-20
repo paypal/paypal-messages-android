@@ -41,7 +41,7 @@ tasks.register('ktFormat', FormatTask) {
   report = file('build/reports/ktlint/format-report.txt')
 }
 
-version "1.0.0-alpha.0-SNAPSHOT" // we add it here so that nexus automatically chooses staging or snapshot repo
+version "1.0.0-alpha.00-SNAPSHOT" // we add it here so that nexus automatically chooses staging or snapshot repo
 
 nexusPublishing {
 	repositories {
