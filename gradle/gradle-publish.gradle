@@ -10,12 +10,12 @@ afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
-                generateMetadataFileForReleasePublication.dependsOn androidSourcesJar
+                tasks.named("generateMetadataFileForReleasePublication").configure { dependsOn("androidSourcesJar") }
                 groupId group
                 version project.ext.version
                 artifactId project.ext.name
                 from components.release
-                artifact androidSourcesJar //TODO: add javadocs
+                // artifact androidSourcesJar //TODO: add javadocs
 
                 pom {
                     name = project.ext.pom_name ?: ''
@@ -43,6 +43,11 @@ afterEvaluate {
                 }
 
             }
+
+            // singleVariant("release") {
+            //     withJavadocJar()
+            //     withSourcesJar()
+            // }
         }
     }
 
