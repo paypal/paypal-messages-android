@@ -46,8 +46,8 @@ jobs:
           api-level: 23
           target: google_apis
           arch: x86_64
-          script: ./gradlew connectedCheck --info
+          script: |
+            ./gradlew connectedCheck --info
+            && echo "===== LogCat Logs ===="
+            && adb logcat -d | grep -E "(PPMessages|TestRunner)"
         continue-on-error: true
-
-      - name: Show Logs
-        run: adb logcat -d | grep -E "(PPMessages|TestRunner)"
