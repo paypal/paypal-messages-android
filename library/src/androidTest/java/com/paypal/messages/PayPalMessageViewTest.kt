@@ -5,6 +5,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.ProductGroup
+import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
+import com.paypal.messages.config.message.PayPalMessageData as MessageData
 import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.io.ApiMessageData
 import com.paypal.messages.io.ApiResult
@@ -54,7 +56,10 @@ class PayPalMessageViewTest {
 	@Test
 	fun testUpdateMessageContent() {
 		val context = InstrumentationRegistry.getInstrumentation().targetContext
-		val payPalMessageView = PayPalMessageView(context)
+		val payPalMessageView = PayPalMessageView(
+			context = context,
+			config = MessageConfig(MessageData(clientID = "test_client_id"))
+		)
 
 		payPalMessageView.onActionCompleted(ApiResult.Success(response))
 

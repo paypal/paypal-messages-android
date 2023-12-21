@@ -8,7 +8,6 @@ import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageData
 import com.paypal.messages.config.message.PayPalMessageStyle
-import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -63,7 +62,6 @@ class ApiTest {
 	fun testCreateMessageDataRequestWithNoData() {
 		val messageDataRequest = Api.createMessageDataRequest(messageConfig, null)
 		val url = messageDataRequest.url.toString()
-		LogCat.info("API TEST", "no data url: $url")
 
 		val expectedPath = "credit-presentment/native/message"
 		val expectedQueryParts = arrayOf(
@@ -96,7 +94,6 @@ class ApiTest {
 		)
 		val messageDataRequest = Api.createMessageDataRequest(config, "hash")
 		val url = messageDataRequest.url.toString()
-		LogCat.info("API TEST", "all data url: $url")
 
 		val expectedPath = "credit-presentment/native/message"
 		val expectedQueryParts = arrayOf(
@@ -222,6 +219,7 @@ class ApiTest {
 		}
 
 		advanceUntilIdle()
+		standardTestDispatcher.cancel()
 	}
 
 	@Test
@@ -274,7 +272,6 @@ class ApiTest {
 			val result = Api.callMessageHashEndpoint("test_client_id")
 			assertTrue(result is ApiResult.Success<*>)
 			val response = (result as ApiResult.Success<*>).response
-			LogCat.debug("TEST", response.toJson())
 			assertTrue(response.toJson().contains("cache_flow_disabled"))
 			assertTrue(response.toJson().contains("ttl_soft"))
 			assertTrue(response.toJson().contains("ttl_hard"))
