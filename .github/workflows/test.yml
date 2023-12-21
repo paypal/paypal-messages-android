@@ -50,4 +50,4 @@ jobs:
         continue-on-error: true
 
       - name: Show Logs
-        run: adb logcat | grep -E "PPMessages|TestRunner)"
+        run: adb logcat -d | grep -E "(PPMessages|TestRunner)"

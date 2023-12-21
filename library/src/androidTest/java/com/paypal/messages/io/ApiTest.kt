@@ -214,12 +214,9 @@ class ApiTest {
 
 		launch {
 			Api.getMessageWithHash(context, messageConfig, onActionCompleted)
-
-			this.cancel()
-		}
+		}.join()
 
 		advanceUntilIdle()
-		standardTestDispatcher.cancel()
 	}
 
 	@Test
