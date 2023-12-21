@@ -48,6 +48,11 @@ jobs:
           arch: x86_64
           script: |
             ./gradlew connectedCheck --info
-            && echo "===== LogCat Logs ===="
-            && adb logcat -d | grep -E "(PPMessages|TestRunner)"
+            echo ""
+            echo "===== LogCat Logs ====="
+            adb logcat -d | grep -E "(PPMessages|TestRunner)"
+            adb logcat -d | grep -E "(PPMessages|TestRunner)" > instrumentationTestLogs.txt
         continue-on-error: true
+
+      - name: Show LogCat Logs
+        run: cat instrumentationTestLogs.txt
