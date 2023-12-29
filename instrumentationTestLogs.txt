@@ -1,0 +1,290 @@
+12-23 00:00:16.618 18907 18929 I TestRunner: run started: 23 tests
+12-23 00:00:16.619 18907 18929 I TestRunner: started: testUpdateMessageContent(com.paypal.messages.PayPalMessageViewTest)
+12-23 00:00:16.620 18907 18929 I TestRunner: finished: testUpdateMessageContent(com.paypal.messages.PayPalMessageViewTest)
+12-23 00:00:16.622 18907 18929 I TestRunner: started: testDpExtension(com.paypal.messages.extensions.IntTest)
+12-23 00:00:16.623 18907 18929 I TestRunner: finished: testDpExtension(com.paypal.messages.extensions.IntTest)
+12-23 00:00:16.624 18907 18929 I TestRunner: started: testCreateMessageHashRequest(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.624 18907 18929 I TestRunner: finished: testCreateMessageHashRequest(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.626 18907 18929 I TestRunner: started: testCreateLoggerRequest(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.626 18907 18929 I TestRunner: finished: testCreateLoggerRequest(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.628 18907 18929 I TestRunner: started: testCallMessageDataEndpointWithBadData(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.628 18907 18929 I TestRunner: finished: testCallMessageDataEndpointWithBadData(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.630 18907 18929 I TestRunner: started: testCallMessageHashEndpointWithSuccess(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.630 18907 18929 I TestRunner: finished: testCallMessageHashEndpointWithSuccess(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.631 18907 18929 I TestRunner: started: testCreateModalUrl(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.632 18907 18929 I TestRunner: finished: testCreateModalUrl(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.633 18907 18929 I TestRunner: started: testCreateMessageDataRequestWithAllData(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.633 18907 18929 I TestRunner: finished: testCreateMessageDataRequestWithAllData(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.635 18907 18929 I TestRunner: started: testCallMessageHashEndpointWithFailure(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.635 18907 18929 I TestRunner: finished: testCallMessageHashEndpointWithFailure(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.637 18907 18929 I TestRunner: started: testCallMessageDataEndpointWithGoodData(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.637 18907 18929 I TestRunner: finished: testCallMessageDataEndpointWithGoodData(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.638 18907 18929 I TestRunner: started: testCreateMessageDataRequestWithNoData(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.638 18907 18929 I TestRunner: finished: testCreateMessageDataRequestWithNoData(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.640 18907 18929 I TestRunner: started: testCallMessageDataEndpointWith404(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.640 18907 18929 I TestRunner: finished: testCallMessageDataEndpointWith404(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.641 18907 18929 I TestRunner: started: testGetMessageWithHash(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.641 18907 18929 I TestRunner: finished: testGetMessageWithHash(com.paypal.messages.io.ApiTest)
+12-23 00:00:16.643 18907 18929 I TestRunner: started: testMerchantHashStateNoHash(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:16.643 18907 18929 I TestRunner: finished: testMerchantHashStateNoHash(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:16.645 18907 18929 I TestRunner: started: testMerchantHashStateHashYoungerThanSoftTtl(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:16.645 18907 18929 I TestRunner: finished: testMerchantHashStateHashYoungerThanSoftTtl(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:16.647 18907 18929 I TestRunner: started: testMerchantHashStateHashBetweenSoftAndHardTtl(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:16.647 18907 18929 I TestRunner: finished: testMerchantHashStateHashBetweenSoftAndHardTtl(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:16.648 18907 18929 I TestRunner: started: testMerchantHashStateHashOlderThanHardTtl(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:16.649 18907 18929 I TestRunner: finished: testMerchantHashStateHashOlderThanHardTtl(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:16.650 18907 18929 I TestRunner: started: testMerchantHashStateCacheDisabled(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:16.650 18907 18929 I TestRunner: finished: testMerchantHashStateCacheDisabled(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:16.652 18907 18929 I TestRunner: started: testLocalStorage(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:16.652 18907 18929 I TestRunner: finished: testLocalStorage(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:16.654 18907 18929 I TestRunner: started: testLog(com.paypal.messages.logger.LoggerTest)
+12-23 00:00:16.654 18907 18929 I TestRunner: finished: testLog(com.paypal.messages.logger.LoggerTest)
+12-23 00:00:16.656 18907 18929 I TestRunner: started: testSetGlobalAnalytics(com.paypal.messages.logger.LoggerTest)
+12-23 00:00:16.656 18907 18929 I TestRunner: finished: testSetGlobalAnalytics(com.paypal.messages.logger.LoggerTest)
+12-23 00:00:16.657 18907 18929 I TestRunner: started: testGetInstance(com.paypal.messages.logger.LoggerTest)
+12-23 00:00:16.657 18907 18929 I TestRunner: finished: testGetInstance(com.paypal.messages.logger.LoggerTest)
+12-23 00:00:16.659 18907 18929 I TestRunner: started: testSomething(com.paypal.messages.totest.ModalFragmentTest)
+12-23 00:00:16.659 18907 18929 I TestRunner: finished: testSomething(com.paypal.messages.totest.ModalFragmentTest)
+12-23 00:00:16.661 18907 18929 I TestRunner: run finished: 23 tests, 0 failed, 0 ignored
+12-23 00:00:17.111 19032 19056 I TestRunner: run started: 1 tests
+12-23 00:00:17.113 19032 19056 I TestRunner: started: testUpdateMessageContent(com.paypal.messages.PayPalMessageViewTest)
+12-23 00:00:17.154 19032 19056 D PPMessages:PayPalMessage: updateFromConfig:
+12-23 00:00:17.154 19032 19056 D PPMessages:PayPalMessage: PayPalMessageConfig(data=PayPalMessageData(clientID=test_client_id, merchantID=null, partnerAttributionID=null, amount=null, buyerCountry=null, offerType=null, placement=null, environment=null), style=PayPalMessageStyle(color=null, logoType=null, textAlign=null), viewStateCallbacks=null, eventsCallbacks=null)
+12-23 00:00:17.155 19032 19056 D PPMessages:PayPalMessage: Firing request to get message
+12-23 00:00:17.158 19032 19056 D PPMessages:PayPalMessage: onActionCompleted Success
+12-23 00:00:17.160 19032 19058 D PPMessages:Api: No hash in local storage. Fetching new hash
+12-23 00:00:17.163 19032 19056 D PPMessages:Logger: getInstance clientId: test_client_id
+12-23 00:00:17.163 19032 19056 D PPMessages:Logger: initBasePayload
+12-23 00:00:17.163 19032 19056 I TestRunner: finished: testUpdateMessageContent(com.paypal.messages.PayPalMessageViewTest)
+12-23 00:00:17.165 19032 19058 D PPMessages:Api: getMessageHashRequest: Request{method=GET, url=https://www.sandbox.paypal.com/credit-presentment/merchant-profile?client_id=test_client_id, headers=[Accept:application/json, x-requested-by:native-upstream-messages]}
+12-23 00:00:17.166 19032 19056 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:17.538 19106 19130 I TestRunner: run started: 1 tests
+12-23 00:00:17.540 19106 19130 I TestRunner: started: testDpExtension(com.paypal.messages.extensions.IntTest)
+12-23 00:00:17.542 19106 19130 I TestRunner: finished: testDpExtension(com.paypal.messages.extensions.IntTest)
+12-23 00:00:17.545 19106 19130 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:17.935 19172 19196 I TestRunner: run started: 1 tests
+12-23 00:00:17.937 19172 19196 I TestRunner: started: testCreateMessageHashRequest(com.paypal.messages.io.ApiTest)
+12-23 00:00:17.979 19172 19196 D PPMessages:Api: getMessageHashRequest: Request{method=GET, url=https://www.sandbox.paypal.com/credit-presentment/merchant-profile?client_id=test_client_id, headers=[Accept:application/json, x-requested-by:native-upstream-messages]}
+12-23 00:00:17.979 19172 19196 I TestRunner: finished: testCreateMessageHashRequest(com.paypal.messages.io.ApiTest)
+12-23 00:00:17.982 19172 19196 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:18.403 19242 19264 I TestRunner: run started: 1 tests
+12-23 00:00:18.405 19242 19264 I TestRunner: started: testCreateLoggerRequest(com.paypal.messages.io.ApiTest)
+12-23 00:00:18.443 19242 19264 D PPMessages:Api: createLoggerRequest: Request{method=POST, url=https://api.sandbox.paypal.com/v1/credit/upstream-messaging-events}
+12-23 00:00:18.443 19242 19264 D PPMessages:Api: payloadJson: {}
+12-23 00:00:18.443 19242 19264 E TestRunner: failed: testCreateLoggerRequest(com.paypal.messages.io.ApiTest)
+12-23 00:00:18.444 19242 19264 E TestRunner: ----- begin exception -----
+12-23 00:00:18.445 19242 19264 E TestRunner: java.lang.AssertionError
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.Assert.fail(Assert.java:87)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.Assert.assertTrue(Assert.java:42)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.Assert.assertTrue(Assert.java:53)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at com.paypal.messages.io.ApiTest.testCreateLoggerRequest(ApiTest.kt:307)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at java.lang.reflect.Method.invoke(Native Method)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at androidx.test.internal.runner.junit4.statement.RunBefores.evaluate(RunBefores.java:80)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at androidx.test.internal.runner.junit4.statement.RunAfters.evaluate(RunAfters.java:61)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at androidx.test.ext.junit.runners.AndroidJUnit4.run(AndroidJUnit4.java:162)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.Suite.runChild(Suite.java:128)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.Suite.runChild(Suite.java:27)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runner.JUnitCore.run(JUnitCore.java:137)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at org.junit.runner.JUnitCore.run(JUnitCore.java:115)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:67)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:58)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at androidx.test.runner.AndroidJUnitRunner.onStart(AndroidJUnitRunner.java:446)
+12-23 00:00:18.445 19242 19264 E TestRunner: 	at android.app.Instrumentation$InstrumentationThread.run(Instrumentation.java:2402)
+12-23 00:00:18.445 19242 19264 E TestRunner: ----- end exception -----
+12-23 00:00:18.448 19242 19264 I TestRunner: finished: testCreateLoggerRequest(com.paypal.messages.io.ApiTest)
+12-23 00:00:18.450 19242 19264 I TestRunner: run finished: 1 tests, 1 failed, 0 ignored
+12-23 00:00:18.839 19313 19337 I TestRunner: run started: 1 tests
+12-23 00:00:18.840 19313 19337 I TestRunner: started: testCallMessageDataEndpointWithBadData(com.paypal.messages.io.ApiTest)
+12-23 00:00:18.882 19313 19337 D PPMessages:Api: callMessageDataEndpoint hash: null
+12-23 00:00:18.883 19313 19337 D PPMessages:Api: getMessageDataRequest:
+12-23 00:00:18.883 19313 19337 D PPMessages:Api:   Request{method=GET, url=http://localhost:57235/credit-presentment/native/message?client_id=test_client_id&devTouchpoint=false&ignore_cache=false&instance_id=null&session_id=null, headers=[Accept:application/json, x-requested-by:native-upstream-messages]}
+12-23 00:00:18.883 19313 19337 D PPMessages:Api:   client_id=test_client_id
+12-23 00:00:18.883 19313 19337 D PPMessages:Api:   devTouchpoint=false
+12-23 00:00:18.883 19313 19337 D PPMessages:Api:   ignore_cache=false
+12-23 00:00:18.883 19313 19337 D PPMessages:Api:   instance_id=null
+12-23 00:00:18.883 19313 19337 D PPMessages:Api:   session_id=null
+12-23 00:00:18.891 19313 19337 D PPMessages:Api: callMessageDataEndpoint response: {}
+12-23 00:00:18.897 19313 19337 I TestRunner: finished: testCallMessageDataEndpointWithBadData(com.paypal.messages.io.ApiTest)
+12-23 00:00:18.899 19313 19337 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:19.312 19406 19450 I TestRunner: run started: 1 tests
+12-23 00:00:19.313 19406 19450 I TestRunner: started: testCallMessageHashEndpointWithSuccess(com.paypal.messages.io.ApiTest)
+12-23 00:00:19.353 19406 19450 D PPMessages:Api: getMessageHashRequest: Request{method=GET, url=http://localhost:58585/credit-presentment/merchant-profile?client_id=test_client_id, headers=[Accept:application/json, x-requested-by:native-upstream-messages]}
+12-23 00:00:19.361 19406 19450 D PPMessages:Api: callMessageHashEndpoint response: {"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567891"},"ttl_hard":0,"ttl_soft":0}
+12-23 00:00:19.368 19406 19450 I TestRunner: finished: testCallMessageHashEndpointWithSuccess(com.paypal.messages.io.ApiTest)
+12-23 00:00:19.371 19406 19450 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:19.749 19509 19549 I TestRunner: run started: 1 tests
+12-23 00:00:19.750 19509 19549 I TestRunner: started: testCreateModalUrl(com.paypal.messages.io.ApiTest)
+12-23 00:00:19.786 19509 19549 D PPMessages:Api: createModalUrl: https://www.sandbox.paypal.com/credit-presentment/lander/modal?client_id=test_client_id&integration_type=NATIVE_ANDROID&features=native-modal&amount=1.0&buyer_country=US&offer=PAY_LATER_PAY_IN_1
+12-23 00:00:19.787 19509 19549 I TestRunner: finished: testCreateModalUrl(com.paypal.messages.io.ApiTest)
+12-23 00:00:19.789 19509 19549 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:20.175 19605 19634 I TestRunner: run started: 1 tests
+12-23 00:00:20.176 19605 19634 I TestRunner: started: testCreateMessageDataRequestWithAllData(com.paypal.messages.io.ApiTest)
+12-23 00:00:20.212 19605 19634 D PPMessages:Api: getMessageDataRequest:
+12-23 00:00:20.212 19605 19634 D PPMessages:Api:   Request{method=GET, url=https://www.sandbox.paypal.com/credit-presentment/native/message?client_id=test_client_id&devTouchpoint=false&ignore_cache=false&instance_id=null&session_id=null&amount=1.0&buyer_country=US&offer=PAY_LATER_PAY_IN_1&merchant_config=hash, headers=[Accept:application/json, x-requested-by:native-upstream-messages]}
+12-23 00:00:20.212 19605 19634 D PPMessages:Api:   client_id=test_client_id
+12-23 00:00:20.212 19605 19634 D PPMessages:Api:   devTouchpoint=false
+12-23 00:00:20.212 19605 19634 D PPMessages:Api:   ignore_cache=false
+12-23 00:00:20.212 19605 19634 D PPMessages:Api:   instance_id=null
+12-23 00:00:20.212 19605 19634 D PPMessages:Api:   session_id=null
+12-23 00:00:20.212 19605 19634 D PPMessages:Api:   amount=1.0
+12-23 00:00:20.212 19605 19634 D PPMessages:Api:   buyer_country=US
+12-23 00:00:20.212 19605 19634 D PPMessages:Api:   offer=PAY_LATER_PAY_IN_1
+12-23 00:00:20.213 19605 19634 I TestRunner: finished: testCreateMessageDataRequestWithAllData(com.paypal.messages.io.ApiTest)
+12-23 00:00:20.215 19605 19634 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:20.618 19686 19709 I TestRunner: run started: 1 tests
+12-23 00:00:20.620 19686 19709 I TestRunner: started: testCallMessageHashEndpointWithFailure(com.paypal.messages.io.ApiTest)
+12-23 00:00:20.668 19686 19709 D PPMessages:Api: getMessageHashRequest: Request{method=GET, url=http://localhost:58591/credit-presentment/merchant-profile?client_id=test_client_id, headers=[Accept:application/json, x-requested-by:native-upstream-messages]}
+12-23 00:00:20.676 19686 19709 E PPMessages:Api: callMessageHashEndpoint error: Client Error
+12-23 00:00:20.676 19686 19709 E PPMessages:Api: {"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567891"},"ttl_hard":0,"ttl_soft":0}
+12-23 00:00:20.678 19686 19709 I TestRunner: finished: testCallMessageHashEndpointWithFailure(com.paypal.messages.io.ApiTest)
+12-23 00:00:20.680 19686 19709 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:21.024 19763 19785 I TestRunner: run started: 1 tests
+12-23 00:00:21.026 19763 19785 I TestRunner: started: testCallMessageDataEndpointWithGoodData(com.paypal.messages.io.ApiTest)
+12-23 00:00:21.067 19763 19785 D PPMessages:Api: callMessageDataEndpoint hash: null
+12-23 00:00:21.069 19763 19785 D PPMessages:Api: getMessageDataRequest:
+12-23 00:00:21.069 19763 19785 D PPMessages:Api:   Request{method=GET, url=http://localhost:58859/credit-presentment/native/message?client_id=test_client_id&devTouchpoint=false&ignore_cache=false&instance_id=null&session_id=null, headers=[Accept:application/json, x-requested-by:native-upstream-messages]}
+12-23 00:00:21.069 19763 19785 D PPMessages:Api:   client_id=test_client_id
+12-23 00:00:21.069 19763 19785 D PPMessages:Api:   devTouchpoint=false
+12-23 00:00:21.069 19763 19785 D PPMessages:Api:   ignore_cache=false
+12-23 00:00:21.069 19763 19785 D PPMessages:Api:   instance_id=null
+12-23 00:00:21.069 19763 19785 D PPMessages:Api:   session_id=null
+12-23 00:00:21.077 19763 19785 D PPMessages:Api: callMessageDataEndpoint response: {"meta": {}, "content": {}}
+12-23 00:00:21.088 19763 19785 I TestRunner: finished: testCallMessageDataEndpointWithGoodData(com.paypal.messages.io.ApiTest)
+12-23 00:00:21.090 19763 19785 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:21.470 19836 19858 I TestRunner: run started: 1 tests
+12-23 00:00:21.471 19836 19858 I TestRunner: started: testCreateMessageDataRequestWithNoData(com.paypal.messages.io.ApiTest)
+12-23 00:00:21.509 19836 19858 D PPMessages:Api: getMessageDataRequest:
+12-23 00:00:21.509 19836 19858 D PPMessages:Api:   Request{method=GET, url=https://www.sandbox.paypal.com/credit-presentment/native/message?client_id=test_client_id&devTouchpoint=false&ignore_cache=false&instance_id=null&session_id=null, headers=[Accept:application/json, x-requested-by:native-upstream-messages]}
+12-23 00:00:21.509 19836 19858 D PPMessages:Api:   client_id=test_client_id
+12-23 00:00:21.509 19836 19858 D PPMessages:Api:   devTouchpoint=false
+12-23 00:00:21.509 19836 19858 D PPMessages:Api:   ignore_cache=false
+12-23 00:00:21.509 19836 19858 D PPMessages:Api:   instance_id=null
+12-23 00:00:21.509 19836 19858 D PPMessages:Api:   session_id=null
+12-23 00:00:21.509 19836 19858 I TestRunner: finished: testCreateMessageDataRequestWithNoData(com.paypal.messages.io.ApiTest)
+12-23 00:00:21.512 19836 19858 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:21.871 19905 19927 I TestRunner: run started: 1 tests
+12-23 00:00:21.873 19905 19927 I TestRunner: started: testCallMessageDataEndpointWith404(com.paypal.messages.io.ApiTest)
+12-23 00:00:21.912 19905 19927 D PPMessages:Api: callMessageDataEndpoint hash: null
+12-23 00:00:21.913 19905 19927 D PPMessages:Api: getMessageDataRequest:
+12-23 00:00:21.913 19905 19927 D PPMessages:Api:   Request{method=GET, url=http://localhost:56427/credit-presentment/native/message?client_id=test_client_id&devTouchpoint=false&ignore_cache=false&instance_id=null&session_id=null, headers=[Accept:application/json, x-requested-by:native-upstream-messages]}
+12-23 00:00:21.913 19905 19927 D PPMessages:Api:   client_id=test_client_id
+12-23 00:00:21.913 19905 19927 D PPMessages:Api:   devTouchpoint=false
+12-23 00:00:21.913 19905 19927 D PPMessages:Api:   ignore_cache=false
+12-23 00:00:21.913 19905 19927 D PPMessages:Api:   instance_id=null
+12-23 00:00:21.913 19905 19927 D PPMessages:Api:   session_id=null
+12-23 00:00:21.924 19905 19927 I TestRunner: finished: testCallMessageDataEndpointWith404(com.paypal.messages.io.ApiTest)
+12-23 00:00:21.926 19905 19927 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:22.291 19977 19999 I TestRunner: run started: 1 tests
+12-23 00:00:22.293 19977 19999 I TestRunner: started: testGetMessageWithHash(com.paypal.messages.io.ApiTest)
+12-23 00:00:22.334 19977 19999 D PPMessages:LocalStorage: Converted storage string:
+12-23 00:00:22.334 19977 19999 D PPMessages:LocalStorage:   storage string: {"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567891"},"ttl_hard":0,"ttl_soft":0}
+12-23 00:00:22.334 19977 19999 D PPMessages:LocalStorage:   Api Hash Data : Response(cacheFlowDisabled=false, ttlSoft=0, ttlHard=0, merchantProfile=MerchantProfile(hash=1234567891))
+12-23 00:00:22.334 19977 19999 D PPMessages:Api: Local hash is older than hardTtl. Fetching new hash.
+12-23 00:00:22.336 19977 19999 D PPMessages:Api: getMessageHashRequest: Request{method=GET, url=http://localhost:57103/credit-presentment/merchant-profile?client_id=test_client_id, headers=[Accept:application/json, x-requested-by:native-upstream-messages]}
+12-23 00:00:22.344 19977 19999 D PPMessages:Api: callMessageHashEndpoint response: {"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567891"},"ttl_hard":0,"ttl_soft":0}
+12-23 00:00:22.347 19977 19999 D PPMessages:LocalStorage: merchantHashData set: {"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567891"},"ttl_hard":0,"ttl_soft":0}
+12-23 00:00:22.349 19977 19999 D PPMessages:LocalStorage: Converted storage string:
+12-23 00:00:22.349 19977 19999 D PPMessages:LocalStorage:   storage string: {"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567891"},"ttl_hard":0,"ttl_soft":0}
+12-23 00:00:22.349 19977 19999 D PPMessages:LocalStorage:   Api Hash Data : Response(cacheFlowDisabled=false, ttlSoft=0, ttlHard=0, merchantProfile=MerchantProfile(hash=1234567891))
+12-23 00:00:22.349 19977 19999 D PPMessages:Api: fetchNewHash hash: 1234567891
+12-23 00:00:22.349 19977 19999 D PPMessages:Api: callMessageDataEndpoint hash: 1234567891
+12-23 00:00:22.350 19977 19999 D PPMessages:Api: getMessageDataRequest:
+12-23 00:00:22.350 19977 19999 D PPMessages:Api:   Request{method=GET, url=http://localhost:57103/credit-presentment/native/message?client_id=test_client_id&devTouchpoint=false&ignore_cache=false&instance_id=null&session_id=null&merchant_config=1234567891, headers=[Accept:application/json, x-requested-by:native-upstream-messages]}
+12-23 00:00:22.350 19977 19999 D PPMessages:Api:   client_id=test_client_id
+12-23 00:00:22.350 19977 19999 D PPMessages:Api:   devTouchpoint=false
+12-23 00:00:22.350 19977 19999 D PPMessages:Api:   ignore_cache=false
+12-23 00:00:22.350 19977 19999 D PPMessages:Api:   instance_id=null
+12-23 00:00:22.350 19977 19999 D PPMessages:Api:   session_id=null
+12-23 00:00:22.350 19977 19999 D PPMessages:Api:   merchant_config=1234567891
+12-23 00:00:22.396 19977 19999 D PPMessages:Api: callMessageDataEndpoint response: {"meta": {}, "content": {}}
+12-23 00:00:22.401 19977 19999 I TestRunner: finished: testGetMessageWithHash(com.paypal.messages.io.ApiTest)
+12-23 00:00:22.404 19977 19999 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:22.777 20051 20075 I TestRunner: run started: 1 tests
+12-23 00:00:22.778 20051 20075 I TestRunner: started: testMerchantHashStateNoHash(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:22.784 20051 20075 I TestRunner: finished: testMerchantHashStateNoHash(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:22.787 20051 20075 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:23.178 20119 20141 I TestRunner: run started: 1 tests
+12-23 00:00:23.180 20119 20141 I TestRunner: started: testMerchantHashStateHashYoungerThanSoftTtl(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:23.190 20119 20141 D PPMessages:LocalStorage: merchantHashData set: {"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567890"},"ttl_hard":20,"ttl_soft":10}
+12-23 00:00:23.192 20119 20141 D PPMessages:LocalStorage: Converted storage string:
+12-23 00:00:23.192 20119 20141 D PPMessages:LocalStorage:   storage string: {"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567890"},"ttl_hard":20,"ttl_soft":10}
+12-23 00:00:23.192 20119 20141 D PPMessages:LocalStorage:   Api Hash Data : Response(cacheFlowDisabled=false, ttlSoft=10, ttlHard=20, merchantProfile=MerchantProfile(hash=1234567890))
+12-23 00:00:23.192 20119 20141 I TestRunner: finished: testMerchantHashStateHashYoungerThanSoftTtl(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:23.195 20119 20141 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:23.550 20186 20208 I TestRunner: run started: 1 tests
+12-23 00:00:23.551 20186 20208 I TestRunner: started: testMerchantHashStateHashBetweenSoftAndHardTtl(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:23.562 20186 20208 D PPMessages:LocalStorage: merchantHashData set: {"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567890"},"ttl_hard":20,"ttl_soft":10}
+12-23 00:00:23.563 20186 20208 D PPMessages:LocalStorage: Converted storage string:
+12-23 00:00:23.563 20186 20208 D PPMessages:LocalStorage:   storage string: {"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567890"},"ttl_hard":20,"ttl_soft":10}
+12-23 00:00:23.563 20186 20208 D PPMessages:LocalStorage:   Api Hash Data : Response(cacheFlowDisabled=false, ttlSoft=10, ttlHard=20, merchantProfile=MerchantProfile(hash=1234567890))
+12-23 00:00:23.564 20186 20208 I TestRunner: finished: testMerchantHashStateHashBetweenSoftAndHardTtl(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:23.566 20186 20208 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:23.917 20251 20273 I TestRunner: run started: 1 tests
+12-23 00:00:23.918 20251 20273 I TestRunner: started: testMerchantHashStateHashOlderThanHardTtl(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:23.929 20251 20273 D PPMessages:LocalStorage: merchantHashData set: {"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567890"},"ttl_hard":20,"ttl_soft":10}
+12-23 00:00:23.931 20251 20273 D PPMessages:LocalStorage: Converted storage string:
+12-23 00:00:23.931 20251 20273 D PPMessages:LocalStorage:   storage string: {"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567890"},"ttl_hard":20,"ttl_soft":10}
+12-23 00:00:23.931 20251 20273 D PPMessages:LocalStorage:   Api Hash Data : Response(cacheFlowDisabled=false, ttlSoft=10, ttlHard=20, merchantProfile=MerchantProfile(hash=1234567890))
+12-23 00:00:23.931 20251 20273 I TestRunner: finished: testMerchantHashStateHashOlderThanHardTtl(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:23.934 20251 20273 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:24.324 20317 20339 I TestRunner: run started: 1 tests
+12-23 00:00:24.326 20317 20339 I TestRunner: started: testMerchantHashStateCacheDisabled(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:24.337 20317 20339 D PPMessages:LocalStorage: merchantHashData set: {"cache_flow_disabled":true,"merchant_profile":{"hash":"1234567890"},"ttl_hard":20,"ttl_soft":10}
+12-23 00:00:24.339 20317 20339 D PPMessages:LocalStorage: Converted storage string:
+12-23 00:00:24.339 20317 20339 D PPMessages:LocalStorage:   storage string: {"cache_flow_disabled":true,"merchant_profile":{"hash":"1234567890"},"ttl_hard":20,"ttl_soft":10}
+12-23 00:00:24.339 20317 20339 D PPMessages:LocalStorage:   Api Hash Data : Response(cacheFlowDisabled=true, ttlSoft=10, ttlHard=20, merchantProfile=MerchantProfile(hash=1234567890))
+12-23 00:00:24.339 20317 20339 I TestRunner: finished: testMerchantHashStateCacheDisabled(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:24.342 20317 20339 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:24.684 20384 20406 I TestRunner: run started: 1 tests
+12-23 00:00:24.687 20384 20406 I TestRunner: started: testLocalStorage(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:24.699 20384 20406 D PPMessages:LocalStorage: merchantHashData set: {"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567890"},"ttl_hard":20,"ttl_soft":10}
+12-23 00:00:24.701 20384 20406 D PPMessages:LocalStorage: Converted storage string:
+12-23 00:00:24.701 20384 20406 D PPMessages:LocalStorage:   storage string: {"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567890"},"ttl_hard":20,"ttl_soft":10}
+12-23 00:00:24.701 20384 20406 D PPMessages:LocalStorage:   Api Hash Data : Response(cacheFlowDisabled=false, ttlSoft=10, ttlHard=20, merchantProfile=MerchantProfile(hash=1234567890))
+12-23 00:00:24.701 20384 20406 I TestRunner: finished: testLocalStorage(com.paypal.messages.io.LocalStorageTest)
+12-23 00:00:24.704 20384 20406 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:25.051 20452 20474 I TestRunner: run started: 1 tests
+12-23 00:00:25.052 20452 20474 I TestRunner: started: testLog(com.paypal.messages.logger.LoggerTest)
+12-23 00:00:25.059 20452 20474 D PPMessages:Logger: getInstance clientId: test_client_id
+12-23 00:00:25.059 20452 20474 D PPMessages:Logger: initBasePayload
+12-23 00:00:25.068 20452 20474 I TestRunner: finished: testLog(com.paypal.messages.logger.LoggerTest)
+12-23 00:00:25.071 20452 20474 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:25.473 20529 20553 I TestRunner: run started: 1 tests
+12-23 00:00:25.475 20529 20553 I TestRunner: started: testSetGlobalAnalytics(com.paypal.messages.logger.LoggerTest)
+12-23 00:00:25.482 20529 20553 D PPMessages:Logger: getInstance clientId: test_client_id
+12-23 00:00:25.482 20529 20553 D PPMessages:Logger: initBasePayload
+12-23 00:00:25.483 20529 20553 I TestRunner: finished: testSetGlobalAnalytics(com.paypal.messages.logger.LoggerTest)
+12-23 00:00:25.486 20529 20553 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:25.887 20597 20625 I TestRunner: run started: 1 tests
+12-23 00:00:25.889 20597 20625 I TestRunner: started: testGetInstance(com.paypal.messages.logger.LoggerTest)
+12-23 00:00:25.895 20597 20625 D PPMessages:Logger: getInstance clientId: test_client_id
+12-23 00:00:25.895 20597 20625 D PPMessages:Logger: initBasePayload
+12-23 00:00:25.896 20597 20625 I TestRunner: finished: testGetInstance(com.paypal.messages.logger.LoggerTest)
+12-23 00:00:25.898 20597 20625 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored
+12-23 00:00:26.234 20668 20690 I TestRunner: run started: 1 tests
+12-23 00:00:26.235 20668 20690 I TestRunner: started: testSomething(com.paypal.messages.totest.ModalFragmentTest)
+12-23 00:00:26.237 20668 20690 I TestRunner: finished: testSomething(com.paypal.messages.totest.ModalFragmentTest)
+12-23 00:00:26.240 20668 20690 I TestRunner: run finished: 1 tests, 0 failed, 0 ignored

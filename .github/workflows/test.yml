@@ -48,11 +48,11 @@ jobs:
           arch: x86_64
           script: |
             ./gradlew connectedCheck --info
-            echo ""
-            echo "===== LogCat Logs ====="
-            adb logcat -d | grep -E "(PPMessages|TestRunner)"
             adb logcat -d | grep -E "(PPMessages|TestRunner)" > instrumentationTestLogs.txt
         continue-on-error: true
 
       - name: Show LogCat Logs
-        run: cat instrumentationTestLogs.txt
+        run: |
+          cat instrumentationTestLogs.txt
+          error_count=$(grep -E "([1-9]|[0-9]0) failed" instrumentationTestLogs.txt | wc -l | trim)
+          if [[ "$error_count" -eq "0" ]]; then echo "Tests failed. See above"; exit 1; fi
