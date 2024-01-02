@@ -17,7 +17,7 @@ jobs:
 
   release:
     name: Release
-    needs: [linting, tests, build]
+    needs: [lint, test, build]
     runs-on: ubuntu-latest
 
     permissions:

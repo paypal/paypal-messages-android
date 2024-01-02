@@ -12,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl
-import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -27,42 +26,14 @@ object Api {
 	private const val TAG = "Api"
 	private val client = OkHttpClient()
 	private val gson = Gson()
-	var environment = Env.SANDBOX
+	var env = Env.SANDBOX
 	var devTouchpoint: Boolean = false
 	var ignoreCache: Boolean = false
 	var stageTag: String? = null
 	var instanceId: UUID? = null
 	var originatingInstanceId: UUID? = null
 	var sessionId: UUID? = null
-
-	object Endpoints {
-		private val presentmentRoot: String
-			get() = when (environment) {
-				Env.LIVE -> "https://www.paypal.com"
-				Env.SANDBOX -> "https://www.sandbox.paypal.com"
-				Env.STAGE -> BuildConfig.STAGE_URL
-				Env.STAGE_VPN -> BuildConfig.STAGE_VPN_URL
-				Env.LOCAL -> "${BuildConfig.LOCAL_URL}:8000"
-			}
-
-		private val loggerRoot: String
-			get() = when (environment) {
-				Env.LIVE -> "https://api.paypal.com"
-				Env.SANDBOX -> "https://api.sandbox.paypal.com"
-				Env.STAGE -> BuildConfig.STAGE_URL
-				Env.STAGE_VPN -> BuildConfig.STAGE_VPN_URL
-				Env.LOCAL -> "${BuildConfig.LOCAL_URL}:9090"
-			}
-
-		val messageData
-			get() = "$presentmentRoot/credit-presentment/native/message".toHttpUrl()
-		val messageHash
-			get() = "$presentmentRoot/credit-presentment/merchant-profile".toHttpUrl()
-		val modalData
-			get() = "$presentmentRoot/credit-presentment/lander/modal".toHttpUrl()
-		val logger
-			get() = "$loggerRoot/v1/credit/upstream-messaging-events".toHttpUrl()
-	}
+	var ioDispatcher = Dispatchers.IO
 
 	private fun HttpUrl.Builder.setMessageDataQuery(config: MessageConfig, hash: String?) {
 		addQueryParameter("client_id", config.data.clientID)
@@ -80,12 +51,12 @@ object Api {
 		hash?.let { addQueryParameter("merchant_config", it) }
 	}
 
-	private fun createMessageDataRequest(config: MessageConfig, hash: String?): Request {
+	internal fun createMessageDataRequest(config: MessageConfig, hash: String?): Request {
 		val request = Request.Builder().apply {
 			header("Accept", "application/json")
 			header("x-requested-by", "native-upstream-messages")
 
-			val urlBuilder = Endpoints.messageData.newBuilder()
+			val urlBuilder = env.url(Env.Endpoints.MESSAGE_DATA).newBuilder()
 			urlBuilder.setMessageDataQuery(config, hash)
 			url(urlBuilder.build())
 		}.build()
@@ -95,7 +66,7 @@ object Api {
 		return request
 	}
 
-	private fun callMessageDataEndpoint(config: MessageConfig, hash: String?): ApiResult {
+	internal fun callMessageDataEndpoint(config: MessageConfig, hash: String?): ApiResult {
 		LogCat.debug(TAG, "callMessageDataEndpoint hash: $hash")
 		val request = createMessageDataRequest(config, hash)
 		try {
@@ -132,35 +103,21 @@ object Api {
 		messageConfig: MessageConfig,
 		onCompleted: OnActionCompleted,
 	) {
-		CoroutineScope(Dispatchers.IO).launch {
+		CoroutineScope(ioDispatcher).launch {
 			val localStorage = LocalStorage(context)
 			val merchantHash: String? = localStorage.merchantHash
-			val ageOfStoredHash = localStorage.ageOfMerchantHash
-			val softTtl = localStorage.softTtl ?: 0
-			val hardTtl = localStorage.hardTtl ?: 0
+			val merchantHashState = localStorage.getMerchantHashState()
+			LogCat.debug(TAG, merchantHashState.message)
 
-			val message = if (merchantHash === null) {
-				"No hash in local storage. Fetching new hash"
-			}
-			else if (!localStorage.isCacheFlowDisabled!!) {
-				"Local hash is " + when (ageOfStoredHash) {
-					in hardTtl..Long.MAX_VALUE -> "older than hardTtl. Fetching new hash."
-					in softTtl..hardTtl -> "older than softTtl. Using local hash. Storing new hash."
-					else -> "younger than softTtl. Using local hash."
+			val newHash: String? = when (merchantHashState) {
+				LocalStorage.State.NO_HASH -> getAndStoreNewHash(context, messageConfig)
+				LocalStorage.State.HASH_OLDER_THAN_HARD_TTL -> getAndStoreNewHash(context, messageConfig)
+				LocalStorage.State.HASH_BETWEEN_SOFT_AND_HARD_TTL -> {
+					getAndStoreNewHash(context, messageConfig)
+					merchantHash
 				}
-			}
-			else {
-				"Cache disabled. Omitting hash."
-			}
-			LogCat.debug(TAG, message)
-
-			var newHash: String? = null
-			if (merchantHash === null) {
-				newHash = getAndStoreNewHash(context, messageConfig)
-			}
-			else if (!localStorage.isCacheFlowDisabled!!) {
-				if (ageOfStoredHash in softTtl..hardTtl) getAndStoreNewHash(context, messageConfig)
-				newHash = if (ageOfStoredHash > hardTtl) getAndStoreNewHash(context, messageConfig) else merchantHash
+				LocalStorage.State.HASH_YOUNGER_THAN_SOFT_TTL -> merchantHash
+				else -> null
 			}
 
 			val messageData = callMessageDataEndpoint(messageConfig, newHash)
@@ -170,12 +127,12 @@ object Api {
 		}
 	}
 
-	private fun createMessageHashRequest(clientId: String): Request {
+	internal fun createMessageHashRequest(clientId: String): Request {
 		val request = Request.Builder().apply {
 			header("Accept", "application/json")
 			header("x-requested-by", "native-upstream-messages")
 
-			val urlBuilder = Endpoints.messageHash.newBuilder()
+			val urlBuilder = env.url(Env.Endpoints.MERCHANT_PROFILE).newBuilder()
 			urlBuilder.addQueryParameter("client_id", clientId)
 			url(urlBuilder.build())
 		}.build()
@@ -184,7 +141,7 @@ object Api {
 		return request
 	}
 
-	private fun callMessageHashEndpoint(clientId: String): ApiResult {
+	internal fun callMessageHashEndpoint(clientId: String): ApiResult {
 		val request = createMessageHashRequest(clientId)
 		try {
 			val response = client.newCall(request).execute()
@@ -213,7 +170,7 @@ object Api {
 	private suspend fun getAndStoreNewHash(context: Context, messageConfig: MessageConfig): String? {
 		val clientId = messageConfig.data.clientID
 		val localStorage = LocalStorage(context)
-		val result = withContext(Dispatchers.IO) {
+		val result = withContext(ioDispatcher) {
 			callMessageHashEndpoint(clientId)
 		}
 
@@ -234,7 +191,7 @@ object Api {
 		buyerCountry: String?,
 		offer: OfferType?,
 	): String {
-		val url = Endpoints.modalData.newBuilder().apply {
+		val url = env.url(Env.Endpoints.MODAL_DATA).newBuilder().apply {
 			addQueryParameter("client_id", clientId)
 			addQueryParameter("integration_type", BuildConfig.INTEGRATION_TYPE)
 			addQueryParameter("features", "native-modal")
@@ -247,9 +204,9 @@ object Api {
 		return url
 	}
 
-	private fun createLoggerRequest(json: String): Request {
+	internal fun createLoggerRequest(json: String): Request {
 		val request = Request.Builder().apply {
-			url(Endpoints.logger)
+			url(env.url(Env.Endpoints.LOGGER))
 			post(json.toRequestBody("application/json".toMediaType()))
 		}.build()
 

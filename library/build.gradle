@@ -16,6 +16,7 @@ android {
 	  versionCode 10000
 	  versionName '1.0.0'
     testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+	  testInstrumentationRunnerArguments clearPackageData: 'true'
     consumerProguardFiles 'consumer-rules.pro'
 
 	  buildConfigField('String', 'INTEGRATION_TYPE', "\"NATIVE_ANDROID\"")
@@ -33,7 +34,11 @@ android {
     release {
       minifyEnabled false
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+	    resValue("string", "clear_text_config","false")
     }
+	  debug {
+		  resValue("string", "clear_text_config","true")
+	  }
   }
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_1_8
@@ -44,6 +49,7 @@ android {
   }
 
 	testOptions {
+		execution 'ANDROIDX_TEST_ORCHESTRATOR'
 		unitTests.all {
 			useJUnitPlatform()
 			testLogging {
@@ -60,11 +66,6 @@ tasks.withType(Test) {
 koverReport {
 	androidReports('debug') {
 		filters {
-//			includes {
-//				classes(
-//					'PayPalErrors\$*'
-//				)
-//			}
 			excludes {
 				classes(
 					// config
@@ -72,8 +73,10 @@ koverReport {
 					'com.paypal.messages.config.message.PayPalMessageViewStateCallbacks\$*',
 					'com.paypal.messages.config.modal.ModalEvents\$*',
 					// extensions,
-					'com.paypal.messages.extensions.*',
+					'com.paypal.messages.extensions.Int*',
 					// io
+					'com.paypal.messages.io.Api',
+					'com.paypal.messages.io.Api\$*',
 					'com.paypal.messages.io.Api\$Endpoints',
 					'com.paypal.messages.io.ApiMessageData',
 					'com.paypal.messages.io.ApiHashData',
@@ -91,6 +94,7 @@ koverReport {
 					'*Activity\$*',
 					'com.paypal.messages.PayPalMessageView*',
 					'com.paypal.messages.RoundedWebView',
+					'com.paypal.messages.RoundedWebView\$*',
 					'*.databinding.*',
 					'*.BuildConfig'
 				)
@@ -102,7 +106,7 @@ koverReport {
 dependencies {
 	implementation 'androidx.core:core-ktx:1.12.0'
 	implementation 'androidx.appcompat:appcompat:1.6.1'
-	implementation 'com.google.android.material:material:1.10.0'
+	implementation 'com.google.android.material:material:1.11.0'
 	implementation 'com.google.code.gson:gson:2.9.1'
 	implementation 'com.squareup.okhttp3:okhttp:4.8.0'
 
@@ -112,7 +116,10 @@ dependencies {
 	testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
 	testImplementation 'io.mockk:mockk:1.13.7'
 
+	androidTestUtil 'androidx.test:orchestrator:1.4.2'
+	androidTestImplementation 'androidx.test:rules:1.5.0'
 	androidTestImplementation 'androidx.test.ext:junit:1.1.5'
 	androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+	androidTestImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.1'
 	androidTestImplementation 'com.squareup.okhttp3:mockwebserver:4.8.0'
 }

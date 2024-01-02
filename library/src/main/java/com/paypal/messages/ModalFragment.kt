@@ -28,12 +28,13 @@ import android.widget.RelativeLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.gson.JsonElement
+import com.google.gson.Gson
 import com.google.gson.JsonParser
 import com.paypal.messages.config.Channel
 import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.extensions.dp
+import com.paypal.messages.extensions.jsonElementToMutableMap
 import com.paypal.messages.io.Api
 import com.paypal.messages.logger.ComponentType
 import com.paypal.messages.logger.EventType
@@ -374,7 +375,7 @@ internal class ModalFragment constructor(
 
 		// If __shared__ does not exist, use an empty object
 		val sharedJson = args.get("__shared__") ?: JsonParser.parseString("{}")
-		val shared = jsonElementToMutableMap(sharedJson)
+		val shared = Gson::class.jsonElementToMutableMap(sharedJson)
 		when (name) {
 			"onClick" -> {
 				val pageViewLinkName = args.get("page_view_link_name")?.asString
@@ -412,35 +413,6 @@ internal class ModalFragment constructor(
 			}
 		}
 		// Parse and call correct callback
-	}
-
-	private fun jsonElementToMutableMap(jsonElement: JsonElement): MutableMap<String, Any> {
-		val mutableMap = mutableMapOf<String, Any>()
-
-		if (jsonElement.isJsonObject) {
-			val jsonObject = jsonElement.asJsonObject
-			for ((key, value) in jsonObject.entrySet()) {
-				mutableMap[key] = jsonValueToAny(value)
-			}
-		}
-
-		return mutableMap
-	}
-
-	private fun jsonValueToAny(jsonElement: JsonElement): Any {
-		return when {
-			jsonElement.isJsonPrimitive -> {
-				val primitive = jsonElement.asJsonPrimitive
-				when {
-					primitive.isBoolean -> primitive.asBoolean
-					primitive.isNumber -> primitive.asNumber
-					else -> primitive.asString
-				}
-			}
-			jsonElement.isJsonArray -> jsonElement.asJsonArray
-			jsonElement.isJsonObject -> jsonElementToMutableMap(jsonElement)
-			else -> throw IllegalArgumentException("Unsupported JSON element type: ${jsonElement::class.java.simpleName}")
-		}
 	}
 
 	// Callbacks used in Modal

@@ -20,7 +20,7 @@ data class PayPalMessageData(
 	var environment: Environment? = null,
 ) {
 	init {
-		Api.environment = environment ?: Environment.SANDBOX
+		Api.env = environment ?: Environment.SANDBOX
 	}
 
 	fun merge(newData: PayPalMessageData): PayPalMessageData {

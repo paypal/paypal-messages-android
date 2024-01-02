@@ -25,6 +25,12 @@ object LogCat {
 
 	@JvmStatic
 	@JvmOverloads
+	fun info(tag: String, message: String, throwable: Throwable? = null) {
+		Log.i("$prefix:$tag", reduceLongMessage(message), throwable)
+	}
+
+	@JvmStatic
+	@JvmOverloads
 	fun warn(tag: String, message: String, throwable: Throwable? = null) {
 		Log.w("$prefix:$tag", reduceLongMessage(message), throwable)
 	}
