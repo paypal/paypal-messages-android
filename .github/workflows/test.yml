@@ -48,6 +48,7 @@ jobs:
           arch: x86_64
           script: |
             ./gradlew connectedCheck --info
+            mkdir -p ./workflow/metadata
             adb logcat -d | grep -E "(PPMessages|TestRunner)" > ./workflow/metadata/instrumentationTestLogs.log
         continue-on-error: true
 
