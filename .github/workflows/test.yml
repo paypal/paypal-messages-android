@@ -25,6 +25,17 @@ jobs:
         run: ./gradlew testReleaseUnitTest
         continue-on-error: false
 
+      - name: Add coverage report to PR
+        id: kover
+        uses: mi-kas/kover-report@v1
+        with:
+          path: ${{ github.workspace }}/library/build/reports/kover/report.xml
+          title: Code Coverage
+          update-comment: true
+          min-coverage-overall: 85
+          min-coverage-changed-files: 85
+          coverage-counter-type: LINE
+
   test_instrumentation:
     name: Instrumentation Tests
     runs-on: macos-latest
