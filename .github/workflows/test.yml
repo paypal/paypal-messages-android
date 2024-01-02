@@ -41,7 +41,7 @@ jobs:
           cache: gradle
 
       - name: Run Unit Tests Coverage
-        run: ./gradlew koverXmlReport
+        run: ./gradlew koverXmlReportDebug
 
       - name: Add coverage report to PR
         id: kover
