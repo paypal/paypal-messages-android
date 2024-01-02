@@ -46,14 +46,11 @@ jobs:
           api-level: 23
           target: google_apis
           arch: x86_64
-          script: |
-            ./gradlew connectedCheck --info
-            mkdir -p ./workflow/metadata
-            adb logcat -d | grep -E "(PPMessages|TestRunner)" > ./workflow/metadata/instrumentationTestLogs.log
+          script: ./gradlew connectedCheck --info
         continue-on-error: true
 
-      - name: Show LogCat Logs
+      - name: Show Test XML
         run: |
-          cat ./workflow/metadata/instrumentationTestLogs.log
-          error_count=$(grep -E "([1-9]|[0-9]0) failed" ./workflow/metadata/instrumentationTestLogs.log | wc -l | awk '{$1=$1};1')
-          if [[ "$error_count" -eq "0" ]]; then echo "Tests failed. See above"; exit 1; fi
+          cat library/build/outputs/androidTest-results/connected/*.xml
+          error_count=$(grep "<failure>" library/build/outputs/androidTest-results/connected/*.xml | wc -l | awk '{$1=$1};1')
+          if [[ "$error_count" -ne "0" ]]; then echo "Tests failed. See above"; exit 1; fi
