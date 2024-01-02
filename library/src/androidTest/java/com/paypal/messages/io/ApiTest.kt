@@ -303,7 +303,7 @@ class ApiTest {
 	@Test
 	fun testCreateLoggerRequest() {
 		val request = Api.createLoggerRequest("{}")
-		val expectedPath = "v1/credit/upstream-messaging-events"
+		val expectedPath = "v1/credit/upstream-meaging-events"
 		assertTrue(request.url.toString().contains(expectedPath))
 	}
 }
