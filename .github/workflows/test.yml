@@ -47,7 +47,7 @@ jobs:
         id: kover
         uses: mi-kas/kover-report@v1
         with:
-          path: ${{ github.workspace }}/library/build/reports/kover/report.xml
+          path: ${{ github.workspace }}/library/build/reports/kover/reportDebug.xml
           title: Code Coverage
           update-comment: true
           min-coverage-overall: 85
