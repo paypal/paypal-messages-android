@@ -1,5 +1,5 @@
 name: Lint
-on: [pull_request, workflow_dispatch]
+on: [pull_request, workflow_dispatch, workflow_call]
 
 concurrency:
   group: lint-${{ github.event.number }}
@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '17'
-          distribution: 'temurin'
+          distribution: 'microsoft'
           cache: gradle
 
       - name: Run Lint
