@@ -14,7 +14,6 @@ afterEvaluate {
                 version project.ext.version
                 artifactId project.ext.name
                 from components.release
-                // artifact androidSourcesJar //TODO: add javadocs
 
                 pom {
                     name = project.ext.pom_name ?: ''
