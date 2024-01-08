@@ -1,11 +1,11 @@
 name: 'Publish All Modules'
 description: 'Publishes all modules'
 inputs:
-  sonatype_usr:
+  sonatype_user:
     description: 'Sonatype user'
     required: true
     default: ''
-  sonatype_pwd:
+  sonatype_password:
     description: 'Sonatype password'
     required: true
     default: ''
@@ -13,7 +13,7 @@ inputs:
     description: 'Signing key id'
     required: true
     default: ''
-  signing_key_pwd:
+  signing_key_password:
     description: 'Signing key password'
     required: true
     default: ''
@@ -28,8 +28,8 @@ runs:
         ./gradlew --stacktrace clean publishToSonatype closeAndReleaseSonatypeStagingRepository
       shell: bash
       env:
-        SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_usr }}
-        SONATYPE_NEXUS_PASSWORD: ${{ inputs.sonatype_pwd }}
+        SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_user }}
+        SONATYPE_NEXUS_PASSWORD: ${{ inputs.sonatype_password }}
         SIGNING_KEY_ID: ${{ inputs.signing_key_id }}
-        SIGNING_KEY_PASSWORD: ${{ inputs.signing_key_pwd }}
+        SIGNING_KEY_PASSWORD: ${{ inputs.signing_key_password }}
         SIGNING_KEY_FILE: ${{ inputs.signing_key_file }}
