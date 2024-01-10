@@ -8,6 +8,9 @@
 .cxx
 local.properties
 
+# Node
+node_modules/
+
 # Recommended Ignores by JetBrains
 # https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 # .idea/ files are handled in .idea/.gitignore

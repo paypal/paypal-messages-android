@@ -26,10 +26,6 @@ jobs:
     env:
       SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
 
-    strategy:
-      matrix:
-        codebase: [demo]
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -41,7 +37,6 @@ jobs:
           distribution: 'microsoft'
           cache: gradle
 
-      #After decoding the secret key, place the file in ~ /. Gradle/ secring.gpg
       - name: Decode Signing Key
         uses: ./.github/actions/decode_signing_key_action
         with:
@@ -49,7 +44,7 @@ jobs:
           signing_file_path: ${{ env.SIGNING_KEY_FILE_PATH }}
 
       - name: Assemble
-        run: ./gradlew --stacktrace :demo:assemble  # we exclude Demo module in assemble
+        run: ./gradlew --stacktrace :demo:assemble
         env:
           SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}

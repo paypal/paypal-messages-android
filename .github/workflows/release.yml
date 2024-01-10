@@ -26,9 +26,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          # pulls all commits (needed for semantic release to correctly version)
+          fetch-depth: '0'
+          persist-credentials: false
 
-      - name: Set up Java 17
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
@@ -40,6 +44,11 @@ jobs:
           signing_key_file: ${{ secrets.SIGNING_KEY_FILE }}
           signing_file_path: ${{ env.SIGNING_KEY_FILE_PATH }}
 
+      - name: Install Semantic Release Dependencies
+        run: npm install
+
+      # TODO: update .releaserc.json with appropriate prepareCmd, successCmd, and assets
+      # TODO: enable semantic-release once fixed
       # - name: GitHub Release
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

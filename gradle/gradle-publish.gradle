@@ -7,60 +7,59 @@ ext["signing.password"] = System.getenv('SIGNING_KEY_PASSWORD') ?: ''
 ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_KEY_FILE') ?: ''
 
 afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                groupId group
-                version project.ext.version
-                artifactId project.ext.name
-                from components.release
+	publishing {
+		publications {
+			release(MavenPublication) {
+				groupId group
+				version project.ext.version
+				artifactId project.ext.name
+				from components.release
 
-                pom {
-                    name = project.ext.pom_name ?: ''
-                    packaging = POM_PACKAGING
-                    description = project.ext.pom_desc ?: ''
-                    url = POM_URL
-                    licenses {
-                        license {
-                            name = POM_LICENCE_NAME
-                            url = POM_LICENCE_URL
-                        }
-                    }
-                    developers {
-                        developer {
-                            id = POM_DEVELOPER_ID
-                            name = POM_DEVELOPER_NAME
-                            email = POM_DEVELOPER_EMAIL
-                        }
-                    }
-                    scm {
-                        connection = POM_SCM_CONNECTION
-                        developerConnection = POM_SCM_DEV_CONNECTION
-                        url = POM_SCM_URL
-                    }
-                }
+				pom {
+					name = project.ext.pom_name ?: ''
+					packaging = POM_PACKAGING
+					description = project.ext.pom_desc ?: ''
+					url = POM_URL
+					licenses {
+						license {
+							name = POM_LICENCE_NAME
+							url = POM_LICENCE_URL
+						}
+					}
+					developers {
+						developer {
+							id = POM_DEVELOPER_ID
+							name = POM_DEVELOPER_NAME
+							email = POM_DEVELOPER_EMAIL
+						}
+					}
+					scm {
+						connection = POM_SCM_CONNECTION
+						developerConnection = POM_SCM_DEV_CONNECTION
+						url = POM_SCM_URL
+					}
+				}
+			}
+		}
+		repositories {
+		    maven {
+		        url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+		    }
+		}
+	}
 
-            }
-        }
-        repositories {
-            maven {
-                url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-            }
-        }
-    }
-
-    signing {
-        sign publishing.publications
-        sign configurations.archives
-    }
+	signing {
+		sign publishing.publications
+		sign configurations.archives
+	}
 }
 
 task androidSourcesJar(type: Jar) {
-    archiveClassifier.set('sources')
-    from android.sourceSets.main.java.srcDirs
-    from android.sourceSets.main.kotlin.srcDirs
+	archiveClassifier.set('sources')
+	from android.sourceSets.main.java.srcDirs
+	from android.sourceSets.main.kotlin.srcDirs
 }
 
 artifacts {
-    archives androidSourcesJar
+	archives androidSourcesJar
 }
