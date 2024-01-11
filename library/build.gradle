@@ -1,47 +1,52 @@
 plugins {
-  id 'com.android.library'
-  id 'org.jetbrains.kotlin.android'
+	id 'com.android.library'
+	id 'kotlin-android'
+	id 'org.jetbrains.kotlin.android'
 	id 'de.mannodermaus.android-junit5' version "1.9.3.0"
 	id 'org.jetbrains.kotlinx.kover' version '0.7.4'
 }
 
 android {
-  namespace 'com.paypal.messages'
-  compileSdk 34
+	namespace 'com.paypal.messages'
+	compileSdk 34
 
-  defaultConfig {
-    minSdk 23
-    targetSdk 34
+	defaultConfig {
+		minSdkVersion modules.androidMinSdkVersion
+		targetSdkVersion modules.androidTargetVersion
 
-	  versionCode 10000
-	  versionName '1.0.0'
-    testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-    consumerProguardFiles 'consumer-rules.pro'
+		versionCode modules.sdkVersionCode
+		versionName modules.sdkVersionName 
+		testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+		consumerProguardFiles 'consumer-rules.pro'
 
-	  buildConfigField('String', 'INTEGRATION_TYPE', "\"NATIVE_ANDROID\"")
-	  buildConfigField('String', 'LIBRARY_VERSION', "\"${versionName}\"")
-	  buildConfigField('String', 'STAGE_URL', "\"${System.env.UPSTREAM_ANDROID_STAGE_URL}\"")
-	  buildConfigField('String', 'STAGE_VPN_URL', "\"${System.env.UPSTREAM_ANDROID_STAGE_VPN_URL}\"")
-	  buildConfigField('String', 'LOCAL_URL', "\"${System.env.UPSTREAM_ANDROID_LOCAL_URL}\"")
-  }
+		buildConfigField('String', 'INTEGRATION_TYPE', "\"NATIVE_ANDROID\"")
+		buildConfigField('String', 'LIBRARY_VERSION', "\"${versionName}\"")
+		buildConfigField('String', 'STAGE_URL', "\"${System.env.UPSTREAM_ANDROID_STAGE_URL}\"")
+		buildConfigField('String', 'STAGE_VPN_URL', "\"${System.env.UPSTREAM_ANDROID_STAGE_VPN_URL}\"")
+		buildConfigField('String', 'LOCAL_URL', "\"${System.env.UPSTREAM_ANDROID_LOCAL_URL}\"")
+	}
 
 	buildFeatures {
 		buildConfig = true
 		viewBinding = true
 	}
-  buildTypes {
-    release {
-      minifyEnabled false
-      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-    }
-  }
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
-  }
-  kotlinOptions {
-    jvmTarget = '1.8'
-  }
+
+	buildTypes {
+		release {
+			version = android.defaultConfig.versionName // had to add this to get the version in the build
+			minifyEnabled false
+			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+		}
+	}
+
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_1_8
+		targetCompatibility JavaVersion.VERSION_1_8
+	}
+
+	kotlinOptions {
+		jvmTarget = '1.8'
+	}
 
 	testOptions {
 		unitTests.all {
@@ -116,3 +121,10 @@ dependencies {
 	androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 	androidTestImplementation 'com.squareup.okhttp3:mockwebserver:4.8.0'
 }
+
+project.ext.name = "paypal-messages"
+project.ext.version = modules.sdkVersionName 
+project.ext.pom_name = "PayPal Messages"
+project.ext.pom_desc = "The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit."
+
+apply from: rootProject.file("gradle/gradle-publish.gradle")

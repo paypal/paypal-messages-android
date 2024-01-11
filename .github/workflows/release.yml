@@ -1,32 +1,31 @@
 name: Release
 on:
   workflow_dispatch: {}
-  push:
-    branches:
-      - main
+env:
+  SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
 
 jobs:
   lint:
-    uses: paypal/paypal-messages-android/.github/workflows/lint.yml@release
+    uses: ./.github/workflows/lint.yml
 
   test:
-    uses: paypal/paypal-messages-android/.github/workflows/test.yml@release
+    uses: ./.github/workflows/test.yml
 
   build:
-    uses: paypal/paypal-messages-android/.github/workflows/build.yml@release
+    uses: ./.github/workflows/build.yml
+    secrets:
+      SIGNING_KEY_FILE: ${{ secrets.SIGNING_KEY_FILE }}
+      SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+      SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
+  # after build and unit tests are finished, publish all modules at once
+  # to help reduce the probability of failure when interacting with sonatype servers
   release:
-    name: Release
-    needs: [linting, tests, build]
+    name: Publish To Maven
+    needs: [lint, test, build]
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-
     steps:
-      - name: Checkout repo
+      - name: Checkout Repository
         uses: actions/checkout@v3
         with:
           # pulls all commits (needed for semantic release to correctly version)
@@ -37,17 +36,29 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '17'
-          distribution: 'temurin'
-          cache: gradle
+          distribution: 'microsoft'
 
-      - name: Install Dependencies
-        run: |
-          npm i -g @semantic-release/exec @semantic-release/changelog @semantic-release/git conventional-changelog-conventionalcommits@6.1.0
+      - name: Decode Signing Key
+        uses: ./.github/actions/decode_signing_key_action
+        with:
+          signing_key_file: ${{ secrets.SIGNING_KEY_FILE }}
+          signing_file_path: ${{ env.SIGNING_KEY_FILE_PATH }}
 
-      - name: GitHub Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release@21
+      - name: Install Semantic Release Dependencies
+        run: npm install
+
+      # TODO: update .releaserc.json with appropriate prepareCmd, successCmd, and assets
+      # TODO: enable semantic-release once fixed
+      # - name: GitHub Release
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: npx semantic-release@21
 
       - name: Publish to Maven
-        run: echo "Publish to Maven"
+        uses: ./.github/actions/publish_all_modules
+        with:
+          sonatype_user: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          sonatype_password: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+          signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
+          signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
