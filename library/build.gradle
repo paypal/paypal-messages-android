@@ -125,6 +125,6 @@ dependencies {
 project.ext.name = "paypal-messages"
 project.ext.version = modules.sdkVersionName 
 project.ext.pom_name = "PayPal Messages"
-project.ext.pom_desc = "The PayPal iOS SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit."
+project.ext.pom_desc = "The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit."
 
 apply from: rootProject.file("gradle/gradle-publish.gradle")
