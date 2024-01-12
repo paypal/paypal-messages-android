@@ -1,5 +1,5 @@
 name: Test
-on: [pull_request, workflow_dispatch]
+on: [pull_request, workflow_dispatch, workflow_call]
 
 concurrency:
   group: test-${{ github.event.number }}
@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '17'
-          distribution: 'temurin'
+          distribution: 'microsoft'
           cache: gradle
 
       - name: Run Unit Tests
