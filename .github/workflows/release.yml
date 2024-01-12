@@ -21,7 +21,7 @@ jobs:
   # after build and unit tests are finished, publish all modules at once
   # to help reduce the probability of failure when interacting with sonatype servers
   release:
-    name: Publish To Maven
+    name: Release
     needs: [lint, test, build]
     runs-on: ubuntu-latest
     steps:
