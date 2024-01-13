@@ -4,6 +4,7 @@ import org.jmailen.gradle.kotlinter.tasks.FormatTask
 
 buildscript {
 	ext.modules = [
+		// TODO: How are we changing the versionName in the gradle files during release?
 		"sdkVersionCode"      : 10000,
 		"sdkVersionName"			: "1.0.0-alpha.00-SNAPSHOT",
 		"androidMinSdkVersion": 23,

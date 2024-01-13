@@ -40,6 +40,8 @@
 				"changelogTitle": "# Changelog"
 			}
 		],
+		// TODO: How do we include environment variables in these commands?
+		// TODO: What should the successCmd be?
 		[
 			"@semantic-release/exec",
 			{
@@ -47,6 +49,7 @@
 				"successCmd": ""
 			}
 		],
+		// TODO: Are there any assets we should include/exclude here?
 		[
 			"@semantic-release/git",
 			{
