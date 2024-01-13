@@ -43,21 +43,33 @@
 		[
 			"@semantic-release/exec",
 			{
-				"prepareCmd": "",
+				"prepareCmd": "./gradlew --stacktrace clean :library:assemble",
 				"successCmd": ""
 			}
 		],
 		[
 			"@semantic-release/git",
 			{
-				"assets": ["*"],
+				"assets": [
+					"gradle/*",
+					"library/*",
+					"readme-images/*",
+					"build.gradle",
+					"CHANGELOG.md",
+					"gradle.properties",
+					"gradlew",
+					"gradlew.bat",
+					"LICENSE",
+					"README.md",
+					"settings.gradle"
+				],
 				"message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
 			}
 		],
 		[
 			"@semantic-release/github",
 			{
-				"assets": ""
+				"assets": ["build/outputs/aar/*.aar"]
 			}
 		]
 	]

@@ -49,10 +49,10 @@ jobs:
 
       # TODO: update .releaserc.json with appropriate prepareCmd, successCmd, and assets
       # TODO: enable semantic-release once fixed
-      # - name: GitHub Release
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: npx semantic-release@21
+      - name: GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release@21
 
       - name: Publish to Maven
         uses: ./.github/actions/publish_all_modules
