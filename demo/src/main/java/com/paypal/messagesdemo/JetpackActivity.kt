@@ -61,6 +61,8 @@ class JetpackActivity : ComponentActivity() {
 			BasicTheme {
 				val context = LocalContext.current
 
+				var progessBar by remember{ mutableStateOf(false) }
+
 				// Client ID
 				var clientId: String by remember { mutableStateOf("") }
 
@@ -112,13 +114,13 @@ class JetpackActivity : ComponentActivity() {
 						data = PayPalMessageData(clientID = clientId, environment = PayPalEnvironment.SANDBOX),
 						viewStateCallbacks = PayPalMessageViewStateCallbacks(
 							onLoading = {
-//								progressBar.visibility = View.VISIBLE
+								progessBar = true
 								buttonEnabled = false
 								Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
 							},
 							onError = {
 								Log.d(TAG, "onError $it")
-//								progressBar.visibility = View.INVISIBLE
+								progessBar = false
 								runOnUiThread {
 									buttonEnabled = true
 									Toast.makeText(this, it.javaClass.toString() + ":" + it.message, Toast.LENGTH_LONG).show()
@@ -126,7 +128,7 @@ class JetpackActivity : ComponentActivity() {
 							},
 							onSuccess = {
 								Log.d(TAG, "onSuccess")
-//								progressBar.visibility = View.INVISIBLE
+								progessBar = false
 								runOnUiThread {
 									buttonEnabled = true
 									Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
@@ -293,6 +295,8 @@ class JetpackActivity : ComponentActivity() {
 							IgnoreCacheSwitch(ignoreCache = ignoreCache, onChange = { ignoreCache = it })
 							DevTouchpointSwitch(devTouchpoint = devTouchpoint, onChange = { devTouchpoint = it })
 						}
+
+						CircularIndicator(progressBar = progessBar)
 
 						AndroidView(
 							modifier = Modifier
@@ -627,4 +631,17 @@ fun StyledTextField(value: String, onChange: (text: String) -> Unit, placeholder
 				.padding(start = 4.dp, end = 4.dp, top = 8.dp)
 		)
 	}
+}
+
+@Composable
+fun CircularIndicator(progressBar: Boolean) {
+	if (!progressBar) return
+
+	CircularProgressIndicator(
+		modifier = Modifier
+			.width(32.dp),
+		color = MaterialTheme.colorScheme.secondary,
+		trackColor = MaterialTheme.colorScheme.surfaceVariant,
+	)
+
 }
