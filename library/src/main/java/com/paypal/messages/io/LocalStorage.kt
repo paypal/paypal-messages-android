@@ -53,10 +53,10 @@ class LocalStorage constructor(context: Context) {
 		get() = merchantHashData?.cacheFlowDisabled
 	val merchantHash: String?
 		get() = merchantHashData?.merchantProfile?.hash
-	val softTtl: Long?
-		get() = merchantHashData?.ttlSoft
-	val hardTtl: Long?
-		get() = merchantHashData?.ttlHard
+	val softTtl: Long
+		get() = merchantHashData?.ttlSoft ?: 0
+	val hardTtl: Long
+		get() = merchantHashData?.ttlHard ?: 0
 	private var timestamp: Long
 		get() = sharedPrefs.getLong("${StorageKeys.TIMESTAMP}", currentTimestamp)
 		set(timestampArg) {
@@ -64,6 +64,32 @@ class LocalStorage constructor(context: Context) {
 			editor.putLong("${StorageKeys.TIMESTAMP}", timestampArg)
 			editor.apply()
 		}
-	val ageOfMerchantHash: Long
+	private val ageOfMerchantHash: Long
 		get() = (System.currentTimeMillis() / 1000) - timestamp
+
+	enum class State(val message: String) {
+		NO_HASH("No hash in local storage. Fetching new hash"),
+		HASH_OLDER_THAN_HARD_TTL("Local hash is older than hardTtl. Fetching new hash."),
+		HASH_BETWEEN_SOFT_AND_HARD_TTL(
+			"Local hash is older than softTtl. Using local hash. Storing new hash.",
+		),
+		HASH_YOUNGER_THAN_SOFT_TTL("Local hash is younger than softTtl. Using local hash."),
+		CACHE_DISABLED("Cache disabled. Omitting hash."),
+	}
+
+	fun getMerchantHashState(): State {
+		return if (merchantHash === null) {
+			State.NO_HASH
+		}
+		else if (!isCacheFlowDisabled!!) {
+			when (ageOfMerchantHash) {
+				in hardTtl..Long.MAX_VALUE -> State.HASH_OLDER_THAN_HARD_TTL
+				in softTtl..hardTtl -> State.HASH_BETWEEN_SOFT_AND_HARD_TTL
+				else -> State.HASH_YOUNGER_THAN_SOFT_TTL
+			}
+		}
+		else {
+			State.CACHE_DISABLED
+		}
+	}
 }
