@@ -44,8 +44,8 @@ jobs:
           signing_key_file: ${{ secrets.SIGNING_KEY_FILE }}
           signing_file_path: ${{ env.SIGNING_KEY_FILE_PATH }}
 
-      - name: Install Semantic Release Dependencies
-        run: npm install
+      # - name: Install Semantic Release Dependencies
+      #   run: npm install
 
       # TODO: update .releaserc.json with appropriate prepareCmd, successCmd, and assets
       # TODO: enable semantic-release once fixed
