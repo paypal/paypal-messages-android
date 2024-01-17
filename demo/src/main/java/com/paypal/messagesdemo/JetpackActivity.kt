@@ -45,12 +45,11 @@ import androidx.compose.ui.text.font.FontWeight
 
 fun toSentenceCase(input: String): String {
 	// Convert the string to lowercase and split it into words
-	val words = input.toLowerCase().split(" ")
+	val words = input.lowercase().split(" ")
 
 	// Capitalize the first letter of each word and join them back into a string
-	val sentenceCase = words.joinToString(" ") { it.capitalize() }
+	return words.joinToString(" ") { it.replaceFirstChar { it.titlecase() } }
 
-	return sentenceCase
 }
 
 class JetpackActivity : ComponentActivity() {
@@ -63,7 +62,7 @@ class JetpackActivity : ComponentActivity() {
 				val context = LocalContext.current
 
 				// Client ID
-				var clientId: String by remember { mutableStateOf("B_Aksh3K8UpGwAs_Ngi0ahNHJja2bsxqtuqmhRAm944xzM-p6Qkq9JbqFc2yTz2Fg5WYtcW1QEu_tHDVuI") }
+				var clientId: String by remember { mutableStateOf("") }
 
 				// Style Color
 				var backgroundColor by remember { mutableStateOf(Color.White) }
@@ -90,14 +89,15 @@ class JetpackActivity : ComponentActivity() {
 					toSentenceCase(PayPalMessageAlign.CENTER.name),
 					toSentenceCase(PayPalMessageAlign.RIGHT.name)
 				)
+
 				var messageAlignment by remember { mutableStateOf(alignmentGroupOptions[0])}
 
+				val offerGroupOptions = listOf(
+					"Short Term", "Long Term", "Pay In 1", "Credit"
+				)
+
 				// Offer Type
-				var offerButton1 by remember { mutableStateOf(false) }
-				var offerButton2 by remember { mutableStateOf(false) }
-				var offerButton3 by remember { mutableStateOf(false) }
-				var offerButton4 by remember { mutableStateOf(false) }
-				var offerType: PayPalMessageOfferType? by remember { mutableStateOf(null) }
+				var offerType: String? by remember { mutableStateOf(null)}
 
 				var amount: String by remember { mutableStateOf("") }
 				var buyerCountry: String  by remember { mutableStateOf("") }
@@ -117,7 +117,7 @@ class JetpackActivity : ComponentActivity() {
 								Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
 							},
 							onError = {
-								Log.d(TAG, "onError")
+								Log.d(TAG, "onError $it")
 //								progressBar.visibility = View.INVISIBLE
 								runOnUiThread {
 									buttonEnabled = true
@@ -149,7 +149,14 @@ class JetpackActivity : ComponentActivity() {
 					messageView.color = PayPalMessageColor.valueOf(messageColor.uppercase())
 					messageView.logoType = PayPalMessageLogoType.valueOf(messageLogo.uppercase())
 					messageView.alignment = PayPalMessageAlign.valueOf((messageAlignment.uppercase()))
-					messageView.offerType = offerType
+
+					messageView.offerType = when (offerType) {
+						offerGroupOptions[0] -> PayPalMessageOfferType.PAY_LATER_SHORT_TERM
+						offerGroupOptions[1] -> PayPalMessageOfferType.PAY_LATER_LONG_TERM
+						offerGroupOptions[2] -> PayPalMessageOfferType.PAY_LATER_PAY_IN_1
+						offerGroupOptions[3] -> PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
+						else -> null
+					}
 
 					messageView.amount = amount.let{
 						if (it.isBlank()){
@@ -171,6 +178,9 @@ class JetpackActivity : ComponentActivity() {
 					Api.ignoreCache = ignoreCache
 					Api.devTouchpoint = devTouchpoint
 
+					println("messageView.offerType")
+					println(messageView.offerType)
+
 					messageView.refresh()
 				}
 
@@ -179,11 +189,8 @@ class JetpackActivity : ComponentActivity() {
 					messageLogo = logoGroupOptions[0]
 					messageAlignment = alignmentGroupOptions[0]
 
-					offerButton1 = false
-					offerButton2 = false
-					offerButton3 = false
-					offerButton4 = false
 					offerType = null
+					messageView.data.offerType = null
 
 					amount = ""
 					buyerCountry = ""
@@ -195,7 +202,9 @@ class JetpackActivity : ComponentActivity() {
 				}
 
 				// A surface container using the 'background' color from the theme
-				Surface(modifier = Modifier.fillMaxSize().padding(start = 12.dp, end = 12.dp), color = MaterialTheme.colorScheme.background) {
+				Surface(modifier = Modifier
+					.fillMaxSize()
+					.padding(start = 12.dp, end = 12.dp), color = MaterialTheme.colorScheme.background) {
 					Column (
 						modifier = Modifier.verticalScroll(state = rememberScrollState())
 					){
@@ -240,44 +249,28 @@ class JetpackActivity : ComponentActivity() {
 							}
 						)
 
-						OfferButtons(
-							offerButton1 = offerButton1,
-							offer1 = "Short Term",
-							offerButton1Click = {
-								offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
-								offerButton1 = !offerButton1
-								offerButton2 = false
-								offerButton3 = false
-								offerButton4 = false
-							},
-							offerButton2 = offerButton2,
-							offer2 = "Long Term",
-							offerButton2Click = {
-								offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM
-								offerButton1 = false
-								offerButton2 = !offerButton2
-								offerButton3 = false
-								offerButton4 = false
-							},
-							offerButton3 = offerButton3,
-							offer3 = "Pay in 1",
-							offerButton3Click = {
-								offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1
-								offerButton1 = false
-								offerButton2 = false
-								offerButton3 = !offerButton3
-								offerButton4 = false
-							},
-							offerButton4 = offerButton4,
-							offer4 = "Credit",
-							offerButton4Click = {
-								offerType = PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
-								offerButton1 = false
-								offerButton2 = false
-								offerButton3 = false
-								offerButton4 = !offerButton4
+						Row (
+							horizontalArrangement = Arrangement.SpaceBetween,
+							modifier = Modifier.fillMaxWidth()
+						){
+							Text(text = "Offer Type", fontSize = 14.sp, fontWeight = FontWeight.Bold,
+								modifier = Modifier
+									.padding(top = 8.dp)
+									.width(125.dp)
+									.height(intrinsicSize = IntrinsicSize.Max)
+							)
+						}
+
+						OfferOptions(
+							offerGroupOptions = offerGroupOptions,
+							selected = offerType,
+							onSelected = { text: String ->
+								offerType = text
 							}
 						)
+
+						FilledButton(text = "Clear", onClick = { offerType = null }, buttonEnabled = buttonEnabled)
+
 
 						AmountField(
 							amount = amount,
@@ -293,7 +286,9 @@ class JetpackActivity : ComponentActivity() {
 
 						Row (
 							horizontalArrangement = Arrangement.SpaceBetween,
-							modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+							modifier = Modifier
+								.fillMaxWidth()
+								.padding(vertical = 8.dp)
 						){
 							IgnoreCacheSwitch(ignoreCache = ignoreCache, onChange = { ignoreCache = it })
 							DevTouchpointSwitch(devTouchpoint = devTouchpoint, onChange = { devTouchpoint = it })
@@ -373,7 +368,7 @@ fun LogoOptions( logoGroupOptions: List<String>, selected: String, onSelected: (
 				)
 				Text(
 					text = text,
-					fontSize = 16.sp,
+					fontSize = 14.sp,
 					modifier = Modifier
 						.align(Alignment.CenterVertically)
 				)
@@ -446,7 +441,7 @@ fun AlignmentOptions(alignmentGroupOptions: List<String>, selected: String, onSe
 
 				Text(
 					text = text,
-					fontSize = 16.sp,
+					fontSize = 14.sp,
 					modifier = Modifier
 						.align(Alignment.CenterVertically)
 					)
@@ -457,50 +452,39 @@ fun AlignmentOptions(alignmentGroupOptions: List<String>, selected: String, onSe
 }
 
 @Composable
-fun OfferButtons(
-	offerButton1: Boolean,
-	offer1: String,
-	offerButton1Click: () -> Unit,
-	offerButton2: Boolean,
-	offer2: String,
-	offerButton2Click: () -> Unit,
-	offerButton3: Boolean,
-	offer3: String,
-	offerButton3Click: () -> Unit,
-	offerButton4: Boolean,
-	offer4: String,
-	offerButton4Click: () -> Unit,
-) {
+fun OfferOptions(offerGroupOptions: List<String>, selected: String?, onSelected: (text: String) -> Unit) {
 
-	Column( modifier = Modifier.padding(top = 16.dp, bottom = 8.dp) ) {
-		Text(text = "Offer Type", fontSize = 14.sp, fontWeight = FontWeight.Bold,
-			modifier = Modifier
-				.width(125.dp)
-				.height(intrinsicSize = IntrinsicSize.Max)
-		)
+	Row (
+		horizontalArrangement = Arrangement.SpaceEvenly,
+		modifier = Modifier.padding(vertical = 4.dp)
+	) {
 
-		Row( modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 12.dp), horizontalArrangement = Arrangement.SpaceBetween ) {
+		offerGroupOptions.forEach { text ->
+			Row(
+				modifier = Modifier
+					.height(intrinsicSize = IntrinsicSize.Max)
+					.padding(end = Dp(8.0F))
+					.selectable(
+						selected = (text == selected),
+						onClick = { onSelected(text) }
+					),
+			) {
+				RadioButton (
+					selected = (text == selected),
+					onClick = { onSelected(text) },
+					modifier = Modifier
+						.padding(end = Dp(0F))
+						.size(Dp(24f))
+				)
 
-			ToggleButton(
-				toggledState = offerButton1,
-				text = offer1,
-				onClick = offerButton1Click
-			)
-			ToggleButton(
-				toggledState = offerButton2,
-				text = offer2,
-				onClick = offerButton2Click
-			)
-			ToggleButton(
-				toggledState = offerButton3,
-				text = offer3,
-				onClick = offerButton3Click
-			)
-			ToggleButton(
-				toggledState = offerButton4,
-				text = offer4,
-				onClick = offerButton4Click
-			)
+				Text(
+					text = text,
+					fontSize = 14.sp,
+					modifier = Modifier
+						.align(Alignment.CenterVertically)
+				)
+			}
+
 		}
 	}
 }
@@ -580,7 +564,9 @@ fun IgnoreCacheSwitch(ignoreCache: Boolean, onChange: (text: Boolean) -> Unit) {
 			onCheckedChange = onChange
 		)
 
-		Text (text = "Ignore Cache", fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterVertically).padding(start = 8.dp))
+		Text (text = "Ignore Cache", fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier
+			.align(Alignment.CenterVertically)
+			.padding(start = 8.dp))
 	}
 }
 
@@ -593,29 +579,11 @@ fun DevTouchpointSwitch(devTouchpoint: Boolean, onChange: (text: Boolean) -> Uni
 			onCheckedChange = onChange
 		)
 
-		Text (text = "Dev Touchpoint", fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterVertically).padding(start = 8.dp))
+		Text (text = "Dev Touchpoint", fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier
+			.align(Alignment.CenterVertically)
+			.padding(start = 8.dp))
 	}
 
-}
-
-@Composable
-fun ToggleButton( toggledState: Boolean, text: String, onClick: () -> Unit) {
-
-	Button(
-		colors = when(toggledState) {
-			true -> ButtonDefaults.outlinedButtonColors()
-			else -> ButtonDefaults.elevatedButtonColors()
-		},
-		elevation = ButtonDefaults.elevatedButtonElevation(),
-		shape = RectangleShape,
-		contentPadding = PaddingValues(start = 6.dp, top = 0.dp, end = 12.dp, bottom = 0.dp),
-		modifier = Modifier
-			.width(96.dp)
-			.height(IntrinsicSize.Max),
-		onClick = onClick
-	) {
-		Text(text)
-	}
 }
 
 @Composable
