@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -15,41 +14,57 @@ import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messagesdemo.ui.BasicTheme
 import android.widget.Toast
-import androidx.compose.foundation.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.paypal.messages.config.PayPalMessageOfferType
-import com.paypal.messages.config.message.*
+import com.paypal.messages.config.message.PayPalMessageConfig
+import com.paypal.messages.config.message.PayPalMessageData
+import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
 import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.io.Api
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.font.FontWeight
 
 fun toSentenceCase(input: String): String {
 	// Convert the string to lowercase and split it into words
 	val words = input.lowercase().split(" ")
 
 	// Capitalize the first letter of each word and join them back into a string
-	return words.joinToString(" ") { it.replaceFirstChar { it.titlecase() } }
-
+	return words.joinToString(" ") { it -> it.replaceFirstChar { it.titlecase() } }
 }
 
 class JetpackActivity : ComponentActivity() {
@@ -61,10 +76,8 @@ class JetpackActivity : ComponentActivity() {
 			BasicTheme {
 				val context = LocalContext.current
 
-				var progessBar by remember{ mutableStateOf(false) }
-
-				// Client ID
-				var clientId: String by remember { mutableStateOf("") }
+				var progessBar by remember { mutableStateOf(false) }
+				var clientId: String by remember { mutableStateOf("CLIENT_ID_HERE") }
 
 				// Style Color
 				var backgroundColor by remember { mutableStateOf(Color.White) }
@@ -72,44 +85,44 @@ class JetpackActivity : ComponentActivity() {
 					toSentenceCase(PayPalMessageColor.BLACK.name),
 					toSentenceCase(PayPalMessageColor.WHITE.name),
 					toSentenceCase(PayPalMessageColor.MONOCHROME.name),
-					toSentenceCase(PayPalMessageColor.GRAYSCALE.name)
+					toSentenceCase(PayPalMessageColor.GRAYSCALE.name),
 				)
-				var messageColor by remember { mutableStateOf(colorGroupOptions[0])}
+				var messageColor by remember { mutableStateOf(colorGroupOptions[0]) }
 
 				// Style Logo
 				val logoGroupOptions = listOf(
 					toSentenceCase(PayPalMessageLogoType.PRIMARY.name),
 					toSentenceCase(PayPalMessageLogoType.INLINE.name),
 					toSentenceCase(PayPalMessageLogoType.ALTERNATIVE.name),
-					toSentenceCase(PayPalMessageLogoType.NONE.name)
+					toSentenceCase(PayPalMessageLogoType.NONE.name),
 				)
-				var messageLogo by remember { mutableStateOf(logoGroupOptions[0])}
+				var messageLogo by remember { mutableStateOf(logoGroupOptions[0]) }
 
 				// Style Aligntment
 				val alignmentGroupOptions = listOf(
 					toSentenceCase(PayPalMessageAlign.LEFT.name),
 					toSentenceCase(PayPalMessageAlign.CENTER.name),
-					toSentenceCase(PayPalMessageAlign.RIGHT.name)
+					toSentenceCase(PayPalMessageAlign.RIGHT.name),
 				)
-
-				var messageAlignment by remember { mutableStateOf(alignmentGroupOptions[0])}
+				var messageAlignment by remember { mutableStateOf(alignmentGroupOptions[0]) }
 
 				val offerGroupOptions = listOf(
-					"Short Term", "Long Term", "Pay In 1", "Credit"
+					"Short Term",
+					"Long Term",
+					"Pay In 1",
+					"Credit",
 				)
-
-				// Offer Type
-				var offerType: String? by remember { mutableStateOf(null)}
+				var offerType: String? by remember { mutableStateOf(null) }
 
 				var amount: String by remember { mutableStateOf("") }
-				var buyerCountry: String  by remember { mutableStateOf("") }
+				var buyerCountry: String by remember { mutableStateOf("") }
 				var stageTag: String by remember { mutableStateOf("") }
 				var ignoreCache: Boolean by remember { mutableStateOf(false) }
 				var devTouchpoint: Boolean by remember { mutableStateOf(false) }
-
 				var buttonEnabled: Boolean by remember { mutableStateOf(true) }
 
-				val messageView = PayPalMessageView(context,
+				val messageView = PayPalMessageView(
+					context,
 					config = PayPalMessageConfig(
 						data = PayPalMessageData(clientID = clientId, environment = PayPalEnvironment.SANDBOX),
 						viewStateCallbacks = PayPalMessageViewStateCallbacks(
@@ -134,15 +147,14 @@ class JetpackActivity : ComponentActivity() {
 									Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
 								}
 							},
-						)
-					)
+						),
+					),
 				)
 
 				fun updateMessageData() {
+					messageView.clientID = clientId
 
-					messageView.clientId = clientId
-
-					if ( PayPalMessageColor.valueOf(messageColor.uppercase()) === PayPalMessageColor.WHITE ) {
+					if (PayPalMessageColor.valueOf(messageColor.uppercase()) === PayPalMessageColor.WHITE) {
 						backgroundColor = Color.Black
 					} else {
 						backgroundColor = Color.White
@@ -160,18 +172,17 @@ class JetpackActivity : ComponentActivity() {
 						else -> null
 					}
 
-					messageView.amount = amount.let{
-						if (it.isBlank()){
+					messageView.amount = amount.let {
+						if (it.isBlank()) {
 							null
 						} else {
 							it.toDouble()
-
 						}
 					}
-					messageView.buyerCountry = buyerCountry.let{
-						if(it.isBlank()){
+					messageView.buyerCountry = buyerCountry.let {
+						if (it.isBlank()) {
 							null
-						}else {
+						} else {
 							buyerCountry
 						}
 					}
@@ -179,9 +190,6 @@ class JetpackActivity : ComponentActivity() {
 					Api.stageTag = stageTag
 					Api.ignoreCache = ignoreCache
 					Api.devTouchpoint = devTouchpoint
-
-					println("messageView.offerType")
-					println(messageView.offerType)
 
 					messageView.refresh()
 				}
@@ -204,62 +212,75 @@ class JetpackActivity : ComponentActivity() {
 				}
 
 				// A surface container using the 'background' color from the theme
-				Surface(modifier = Modifier
-					.fillMaxSize()
-					.padding(start = 12.dp, end = 12.dp), color = MaterialTheme.colorScheme.background) {
-					Column (
-						modifier = Modifier.verticalScroll(state = rememberScrollState())
-					){
-
-						Text(text = "Message Configuration", fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+				Surface(
+					color = MaterialTheme.colorScheme.background,
+					modifier = Modifier
+						.fillMaxSize()
+						.padding(start = 12.dp, end = 12.dp),
+				) {
+					Column(
+						modifier = Modifier.verticalScroll(state = rememberScrollState()),
+					) {
+						Text(
+							text = "Message Configuration",
+							fontSize = 20.sp,
+							fontWeight = FontWeight.Bold,
+							modifier = Modifier.padding(top = 8.dp),
+						)
 
 						ClientIdField(
 							text = "Client ID",
 							clientId = clientId,
 							onChange = {
 								clientId = it
-							}
+							},
 						)
 
-						Text(text = "Style Options", fontSize = 14.sp, fontWeight = FontWeight.Bold,
+						Text(
+							text = "Style Options",
+							fontSize = 14.sp,
+							fontWeight = FontWeight.Bold,
 							modifier = Modifier
 								.width(125.dp)
-								.height(intrinsicSize = IntrinsicSize.Max)
+								.height(intrinsicSize = IntrinsicSize.Max),
 						)
 
 						LogoOptions(
 							logoGroupOptions = logoGroupOptions,
 							selected = messageLogo,
 							onSelected = { text: String ->
-								messageLogo = text.toString()
-							}
+								messageLogo = text
+							},
 						)
 
 						ColorOptions(
 							colorGroupOptions = colorGroupOptions,
 							selected = messageColor,
 							onSelected = { text: String ->
-								messageColor = text.toString()
-							}
+								messageColor = text
+							},
 						)
 
 						AlignmentOptions(
 							alignmentGroupOptions = alignmentGroupOptions,
 							selected = messageAlignment,
 							onSelected = { text: String ->
-								messageAlignment = text.toString()
-							}
+								messageAlignment = text
+							},
 						)
 
-						Row (
+						Row(
 							horizontalArrangement = Arrangement.SpaceBetween,
-							modifier = Modifier.fillMaxWidth()
-						){
-							Text(text = "Offer Type", fontSize = 14.sp, fontWeight = FontWeight.Bold,
+							modifier = Modifier.fillMaxWidth(),
+						) {
+							Text(
+								text = "Offer Type",
+								fontSize = 14.sp,
+								fontWeight = FontWeight.Bold,
 								modifier = Modifier
 									.padding(top = 8.dp)
 									.width(125.dp)
-									.height(intrinsicSize = IntrinsicSize.Max)
+									.height(intrinsicSize = IntrinsicSize.Max),
 							)
 						}
 
@@ -268,30 +289,29 @@ class JetpackActivity : ComponentActivity() {
 							selected = offerType,
 							onSelected = { text: String ->
 								offerType = text
-							}
+							},
 						)
 
 						FilledButton(text = "Clear", onClick = { offerType = null }, buttonEnabled = buttonEnabled)
 
-
 						AmountField(
 							amount = amount,
-							onChange = { amount = it }
+							onChange = { amount = it },
 						)
 
 						BuyerCountryField(
 							country = buyerCountry,
-							onChange = { buyerCountry = it }
+							onChange = { buyerCountry = it },
 						)
 
 						StageTagField(stageTag, onChange = { stageTag = it })
 
-						Row (
+						Row(
 							horizontalArrangement = Arrangement.SpaceBetween,
 							modifier = Modifier
 								.fillMaxWidth()
-								.padding(vertical = 8.dp)
-						){
+								.padding(vertical = 8.dp),
+						) {
 							IgnoreCacheSwitch(ignoreCache = ignoreCache, onChange = { ignoreCache = it })
 							DevTouchpointSwitch(devTouchpoint = devTouchpoint, onChange = { devTouchpoint = it })
 						}
@@ -303,19 +323,18 @@ class JetpackActivity : ComponentActivity() {
 								.padding(top = 16.dp, bottom = 32.dp, start = 8.dp, end = 8.dp)
 								.background(color = backgroundColor)
 								.fillMaxWidth(),
-							factory = { _ ->
+							factory = {
 								messageView
-							}
+							},
 						)
 
-						Row (
+						Row(
 							horizontalArrangement = Arrangement.SpaceBetween,
-							modifier = Modifier.fillMaxWidth()
-						){
+							modifier = Modifier.fillMaxWidth(),
+						) {
 							FilledButton(text = "Reset", onClick = { resetButton() }, buttonEnabled = buttonEnabled)
 							FilledButton(text = "Submit", onClick = { updateMessageData() }, buttonEnabled = buttonEnabled)
 						}
-
 					}
 				}
 			}
@@ -325,56 +344,54 @@ class JetpackActivity : ComponentActivity() {
 
 @Composable
 fun ClientIdField(clientId: String, onChange: (text: String) -> Unit, text: String) {
-	Row (
-		modifier = Modifier.padding(vertical = 16.dp)
+	Row(
+		modifier = Modifier.padding(vertical = 16.dp),
 	) {
-		Text(text = text, fontSize = 14.sp, fontWeight = FontWeight.Bold,
+		Text(
+			text = text,
+			fontSize = 14.sp,
+			fontWeight = FontWeight.Bold,
 			modifier = Modifier
 				.width(125.dp)
 				.height(intrinsicSize = IntrinsicSize.Max)
-				.align(Alignment.CenterVertically)
+				.align(Alignment.CenterVertically),
 		)
 
 		StyledTextField(
 			value = clientId,
 			onChange = onChange,
-			placeholder = text
 		)
-
 	}
 }
 
 @Composable
-fun LogoOptions( logoGroupOptions: List<String>, selected: String, onSelected: (text: String) -> Unit ) {
-	val radioGroupOptions = logoGroupOptions
-
-	Row (
+fun LogoOptions(logoGroupOptions: List<String>, selected: String, onSelected: (text: String) -> Unit) {
+	Row(
 		horizontalArrangement = Arrangement.SpaceEvenly,
-		modifier = Modifier.padding(top = 8.dp)
+		modifier = Modifier.padding(top = 8.dp),
 	) {
-		radioGroupOptions.forEach { text ->
-
+		logoGroupOptions.forEach { text ->
 			Row(
 				modifier = Modifier
 					.height(intrinsicSize = IntrinsicSize.Max)
 					.padding(end = Dp(8.0F))
 					.selectable(
 						selected = (text == selected),
-						onClick = { onSelected(text) }
+						onClick = { onSelected(text) },
 					),
 			) {
-				RadioButton (
+				RadioButton(
 					selected = (text == selected),
 					onClick = { onSelected(text) },
 					modifier = Modifier
 						.padding(end = Dp(0F))
-						.size(Dp(24f))
+						.size(Dp(24f)),
 				)
 				Text(
 					text = text,
 					fontSize = 14.sp,
 					modifier = Modifier
-						.align(Alignment.CenterVertically)
+						.align(Alignment.CenterVertically),
 				)
 			}
 		}
@@ -383,34 +400,32 @@ fun LogoOptions( logoGroupOptions: List<String>, selected: String, onSelected: (
 
 @Composable
 fun ColorOptions(colorGroupOptions: List<String>, selected: String, onSelected: (text: String) -> Unit) {
-
-	Row (
+	Row(
 		horizontalArrangement = Arrangement.SpaceEvenly,
-		modifier = Modifier.padding(vertical = 4.dp)
+		modifier = Modifier.padding(vertical = 4.dp),
 	) {
 		colorGroupOptions.forEach { text ->
-
 			Row(
 				modifier = Modifier
 					.height(intrinsicSize = IntrinsicSize.Max)
 					.padding(end = Dp(8.0F))
 					.selectable(
 						selected = (text == selected),
-						onClick = { onSelected(text) }
+						onClick = { onSelected(text) },
 					),
 			) {
-				RadioButton (
+				RadioButton(
 					selected = (text == selected),
 					onClick = { onSelected(text) },
 					modifier = Modifier
 						.padding(end = Dp(0F))
-						.size(Dp(24f))
+						.size(Dp(24f)),
 				)
 				Text(
 					text = text,
 					fontSize = 14.sp,
 					modifier = Modifier
-						.align(Alignment.CenterVertically)
+						.align(Alignment.CenterVertically),
 				)
 			}
 		}
@@ -419,12 +434,10 @@ fun ColorOptions(colorGroupOptions: List<String>, selected: String, onSelected: 
 
 @Composable
 fun AlignmentOptions(alignmentGroupOptions: List<String>, selected: String, onSelected: (text: String) -> Unit) {
-
-	Row (
+	Row(
 		horizontalArrangement = Arrangement.SpaceEvenly,
-		modifier = Modifier.padding(vertical = 4.dp)
+		modifier = Modifier.padding(vertical = 4.dp),
 	) {
-
 		alignmentGroupOptions.forEach { text ->
 			Row(
 				modifier = Modifier
@@ -432,37 +445,34 @@ fun AlignmentOptions(alignmentGroupOptions: List<String>, selected: String, onSe
 					.padding(end = Dp(8.0F))
 					.selectable(
 						selected = (text == selected),
-						onClick = { onSelected(text) }
+						onClick = { onSelected(text) },
 					),
 			) {
-				RadioButton (
+				RadioButton(
 					selected = (text == selected),
 					onClick = { onSelected(text) },
 					modifier = Modifier
 						.padding(end = Dp(0F))
-						.size(Dp(24f))
+						.size(Dp(24f)),
 				)
 
 				Text(
 					text = text,
 					fontSize = 14.sp,
 					modifier = Modifier
-						.align(Alignment.CenterVertically)
-					)
+						.align(Alignment.CenterVertically),
+				)
 			}
-
 		}
 	}
 }
 
 @Composable
 fun OfferOptions(offerGroupOptions: List<String>, selected: String?, onSelected: (text: String) -> Unit) {
-
-	Row (
+	Row(
 		horizontalArrangement = Arrangement.SpaceEvenly,
-		modifier = Modifier.padding(vertical = 4.dp)
+		modifier = Modifier.padding(vertical = 4.dp),
 	) {
-
 		offerGroupOptions.forEach { text ->
 			Row(
 				modifier = Modifier
@@ -470,93 +480,92 @@ fun OfferOptions(offerGroupOptions: List<String>, selected: String?, onSelected:
 					.padding(end = Dp(8.0F))
 					.selectable(
 						selected = (text == selected),
-						onClick = { onSelected(text) }
+						onClick = { onSelected(text) },
 					),
 			) {
-				RadioButton (
+				RadioButton(
 					selected = (text == selected),
 					onClick = { onSelected(text) },
 					modifier = Modifier
 						.padding(end = Dp(0F))
-						.size(Dp(24f))
+						.size(Dp(24f)),
 				)
 
 				Text(
 					text = text,
 					fontSize = 14.sp,
 					modifier = Modifier
-						.align(Alignment.CenterVertically)
+						.align(Alignment.CenterVertically),
 				)
 			}
-
 		}
 	}
 }
 
 @Composable
-fun AmountField(amount: String, onChange: (text: String) -> Unit){
-
+fun AmountField(amount: String, onChange: (text: String) -> Unit) {
 	Row(
-			modifier = Modifier.padding(vertical = 8.dp)
-	){
-
-		Text(text = "Amount", fontSize = 14.sp, fontWeight = FontWeight.Bold,
+		modifier = Modifier.padding(vertical = 8.dp),
+	) {
+		Text(
+			text = "Amount",
+			fontSize = 14.sp,
+			fontWeight = FontWeight.Bold,
 			modifier = Modifier
 				.width(125.dp)
 				.height(intrinsicSize = IntrinsicSize.Max)
-				.align(Alignment.CenterVertically)
+				.align(Alignment.CenterVertically),
 		)
 
 		StyledTextField(
 			value = amount,
 			onChange = onChange,
-			placeholder = "US",
-			keyboardType = KeyboardType.Number
+			keyboardType = KeyboardType.Number,
 		)
-
 	}
-
 }
 
 @Composable
-fun BuyerCountryField(country: String, onChange: (text: String) -> Unit){
-	Row (
-		modifier = Modifier.padding(vertical = 9.dp)
+fun BuyerCountryField(country: String, onChange: (text: String) -> Unit) {
+	Row(
+		modifier = Modifier.padding(vertical = 9.dp),
 	) {
-		Text(text = "Buyer Country", fontSize = 14.sp, fontWeight = FontWeight.Bold,
+		Text(
+			text = "Buyer Country",
+			fontSize = 14.sp,
+			fontWeight = FontWeight.Bold,
 			modifier = Modifier
 				.width(125.dp)
 				.height(intrinsicSize = IntrinsicSize.Max)
-				.align(Alignment.CenterVertically)
+				.align(Alignment.CenterVertically),
 		)
 
 		StyledTextField(
 			value = country,
 			onChange = onChange,
-			placeholder = "US"
 		)
-
 	}
 }
 
 @Composable
-fun StageTagField( stageTag: String, onChange: (text: String) -> Unit){
-	Row (
-		modifier = Modifier.padding(vertical = 8.dp)
+fun StageTagField(stageTag: String, onChange: (text: String) -> Unit) {
+	Row(
+		modifier = Modifier.padding(vertical = 8.dp),
 	) {
-		Text(text = "Stage Tag", fontSize = 14.sp, fontWeight = FontWeight.Bold,
+		Text(
+			text = "Stage Tag",
+			fontSize = 14.sp,
+			fontWeight = FontWeight.Bold,
 			modifier = Modifier
 				.width(125.dp)
 				.height(intrinsicSize = IntrinsicSize.Max)
-				.align(Alignment.CenterVertically)
+				.align(Alignment.CenterVertically),
 		)
 
 		StyledTextField(
 			value = stageTag,
 			onChange = onChange,
-			placeholder = "US"
 		)
-
 	}
 }
 
@@ -565,29 +574,37 @@ fun IgnoreCacheSwitch(ignoreCache: Boolean, onChange: (text: Boolean) -> Unit) {
 	Row {
 		Switch(
 			checked = ignoreCache,
-			onCheckedChange = onChange
+			onCheckedChange = onChange,
 		)
 
-		Text (text = "Ignore Cache", fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier
-			.align(Alignment.CenterVertically)
-			.padding(start = 8.dp))
+		Text(
+			text = "Ignore Cache",
+			fontSize = 14.sp,
+			fontWeight = FontWeight.Bold,
+			modifier = Modifier
+				.align(Alignment.CenterVertically)
+				.padding(start = 8.dp),
+		)
 	}
 }
 
 @Composable
 fun DevTouchpointSwitch(devTouchpoint: Boolean, onChange: (text: Boolean) -> Unit) {
-
-	Row{
+	Row {
 		Switch(
 			checked = devTouchpoint,
-			onCheckedChange = onChange
+			onCheckedChange = onChange,
 		)
 
-		Text (text = "Dev Touchpoint", fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier
-			.align(Alignment.CenterVertically)
-			.padding(start = 8.dp))
+		Text(
+			text = "Dev Touchpoint",
+			fontSize = 14.sp,
+			fontWeight = FontWeight.Bold,
+			modifier = Modifier
+				.align(Alignment.CenterVertically)
+				.padding(start = 8.dp),
+		)
 	}
-
 }
 
 @Composable
@@ -606,29 +623,33 @@ fun FilledButton(onClick: () -> Unit, text: String, buttonEnabled: Boolean) {
 }
 
 @Composable
-fun StyledTextField(value: String, onChange: (text: String) -> Unit, placeholder: String, keyboardType: KeyboardType? = KeyboardType.Text){
+fun StyledTextField(
+	value: String,
+	onChange: (text: String) -> Unit,
+	keyboardType: KeyboardType? = KeyboardType.Text,
+) {
 	Row(
 		modifier = Modifier
 			.fillMaxWidth()
 			.height(36.dp)
 			.background(
 				Color.LightGray,
-				RectangleShape
-			)
-	){
+				RectangleShape,
+			),
+	) {
 		BasicTextField(
 			value = value,
 			onValueChange = onChange,
 			singleLine = true,
-			textStyle =  MaterialTheme.typography.bodyMedium,
+			textStyle = MaterialTheme.typography.bodyMedium,
 			keyboardOptions = KeyboardOptions.Default.copy(
 				keyboardType = keyboardType ?: KeyboardType.Text,
-				imeAction = ImeAction.Done
+				imeAction = ImeAction.Done,
 			),
 			modifier = Modifier
 				.fillMaxWidth()
 				.fillMaxHeight()
-				.padding(start = 4.dp, end = 4.dp, top = 8.dp)
+				.padding(start = 4.dp, end = 4.dp, top = 8.dp),
 		)
 	}
 }
@@ -643,5 +664,4 @@ fun CircularIndicator(progressBar: Boolean) {
 		color = MaterialTheme.colorScheme.secondary,
 		trackColor = MaterialTheme.colorScheme.surfaceVariant,
 	)
-
 }
