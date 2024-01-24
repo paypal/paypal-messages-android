@@ -76,7 +76,6 @@ class JetpackActivity : ComponentActivity() {
 			BasicTheme {
 				val context = LocalContext.current
 
-				var progessBar by remember { mutableStateOf(false) }
 				var clientId: String by remember { mutableStateOf("CLIENT_ID_HERE") }
 
 				// Style Color
@@ -120,6 +119,8 @@ class JetpackActivity : ComponentActivity() {
 				var ignoreCache: Boolean by remember { mutableStateOf(false) }
 				var devTouchpoint: Boolean by remember { mutableStateOf(false) }
 				var buttonEnabled: Boolean by remember { mutableStateOf(true) }
+
+				var progessBar by remember { mutableStateOf(false) }
 
 				val messageView = PayPalMessageView(
 					context,
