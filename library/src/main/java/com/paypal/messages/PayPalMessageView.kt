@@ -488,8 +488,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			is LogoAsset.ImageAsset -> {
 				ContextCompat.getDrawable(context, logoAsset.resId)?.let { logoDrawable ->
 					val logoHeight: Int
-					val widthAdjustment: Int
-					var top: Int
+					val top: Int
 
 					when {
 						// Inline
