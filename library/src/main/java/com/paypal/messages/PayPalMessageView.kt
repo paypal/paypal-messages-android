@@ -494,27 +494,24 @@ class PayPalMessageView @JvmOverloads constructor(
 					when {
 						// Inline
 						logoDrawable.intrinsicHeight > 200 && logoDrawable.intrinsicWidth > 200 -> {
-							logoHeight = 46
-							widthAdjustment = 0
+							logoHeight = lineHeight
 							top = 6
 						}
 						// Alternative
 						logoDrawable.intrinsicHeight > 200 && logoDrawable.intrinsicWidth < 200 -> {
-							logoHeight = 54
-							widthAdjustment = 2
+							logoHeight = lineHeight + 8
 							top = 8
 						}
 						// Primary
 						else -> {
-							logoHeight = 50
-							widthAdjustment = 4
-							top = 2
+							logoHeight = lineHeight + 4
+							top = 4
 						}
 					}
 
 					val width =
 						(logoHeight - top) * logoDrawable.intrinsicWidth / logoDrawable.intrinsicHeight
-					logoDrawable.setBounds(0, top, width - widthAdjustment, logoHeight)
+					logoDrawable.setBounds(0, top, width, logoHeight)
 					val alignCenter = 2
 
 					setSpan(
