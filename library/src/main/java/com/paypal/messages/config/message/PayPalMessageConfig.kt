@@ -23,4 +23,13 @@ data class PayPalMessageConfig(
 			Logger.getInstance(data.clientID).setGlobalAnalytics(integrationName, integrationVersion)
 		}
 	}
+
+	fun merge(newConfig: PayPalMessageConfig): PayPalMessageConfig {
+		return this.copy(
+			data = newConfig.data,
+			style = newConfig.style,
+			viewStateCallbacks = newConfig.viewStateCallbacks ?: this.viewStateCallbacks,
+			eventsCallbacks = newConfig.eventsCallbacks ?: this.eventsCallbacks,
+		)
+	}
 }
