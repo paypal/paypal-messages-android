@@ -160,7 +160,6 @@ class XmlActivity : AppCompatActivity() {
 			payPalMessage.style = PayPalMessageStyle(
 				textAlign = alignment, color = color, logoType = logoType,
 			)
-			payPalMessage.refresh()
 		}
 
 		// Restore default options and reset UI
@@ -200,7 +199,12 @@ class XmlActivity : AppCompatActivity() {
 		message.logoType = PayPalMessageLogoType.INLINE
 		message.alignment = PayPalMessageAlign.CENTER
 		message.eventsCallbacks = PayPalMessageEventsCallbacks()
+		message.onClick = {}
+		message.onApply = {}
 		message.viewStateCallbacks = PayPalMessageViewStateCallbacks()
+		message.onLoading = {}
+		message.onSuccess = {}
+		message.onError = {}
 		EnvVars.getClientId(PayPalEnvironment.STAGE)
 	}
 }

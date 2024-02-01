@@ -32,7 +32,13 @@ import com.paypal.messages.logger.TrackingComponent
 import com.paypal.messages.logger.TrackingEvent
 import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.UUID
+import kotlin.coroutines.CoroutineContext
 import kotlin.system.measureTimeMillis
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
@@ -63,14 +69,14 @@ class PayPalMessageView @JvmOverloads constructor(
 	var config: MessageConfig = config.copy()
 		set(configArg) {
 			field = configArg
-			updateFromConfig(configArg)
-			updateMessageContent()
+			debounceUpdateContent(Unit)
 		}
 
 	/**
 	 * DATA
 	 */
 	var data: MessageData = this.config.data
+		get() = config.data
 		set(dataArg) {
 			if (field != dataArg) {
 				field = dataArg
@@ -79,6 +85,8 @@ class PayPalMessageView @JvmOverloads constructor(
 					modal?.buyerCountry = dataArg.buyerCountry
 					modal?.offerType = dataArg.offerType
 				}
+				config = config.merge(MessageConfig(data = dataArg, style = style))
+				debounceUpdateContent(Unit)
 			}
 		}
 	var clientID: String = data.clientID
@@ -111,9 +119,14 @@ class PayPalMessageView @JvmOverloads constructor(
 	/**
 	 * STYLE
 	 */
-	var style: MessageStyle = config.style
+	var style: MessageStyle = this.config.style
+		get() = config.style
 		set(styleArg) {
-			if (field != styleArg) field = styleArg
+			if (field != styleArg) {
+				field = styleArg
+				config = config.merge(MessageConfig(data = data, style = styleArg))
+				debounceUpdateContent(Unit)
+			}
 		}
 	var color: Color = Color.BLACK
 		get() = style.color ?: Color.BLACK
@@ -133,11 +146,21 @@ class PayPalMessageView @JvmOverloads constructor(
 
 	// VIEW STATE CALLBACKS
 	// Updates the specific view state callbacks for the current PayPalMessageView
-	var viewStateCallbacks: MessageViewState = config.viewStateCallbacks ?: MessageViewState()
-	private var onLoading: () -> Unit
+	var viewStateCallbacks: MessageViewState = this.config.viewStateCallbacks ?: MessageViewState()
+		get() = config.viewStateCallbacks ?: MessageViewState()
+		set(viewStateArg) {
+			if (field != viewStateArg) {
+				field = viewStateArg
+				config = config.merge(
+					MessageConfig(data = data, style = style, viewStateCallbacks = viewStateArg)
+				)
+				debounceUpdateContent(Unit)
+			}
+		}
+	var onLoading: () -> Unit
 		get() = viewStateCallbacks.onLoading
 		set(onLoadingArg) { viewStateCallbacks.onLoading = onLoadingArg }
-	private var onSuccess: () -> Unit
+	var onSuccess: () -> Unit
 		get() = viewStateCallbacks.onSuccess
 		set(onSuccessArg) { viewStateCallbacks.onSuccess = onSuccessArg }
 	var onError: (error: PayPalErrors.Base) -> Unit
@@ -146,11 +169,21 @@ class PayPalMessageView @JvmOverloads constructor(
 
 	// EVENTS CALLBACKS
 	// Updates the specific events callbacks for the current PayPalMessageView
-	var eventsCallbacks: MessageEvents = config.eventsCallbacks ?: MessageEvents()
-	private var onClick: () -> Unit
+	var eventsCallbacks: MessageEvents = this.config.eventsCallbacks ?: MessageEvents()
+		get() = config.eventsCallbacks ?: MessageEvents()
+		set(eventsArg) {
+			if (field != eventsArg) {
+				field = eventsArg
+				config = config.merge(
+					MessageConfig(data = data, style = style, eventsCallbacks = eventsArg)
+				)
+				debounceUpdateContent(Unit)
+			}
+		}
+	var onClick: () -> Unit
 		get() = eventsCallbacks.onClick
 		set(onClickArg) { eventsCallbacks.onClick = onClickArg }
-	private var onApply: () -> Unit
+	var onApply: () -> Unit
 		get() = eventsCallbacks.onApply
 		set(onApplyArg) { eventsCallbacks.onApply = onApplyArg }
 
@@ -178,7 +211,6 @@ class PayPalMessageView @JvmOverloads constructor(
 			updateFromAttributes(typedArray)
 		}
 		if (config.data.clientID === "") LogCat.error(TAG, "ClientID is an empty string")
-		updateFromConfig(config)
 		Api.sessionId = UUID.randomUUID()
 		updateMessageContent()
 	}
@@ -223,9 +255,23 @@ class PayPalMessageView @JvmOverloads constructor(
 		this.modal?.dismiss()
 	}
 
-	fun refresh() {
-		updateMessageContent()
+	private fun <T> debounce(
+		delayMs: Long = 1L,
+		coroutineContext: CoroutineContext = Dispatchers.Main,
+		callback: (T) -> Unit
+	): (T) -> Unit {
+		var debounceJob: Job? = null
+		return { param: T ->
+			if (debounceJob?.isCompleted != false) {
+				debounceJob = CoroutineScope(coroutineContext).launch {
+					delay(delayMs)
+					callback(param)
+				}
+			}
+		}
 	}
+
+	val debounceUpdateContent = debounce<Unit> { updateMessageContent() }
 
 	/**
 	 * This function purpose is to update only the UI of the [PayPalMessageView] component.
@@ -331,29 +377,10 @@ class PayPalMessageView @JvmOverloads constructor(
 	}
 
 	/**
-	 * This function will update the local config related values based on the provided [MessageConfig].
-	 */
-	private fun updateFromConfig(config: MessageConfig?) {
-		LogCat.debug(TAG, "updateFromConfig:\n$config")
-		clientID = config?.data?.clientID ?: ""
-		amount = config?.data?.amount
-		placement = config?.data?.placement
-		offerType = config?.data?.offerType
-		buyerCountry = config?.data?.buyerCountry
-		color = config?.style?.color ?: Color.BLACK
-		alignment = config?.style?.textAlign ?: Align.LEFT
-		logoType = config?.style?.logoType ?: LogoType.PRIMARY
-		onError = config?.viewStateCallbacks?.onError ?: {}
-		onSuccess = config?.viewStateCallbacks?.onSuccess ?: {}
-		onLoading = config?.viewStateCallbacks?.onLoading ?: {}
-		onApply = config?.eventsCallbacks?.onApply ?: {}
-		onClick = config?.eventsCallbacks?.onClick ?: {}
-	}
-
-	/**
 	 * This function updates message content uses [Api.getMessageWithHash] to fetch the data.
 	 */
 	private fun updateMessageContent() {
+		LogCat.debug(TAG, "updateMessageContent config: $config")
 		if (!updateInProgress) {
 			Api.instanceId = UUID.randomUUID()
 
