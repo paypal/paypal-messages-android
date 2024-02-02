@@ -68,7 +68,7 @@ class PayPalMessageView @JvmOverloads constructor(
 
 	var config: MessageConfig = config.copy()
 		set(configArg) {
-			field = configArg
+			field = configArg.copy()
 			debounceUpdateContent(Unit)
 		}
 
@@ -79,13 +79,13 @@ class PayPalMessageView @JvmOverloads constructor(
 		get() = config.data
 		set(dataArg) {
 			if (field != dataArg) {
-				field = dataArg
+				field = dataArg.copy()
 				if (modal != null) {
-					modal?.amount = dataArg.amount
-					modal?.buyerCountry = dataArg.buyerCountry
-					modal?.offerType = dataArg.offerType
+					modal?.amount = field.amount
+					modal?.buyerCountry = field.buyerCountry
+					modal?.offerType = field.offerType
 				}
-				config = config.merge(MessageConfig(data = dataArg, style = style))
+				config = config.merge(MessageConfig(data = field, style = style))
 				debounceUpdateContent(Unit)
 			}
 		}
@@ -123,8 +123,8 @@ class PayPalMessageView @JvmOverloads constructor(
 		get() = config.style
 		set(styleArg) {
 			if (field != styleArg) {
-				field = styleArg
-				config = config.merge(MessageConfig(data = data, style = styleArg))
+				field = styleArg.copy()
+				config = config.merge(MessageConfig(data = data, style = field))
 				debounceUpdateContent(Unit)
 			}
 		}
@@ -150,9 +150,9 @@ class PayPalMessageView @JvmOverloads constructor(
 		get() = config.viewStateCallbacks ?: MessageViewState()
 		set(viewStateArg) {
 			if (field != viewStateArg) {
-				field = viewStateArg
+				field = viewStateArg.copy()
 				config = config.merge(
-					MessageConfig(data = data, style = style, viewStateCallbacks = viewStateArg)
+					MessageConfig(data = data, style = style, viewStateCallbacks = field)
 				)
 				debounceUpdateContent(Unit)
 			}
@@ -173,9 +173,9 @@ class PayPalMessageView @JvmOverloads constructor(
 		get() = config.eventsCallbacks ?: MessageEvents()
 		set(eventsArg) {
 			if (field != eventsArg) {
-				field = eventsArg
+				field = eventsArg.copy()
 				config = config.merge(
-					MessageConfig(data = data, style = style, eventsCallbacks = eventsArg)
+					MessageConfig(data = data, style = style, eventsCallbacks = field)
 				)
 				debounceUpdateContent(Unit)
 			}
