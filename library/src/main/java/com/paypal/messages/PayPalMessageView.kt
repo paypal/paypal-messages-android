@@ -66,6 +66,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	private val TAG = "PayPalMessage"
 	private var messageTextView: TextView
 	private var updateInProgress = false
+	private var instanceId = UUID.randomUUID()
 
 	private var config: MessageConfig = config.copy()
 		get() = MessageConfig(
@@ -434,8 +435,6 @@ class PayPalMessageView @JvmOverloads constructor(
 	private fun updateMessageContent() {
 		LogCat.debug(TAG, "updateMessageContent config: $config")
 		if (!updateInProgress) {
-			Api.instanceId = UUID.randomUUID()
-
 			// Call OnLoading callback and prepare view for the process
 			onLoading.invoke()
 			messageTextView.visibility = View.GONE
@@ -446,6 +445,7 @@ class PayPalMessageView @JvmOverloads constructor(
 				Api.getMessageWithHash(
 					context,
 					this.config,
+					this.instanceId,
 					this,
 				)
 			}.toInt()
@@ -625,7 +625,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			offerCountryCode = this.messageDataResponse?.meta?.offerCountryCode,
 			merchantCountryCode = this.messageDataResponse?.meta?.merchantCountryCode,
 			type = ComponentType.MESSAGE.toString(),
-			instanceId = Api.instanceId.toString(),
+			instanceId = this.instanceId.toString(),
 			originatingInstanceId = Api.originatingInstanceId.toString(),
 			sessionId = Api.sessionId.toString(),
 			componentEvents = mutableListOf(event),
