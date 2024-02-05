@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.getFloatOrThrow
 import androidx.core.content.res.getIntOrThrow
 import androidx.core.content.res.use
+import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.config.modal.ModalEvents
 import com.paypal.messages.io.Api
@@ -43,9 +44,9 @@ import kotlin.system.measureTimeMillis
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
 import com.paypal.messages.config.message.PayPalMessageData as MessageData
-import com.paypal.messages.config.message.PayPalMessageEventsCallbacks as MessageEvents
+import com.paypal.messages.config.message.PayPalMessageEventsCallbacks as EventsCallbacks
 import com.paypal.messages.config.message.PayPalMessageStyle as MessageStyle
-import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks as MessageViewState
+import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks as ViewStateCallbacks
 import com.paypal.messages.config.message.style.PayPalMessageAlign as Align
 import com.paypal.messages.config.message.style.PayPalMessageColor as Color
 import com.paypal.messages.config.message.style.PayPalMessageLogoType as LogoType
@@ -66,126 +67,177 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var messageTextView: TextView
 	private var updateInProgress = false
 
-	var config: MessageConfig = config.copy()
+	private var config: MessageConfig = config.copy()
+		get() = MessageConfig(
+			data = MessageData(
+				clientID = this.clientID,
+				merchantID = this.merchantID,
+				partnerAttributionID = this.partnerAttributionID,
+				amount = this.amount,
+				buyerCountry = this.buyerCountry,
+				offerType = this.offerType,
+				placement = this.placement,
+			),
+			style = MessageStyle(this.color, this.logoType, this.textAlign),
+			viewStateCallbacks = ViewStateCallbacks(this.onLoading, this.onSuccess, this.onError),
+			eventsCallbacks = EventsCallbacks(this.onClick, this.onApply),
+		)
 		set(configArg) {
 			field = configArg.copy()
 			debounceUpdateContent(Unit)
 		}
 
+	fun getConfig(): MessageConfig {
+		return config
+	}
+
+	fun setConfig(config: MessageConfig) {
+		clientID = config.data.clientID
+		merchantID = config.data.merchantID
+		partnerAttributionID = config.data.partnerAttributionID
+		amount = config.data.amount
+		buyerCountry = config.data.clientID
+		offerType = config.data.offerType
+		placement = config.data.placement
+		color = config.style.color
+		logoType = config.style.logoType
+		textAlign = config.style.textAlign
+		onLoading = config.viewStateCallbacks?.onLoading ?: {}
+		onSuccess = config.viewStateCallbacks?.onSuccess ?: {}
+		onError = config.viewStateCallbacks?.onError ?: {}
+		onClick = config.eventsCallbacks?.onClick ?: {}
+		onApply = config.eventsCallbacks?.onApply ?: {}
+	}
+
 	/**
 	 * DATA
 	 */
-	var data: MessageData = this.config.data
-		get() = config.data
-		set(dataArg) {
-			if (field != dataArg) {
-				field = dataArg.copy()
-				if (modal != null) {
-					modal?.amount = field.amount
-					modal?.buyerCountry = field.buyerCountry
-					modal?.offerType = field.offerType
-				}
-				config = config.merge(MessageConfig(data = field, style = style))
+	var clientID: String = config.data.clientID
+		set(arg) {
+			if (arg === "") LogCat.error(TAG, "ClientID is an empty string")
+			if (field != arg) {
+				field = arg
 				debounceUpdateContent(Unit)
 			}
 		}
-	var clientID: String = data.clientID
-		get() = data.clientID
+	var merchantID: String? = config.data.merchantID
 		set(arg) {
-			if (arg === "") LogCat.error(TAG, "ClientID is an empty string")
-			if (field != arg) data = data.merge(MessageData(clientID = arg))
+			if (field != arg) {
+				field = arg
+				debounceUpdateContent(Unit)
+			}
 		}
-	var amount: Double? = data.amount
-		get() = data.amount
+	var partnerAttributionID: String? = config.data.partnerAttributionID
 		set(arg) {
-			if (field != arg) data = data.merge(MessageData(clientID = clientID, amount = arg))
+			if (field != arg) {
+				field = arg
+				debounceUpdateContent(Unit)
+			}
 		}
-	var placement: String? = data.placement
-		get() = data.placement
+	var amount: Double? = config.data.amount
 		set(arg) {
-			if (field != arg) data = data.merge(MessageData(clientID = clientID, placement = arg))
+			if (field != arg) {
+				field = arg
+				if (modal != null) modal?.amount = field
+				debounceUpdateContent(Unit)
+			}
 		}
-	var offerType: OfferType? = data.offerType
-		get() = data.offerType
+	var buyerCountry: String? = config.data.buyerCountry
 		set(arg) {
-			if (field != arg) data = data.merge(MessageData(clientID = clientID, offerType = arg))
+			if (field != arg) {
+				field = arg
+				if (modal != null) modal?.buyerCountry = field
+				debounceUpdateContent(Unit)
+			}
 		}
-	var buyerCountry: String? = data.buyerCountry
-		get() = data.buyerCountry
+	var offerType: OfferType? = config.data.offerType
 		set(arg) {
-			if (field != arg) data = data.merge(MessageData(clientID = clientID, buyerCountry = arg))
+			if (field != arg) {
+				field = arg
+				if (modal != null) modal?.offerType = field
+				debounceUpdateContent(Unit)
+			}
+		}
+	var placement: String? = config.data.placement
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				debounceUpdateContent(Unit)
+			}
+		}
+	var environment: PayPalEnvironment? = config.data.environment
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				debounceUpdateContent(Unit)
+			}
 		}
 
 	/**
 	 * STYLE
 	 */
-	var style: MessageStyle = this.config.style
-		get() = config.style
-		set(styleArg) {
-			if (field != styleArg) {
-				field = styleArg.copy()
-				config = config.merge(MessageConfig(data = data, style = field))
+	var color: Color = config.style.color
+		set(arg) {
+			if (field != arg) {
+				field = arg
 				debounceUpdateContent(Unit)
 			}
 		}
-	var color: Color = Color.BLACK
-		get() = style.color ?: Color.BLACK
-		set(colorArg) {
-			if (field != colorArg) style = style.merge(MessageStyle(color = colorArg))
+	var logoType: LogoType = config.style.logoType
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				debounceUpdateContent(Unit)
+			}
 		}
-	var logoType: LogoType = LogoType.PRIMARY
-		get() = style.logoType ?: LogoType.PRIMARY
-		set(logoTypeArg) {
-			if (field != logoTypeArg) style = style.merge(MessageStyle(logoType = logoTypeArg))
-		}
-	var alignment: Align = Align.LEFT
-		get() = style.textAlign ?: Align.LEFT
-		set(alignmentArg) {
-			if (field != alignmentArg) style = style.merge(MessageStyle(textAlign = alignmentArg))
+	var textAlign: Align = config.style.textAlign
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				debounceUpdateContent(Unit)
+			}
 		}
 
 	// VIEW STATE CALLBACKS
 	// Updates the specific view state callbacks for the current PayPalMessageView
-	var viewStateCallbacks: MessageViewState = this.config.viewStateCallbacks ?: MessageViewState()
-		get() = config.viewStateCallbacks ?: MessageViewState()
-		set(viewStateArg) {
-			if (field != viewStateArg) {
-				field = viewStateArg.copy()
-				config = config.merge(
-					MessageConfig(data = data, style = style, viewStateCallbacks = field)
-				)
+	var onLoading: () -> Unit = config.viewStateCallbacks?.onLoading ?: {}
+		set(arg) {
+			if (field != arg) {
+				field = arg
 				debounceUpdateContent(Unit)
 			}
 		}
-	var onLoading: () -> Unit
-		get() = viewStateCallbacks.onLoading
-		set(onLoadingArg) { viewStateCallbacks.onLoading = onLoadingArg }
-	var onSuccess: () -> Unit
-		get() = viewStateCallbacks.onSuccess
-		set(onSuccessArg) { viewStateCallbacks.onSuccess = onSuccessArg }
-	var onError: (error: PayPalErrors.Base) -> Unit
-		get() = viewStateCallbacks.onError
-		set(onErrorArg) { viewStateCallbacks.onError = onErrorArg }
+	var onSuccess: () -> Unit = config.viewStateCallbacks?.onSuccess ?: {}
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				debounceUpdateContent(Unit)
+			}
+		}
+	var onError: (error: PayPalErrors.Base) -> Unit = config.viewStateCallbacks?.onError ?: {}
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				debounceUpdateContent(Unit)
+			}
+		}
 
 	// EVENTS CALLBACKS
 	// Updates the specific events callbacks for the current PayPalMessageView
-	var eventsCallbacks: MessageEvents = this.config.eventsCallbacks ?: MessageEvents()
-		get() = config.eventsCallbacks ?: MessageEvents()
-		set(eventsArg) {
-			if (field != eventsArg) {
-				field = eventsArg.copy()
-				config = config.merge(
-					MessageConfig(data = data, style = style, eventsCallbacks = field)
-				)
+	var onClick: () -> Unit = config.eventsCallbacks?.onClick ?: {}
+		set(arg) {
+			if (field != arg) {
+				field = arg
 				debounceUpdateContent(Unit)
 			}
 		}
-	var onClick: () -> Unit
-		get() = eventsCallbacks.onClick
-		set(onClickArg) { eventsCallbacks.onClick = onClickArg }
-	var onApply: () -> Unit
-		get() = eventsCallbacks.onApply
-		set(onApplyArg) { eventsCallbacks.onApply = onApplyArg }
+	var onApply: () -> Unit = config.eventsCallbacks?.onApply ?: {}
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				debounceUpdateContent(Unit)
+			}
+		}
 
 	// Full Message Data
 	private var messageDataResponse: ApiMessageData.Response? = null
@@ -220,16 +272,16 @@ class PayPalMessageView @JvmOverloads constructor(
 			val modal = ModalFragment(clientID)
 			// Build modal config
 			val modalConfig = ModalConfig(
-				amount = data.amount,
-				buyerCountry = data.buyerCountry,
-				offer = data.offerType,
+				amount = this.amount,
+				buyerCountry = this.buyerCountry,
+				offer = this.offerType,
 				ignoreCache = false,
 				devTouchpoint = false,
 				stageTag = null,
 				events = ModalEvents(
-					onApply = eventsCallbacks.onApply,
-					onClick = eventsCallbacks.onClick,
-					onError = viewStateCallbacks.onError,
+					onApply = this.onApply,
+					onClick = this.onClick,
+					onError = this.onError,
 				),
 				modalCloseButton = response.meta?.modalCloseButton!!,
 			)
@@ -258,7 +310,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	private fun <T> debounce(
 		delayMs: Long = 1L,
 		coroutineContext: CoroutineContext = Dispatchers.Main,
-		callback: (T) -> Unit
+		callback: (T) -> Unit,
 	): (T) -> Unit {
 		var debounceJob: Job? = null
 		return { param: T ->
@@ -294,7 +346,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			messageTextView.apply {
 				visibility = View.VISIBLE
 				setTextColor(ContextCompat.getColor(context, color.colorResId))
-				gravity = when (alignment) {
+				gravity = when (textAlign) {
 					Align.LEFT -> Gravity.START
 					Align.CENTER -> Gravity.CENTER_HORIZONTAL
 					Align.RIGHT -> Gravity.END
@@ -367,7 +419,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		}
 
 		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_text_align)) {
-			alignment = Align(
+			textAlign = Align(
 				typedArray.getInt(
 					R.styleable.PayPalMessageView_paypal_text_align,
 					Align.LEFT.value,
@@ -393,7 +445,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			requestDuration = measureTimeMillis {
 				Api.getMessageWithHash(
 					context,
-					MessageConfig(data = data, style = style),
+					this.config,
 					this,
 				)
 			}.toInt()
@@ -405,7 +457,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			is ApiResult.Success<*> -> {
 				LogCat.debug(TAG, "onActionCompleted Success")
 				val renderDuration = measureTimeMillis {
-					viewStateCallbacks.onSuccess.invoke()
+					this.onSuccess.invoke()
 					this.messageDataResponse = result.response as ApiMessageData.Response
 					updateContentValues(result.response)
 					updateMessageUi()
@@ -424,7 +476,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			is ApiResult.Failure<*> -> {
 				LogCat.debug(TAG, "onActionCompleted Failure")
 				// If we encountered a failure, we expect an exception to be returned.
-				result.error?.let { onError(it) }
+				result.error?.let { this.onError(it) }
 			}
 		}
 		updateInProgress = false
@@ -565,7 +617,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			buyerCountryCode = this.buyerCountry,
 			styleLogoType = this.logoType,
 			styleColor = this.color,
-			styleTextAlign = this.alignment,
+			styleTextAlign = this.textAlign,
 			messageType = this.messageDataResponse?.meta?.messageType,
 			fdata = this.messageDataResponse?.meta?.fdata,
 			debugId = this.messageDataResponse?.meta?.debugId,

@@ -17,22 +17,9 @@ data class PayPalMessageData(
 	var buyerCountry: String? = null,
 	var offerType: OfferType? = null,
 	var placement: String? = null,
-	var environment: Environment? = null,
+	var environment: Environment = Environment.SANDBOX,
 ) {
 	init {
-		Api.env = environment ?: Environment.SANDBOX
-	}
-
-	fun merge(newData: PayPalMessageData): PayPalMessageData {
-		return this.copy(
-			clientID = if (newData.clientID != "") newData.clientID else this.clientID,
-			merchantID = newData.merchantID ?: this.merchantID,
-			partnerAttributionID = newData.partnerAttributionID ?: this.partnerAttributionID,
-			amount = newData.amount ?: this.amount,
-			buyerCountry = newData.buyerCountry ?: this.buyerCountry,
-			offerType = newData.offerType ?: this.offerType,
-			placement = newData.placement ?: this.placement,
-			environment = newData.environment ?: this.environment,
-		)
+		Api.env = environment
 	}
 }
