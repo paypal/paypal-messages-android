@@ -68,8 +68,8 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var updateInProgress = false
 	private var instanceId = UUID.randomUUID()
 
-	private var config: MessageConfig = config.copy()
-		get() = MessageConfig(
+	fun getConfig(): MessageConfig {
+		return MessageConfig(
 			data = MessageData(
 				clientID = this.clientID,
 				merchantID = this.merchantID,
@@ -83,13 +83,6 @@ class PayPalMessageView @JvmOverloads constructor(
 			viewStateCallbacks = ViewStateCallbacks(this.onLoading, this.onSuccess, this.onError),
 			eventsCallbacks = EventsCallbacks(this.onClick, this.onApply),
 		)
-		set(configArg) {
-			field = configArg.copy()
-			debounceUpdateContent(Unit)
-		}
-
-	fun getConfig(): MessageConfig {
-		return config
 	}
 
 	fun setConfig(config: MessageConfig) {
@@ -108,6 +101,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		onError = config.viewStateCallbacks?.onError ?: {}
 		onClick = config.eventsCallbacks?.onClick ?: {}
 		onApply = config.eventsCallbacks?.onApply ?: {}
+		debounceUpdateContent(Unit)
 	}
 
 	/**
@@ -433,7 +427,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 * This function updates message content uses [Api.getMessageWithHash] to fetch the data.
 	 */
 	private fun updateMessageContent() {
-		LogCat.debug(TAG, "updateMessageContent config: $config")
+		LogCat.debug(TAG, "updateMessageContent config: ${getConfig()}")
 		if (!updateInProgress) {
 			// Call OnLoading callback and prepare view for the process
 			onLoading.invoke()
@@ -444,7 +438,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			requestDuration = measureTimeMillis {
 				Api.getMessageWithHash(
 					context,
-					this.config,
+					getConfig(),
 					this.instanceId,
 					this,
 				)

@@ -191,6 +191,7 @@ class XmlActivity : AppCompatActivity() {
 
 		val config = PayPalMessageConfig(data = PayPalMessageData(clientID = "someClientID"))
 		val message = PayPalMessageView(context = this, config = config)
+		message.getConfig()
 		message.setConfig(config)
 		config.setGlobalAnalytics("", "")
 		message.clientID = ""
