@@ -83,7 +83,7 @@ jobs:
 
       - name: Show Test XML
         run: |
-          cat library/build/outputs/androidTest-results/connected/*.xml
+          cat library/build/outputs/androidTest-results/connected/**/*.xml
           echo ""
-          error_count=$(grep "<failure>" library/build/outputs/androidTest-results/connected/*.xml | wc -l | awk '{$1=$1};1')
+          error_count=$(grep "<failure>" library/build/outputs/androidTest-results/connected/**/*.xml | wc -l | awk '{$1=$1};1')
           if [[ "$error_count" -ne "0" ]]; then echo "Tests failed. See above"; exit 1; fi
