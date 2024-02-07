@@ -12,15 +12,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun DevTouchpointSwitch(devTouchpoint: Boolean, onChange: (text: Boolean) -> Unit) {
+fun SwitchOption(checked: Boolean, onChange: (text: Boolean) -> Unit, text: String) {
     Row {
         Switch(
-            checked = devTouchpoint,
+            checked = checked,
             onCheckedChange = onChange,
         )
 
         Text(
-            text = "Dev Touchpoint",
+            text = text,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier

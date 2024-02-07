@@ -44,7 +44,6 @@ import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.io.Api
-import com.paypal.messagesdemo.composables.ClientIdField
 import com.paypal.messagesdemo.composables.InputField
 import com.paypal.messagesdemo.ui.BasicTheme
 
@@ -273,6 +272,7 @@ class JetpackActivity : ComponentActivity() {
 									.width(125.dp)
 									.height(intrinsicSize = IntrinsicSize.Max),
 							)
+							FilledButton(text = "Clear", onClick = { offerType = null }, buttonEnabled = buttonEnabled)
 						}
 
 						OfferOptions(
@@ -282,8 +282,6 @@ class JetpackActivity : ComponentActivity() {
 								offerType = text
 							},
 						)
-
-						FilledButton(text = "Clear", onClick = { offerType = null }, buttonEnabled = buttonEnabled)
 
 						InputField(
 							text = "Amount",
@@ -310,8 +308,16 @@ class JetpackActivity : ComponentActivity() {
 								.fillMaxWidth()
 								.padding(vertical = 8.dp),
 						) {
-							IgnoreCacheSwitch(ignoreCache = ignoreCache, onChange = { ignoreCache = it })
-							DevTouchpointSwitch(devTouchpoint = devTouchpoint, onChange = { devTouchpoint = it })
+							SwitchOption(
+								checked = ignoreCache,
+								onChange = { ignoreCache = it },
+								text = " Ignore Cache",
+							)
+							SwitchOption(
+								checked = devTouchpoint,
+								onChange = { devTouchpoint = it },
+								text = "Dev Touchpoint",
+							)
 						}
 
 						CircularIndicator(progressBar = progessBar)
