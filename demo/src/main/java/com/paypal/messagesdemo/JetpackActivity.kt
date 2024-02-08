@@ -63,7 +63,7 @@ class JetpackActivity : ComponentActivity() {
 			BasicTheme {
 				val context = LocalContext.current
 
-				var clientId: String by remember { mutableStateOf("ASPBQAggBcUvZJ0kFFBizjYapdjokGMcAzBFoC0xIAYY-4iuJH3NxAgkdUEyQ6oCPQiKNRZaWUogS0d6") }
+				var clientId: String by remember { mutableStateOf("") }
 
 				// Style Color
 				var backgroundColor by remember { mutableStateOf(Color.White) }
