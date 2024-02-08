@@ -8,21 +8,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.runtime.*
-
 
 @Composable
 fun FilledButton(onClick: () -> Unit, text: String, buttonEnabled: Boolean) {
 	var isButtonClicked by remember { mutableStateOf(false) }
-    Button(
-        modifier = Modifier.width(intrinsicSize = IntrinsicSize.Min),
-        enabled = buttonEnabled,
-        onClick = {
-            onClick()
-            isButtonClicked = !isButtonClicked
-        },
-    ) {
-        Text(text)
-    }
+	Button(
+		modifier = Modifier.width(intrinsicSize = IntrinsicSize.Min),
+		enabled = buttonEnabled,
+		onClick = {
+			onClick()
+			isButtonClicked = !isButtonClicked
+		},
+	) {
+		Text(text)
+	}
 }

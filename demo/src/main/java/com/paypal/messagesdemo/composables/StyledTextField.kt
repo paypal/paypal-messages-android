@@ -19,32 +19,32 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun StyledTextField(
-    value: String,
-    onChange: (text: String) -> Unit,
-    keyboardType: KeyboardType? = KeyboardType.Text,
+	value: String,
+	onChange: (text: String) -> Unit,
+	keyboardType: KeyboardType? = KeyboardType.Text,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(36.dp)
-            .background(
-                Color.LightGray,
-                RectangleShape,
-            ),
-    ) {
-        BasicTextField(
-            value = value,
-            onValueChange = onChange,
-            singleLine = true,
-            textStyle = MaterialTheme.typography.bodyMedium,
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = keyboardType ?: KeyboardType.Text,
-                imeAction = ImeAction.Done,
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .padding(start = 4.dp, end = 4.dp, top = 8.dp),
-        )
-    }
+	Row(
+		modifier = Modifier
+			.fillMaxWidth()
+			.height(36.dp)
+			.background(
+				Color.LightGray,
+				RectangleShape,
+			),
+	) {
+		BasicTextField(
+			value = value,
+			onValueChange = onChange,
+			singleLine = true,
+			textStyle = MaterialTheme.typography.bodyMedium,
+			keyboardOptions = KeyboardOptions.Default.copy(
+				keyboardType = keyboardType ?: KeyboardType.Text,
+				imeAction = ImeAction.Done,
+			),
+			modifier = Modifier
+				.fillMaxWidth()
+				.fillMaxHeight()
+				.padding(start = 4.dp, end = 4.dp, top = 8.dp),
+		)
+	}
 }

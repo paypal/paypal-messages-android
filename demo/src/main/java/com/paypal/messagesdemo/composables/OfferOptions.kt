@@ -18,35 +18,35 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun OfferOptions(offerGroupOptions: List<String>, selected: String?, onSelected: (text: String) -> Unit) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier.padding(vertical = 4.dp),
-    ) {
-        offerGroupOptions.forEach { text ->
-            Row(
-                modifier = Modifier
-                    .height(intrinsicSize = IntrinsicSize.Max)
-                    .padding(end = Dp(8.0F))
-                    .selectable(
-                        selected = (text == selected),
-                        onClick = { onSelected(text) },
-                    ),
-            ) {
-                RadioButton(
-                    selected = (text == selected),
-                    onClick = { onSelected(text) },
-                    modifier = Modifier
-                        .padding(end = Dp(0F))
-                        .size(Dp(24f)),
-                )
+	Row(
+		horizontalArrangement = Arrangement.SpaceEvenly,
+		modifier = Modifier.padding(vertical = 4.dp),
+	) {
+		offerGroupOptions.forEach { text ->
+			Row(
+				modifier = Modifier
+					.height(intrinsicSize = IntrinsicSize.Max)
+					.padding(end = Dp(8.0F))
+					.selectable(
+						selected = (text == selected),
+						onClick = { onSelected(text) },
+					),
+			) {
+				RadioButton(
+					selected = (text == selected),
+					onClick = { onSelected(text) },
+					modifier = Modifier
+						.padding(end = Dp(0F))
+						.size(Dp(24f)),
+				)
 
-                Text(
-                    text = text,
-                    fontSize = 14.sp,
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically),
-                )
-            }
-        }
-    }
+				Text(
+					text = text,
+					fontSize = 14.sp,
+					modifier = Modifier
+						.align(Alignment.CenterVertically),
+				)
+			}
+		}
+	}
 }

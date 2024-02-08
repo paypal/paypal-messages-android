@@ -13,19 +13,19 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun SwitchOption(checked: Boolean, onChange: (text: Boolean) -> Unit, text: String) {
-    Row {
-        Switch(
-            checked = checked,
-            onCheckedChange = onChange,
-        )
+	Row {
+		Switch(
+			checked = checked,
+			onCheckedChange = onChange,
+		)
 
-        Text(
-            text = text,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .align(Alignment.CenterVertically)
-                .padding(start = 8.dp),
-        )
-    }
+		Text(
+			text = text,
+			fontSize = 14.sp,
+			fontWeight = FontWeight.Bold,
+			modifier = Modifier
+				.align(Alignment.CenterVertically)
+				.padding(start = 8.dp),
+		)
+	}
 }

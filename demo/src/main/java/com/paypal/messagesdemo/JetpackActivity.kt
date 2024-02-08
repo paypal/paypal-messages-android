@@ -224,7 +224,7 @@ class JetpackActivity : ComponentActivity() {
 							onChange = {
 								clientId = it
 							},
-							padding = 16.dp
+							padding = 16.dp,
 						)
 
 						Text(
@@ -241,7 +241,7 @@ class JetpackActivity : ComponentActivity() {
 							selected = messageLogo,
 							onSelected = { text: PayPalMessageLogoType ->
 								messageLogo = text
-							}
+							},
 						)
 
 						RadioOptions(
@@ -288,7 +288,7 @@ class JetpackActivity : ComponentActivity() {
 							text = "Amount",
 							value = amount,
 							onChange = { amount = it },
-							keyboardType = KeyboardType.Number
+							keyboardType = KeyboardType.Number,
 						)
 
 						InputField(
@@ -346,4 +346,3 @@ class JetpackActivity : ComponentActivity() {
 		}
 	}
 }
-

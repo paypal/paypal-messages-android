@@ -18,34 +18,34 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun <T : Enum<T>>RadioOptions(logoGroupOptions: List<T>, selected: T, onSelected: (text: T) -> Unit) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier.padding(top = 8.dp),
-    ) {
-        logoGroupOptions.forEach { text ->
-            Row(
-                modifier = Modifier
-                    .height(intrinsicSize = IntrinsicSize.Max)
-                    .padding(end = Dp(8.0F))
-                    .selectable(
-                        selected = (text == selected),
-                        onClick = { onSelected(text) },
-                    ),
-            ) {
-                RadioButton(
-                    selected = (text == selected),
-                    onClick = { onSelected(text) },
-                    modifier = Modifier
-                        .padding(end = Dp(0F))
-                        .size(Dp(24f)),
-                )
-                Text(
-                    text = toSentenceCase(text.name),
-                    fontSize = 14.sp,
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically),
-                )
-            }
-        }
-    }
+	Row(
+		horizontalArrangement = Arrangement.SpaceEvenly,
+		modifier = Modifier.padding(top = 8.dp),
+	) {
+		logoGroupOptions.forEach { text ->
+			Row(
+				modifier = Modifier
+					.height(intrinsicSize = IntrinsicSize.Max)
+					.padding(end = Dp(8.0F))
+					.selectable(
+						selected = (text == selected),
+						onClick = { onSelected(text) },
+					),
+			) {
+				RadioButton(
+					selected = (text == selected),
+					onClick = { onSelected(text) },
+					modifier = Modifier
+						.padding(end = Dp(0F))
+						.size(Dp(24f)),
+				)
+				Text(
+					text = toSentenceCase(text.name),
+					fontSize = 14.sp,
+					modifier = Modifier
+						.align(Alignment.CenterVertically),
+				)
+			}
+		}
+	}
 }

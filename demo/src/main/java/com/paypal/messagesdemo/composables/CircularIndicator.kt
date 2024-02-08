@@ -11,10 +11,10 @@ import androidx.compose.ui.unit.dp
 fun CircularIndicator(progressBar: Boolean) {
 	if (!progressBar) return
 
-    CircularProgressIndicator(
-        modifier = Modifier
-            .width(32.dp),
-        color = MaterialTheme.colorScheme.secondary,
-        trackColor = MaterialTheme.colorScheme.surfaceVariant,
-    )
+	CircularProgressIndicator(
+		modifier = Modifier
+			.width(32.dp),
+		color = MaterialTheme.colorScheme.secondary,
+		trackColor = MaterialTheme.colorScheme.surfaceVariant,
+	)
 }
