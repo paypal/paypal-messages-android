@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -69,27 +68,28 @@ class JetpackActivity : ComponentActivity() {
 				// Style Color
 				var backgroundColor by remember { mutableStateOf(Color.White) }
 				val colorGroupOptions = listOf(
-					toSentenceCase(PayPalMessageColor.BLACK.name),
-					toSentenceCase(PayPalMessageColor.WHITE.name),
-					toSentenceCase(PayPalMessageColor.MONOCHROME.name),
-					toSentenceCase(PayPalMessageColor.GRAYSCALE.name),
+					PayPalMessageColor.BLACK,
+					PayPalMessageColor.WHITE,
+					PayPalMessageColor.MONOCHROME,
+					PayPalMessageColor.GRAYSCALE,
 				)
 				var messageColor by remember { mutableStateOf(colorGroupOptions[0]) }
 
 				// Style Logo
 				val logoGroupOptions = listOf(
-					toSentenceCase(PayPalMessageLogoType.PRIMARY.name),
-					toSentenceCase(PayPalMessageLogoType.INLINE.name),
-					toSentenceCase(PayPalMessageLogoType.ALTERNATIVE.name),
-					toSentenceCase(PayPalMessageLogoType.NONE.name),
+					PayPalMessageLogoType.PRIMARY,
+					PayPalMessageLogoType.INLINE,
+					PayPalMessageLogoType.ALTERNATIVE,
+					PayPalMessageLogoType.NONE,
 				)
+
 				var messageLogo by remember { mutableStateOf(logoGroupOptions[0]) }
 
 				// Style Alignment
 				val alignmentGroupOptions = listOf(
-					toSentenceCase(PayPalMessageAlign.LEFT.name),
-					toSentenceCase(PayPalMessageAlign.CENTER.name),
-					toSentenceCase(PayPalMessageAlign.RIGHT.name),
+					PayPalMessageAlign.LEFT,
+					PayPalMessageAlign.CENTER,
+					PayPalMessageAlign.RIGHT,
 				)
 				var messageAlignment by remember { mutableStateOf(alignmentGroupOptions[0]) }
 
@@ -143,15 +143,15 @@ class JetpackActivity : ComponentActivity() {
 				fun updateMessageData() {
 					messageView.clientID = clientId
 
-					if (PayPalMessageColor.valueOf(messageColor.uppercase()) === PayPalMessageColor.WHITE) {
+					if (messageColor === PayPalMessageColor.WHITE) {
 						backgroundColor = Color.Black
 					} else {
 						backgroundColor = Color.White
 					}
 
-					messageView.color = PayPalMessageColor.valueOf(messageColor.uppercase())
-					messageView.logoType = PayPalMessageLogoType.valueOf(messageLogo.uppercase())
-					messageView.alignment = PayPalMessageAlign.valueOf((messageAlignment.uppercase()))
+					messageView.color = messageColor
+					messageView.logoType = messageLogo
+					messageView.alignment = messageAlignment
 
 					messageView.offerType = when (offerType) {
 						offerGroupOptions[0] -> PayPalMessageOfferType.PAY_LATER_SHORT_TERM
@@ -168,6 +168,7 @@ class JetpackActivity : ComponentActivity() {
 							it.toDouble()
 						}
 					}
+
 					messageView.buyerCountry = buyerCountry.let {
 						if (it.isBlank()) {
 							null
@@ -235,26 +236,26 @@ class JetpackActivity : ComponentActivity() {
 								.height(intrinsicSize = IntrinsicSize.Max),
 						)
 
-						LogoOptions(
+						RadioOptions(
 							logoGroupOptions = logoGroupOptions,
 							selected = messageLogo,
-							onSelected = { text: String ->
+							onSelected = { text: PayPalMessageLogoType ->
 								messageLogo = text
-							},
+							}
 						)
 
-						ColorOptions(
-							colorGroupOptions = colorGroupOptions,
+						RadioOptions(
+							logoGroupOptions = colorGroupOptions,
 							selected = messageColor,
-							onSelected = { text: String ->
+							onSelected = { text: PayPalMessageColor ->
 								messageColor = text
 							},
 						)
 
-						AlignmentOptions(
-							alignmentGroupOptions = alignmentGroupOptions,
+						RadioOptions(
+							logoGroupOptions = alignmentGroupOptions,
 							selected = messageAlignment,
-							onSelected = { text: String ->
+							onSelected = { text: PayPalMessageAlign ->
 								messageAlignment = text
 							},
 						)

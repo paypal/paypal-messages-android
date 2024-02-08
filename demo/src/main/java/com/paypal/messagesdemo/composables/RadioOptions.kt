@@ -17,12 +17,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun ColorOptions(colorGroupOptions: List<String>, selected: String, onSelected: (text: String) -> Unit) {
+fun <T : Enum<T>>RadioOptions(logoGroupOptions: List<T>, selected: T, onSelected: (text: T) -> Unit) {
     Row(
         horizontalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier.padding(vertical = 4.dp),
+        modifier = Modifier.padding(top = 8.dp),
     ) {
-        colorGroupOptions.forEach { text ->
+        logoGroupOptions.forEach { text ->
             Row(
                 modifier = Modifier
                     .height(intrinsicSize = IntrinsicSize.Max)
@@ -40,7 +40,7 @@ fun ColorOptions(colorGroupOptions: List<String>, selected: String, onSelected: 
                         .size(Dp(24f)),
                 )
                 Text(
-                    text = text,
+                    text = toSentenceCase(text.name),
                     fontSize = 14.sp,
                     modifier = Modifier
                         .align(Alignment.CenterVertically),
