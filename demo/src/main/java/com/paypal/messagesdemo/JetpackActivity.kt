@@ -139,12 +139,7 @@ class JetpackActivity : ComponentActivity() {
 				fun updateMessageData() {
 					messageView.clientID = clientId
 
-					if (messageColor === PayPalMessageColor.WHITE) {
-						backgroundColor = Color.Black
-					} else {
-						backgroundColor = Color.White
-					}
-
+					backgroundColor = if (messageColor === PayPalMessageColor.WHITE) Color.Black else Color.White
 					messageView.color = messageColor
 					messageView.logoType = messageLogo
 					messageView.alignment = messageAlignment
