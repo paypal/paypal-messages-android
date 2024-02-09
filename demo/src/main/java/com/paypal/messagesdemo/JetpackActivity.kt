@@ -47,11 +47,7 @@ import com.paypal.messagesdemo.composables.InputField
 import com.paypal.messagesdemo.ui.BasicTheme
 
 fun toSentenceCase(input: String): String {
-	// Convert the string to lowercase and split it into words
-	val words = input.lowercase().split(" ")
-
-	// Capitalize the first letter of each word and join them back into a string
-	return words.joinToString(" ") { it -> it.replaceFirstChar { it.titlecase() } }
+	return input.lowercase().replaceFirstChar { it.titlecase() }
 }
 
 class JetpackActivity : ComponentActivity() {
@@ -108,7 +104,7 @@ class JetpackActivity : ComponentActivity() {
 				var devTouchpoint: Boolean by remember { mutableStateOf(false) }
 				var buttonEnabled: Boolean by remember { mutableStateOf(true) }
 
-				var progessBar by remember { mutableStateOf(false) }
+				var progressBar by remember { mutableStateOf(false) }
 
 				val messageView = PayPalMessageView(
 					context,
@@ -116,13 +112,13 @@ class JetpackActivity : ComponentActivity() {
 						data = PayPalMessageData(clientID = clientId, environment = PayPalEnvironment.SANDBOX),
 						viewStateCallbacks = PayPalMessageViewStateCallbacks(
 							onLoading = {
-								progessBar = true
+								progressBar = true
 								buttonEnabled = false
 								Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
 							},
 							onError = {
 								Log.d(TAG, "onError $it")
-								progessBar = false
+								progressBar = false
 								runOnUiThread {
 									buttonEnabled = true
 									Toast.makeText(this, it.javaClass.toString() + ":" + it.message, Toast.LENGTH_LONG).show()
@@ -130,7 +126,7 @@ class JetpackActivity : ComponentActivity() {
 							},
 							onSuccess = {
 								Log.d(TAG, "onSuccess")
-								progessBar = false
+								progressBar = false
 								runOnUiThread {
 									buttonEnabled = true
 									Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
@@ -161,21 +157,9 @@ class JetpackActivity : ComponentActivity() {
 						else -> null
 					}
 
-					messageView.amount = amount.let {
-						if (it.isBlank()) {
-							null
-						} else {
-							it.toDouble()
-						}
-					}
+					messageView.amount = amount.takeIf { it.isNotBlank() }?.toDouble()
 
-					messageView.buyerCountry = buyerCountry.let {
-						if (it.isBlank()) {
-							null
-						} else {
-							buyerCountry
-						}
-					}
+					messageView.buyerCountry = buyerCountry.takeIf { it.isNotBlank() }?.toString()
 
 					Api.stageTag = stageTag
 					Api.ignoreCache = ignoreCache
@@ -321,7 +305,7 @@ class JetpackActivity : ComponentActivity() {
 							)
 						}
 
-						CircularIndicator(progressBar = progessBar)
+						CircularIndicator(progressBar = progressBar)
 
 						AndroidView(
 							modifier = Modifier
