@@ -23,6 +23,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.UUID
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
 
 @RunWith(AndroidJUnit4::class)
@@ -30,6 +31,7 @@ class ApiTest {
 	private lateinit var context: Context
 	private lateinit var sharedPreferences: SharedPreferences
 	private lateinit var mockWebServer: MockWebServer
+	private val instanceId = UUID.randomUUID()
 	private val messageConfig = MessageConfig(
 		data = PayPalMessageData(clientID = "test_client_id"),
 	)
@@ -60,7 +62,7 @@ class ApiTest {
 
 	@Test
 	fun testCreateMessageDataRequestWithNoData() {
-		val messageDataRequest = Api.createMessageDataRequest(messageConfig, null)
+		val messageDataRequest = Api.createMessageDataRequest(messageConfig, null, instanceId)
 		val url = messageDataRequest.url.toString()
 
 		val expectedPath = "credit-presentment/native/message"
@@ -92,7 +94,7 @@ class ApiTest {
 			),
 			style = PayPalMessageStyle(),
 		)
-		val messageDataRequest = Api.createMessageDataRequest(config, "hash")
+		val messageDataRequest = Api.createMessageDataRequest(config, "hash", instanceId)
 		val url = messageDataRequest.url.toString()
 
 		val expectedPath = "credit-presentment/native/message"
@@ -134,7 +136,7 @@ class ApiTest {
 		mockWebServer.enqueue(mockMessageDataResponse)
 
 		launch {
-			val result = Api.callMessageDataEndpoint(messageConfig, null)
+			val result = Api.callMessageDataEndpoint(messageConfig, null, instanceId)
 			assertTrue(result is ApiResult.Failure<*>)
 			val error = (result as ApiResult.Failure<*>).error
 			assertTrue(error is PayPalErrors.FailedToFetchDataException)
@@ -156,7 +158,7 @@ class ApiTest {
 		mockWebServer.enqueue(mockMessageDataResponse)
 
 		launch {
-			val result = Api.callMessageDataEndpoint(messageConfig, null)
+			val result = Api.callMessageDataEndpoint(messageConfig, null, instanceId)
 			assertTrue(result is ApiResult.Failure<*>)
 			val error = (result as ApiResult.Failure<*>).error
 			assertTrue(error is PayPalErrors.InvalidResponseException)
@@ -178,7 +180,7 @@ class ApiTest {
 		mockWebServer.enqueue(mockMessageDataResponse)
 
 		launch {
-			val result = Api.callMessageDataEndpoint(messageConfig, null)
+			val result = Api.callMessageDataEndpoint(messageConfig, null, instanceId)
 			assertTrue(result is ApiResult.Success<*>)
 			val response = (result as ApiResult.Success<*>).response
 			assertTrue(response.toJson().contains("content"))
@@ -213,7 +215,7 @@ class ApiTest {
 		}
 
 		launch {
-			Api.getMessageWithHash(context, messageConfig, onActionCompleted)
+			Api.getMessageWithHash(context, messageConfig, instanceId, onActionCompleted)
 		}.join()
 
 		advanceUntilIdle()
