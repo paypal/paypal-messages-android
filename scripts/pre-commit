@@ -1,0 +1,6 @@
+echo "***********************************************"
+echo "Running git pre-commit hook to lint and format."
+echo "***********************************************"
+
+# Gather the staged files - to make sure changes are saved only for these files.
+stagedFiles=$(git diff --staged --name-only)
