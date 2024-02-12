@@ -55,7 +55,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '17'
-          distribution: 'temurin'
+          distribution: 'microsoft'
           cache: gradle
 
       - name: Run Instrumentation Tests
