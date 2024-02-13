@@ -4,3 +4,21 @@ echo "***********************************************"
 
 # Gather the staged files - to make sure changes are saved only for these files.
 stagedFiles=$(git diff --staged --name-only)
+
+echo "Running ktFormat to fix any auto-fixable issues"
+
+./gradlew ktFormat
+
+echo "Running ktLint to find any issues that still need to be fixed"
+
+./gradlew ktLint
+
+error_count=$(grep "<error" build/reports/ktlint/main-lint.xml | wc -l | awk '{$1=$1};1')
+
+if [[ "$error_count" -ne "0" ]]; then
+	echo "ktLint failed with a count of $error_count errors."
+	echo "For more info, check build/reports/ktlint/main-lint.xml"
+	echo "Here's the first 20 lines of that lint report"
+	head -20 build/reports/ktlint/main-lint.xml
+	exit 1
+fi
