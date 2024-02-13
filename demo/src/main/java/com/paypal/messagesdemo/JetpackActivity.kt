@@ -142,7 +142,7 @@ class JetpackActivity : ComponentActivity() {
 					backgroundColor = if (messageColor === PayPalMessageColor.WHITE) Color.Black else Color.White
 					messageView.color = messageColor
 					messageView.logoType = messageLogo
-					messageView.alignment = messageAlignment
+					messageView.textAlign = messageAlignment
 
 					messageView.offerType = when (offerType) {
 						offerGroupOptions[0] -> PayPalMessageOfferType.PAY_LATER_SHORT_TERM
@@ -159,8 +159,6 @@ class JetpackActivity : ComponentActivity() {
 					Api.stageTag = stageTag
 					Api.ignoreCache = ignoreCache
 					Api.devTouchpoint = devTouchpoint
-
-					messageView.refresh()
 				}
 
 				fun resetButton() {
@@ -169,7 +167,7 @@ class JetpackActivity : ComponentActivity() {
 					messageAlignment = alignmentGroupOptions[0]
 
 					offerType = null
-					messageView.data.offerType = null
+					messageView.offerType = null
 
 					amount = ""
 					buyerCountry = ""
