@@ -12,6 +12,7 @@ data class PayPalMessageStyle(
 	val logoType: LogoType? = null,
 	val textAlign: Align? = null,
 ) {
+
 	fun merge(newStyle: PayPalMessageStyle): PayPalMessageStyle {
 		return this.copy(
 			color = newStyle.color ?: this.color,

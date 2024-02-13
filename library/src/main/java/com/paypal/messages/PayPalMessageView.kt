@@ -61,7 +61,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var updateInProgress = false
 	private var instanceId = UUID.randomUUID()
 
-	var config: MessageConfig = config.copy()
+	var config: MessageConfig = config.clone()
 		set(configArg) {
 			field = configArg
 			updateFromConfig(configArg)

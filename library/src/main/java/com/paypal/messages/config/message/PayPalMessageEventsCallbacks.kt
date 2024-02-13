@@ -6,4 +6,8 @@ package com.paypal.messages.config.message
 data class PayPalMessageEventsCallbacks(
 	var onClick: () -> Unit = {},
 	var onApply: () -> Unit = {},
-)
+) : Cloneable {
+	public override fun clone(): PayPalMessageEventsCallbacks {
+		return super.clone() as PayPalMessageEventsCallbacks
+	}
+}
