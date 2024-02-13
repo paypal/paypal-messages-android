@@ -78,12 +78,14 @@ jobs:
           api-level: 23
           target: google_apis
           arch: x86_64
-          script: ./gradlew connectedCheck --info
+          script: ./gradlew connectedCheck --info | tee connectedCheck.log
         continue-on-error: true
 
       - name: Show Test XML
         run: |
+          mkdir -p library/build/outputs/androidTest-results/connected/logs
+          grep -E '(SUCCESS|FAIL|fail)' connectedCheck.log > library/build/outputs/androidTest-results/connected/logs/connectedCheck.xml
           cat library/build/outputs/androidTest-results/connected/**/*.xml
           echo ""
-          error_count=$(grep "<failure>" library/build/outputs/androidTest-results/connected/**/*.xml | wc -l | awk '{$1=$1};1')
+          error_count=$(grep -E '(fail|FAIL)' library/build/outputs/androidTest-results/connected/**/*.xml | wc -l | awk '{$1=$1};1')
           if [[ "$error_count" -ne "0" ]]; then echo "Tests failed. See above"; exit 1; fi
