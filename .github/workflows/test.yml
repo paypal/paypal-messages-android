@@ -87,5 +87,5 @@ jobs:
           grep -E '(SUCCESS|FAILED|failed)' connectedCheck.log > library/build/outputs/androidTest-results/connected/logs/connectedCheck.xml
           cat library/build/outputs/androidTest-results/connected/**/*.xml
           echo ""
-          error_count=$(grep -E '(FAILED|failed)' library/build/outputs/androidTest-results/connected/**/*.xml | wc -l | awk '{$1=$1};1')
+          error_count=$(grep -E '(FAILED|failed|failure)' library/build/outputs/androidTest-results/connected/**/*.xml | wc -l | awk '{$1=$1};1')
           if [[ "$error_count" -ne "0" ]]; then echo "Tests failed. See above"; exit 1; fi
