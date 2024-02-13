@@ -120,16 +120,19 @@ class PayPalMessageView @JvmOverloads constructor(
 		get() = style.color ?: Color.BLACK
 		set(colorArg) {
 			if (field != colorArg) style = style.merge(MessageStyle(color = colorArg))
+			field = colorArg
 		}
 	var logoType: LogoType = LogoType.PRIMARY
 		get() = style.logoType ?: LogoType.PRIMARY
 		set(logoTypeArg) {
 			if (field != logoTypeArg) style = style.merge(MessageStyle(logoType = logoTypeArg))
+			field = logoTypeArg
 		}
 	var alignment: Align = Align.LEFT
 		get() = style.textAlign ?: Align.LEFT
 		set(alignmentArg) {
 			if (field != alignmentArg) style = style.merge(MessageStyle(textAlign = alignmentArg))
+			field = alignmentArg
 		}
 
 	// VIEW STATE CALLBACKS
