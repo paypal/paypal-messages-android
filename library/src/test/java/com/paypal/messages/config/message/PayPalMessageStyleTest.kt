@@ -71,4 +71,12 @@ class PayPalMessageStyleTest {
 		val actualStyle = oldStyle.merge(expectedStyle)
 		assertEquals(expectedStyle, actualStyle)
 	}
+
+	@Test
+	fun testClone() {
+		val messageStyle = PayPalMessageStyle()
+		val clonedMessageStyle = messageStyle.clone()
+
+		assertEquals(messageStyle, clonedMessageStyle)
+	}
 }
