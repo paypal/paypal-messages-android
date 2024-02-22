@@ -83,11 +83,11 @@ class PayPalMessageViewTest {
 		payPalMessageView.onActionCompleted(ApiResult.Success(response))
 
 		config.data.amount = 200.00
-		config.viewStateCallbacks = PayPalMessageViewStateCallbacks(onLoading = fun () { "NOT_NULL" })
-		config.eventsCallbacks = PayPalMessageEventsCallbacks(onClick = fun () { "NOT_NULL" })
+		config.viewStateCallbacks = PayPalMessageViewStateCallbacks(onLoading = fun () { })
+		config.eventsCallbacks = PayPalMessageEventsCallbacks(onClick = fun () { })
 
-		assertTrue(payPalMessageView.config.data.amount!!.equals(100.00))
-		assertNull(payPalMessageView.config.viewStateCallbacks?.onLoading)
-		assertNull(payPalMessageView.config.eventsCallbacks?.onClick)
+		assertTrue(payPalMessageView.getConfig().data.amount!!.equals(100.00))
+		assertNull(payPalMessageView.getConfig().viewStateCallbacks?.onLoading)
+		assertNull(payPalMessageView.getConfig().eventsCallbacks?.onClick)
 	}
 }
