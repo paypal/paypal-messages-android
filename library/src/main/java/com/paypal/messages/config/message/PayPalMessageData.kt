@@ -18,9 +18,13 @@ data class PayPalMessageData(
 	var offerType: OfferType? = null,
 	var placement: String? = null,
 	var environment: Environment? = null,
-) {
+) : Cloneable {
 	init {
 		Api.env = environment ?: Environment.SANDBOX
+	}
+
+	public override fun clone(): PayPalMessageData {
+		return super.clone() as PayPalMessageData
 	}
 
 	fun merge(newData: PayPalMessageData): PayPalMessageData {

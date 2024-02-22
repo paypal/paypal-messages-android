@@ -4,6 +4,8 @@ import com.paypal.messages.utils.PayPalErrors
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 
 class PayPalMessageViewStateCallbacksTest {
@@ -29,5 +31,15 @@ class PayPalMessageViewStateCallbacksTest {
 		verify { onLoadingMock() }
 		verify { onSuccessMock() }
 		verify { onErrorMock(any()) }
+	}
+
+	@Test
+	fun testClone() {
+		val messageViewState = PayPalMessageViewStateCallbacks()
+		val clonedMessageViewState = messageViewState.clone()
+
+		assertEquals(messageViewState, clonedMessageViewState)
+		clonedMessageViewState.onLoading = { "NOT EQUAL" }
+		assertNotEquals(messageViewState, clonedMessageViewState)
 	}
 }

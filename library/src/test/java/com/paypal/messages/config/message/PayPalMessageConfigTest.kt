@@ -1,6 +1,7 @@
 package com.paypal.messages.config.message
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 
 class PayPalMessageConfigTest {
@@ -49,5 +50,26 @@ class PayPalMessageConfigTest {
 // 		resultNameField.isAccessible = true
 // 		val resultName = resultNameField.get(mockLogger)
 // 		assertEquals(name, resultName)
+	}
+
+	@Test
+	fun testClone() {
+		val data = PayPalMessageData(clientID = "1")
+		val style = PayPalMessageStyle()
+		val viewStateCallbacks = PayPalMessageViewStateCallbacks()
+		val eventsCallbacks = PayPalMessageEventsCallbacks()
+
+		val config = PayPalMessageConfig(
+			data = data,
+			style = style,
+			viewStateCallbacks = viewStateCallbacks,
+			eventsCallbacks = eventsCallbacks,
+		)
+
+		val cloneConfig = config.clone()
+
+		assertEquals(config, cloneConfig)
+		config.data = PayPalMessageData(clientID = "2")
+		assertNotEquals(config, cloneConfig)
 	}
 }

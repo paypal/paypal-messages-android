@@ -11,7 +11,12 @@ data class PayPalMessageStyle(
 	val color: Color? = null,
 	val logoType: LogoType? = null,
 	val textAlign: Align? = null,
-) {
+) : Cloneable {
+
+	public override fun clone(): Any {
+		return super.clone()
+	}
+
 	fun merge(newStyle: PayPalMessageStyle): PayPalMessageStyle {
 		return this.copy(
 			color = newStyle.color ?: this.color,

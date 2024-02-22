@@ -3,11 +3,12 @@ package com.paypal.messages.config.message
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 
 class PayPalMessageDataTest {
 	private val initialClientID = "test_client_id"
-	
+
 	@Test
 	fun testConstructor() {
 		val data = PayPalMessageData(
@@ -76,7 +77,7 @@ class PayPalMessageDataTest {
 		)
 		val actualMerchantIdData = oldData.merge(PayPalMessageData(initialClientID, merchantID = "new_merchant_id"))
 		assertEquals(expectedMerchantIdData, actualMerchantIdData)
-		
+
 		val expectedPartnerAttributionIdData = PayPalMessageData(
 			clientID = initialClientID,
 			merchantID = "test_merchant_id",
@@ -91,7 +92,7 @@ class PayPalMessageDataTest {
 			PayPalMessageData(initialClientID, partnerAttributionID = "new_partner_attribution_id"),
 		)
 		assertEquals(expectedPartnerAttributionIdData, actualPartnerAttributionIdData)
-		
+
 		val expectedAmountData = PayPalMessageData(
 			clientID = initialClientID,
 			merchantID = "test_merchant_id",
@@ -174,5 +175,13 @@ class PayPalMessageDataTest {
 		)
 		val actualData = oldData.merge(expectedData)
 		assertEquals(expectedData, actualData)
+	}
+
+	@Test
+	fun testClone() {
+		val data = oldData.clone()
+		assertEquals(data, oldData)
+		data.amount = 100.00
+		assertNotEquals(oldData, data)
 	}
 }
