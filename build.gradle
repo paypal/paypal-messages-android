@@ -4,7 +4,6 @@ import org.jmailen.gradle.kotlinter.tasks.FormatTask
 
 buildscript {
 	ext.modules = [
-		"sdkVersionCode"      : 10000,
 		"sdkVersionName"      : "1.0.0-alpha.00",
 		"androidMinSdkVersion": 23,
 		"androidTargetVersion": 34
@@ -34,7 +33,7 @@ tasks.register('ktFormat', FormatTask) {
 	report = file('build/reports/ktlint/format-report.txt')
 }
 
-version modules.sdkVersionName
+// version modules.sdkVersionName
 
 nexusPublishing {
 	repositories {
@@ -53,4 +52,18 @@ nexusPublishing {
 
 subprojects {
   group = "com.paypal.messages"
+}
+
+// Additional configuration based on the GitHub Actions environment variable
+val updateVariable = System.getenv("UPDATE_VERSION_SNAPSHOT")
+
+if (updateVariable != null && updateVariable.equals("true", ignoreCase = true)) {
+	android {
+		defaultConfig {
+			// Assume modules.sdkVersionName is a String variable
+			modules.sdkVersionName += "-SNAPSHOT"
+		}
+	}
+
+	println(modules.sdkVersionName)
 }
