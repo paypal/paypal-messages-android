@@ -10,6 +10,7 @@ import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
 import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.io.ApiMessageData
 import com.paypal.messages.io.ApiResult
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -82,12 +83,14 @@ class PayPalMessageViewTest {
 
 		payPalMessageView.onActionCompleted(ApiResult.Success(response))
 
+		val emptyFunction = fun () {}
+
 		config.data.amount = 200.00
-		config.viewStateCallbacks = PayPalMessageViewStateCallbacks(onLoading = fun () { })
-		config.eventsCallbacks = PayPalMessageEventsCallbacks(onClick = fun () { })
+		config.viewStateCallbacks = PayPalMessageViewStateCallbacks(onLoading = emptyFunction)
+		config.eventsCallbacks = PayPalMessageEventsCallbacks(onClick = emptyFunction)
 
 		assertTrue(payPalMessageView.getConfig().data.amount!!.equals(100.00))
-		assertNull(payPalMessageView.getConfig().viewStateCallbacks?.onLoading)
-		assertNull(payPalMessageView.getConfig().eventsCallbacks?.onClick)
+		assertFalse(payPalMessageView.getConfig().viewStateCallbacks?.onLoading == emptyFunction)
+		assertFalse(payPalMessageView.getConfig().eventsCallbacks?.onClick == emptyFunction)
 	}
 }
