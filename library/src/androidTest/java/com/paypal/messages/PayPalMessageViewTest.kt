@@ -12,7 +12,6 @@ import com.paypal.messages.io.ApiMessageData
 import com.paypal.messages.io.ApiResult
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.UUID
