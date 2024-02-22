@@ -20,9 +20,11 @@ class PayPalMessageStyleTest {
 		assertEquals(messageStyle.textAlign, Align.CENTER)
 	}
 
-	private val oldStyle = PayPalMessageStyle(
-		color = Color.GRAYSCALE,
-		logoType = LogoType.INLINE,
-		textAlign = Align.RIGHT,
-	)
+	@Test
+	fun testClone() {
+		val messageStyle = PayPalMessageStyle()
+		val clonedMessageStyle = messageStyle.clone()
+
+		assertEquals(messageStyle, clonedMessageStyle)
+	}
 }

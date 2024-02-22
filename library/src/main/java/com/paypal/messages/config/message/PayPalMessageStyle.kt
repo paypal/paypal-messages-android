@@ -11,4 +11,8 @@ data class PayPalMessageStyle(
 	val color: Color = Color.BLACK,
 	val logoType: LogoType = LogoType.PRIMARY,
 	val textAlign: Align = Align.LEFT,
-)
+) : Cloneable {
+	public override fun clone(): PayPalMessageStyle {
+		return super.clone() as PayPalMessageStyle
+	}
+}
