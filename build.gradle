@@ -15,6 +15,7 @@ buildscript {
 		// Assume modules.sdkVersionName is a String variable
 		modules.sdkVersionName += "-SNAPSHOT"
 	}
+
 	println(modules.sdkVersionName)
 
 }
@@ -61,4 +62,19 @@ nexusPublishing {
 
 subprojects {
   group = "com.paypal.messages"
+}
+
+tasks.register("echoVersion") {
+    group = "github"
+    description = "Echoes version used"
+
+    doLast {
+        project.file(".github/workflows/release.yml").append(
+            """
+			- name: Echo version
+				id: echo_version
+				run: echo ${modules.sdkVersionName}
+            """
+        )
+    }
 }
