@@ -16,7 +16,7 @@ android {
 
 		// TODO: Are versionCode and versionName needed for libraries here?
 		versionCode modules.sdkVersionCode
-		versionName modules.sdkVersionName 
+		versionName modules.sdkVersionName
 		testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 	  testInstrumentationRunnerArguments clearPackageData: 'true'
 		consumerProguardFiles 'consumer-rules.pro'
@@ -64,6 +64,19 @@ android {
 		}
 	}
 }
+
+tasks.register('addPreCommitGitHookOnBuild') {
+	group 'git'
+	if (! project.file('../.git/hooks/pre-commit').exists()) {
+		println("⚈ ⚈ ⚈ Running Add Pre Commit Git Hook Script on Build ⚈ ⚈ ⚈")
+		exec {
+			commandLine("cp", "../scripts/pre-commit", "../.git/hooks")
+		}
+		println("✅ Added Pre Commit Git Hook Script.")
+	}
+}
+
+preBuild.doFirst { addPreCommitGitHookOnBuild }
 
 tasks.withType(Test) {
 	useJUnitPlatform()
@@ -131,7 +144,7 @@ dependencies {
 }
 
 project.ext.name = "paypal-messages"
-project.ext.version = modules.sdkVersionName 
+project.ext.version = modules.sdkVersionName
 project.ext.pom_name = "PayPal Messages"
 project.ext.pom_desc = "The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit."
 

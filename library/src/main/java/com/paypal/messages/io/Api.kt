@@ -30,12 +30,15 @@ object Api {
 	var devTouchpoint: Boolean = false
 	var ignoreCache: Boolean = false
 	var stageTag: String? = null
-	var instanceId: UUID? = null
 	var originatingInstanceId: UUID? = null
 	var sessionId: UUID? = null
 	var ioDispatcher = Dispatchers.IO
 
-	private fun HttpUrl.Builder.setMessageDataQuery(config: MessageConfig, hash: String?) {
+	private fun HttpUrl.Builder.setMessageDataQuery(
+		config: MessageConfig,
+		hash: String?,
+		instanceId: UUID,
+	) {
 		addQueryParameter("client_id", config.data.clientID)
 		addQueryParameter("devTouchpoint", devTouchpoint.toString())
 		addQueryParameter("ignore_cache", ignoreCache.toString())
@@ -43,7 +46,7 @@ object Api {
 		addQueryParameter("session_id", sessionId.toString())
 
 		if (!stageTag.isNullOrBlank()) { addQueryParameter("stage_tag", stageTag) }
-		config.style.logoType?.let { addQueryParameter("logo_type", it.name.lowercase()) }
+		config.style.logoType.let { addQueryParameter("logo_type", it.name.lowercase()) }
 		config.data.amount?.let { addQueryParameter("amount", it.toString()) }
 		config.data.buyerCountry?.let { addQueryParameter("buyer_country", it) }
 		config.data.offerType?.let { addQueryParameter("offer", it.name) }
@@ -51,13 +54,17 @@ object Api {
 		hash?.let { addQueryParameter("merchant_config", it) }
 	}
 
-	internal fun createMessageDataRequest(config: MessageConfig, hash: String?): Request {
+	internal fun createMessageDataRequest(
+		config: MessageConfig,
+		hash: String?,
+		instanceId: UUID,
+	): Request {
 		val request = Request.Builder().apply {
 			header("Accept", "application/json")
 			header("x-requested-by", "native-upstream-messages")
 
 			val urlBuilder = env.url(Env.Endpoints.MESSAGE_DATA).newBuilder()
-			urlBuilder.setMessageDataQuery(config, hash)
+			urlBuilder.setMessageDataQuery(config, hash, instanceId)
 			url(urlBuilder.build())
 		}.build()
 
@@ -66,9 +73,13 @@ object Api {
 		return request
 	}
 
-	internal fun callMessageDataEndpoint(config: MessageConfig, hash: String?): ApiResult {
+	internal fun callMessageDataEndpoint(
+		config: MessageConfig,
+		hash: String?,
+		instanceId: UUID,
+	): ApiResult {
 		LogCat.debug(TAG, "callMessageDataEndpoint hash: $hash")
-		val request = createMessageDataRequest(config, hash)
+		val request = createMessageDataRequest(config, hash, instanceId)
 		try {
 			val response = client.newCall(request).execute()
 			val code = response.code
@@ -101,6 +112,7 @@ object Api {
 	fun getMessageWithHash(
 		context: Context,
 		messageConfig: MessageConfig,
+		instanceId: UUID,
 		onCompleted: OnActionCompleted,
 	) {
 		CoroutineScope(ioDispatcher).launch {
@@ -120,7 +132,7 @@ object Api {
 				else -> null
 			}
 
-			val messageData = callMessageDataEndpoint(messageConfig, newHash)
+			val messageData = callMessageDataEndpoint(messageConfig, newHash, instanceId)
 			withContext(Dispatchers.Main) {
 				onCompleted.onActionCompleted(messageData)
 			}

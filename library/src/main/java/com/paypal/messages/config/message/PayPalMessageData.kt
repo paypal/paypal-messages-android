@@ -17,22 +17,13 @@ data class PayPalMessageData(
 	var buyerCountry: String? = null,
 	var offerType: OfferType? = null,
 	var placement: String? = null,
-	var environment: Environment? = null,
-) {
+	var environment: Environment = Environment.SANDBOX,
+) : Cloneable {
 	init {
-		Api.env = environment ?: Environment.SANDBOX
+		Api.env = environment
 	}
 
-	fun merge(newData: PayPalMessageData): PayPalMessageData {
-		return this.copy(
-			clientID = if (newData.clientID != "") newData.clientID else this.clientID,
-			merchantID = newData.merchantID ?: this.merchantID,
-			partnerAttributionID = newData.partnerAttributionID ?: this.partnerAttributionID,
-			amount = newData.amount ?: this.amount,
-			buyerCountry = newData.buyerCountry ?: this.buyerCountry,
-			offerType = newData.offerType ?: this.offerType,
-			placement = newData.placement ?: this.placement,
-			environment = newData.environment ?: this.environment,
-		)
+	public override fun clone(): PayPalMessageData {
+		return super.clone() as PayPalMessageData
 	}
 }
