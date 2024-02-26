@@ -9,6 +9,9 @@ echo "Running ktFormat to fix any auto-fixable issues"
 
 ./gradlew ktFormat
 
+git add library/
+git add demo/
+
 echo "Running ktLint to find any issues that still need to be fixed"
 
 ./gradlew ktLint
