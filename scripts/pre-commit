@@ -1,6 +1,7 @@
 echo "***********************************************"
 echo "Running git pre-commit hook to lint and format."
 echo "***********************************************"
+echo ""
 
 # Gather the staged files - to make sure changes are saved only for these files.
 stagedFiles=$(git diff --staged --name-only)
@@ -12,7 +13,12 @@ echo "Running ktFormat to fix any auto-fixable issues"
 git add library/
 git add demo/
 
+echo "***********************************************"
+echo "Added changed files to commit"
+echo ""
 echo "Running ktLint to find any issues that still need to be fixed"
+echo "***********************************************"
+echo ""
 
 ./gradlew ktLint
 
@@ -25,3 +31,8 @@ if [[ "$error_count" -ne "0" ]]; then
 	head -20 build/reports/ktlint/main-lint.xml
 	exit 1
 fi
+
+echo ""
+echo "***********************************************"
+echo "Linting passed. Committing code."
+echo "***********************************************"
