@@ -13,8 +13,6 @@ import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
-import com.paypal.messages.config.message.PayPalMessageEventsCallbacks
-import com.paypal.messages.config.message.PayPalMessageStyle
 import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
 import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.config.message.style.PayPalMessageColor
@@ -25,9 +23,9 @@ import com.paypal.messagesdemo.databinding.ActivityMessageBinding
 class XmlActivity : AppCompatActivity() {
 	private lateinit var binding: ActivityMessageBinding
 	private val TAG = "XmlActivity"
-	private var logoType: PayPalMessageLogoType = PayPalMessageLogoType.PRIMARY
 	private var color: PayPalMessageColor = PayPalMessageColor.BLACK
-	private var alignment: PayPalMessageAlign = PayPalMessageAlign.LEFT
+	private var logoType: PayPalMessageLogoType = PayPalMessageLogoType.PRIMARY
+	private var textAlign: PayPalMessageAlign = PayPalMessageAlign.LEFT
 	private var offerType: PayPalMessageOfferType? = null
 	private val environment = PayPalEnvironment.SANDBOX
 
@@ -106,7 +104,7 @@ class XmlActivity : AppCompatActivity() {
 
 		val alignmentRadioGroup = binding.alignmentRadioGroup
 		alignmentRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-			alignment = when (checkedId) {
+			textAlign = when (checkedId) {
 				R.id.styleLeft -> PayPalMessageAlign.LEFT
 				R.id.styleCenter -> PayPalMessageAlign.CENTER
 				R.id.styleRight -> PayPalMessageAlign.RIGHT
@@ -153,14 +151,15 @@ class XmlActivity : AppCompatActivity() {
 			payPalMessage.setBackgroundColor(backgroundColor.hashCode())
 
 			// TODO: verify/fix offer type not working as expected
-			payPalMessage.data = PayPalMessageData(
-				clientId, amount = amount, buyerCountry = buyerCountry, offerType = offerType,
-				environment = environment,
-			)
-			payPalMessage.style = PayPalMessageStyle(
-				textAlign = alignment, color = color, logoType = logoType,
-			)
-			payPalMessage.refresh()
+			payPalMessage.clientID = clientId
+			payPalMessage.amount = amount
+			payPalMessage.buyerCountry = buyerCountry
+			payPalMessage.offerType = offerType
+			payPalMessage.environment = environment
+
+			payPalMessage.color = color
+			payPalMessage.logoType = logoType
+			payPalMessage.textAlign = textAlign
 		}
 
 		// Restore default options and reset UI
@@ -192,15 +191,18 @@ class XmlActivity : AppCompatActivity() {
 
 		val config = PayPalMessageConfig(data = PayPalMessageData(clientID = "someClientID"))
 		val message = PayPalMessageView(context = this, config = config)
+		message.getConfig()
+		message.setConfig(config)
 		config.setGlobalAnalytics("", "")
-		message.config = config
 		message.clientID = ""
-		message.buyerCountry = ""
+		message.merchantID = ""
+		message.partnerAttributionID = ""
 		message.placement = ""
-		message.logoType = PayPalMessageLogoType.INLINE
-		message.alignment = PayPalMessageAlign.CENTER
-		message.eventsCallbacks = PayPalMessageEventsCallbacks()
-		message.viewStateCallbacks = PayPalMessageViewStateCallbacks()
+		message.onClick = {}
+		message.onApply = {}
+		message.onLoading = {}
+		message.onSuccess = {}
+		message.onError = {}
 		EnvVars.getClientId(PayPalEnvironment.STAGE)
 	}
 }

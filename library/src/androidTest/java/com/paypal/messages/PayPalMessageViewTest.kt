@@ -10,7 +10,7 @@ import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
 import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.io.ApiMessageData
 import com.paypal.messages.io.ApiResult
-import org.junit.Assert.assertNull
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -82,12 +82,14 @@ class PayPalMessageViewTest {
 
 		payPalMessageView.onActionCompleted(ApiResult.Success(response))
 
-		config.data.amount = 200.00
-		config.viewStateCallbacks = PayPalMessageViewStateCallbacks(onLoading = fun () { "NOT_NULL" })
-		config.eventsCallbacks = PayPalMessageEventsCallbacks(onClick = fun () { "NOT_NULL" })
+		val emptyFunction = fun () {}
 
-		assertTrue(payPalMessageView.config.data.amount!!.equals(100.00))
-		assertNull(payPalMessageView.config.viewStateCallbacks?.onLoading)
-		assertNull(payPalMessageView.config.eventsCallbacks?.onClick)
+		config.data.amount = 200.00
+		config.viewStateCallbacks = PayPalMessageViewStateCallbacks(onLoading = emptyFunction)
+		config.eventsCallbacks = PayPalMessageEventsCallbacks(onClick = emptyFunction)
+
+		assertTrue(payPalMessageView.getConfig().data.amount!!.equals(100.00))
+		assertFalse(payPalMessageView.getConfig().viewStateCallbacks?.onLoading == emptyFunction)
+		assertFalse(payPalMessageView.getConfig().eventsCallbacks?.onClick == emptyFunction)
 	}
 }
