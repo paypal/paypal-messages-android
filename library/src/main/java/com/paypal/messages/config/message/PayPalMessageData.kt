@@ -3,6 +3,7 @@ package com.paypal.messages.config.message
 import com.paypal.messages.io.Api
 import com.paypal.messages.config.PayPalEnvironment as Environment
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
+import com.paypal.messages.config.PayPalMessagePageType as PageType
 
 /**
  * [PayPalMessageData] holds data used to determine the content of a PayPalMessage component
@@ -16,7 +17,7 @@ data class PayPalMessageData(
 	var amount: Double? = null,
 	var buyerCountry: String? = null,
 	var offerType: OfferType? = null,
-	var placement: String? = null,
+	var pageType: PageType? = null,
 	var environment: Environment = Environment.SANDBOX,
 ) : Cloneable {
 	init {

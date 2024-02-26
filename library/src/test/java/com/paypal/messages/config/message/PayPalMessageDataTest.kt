@@ -2,6 +2,7 @@ package com.paypal.messages.config.message
 
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
+import com.paypal.messages.config.PayPalMessagePageType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
@@ -14,7 +15,7 @@ class PayPalMessageDataTest {
 		val data = PayPalMessageData(
 			clientID = initialClientID,
 			amount = 115.0,
-			placement = "placement_test",
+			pageType = PayPalMessagePageType.CART,
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 			buyerCountry = "buyer_country_test",
 			merchantID = "merchant_id_test",
@@ -24,7 +25,7 @@ class PayPalMessageDataTest {
 
 		assertEquals(data.clientID, initialClientID)
 		assertEquals(data.amount, 115.0)
-		assertEquals(data.placement, "placement_test")
+		assertEquals(data.pageType, PayPalMessagePageType.CART)
 		assertEquals(data.offerType, PayPalMessageOfferType.PAY_LATER_PAY_IN_1)
 		assertEquals(data.buyerCountry, "buyer_country_test")
 		assertEquals(data.merchantID, "merchant_id_test")
@@ -41,7 +42,7 @@ class PayPalMessageDataTest {
 			amount = 115.0,
 			buyerCountry = "ES",
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
-			placement = "test_placement",
+			pageType = PayPalMessagePageType.CART,
 			environment = PayPalEnvironment.LOCAL,
 		)
 
