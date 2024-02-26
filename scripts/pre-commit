@@ -1,11 +1,19 @@
 echo "***********************************************"
 echo "Running git pre-commit hook to lint and format."
 echo "***********************************************"
+
+# The git diff and grep part is re-used to prevent a bug which leads to 0 files having a count of 1
+stagedFilesCount=$(git diff --staged --name-only | grep -E '(library|demo)' | wc -l | awk '{$1=$1};1')
+
+if [[ "$stagedFilesCount" -eq "0" ]]; then
+	echo "No staged demo/ or library/ files found when running git diff --staged | grep -E '(library|demo)'"
+	echo "***********************************************"
+	exit 0
+fi
+
+echo "Found $stagedFilesCount staged files."
+echo git diff --staged --name-only | grep -E '(library|demo)'
 echo ""
-
-# Gather the staged files - to make sure changes are saved only for these files.
-stagedFiles=$(git diff --staged --name-only)
-
 echo "Running ktFormat to fix any auto-fixable issues"
 
 ./gradlew ktFormat
@@ -22,13 +30,17 @@ echo ""
 
 ./gradlew ktLint
 
-error_count=$(grep "<error" build/reports/ktlint/main-lint.xml | wc -l | awk '{$1=$1};1')
+errorCount=$(grep "<error" build/reports/ktlint/main-lint.xml | wc -l | awk '{$1=$1};1')
 
-if [[ "$error_count" -ne "0" ]]; then
+if [[ "$errorCount" -ne "0" ]]; then
+	echo ""
+	echo "***********************************************"
 	echo "ktLint failed with a count of $error_count errors."
 	echo "For more info, check build/reports/ktlint/main-lint.xml"
 	echo "Here's the first 20 lines of that lint report"
+	echo ""
 	head -20 build/reports/ktlint/main-lint.xml
+	echo "***********************************************"
 	exit 1
 fi
 
