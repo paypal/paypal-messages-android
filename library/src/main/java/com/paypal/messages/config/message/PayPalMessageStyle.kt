@@ -1,5 +1,6 @@
 package com.paypal.messages.config.message
 
+import com.paypal.messages.utils.LogCat
 import com.paypal.messages.config.message.style.PayPalMessageAlign as Align
 import com.paypal.messages.config.message.style.PayPalMessageColor as Color
 import com.paypal.messages.config.message.style.PayPalMessageLogoType as LogoType
@@ -13,6 +14,7 @@ data class PayPalMessageStyle(
 	val textAlign: Align = Align.LEFT,
 ) : Cloneable {
 	public override fun clone(): PayPalMessageStyle {
+		LogCat.debug("Style", "")
 		return super.clone() as PayPalMessageStyle
 	}
 }
