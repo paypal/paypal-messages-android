@@ -28,6 +28,7 @@ jobs:
   test_unit_coverage:
     name: Unit Tests Coverage
     runs-on: ubuntu-latest
+    # test coverage only runs on PRs
     if: ${{ github.event == 'pull_request' }}
 
     steps:
@@ -85,8 +86,8 @@ jobs:
       - name: Show Test XML
         run: |
           mkdir -p library/build/outputs/androidTest-results/connected/logs
-          grep -E '(SUCCESS|FAILED|failed)' connectedCheck.log > library/build/outputs/androidTest-results/connected/logs/connectedCheck.xml
+          grep -E 'com.paypal.*Test.*(SUCCESS|FAILED|failed)' connectedCheck.log > library/build/outputs/androidTest-results/connected/logs/connectedCheck.xml
           cat library/build/outputs/androidTest-results/connected/**/*.xml
           echo ""
-          error_count=$(grep -E '(FAILED|failed|failure)' library/build/outputs/androidTest-results/connected/**/*.xml | wc -l | awk '{$1=$1};1')
+          error_count=$(grep -E 'com.paypal.*Test.*(FAILED|failed|failure)' library/build/outputs/androidTest-results/connected/**/*.xml | wc -l | awk '{$1=$1};1')
           if [[ "$error_count" -ne "0" ]]; then echo "Tests failed. See above"; exit 1; fi
