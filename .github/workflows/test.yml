@@ -28,6 +28,7 @@ jobs:
   test_unit_coverage:
     name: Unit Tests Coverage
     runs-on: ubuntu-latest
+    if: ${{ github.event == 'pull_request' }}
 
     steps:
       - name: Checkout repo
