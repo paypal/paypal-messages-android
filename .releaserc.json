@@ -2,7 +2,7 @@
 	"branches": [
 		{"name": "develop", "prerelease": true},
 		{"name": "ci/semantic-release", "prerelease": true},
-		{"name": "prerelease", "prerelease": true}
+		"release"
 	],
 	"plugins": [
 		[
