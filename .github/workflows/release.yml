@@ -54,12 +54,14 @@ jobs:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #   run: npx semantic-release@21
 
-      - name: Set env
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      - name: Test
+      - name: Get latest release
+        id: get_release
         run: |
-          echo $RELEASE_VERSION
-          echo ${{ env.RELEASE_VERSION }}
+          echo "::set-output name=release::${GITHUB_REF#refs/tags/}"
+
+      - name: Echo Semantic Release Version
+        run: |
+          echo "Semantic Release Version: ${{ steps.get_release.outputs.release }}"
 
       # - name: Publish to Maven
       #   uses: ./.github/actions/publish_all_modules
