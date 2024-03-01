@@ -105,6 +105,25 @@ class PayPalMessageView @JvmOverloads constructor(
 		debounceUpdateContent(Unit)
 	}
 
+	private fun <T> debounce(
+		delayMs: Long = 1L,
+		coroutineContext: CoroutineContext = Dispatchers.Main,
+		callback: (T) -> Unit,
+	): (T) -> Unit {
+		var debounceJob: Job? = null
+		return { param: T ->
+			if (debounceJob?.isCompleted != false) {
+				debounceJob = CoroutineScope(coroutineContext).launch {
+					delay(delayMs)
+					callback(param)
+				}
+			}
+		}
+	}
+
+	// This must be above the set methods to prevent errors when using XML attributes
+	val debounceUpdateContent = debounce<Unit> { updateMessageContent() }
+
 	/**
 	 * DATA
 	 */
@@ -302,24 +321,6 @@ class PayPalMessageView @JvmOverloads constructor(
 		// so we need to cleanup the modal instance if the message is removed
 		this.modal?.dismiss()
 	}
-
-	private fun <T> debounce(
-		delayMs: Long = 1L,
-		coroutineContext: CoroutineContext = Dispatchers.Main,
-		callback: (T) -> Unit,
-	): (T) -> Unit {
-		var debounceJob: Job? = null
-		return { param: T ->
-			if (debounceJob?.isCompleted != false) {
-				debounceJob = CoroutineScope(coroutineContext).launch {
-					delay(delayMs)
-					callback(param)
-				}
-			}
-		}
-	}
-
-	val debounceUpdateContent = debounce<Unit> { updateMessageContent() }
 
 	/**
 	 * This function purpose is to update only the UI of the [PayPalMessageView] component.
