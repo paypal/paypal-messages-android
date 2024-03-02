@@ -1,7 +1,12 @@
 #!/bin/sh
 
-VERSION=$1
+VERSION="\"$1\""
+VERSION_MATCH='"[0-9a-zA-Z.-]+"'
 
 echo "Updating version to $VERSION"
 
-sed -i '' -E "s/sdkVersionName(.*): \"[0-9a-zA-Z.-]+\"/sdkVersionName\1: \"$VERSION\"/" ../build.gradle
+ls ../
+
+ls
+
+sed -i '' -E "s/sdkVersionName(.*): $VERSION_MATCH/sdkVersionName\1: $VERSION/" ../build.gradle
