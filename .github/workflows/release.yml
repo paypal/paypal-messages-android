@@ -22,7 +22,7 @@ jobs:
   # to help reduce the probability of failure when interacting with sonatype servers
   release:
     name: Release
-    needs: [build]
+    needs: [lint, test, build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
