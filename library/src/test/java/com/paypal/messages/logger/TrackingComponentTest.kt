@@ -2,6 +2,7 @@ package com.paypal.messages.logger
 
 import com.google.gson.Gson
 import com.paypal.messages.config.PayPalMessageOfferType
+import com.paypal.messages.config.PayPalMessagePageType
 import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
@@ -11,7 +12,7 @@ import org.junit.jupiter.api.Test
 class TrackingComponentTest {
 	private val offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
 	private val amount = "100.00"
-	private val placement = "CART"
+	private val pageType = PayPalMessagePageType.CART
 	private val buyerCountryCode = "US"
 	private val channel = "NATIVE"
 	private val styleLogoType = PayPalMessageLogoType.ALTERNATIVE
@@ -37,7 +38,7 @@ class TrackingComponentTest {
 	private val trackingComponent = TrackingComponent(
 		offerType = offerType,
 		amount = amount,
-		placement = placement,
+		pageType = pageType,
 		buyerCountryCode = buyerCountryCode,
 		channel = channel,
 		styleLogoType = styleLogoType,
@@ -65,7 +66,7 @@ class TrackingComponentTest {
 	fun testConstructor() {
 		assertEquals(offerType, trackingComponent.offerType)
 		assertEquals(amount, trackingComponent.amount)
-		assertEquals(placement, trackingComponent.placement)
+		assertEquals(pageType, trackingComponent.pageType)
 		assertEquals(buyerCountryCode, trackingComponent.buyerCountryCode)
 		assertEquals(channel, trackingComponent.channel)
 		assertEquals(styleLogoType, trackingComponent.styleLogoType)
@@ -95,7 +96,7 @@ class TrackingComponentTest {
 		val json = gson.toJson(trackingComponent)
 
 		@Suppress("ktlint:standard:max-line-length")
-		val expectedJson = """{"offer_type":"PAY_LATER_SHORT_TERM","amount":"100.00","placement":"CART","buyer_country_code":"US","channel":"NATIVE","style_logo_type":"ALTERNATIVE","style_color":"MONOCHROME","style_text_align":"CENTER","message_type":"OFFER","views":["VIEW"],"qualified_products":["PRODUCT"],"fdata":"test_fdata","debug_id":"test_debug_id","experimentation_experience_ids":["EXP_1","EXP_2"],"experimentation_treatment_ids":["TRT_1","TRT_2"],"credit_product_identifiers":["CPI_1","CPI_2"],"offer_country_code":"US","merchant_country_code":"US","type":"OFFER","instance_id":"test_instance_id","originating_instance_id":"test_originating_instance_id","session_id":"test_session_id","component_events":[{"event_type":"MESSAGE_CLICK"}],"__shared__":{}}"""
+		val expectedJson = """{"offer_type":"PAY_LATER_SHORT_TERM","amount":"100.00","page_type":"CART","buyer_country_code":"US","channel":"NATIVE","style_logo_type":"ALTERNATIVE","style_color":"MONOCHROME","style_text_align":"CENTER","message_type":"OFFER","views":["VIEW"],"qualified_products":["PRODUCT"],"fdata":"test_fdata","debug_id":"test_debug_id","experimentation_experience_ids":["EXP_1","EXP_2"],"experimentation_treatment_ids":["TRT_1","TRT_2"],"credit_product_identifiers":["CPI_1","CPI_2"],"offer_country_code":"US","merchant_country_code":"US","type":"OFFER","instance_id":"test_instance_id","originating_instance_id":"test_originating_instance_id","session_id":"test_session_id","component_events":[{"event_type":"MESSAGE_CLICK"}],"__shared__":{}}"""
 		assertEquals(expectedJson, json)
 	}
 }

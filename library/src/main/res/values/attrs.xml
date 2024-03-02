@@ -32,7 +32,15 @@
 
 		<attr name="paypal_amount" format="float"/>
 
-		<attr name="paypal_placement" format="float"/>
+		<attr name="paypal_page_type" format="enum">
+			<enum name="CART" value="0" />
+			<enum name="CHECKOUT" value="1" />
+			<enum name="HOME" value="2" />
+			<enum name="MINI_CART" value="3" />
+			<enum name="PRODUCT_DETAILS" value="4" />
+			<enum name="PRODUCT_LISTING" value="5" />
+			<enum name="SEARCH_RESULTS" value="6" />
+		</attr>
 
 		<attr name="paypal_buyer_country" format="string"/>
 	</declare-styleable>

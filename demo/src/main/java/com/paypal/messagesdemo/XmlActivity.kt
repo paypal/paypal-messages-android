@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import com.paypal.messages.PayPalMessageView
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
+import com.paypal.messages.config.PayPalMessagePageType
 import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
 import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
@@ -197,7 +198,7 @@ class XmlActivity : AppCompatActivity() {
 		message.clientID = ""
 		message.merchantID = ""
 		message.partnerAttributionID = ""
-		message.placement = ""
+		message.pageType = PayPalMessagePageType.CART
 		message.onClick = {}
 		message.onApply = {}
 		message.onLoading = {}

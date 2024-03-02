@@ -42,6 +42,7 @@ import java.util.UUID
 import kotlin.coroutines.CoroutineContext
 import kotlin.system.measureTimeMillis
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
+import com.paypal.messages.config.PayPalMessagePageType as PageType
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
 import com.paypal.messages.config.message.PayPalMessageData as MessageData
 import com.paypal.messages.config.message.PayPalMessageEventsCallbacks as EventsCallbacks
@@ -77,7 +78,7 @@ class PayPalMessageView @JvmOverloads constructor(
 				amount = this.amount,
 				buyerCountry = this.buyerCountry,
 				offerType = this.offerType,
-				placement = this.placement,
+				pageType = this.pageType,
 			),
 			style = MessageStyle(this.color, this.logoType, this.textAlign),
 			viewStateCallbacks = ViewStateCallbacks(this.onLoading, this.onSuccess, this.onError),
@@ -92,7 +93,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		amount = config.data.amount
 		buyerCountry = config.data.clientID
 		offerType = config.data.offerType
-		placement = config.data.placement
+		pageType = config.data.pageType
 		color = config.style.color
 		logoType = config.style.logoType
 		textAlign = config.style.textAlign
@@ -103,6 +104,25 @@ class PayPalMessageView @JvmOverloads constructor(
 		onApply = config.eventsCallbacks?.onApply ?: {}
 		debounceUpdateContent(Unit)
 	}
+
+	private fun <T> debounce(
+		delayMs: Long = 1L,
+		coroutineContext: CoroutineContext = Dispatchers.Main,
+		callback: (T) -> Unit,
+	): (T) -> Unit {
+		var debounceJob: Job? = null
+		return { param: T ->
+			if (debounceJob?.isCompleted != false) {
+				debounceJob = CoroutineScope(coroutineContext).launch {
+					delay(delayMs)
+					callback(param)
+				}
+			}
+		}
+	}
+
+	// This must be above the set methods to prevent errors when using XML attributes
+	val debounceUpdateContent = debounce<Unit> { updateMessageContent() }
 
 	/**
 	 * DATA
@@ -153,7 +173,7 @@ class PayPalMessageView @JvmOverloads constructor(
 				debounceUpdateContent(Unit)
 			}
 		}
-	var placement: String? = config.data.placement
+	var pageType: PageType? = config.data.pageType
 		set(arg) {
 			if (field != arg) {
 				field = arg
@@ -302,24 +322,6 @@ class PayPalMessageView @JvmOverloads constructor(
 		this.modal?.dismiss()
 	}
 
-	private fun <T> debounce(
-		delayMs: Long = 1L,
-		coroutineContext: CoroutineContext = Dispatchers.Main,
-		callback: (T) -> Unit,
-	): (T) -> Unit {
-		var debounceJob: Job? = null
-		return { param: T ->
-			if (debounceJob?.isCompleted != false) {
-				debounceJob = CoroutineScope(coroutineContext).launch {
-					delay(delayMs)
-					callback(param)
-				}
-			}
-		}
-	}
-
-	val debounceUpdateContent = debounce<Unit> { updateMessageContent() }
-
 	/**
 	 * This function purpose is to update only the UI of the [PayPalMessageView] component.
 	 * It makes use of the existing values for the message content and style
@@ -374,8 +376,14 @@ class PayPalMessageView @JvmOverloads constructor(
 			}
 		}
 
-		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_placement)) {
-			placement = typedArray.getString(R.styleable.PayPalMessageView_paypal_placement)
+		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_page_type)) {
+			pageType = try {
+				PageType(typedArray.getIntOrThrow(R.styleable.PayPalMessageView_paypal_page_type))
+			}
+			catch (ex: Exception) {
+				LogCat.error(TAG, "Error parsing page_type attribute")
+				null
+			}
 		}
 
 		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_offer_type)) {
@@ -629,7 +637,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		val component = TrackingComponent(
 			offerType = this.offerType,
 			amount = this.amount.toString(),
-			placement = this.placement,
+			pageType = this.pageType,
 			buyerCountryCode = this.buyerCountry,
 			styleLogoType = this.logoType,
 			styleColor = this.color,

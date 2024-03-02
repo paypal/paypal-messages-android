@@ -2,6 +2,7 @@ package com.paypal.messages.logger
 
 import com.google.gson.annotations.SerializedName
 import com.paypal.messages.config.PayPalMessageOfferType
+import com.paypal.messages.config.PayPalMessagePageType
 import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
@@ -12,8 +13,8 @@ data class TrackingComponent(
 	val offerType: PayPalMessageOfferType? = null,
 	@SerializedName("amount")
 	val amount: String? = null,
-	@SerializedName("placement")
-	val placement: String? = null,
+	@SerializedName("page_type")
+	val pageType: PayPalMessagePageType? = null,
 	@SerializedName("buyer_country_code")
 	val buyerCountryCode: String? = null,
 	@SerializedName("channel")
@@ -64,5 +65,6 @@ data class TrackingComponent(
 	val componentEvents: MutableList<TrackingEvent>,
 
 	// Dynamic Properties, not serialized by default
+	@Suppress("PropertyName")
 	val __shared__: MutableMap<String, Any>? = mutableMapOf(),
 )
