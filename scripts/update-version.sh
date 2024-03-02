@@ -9,4 +9,4 @@ ls ../
 
 ls
 
-sed -i '' -E "s/sdkVersionName(.*): $VERSION_MATCH/sdkVersionName\1: $VERSION/" ../build.gradle
+sed -i '' "s/sdkVersionName(.*): $VERSION_MATCH/sdkVersionName\1: $VERSION/" ./build.gradle
