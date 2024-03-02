@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0-ci-semantic-release.3](https://github.com/paypal/paypal-messages-android/compare/1.0.0-ci-semantic-release.2...1.0.0-ci-semantic-release.3) (2024-03-02)
+
+
+### Features
+
+* fix script ([287e536](https://github.com/paypal/paypal-messages-android/commit/287e536fa8acf667cd5b5d83bf8c07d7ad60ce23))
+
 ## [1.0.0-ci-semantic-release.2](https://github.com/paypal/paypal-messages-android/compare/1.0.0-ci-semantic-release.1...1.0.0-ci-semantic-release.2) (2024-03-02)
 
 

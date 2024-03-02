@@ -6,7 +6,7 @@ buildscript {
 	ext.modules = [
 		// TODO: How are we changing the versionName in the gradle files during release?
 		"sdkVersionCode"      : 10000,
-		"sdkVersionName"			: "1.0.0-ci-semantic-release.1",
+		"sdkVersionName"			: "1.0.0-ci-semantic-release.3",
 		"androidMinSdkVersion": 23,
 		"androidTargetVersion": 34
 	]
