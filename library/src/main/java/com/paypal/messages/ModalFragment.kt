@@ -427,6 +427,7 @@ internal class ModalFragment constructor(
 	var onClick: () -> Unit = {}
 	private var onClose: () -> Unit = {}
 
+//
 	private fun logEvent(event: TrackingEvent, dynamicKeys: MutableMap<String, Any>? = null) {
 		val component = TrackingComponent(
 			amount = this.amount.toString(),
