@@ -48,7 +48,7 @@
 		[
 			"@semantic-release/exec",
 			{
-				"prepareCmd": "./scripts/update-version.sh ${nextRelease.version} && ./gradlew --stacktrace clean :library:assemble",
+				"prepareCmd": "./gradlew --stacktrace -PversionParam=${nextRelease.version} clean :library:assemble",
 				"successCmd": "echo"
 			}
 		],
