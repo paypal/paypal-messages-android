@@ -4,6 +4,7 @@
 		{"name": "develop", "prerelease": true},
 		{"name": "prerelease", "prerelease": true}
 	],
+	"tagFormat": "${version}",
 	"plugins": [
 		[
 			"@semantic-release/commit-analyzer",
@@ -47,7 +48,7 @@
 		[
 			"@semantic-release/exec",
 			{
-				"prepareCmd": "./gradlew --stacktrace clean :library:assemble",
+				"prepareCmd": "./gradlew --stacktrace -PversionParam=${nextRelease.version} changeReleaseVersion clean :library:assemble",
 				"successCmd": "echo"
 			}
 		],
