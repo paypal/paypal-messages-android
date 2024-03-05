@@ -14,6 +14,7 @@ android {
 		minSdkVersion modules.androidMinSdkVersion
 		targetSdkVersion modules.androidTargetVersion
 
+		// TODO: Are versionCode and versionName needed for libraries here?
 		versionCode modules.sdkVersionCode
 		versionName modules.sdkVersionName
 		testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'

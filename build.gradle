@@ -4,6 +4,7 @@ import org.jmailen.gradle.kotlinter.tasks.FormatTask
 
 buildscript {
 	ext.modules = [
+		// TODO: How are we changing the versionName in the gradle files during release?
 		"sdkVersionCode"      : 10000,
 		"sdkVersionName"			: "1.0.0-alpha.00-SNAPSHOT",
 		"androidMinSdkVersion": 23,
@@ -16,7 +17,7 @@ plugins {
 	id 'com.android.library' version '8.0.2' apply false
 	id 'org.jetbrains.kotlin.android' version '1.8.22' apply false
 	id 'org.jmailen.kotlinter' version '3.16.0'
-	id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
+	id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
 	id 'signing'
 }
 
@@ -41,8 +42,8 @@ nexusPublishing {
 		sonatype {
 			username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
 			password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
-			repositoryDescription = "Paypal Messages"
-			packageGroup = "com.paypal"
+			repositoryDescription = 'Paypal Messages'
+			packageGroup = 'com.paypal'
 		}
 	}
 	transitionCheckOptions {
@@ -53,4 +54,15 @@ nexusPublishing {
 
 subprojects {
   group = "com.paypal.messages"
+}
+
+//./gradlew -PversionParam=0.0.1 changeReleaseVersion
+tasks.register('changeReleaseVersion') {
+	doLast {
+		def topLevelGradleFile = file('./build.gradle')
+		def topLevelGradleFileText = topLevelGradleFile.getText('UTF-8')
+		def updatedScript =
+			topLevelGradleFileText.replaceFirst(/("sdkVersionName"\s*: )".*",/, '$1"' + versionParam + '",')
+		topLevelGradleFile.write(updatedScript, 'UTF-8')
+	}
 }
