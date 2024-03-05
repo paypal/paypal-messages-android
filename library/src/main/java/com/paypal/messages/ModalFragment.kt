@@ -48,7 +48,7 @@ import java.util.UUID
 import kotlin.system.measureTimeMillis
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 
-internal class ModalFragment constructor(
+internal class ModalFragment(
 	private val clientId: String,
 ) : BottomSheetDialogFragment() {
 	private val TAG = "PayPalMessageModal"

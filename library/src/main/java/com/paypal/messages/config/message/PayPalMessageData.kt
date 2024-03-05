@@ -3,6 +3,7 @@ package com.paypal.messages.config.message
 import com.paypal.messages.io.Api
 import com.paypal.messages.config.PayPalEnvironment as Environment
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
+import com.paypal.messages.config.PayPalMessagePageType as PageType
 
 /**
  * [PayPalMessageData] holds data used to determine the content of a PayPalMessage component
@@ -16,23 +17,14 @@ data class PayPalMessageData(
 	var amount: Double? = null,
 	var buyerCountry: String? = null,
 	var offerType: OfferType? = null,
-	var placement: String? = null,
-	var environment: Environment? = null,
-) {
+	var pageType: PageType? = null,
+	var environment: Environment = Environment.SANDBOX,
+) : Cloneable {
 	init {
-		Api.env = environment ?: Environment.SANDBOX
+		Api.env = environment
 	}
 
-	fun merge(newData: PayPalMessageData): PayPalMessageData {
-		return this.copy(
-			clientID = if (newData.clientID != "") newData.clientID else this.clientID,
-			merchantID = newData.merchantID ?: this.merchantID,
-			partnerAttributionID = newData.partnerAttributionID ?: this.partnerAttributionID,
-			amount = newData.amount ?: this.amount,
-			buyerCountry = newData.buyerCountry ?: this.buyerCountry,
-			offerType = newData.offerType ?: this.offerType,
-			placement = newData.placement ?: this.placement,
-			environment = newData.environment ?: this.environment,
-		)
+	public override fun clone(): PayPalMessageData {
+		return super.clone() as PayPalMessageData
 	}
 }

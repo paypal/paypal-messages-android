@@ -25,7 +25,7 @@ plugins {
 	id 'com.android.library' version '8.0.2' apply false
 	id 'org.jetbrains.kotlin.android' version '1.8.22' apply false
 	id 'org.jmailen.kotlinter' version '3.16.0'
-	id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
+	id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
 	id 'signing'
 }
 
@@ -50,8 +50,8 @@ nexusPublishing {
 		sonatype {
 			username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
 			password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
-			repositoryDescription = "Paypal Messages"
-			packageGroup = "com.paypal"
+			repositoryDescription = 'Paypal Messages'
+			packageGroup = 'com.paypal'
 		}
 	}
 	transitionCheckOptions {
@@ -64,17 +64,13 @@ subprojects {
   group = "com.paypal.messages"
 }
 
-tasks.register("echoVersion") {
-    group = "github"
-    description = "Echoes version used"
-
-    doLast {
-        project.file(".github/workflows/release.yml").append(
-            """
-			- name: Echo version
-				id: echo_version
-				run: echo ${modules.sdkVersionName}
-            """
-        )
-    }
+//./gradlew -PversionParam=0.0.1 changeReleaseVersion
+tasks.register('changeReleaseVersion') {
+	doLast {
+		def topLevelGradleFile = file('./build.gradle')
+		def topLevelGradleFileText = topLevelGradleFile.getText('UTF-8')
+		def updatedScript =
+			topLevelGradleFileText.replaceFirst(/("sdkVersionName"\s*: )".*",/, '$1"' + versionParam + '",')
+		topLevelGradleFile.write(updatedScript, 'UTF-8')
+	}
 }

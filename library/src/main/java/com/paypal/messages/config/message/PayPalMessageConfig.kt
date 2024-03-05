@@ -14,7 +14,10 @@ data class PayPalMessageConfig(
 	var style: PayPalMessageStyle = PayPalMessageStyle(),
 	var viewStateCallbacks: PayPalMessageViewStateCallbacks? = null,
 	var eventsCallbacks: PayPalMessageEventsCallbacks? = null,
-) {
+) : Cloneable {
+
+	public override fun clone() = PayPalMessageConfig(data.clone(), style, viewStateCallbacks?.clone(), eventsCallbacks?.clone())
+
 	fun setGlobalAnalytics(
 		integrationName: String,
 		integrationVersion: String,

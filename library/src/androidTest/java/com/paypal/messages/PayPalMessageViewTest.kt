@@ -5,9 +5,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.ProductGroup
+import com.paypal.messages.config.message.PayPalMessageEventsCallbacks
+import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
 import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.io.ApiMessageData
 import com.paypal.messages.io.ApiResult
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -66,5 +69,27 @@ class PayPalMessageViewTest {
 		val messageTextView = payPalMessageView.findViewById<TextView>(R.id.content)
 		assertTrue(messageTextView.text.toString().contains(defaultMain))
 		assertTrue(messageTextView.text.toString().contains(defaultDisclaimer))
+	}
+
+	@Test
+	fun testMultipleMessagesCopyConfig() {
+		val context = InstrumentationRegistry.getInstrumentation().targetContext
+		val config = MessageConfig(MessageData(clientID = "test_client_id", amount = 100.00))
+		val payPalMessageView = PayPalMessageView(
+			context = context,
+			config = config,
+		)
+
+		payPalMessageView.onActionCompleted(ApiResult.Success(response))
+
+		val emptyFunction = fun () {}
+
+		config.data.amount = 200.00
+		config.viewStateCallbacks = PayPalMessageViewStateCallbacks(onLoading = emptyFunction)
+		config.eventsCallbacks = PayPalMessageEventsCallbacks(onClick = emptyFunction)
+
+		assertTrue(payPalMessageView.getConfig().data.amount!!.equals(100.00))
+		assertFalse(payPalMessageView.getConfig().viewStateCallbacks?.onLoading == emptyFunction)
+		assertFalse(payPalMessageView.getConfig().eventsCallbacks?.onClick == emptyFunction)
 	}
 }

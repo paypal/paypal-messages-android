@@ -13,10 +13,9 @@ android {
 	defaultConfig {
 		minSdkVersion modules.androidMinSdkVersion
 		targetSdkVersion modules.androidTargetVersion
-
 		versionName modules.sdkVersionName
 		testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-	  testInstrumentationRunnerArguments clearPackageData: 'true'
+		testInstrumentationRunnerArguments clearPackageData: 'true'
 		consumerProguardFiles 'consumer-rules.pro'
 
 		buildConfigField('String', 'INTEGRATION_TYPE', "\"NATIVE_ANDROID\"")
@@ -62,6 +61,19 @@ android {
 		}
 	}
 }
+
+tasks.register('addPreCommitGitHookOnBuild') {
+	group 'git'
+	if (! project.file('../.git/hooks/pre-commit').exists()) {
+		println("⚈ ⚈ ⚈ Running Add Pre Commit Git Hook Script on Build ⚈ ⚈ ⚈")
+		exec {
+			commandLine("cp", "../scripts/pre-commit", "../.git/hooks")
+		}
+		println("✅ Added Pre Commit Git Hook Script.")
+	}
+}
+
+preBuild.doFirst { addPreCommitGitHookOnBuild }
 
 tasks.withType(Test) {
 	useJUnitPlatform()

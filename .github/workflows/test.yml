@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'microsoft'
@@ -28,13 +28,15 @@ jobs:
   test_unit_coverage:
     name: Unit Tests Coverage
     runs-on: ubuntu-latest
+    # test coverage only runs on PRs
+    if: ${{ github.event_name == 'pull_request' }}
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -63,10 +65,10 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -78,12 +80,14 @@ jobs:
           api-level: 23
           target: google_apis
           arch: x86_64
-          script: ./gradlew connectedCheck --info
+          script: ./gradlew connectedCheck --info | tee connectedCheck.log
         continue-on-error: true
 
       - name: Show Test XML
         run: |
-          cat library/build/outputs/androidTest-results/connected/*.xml
+          mkdir -p library/build/outputs/androidTest-results/connected/logs
+          grep -E 'com.paypal.*Test.*(SUCCESS|FAILED|failed)' connectedCheck.log > library/build/outputs/androidTest-results/connected/logs/connectedCheck.xml
+          cat library/build/outputs/androidTest-results/connected/**/*.xml
           echo ""
-          error_count=$(grep "<failure>" library/build/outputs/androidTest-results/connected/*.xml | wc -l | awk '{$1=$1};1')
+          error_count=$(grep -E 'com.paypal.*Test.*(FAILED|failed|failure)' library/build/outputs/androidTest-results/connected/**/*.xml | wc -l | awk '{$1=$1};1')
           if [[ "$error_count" -ne "0" ]]; then echo "Tests failed. See above"; exit 1; fi
