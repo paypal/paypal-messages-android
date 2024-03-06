@@ -44,8 +44,8 @@ jobs:
           signing_key_file: ${{ secrets.SIGNING_KEY_FILE }}
           signing_file_path: ${{ env.SIGNING_KEY_FILE_PATH }}
 
-      # - name: Install Semantic Release Dependencies
-      #   run: npm install
+      - name: Install Semantic Release Dependencies
+        run: npm install
 
       - name: GitHub Release
         env:
@@ -57,20 +57,11 @@ jobs:
           SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
         run: npx semantic-release@21
 
-      - name: Get latest release
-        id: get_release
-        run: |
-          echo "::set-output name=release::${GITHUB_REF#refs/tags/}"
-
-      - name: Echo Semantic Release Version
-        run: |
-          echo "Semantic Release Version: ${{ steps.get_release.outputs.release }}"
-
-      # - name: Publish to Maven
-      #   uses: ./.github/actions/publish_all_modules
-      #   with:
-      #     sonatype_user: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-      #     sonatype_password: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
-      #     signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
-      #     signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
-      #     signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
+      - name: Publish to Maven
+        uses: ./.github/actions/publish_all_modules
+        with:
+          sonatype_user: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          sonatype_password: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+          signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
+          signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}

@@ -44,25 +44,24 @@ jobs:
           signing_key_file: ${{ secrets.SIGNING_KEY_FILE }}
           signing_file_path: ${{ env.SIGNING_KEY_FILE_PATH }}
 
-      # - name: Install Semantic Release Dependencies
-      #   run: npm install
+      - name: Install Semantic Release Dependencies
+        run: npm install
 
-      # TODO: update .releaserc.json with appropriate prepareCmd, successCmd, and assets
-      # TODO: enable semantic-release once fixed
-      # - name: GitHub Release
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: npx semantic-release@21
+      - name: GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
+        run: npx semantic-release@21
 
-      - name: Set Snapshot variable
-        id: set_var
-        run: echo "UPDATE_VERSION_SNAPSHOT=true" >> $GITHUB_ENV
-
-      # - name: Publish to Maven
-      #   uses: ./.github/actions/publish_all_modules
-      #   with:
-      #     sonatype_user: ${{ secrets.SONATYPE_SDKS_NEXUS_USERNAME }}
-      #     sonatype_password: ${{ secrets.SONATYPE_SDKS_NEXUS_PASSWORD }}
-      #     signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
-      #     signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
-      #     signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
+      - name: Publish to Maven
+        uses: ./.github/actions/publish_all_modules
+        with:
+          sonatype_user: ${{ secrets.SONATYPE_SDKS_NEXUS_USERNAME }}
+          sonatype_password: ${{ secrets.SONATYPE_SDKS_NEXUS_PASSWORD }}
+          signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
+          signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
