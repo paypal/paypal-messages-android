@@ -8,16 +8,6 @@ buildscript {
 		"androidMinSdkVersion": 23,
 		"androidTargetVersion": 34
 	]
-
-	// Additional configuration based on the GitHub Actions environment variable
-
-	if (System.getenv("UPDATE_VERSION_SNAPSHOT") != null && System.getenv("UPDATE_VERSION_SNAPSHOT").equals("true", ignoreCase = true)) {
-		// Assume modules.sdkVersionName is a String variable
-		modules.sdkVersionName += "-SNAPSHOT"
-	}
-
-	println(modules.sdkVersionName)
-
 }
 
 plugins {
@@ -64,13 +54,13 @@ subprojects {
   group = "com.paypal.messages"
 }
 
-//./gradlew -PversionParam=0.0.1 changeReleaseVersion
+//./gradlew -PversionParam=0.0.1 -PsnapshotParam=-SNAPSHOT changeReleaseVersion
 tasks.register('changeReleaseVersion') {
 	doLast {
 		def topLevelGradleFile = file('./build.gradle')
 		def topLevelGradleFileText = topLevelGradleFile.getText('UTF-8')
 		def updatedScript =
-			topLevelGradleFileText.replaceFirst(/("sdkVersionName"\s*: )".*",/, '$1"' + versionParam + '",')
+			topLevelGradleFileText.replaceFirst(/("sdkVersionName"\s*: )".*",/, '$1"' + versionParam + snapshotParam + '",')
 		topLevelGradleFile.write(updatedScript, 'UTF-8')
 	}
 }
