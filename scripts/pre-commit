@@ -16,10 +16,14 @@ echo git diff --staged --name-only | grep -E '(library|demo)'
 echo ""
 echo "Running ktFormat to fix any auto-fixable issues"
 
+git stash --quiet --keep-index
+
 ./gradlew ktFormat
 
 git add library/
 git add demo/
+
+git stash pop --quiet
 
 echo "***********************************************"
 echo "Added changed files to commit"
