@@ -4,9 +4,7 @@ import org.jmailen.gradle.kotlinter.tasks.FormatTask
 
 buildscript {
 	ext.modules = [
-		// TODO: How are we changing the versionName in the gradle files during release?
-		"sdkVersionCode"      : 10000,
-		"sdkVersionName"			: "1.0.0-alpha.00-SNAPSHOT",
+		"sdkVersionName"      : "1.0.0-alpha.01-SNAPSHOT",
 		"androidMinSdkVersion": 23,
 		"androidTargetVersion": 34
 	]
@@ -35,7 +33,7 @@ tasks.register('ktFormat', FormatTask) {
 	report = file('build/reports/ktlint/format-report.txt')
 }
 
-version modules.sdkVersionName
+// version modules.sdkVersionName
 
 nexusPublishing {
 	repositories {
@@ -56,13 +54,13 @@ subprojects {
   group = "com.paypal.messages"
 }
 
-//./gradlew -PversionParam=0.0.1 changeReleaseVersion
+//./gradlew -PversionParam=0.0.1 -PsnapshotParam=-SNAPSHOT changeReleaseVersion
 tasks.register('changeReleaseVersion') {
 	doLast {
 		def topLevelGradleFile = file('./build.gradle')
 		def topLevelGradleFileText = topLevelGradleFile.getText('UTF-8')
 		def updatedScript =
-			topLevelGradleFileText.replaceFirst(/("sdkVersionName"\s*: )".*",/, '$1"' + versionParam + '",')
+			topLevelGradleFileText.replaceFirst(/("sdkVersionName"\s*: )".*",/, '$1"' + versionParam + snapshotParam + '",')
 		topLevelGradleFile.write(updatedScript, 'UTF-8')
 	}
 }

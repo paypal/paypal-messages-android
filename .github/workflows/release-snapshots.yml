@@ -1,4 +1,4 @@
-name: Release
+name: Snapshot Release
 on:
   workflow_dispatch: {}
 env:
@@ -21,19 +21,19 @@ jobs:
   # after build and unit tests are finished, publish all modules at once
   # to help reduce the probability of failure when interacting with sonatype servers
   release:
-    name: Release
+    name: Snapshot Release
     needs: [lint, test, build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
         with:
           # pulls all commits (needed for semantic release to correctly version)
           fetch-depth: '0'
           persist-credentials: false
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'microsoft'
@@ -57,13 +57,13 @@ jobs:
           SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
         run: |
           npx semantic-release@21
-          ./gradlew -PversionParam=1.0.0-alpha.001 -PsnapshotParam=-SNAPSHOT changeReleaseVersion
+          ./gradlew -PversionParam=0.0.1 -PsnapshotParam=-SNAPSHOT changeReleaseVersion
 
       - name: Publish to Maven
         uses: ./.github/actions/publish_all_modules
         with:
-          sonatype_user: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          sonatype_password: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+          sonatype_user: ${{ secrets.SONATYPE_SDKS_NEXUS_USERNAME }}
+          sonatype_password: ${{ secrets.SONATYPE_SDKS_NEXUS_PASSWORD }}
           signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
           signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
           signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
