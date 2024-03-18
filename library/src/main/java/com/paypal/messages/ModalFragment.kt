@@ -234,7 +234,7 @@ internal class ModalFragment(
 			behavior.isFitToContents = false
 			behavior.expandedOffset = offsetTop
 			behavior.isHideable = true
-			behavior.isDraggable = true
+			behavior.isDraggable = false
 			behavior.state = BottomSheetBehavior.STATE_EXPANDED
 		}
 
