@@ -36,10 +36,17 @@ class LoggerTest {
 
 	@Test
 	fun testSetGlobalAnalytics() {
-		logger.setGlobalAnalytics("test_integration_name", "test_integration_version")
+		logger.setGlobalAnalytics(
+			"test_integration_name",
+			"test_integration_version",
+			"test_device_id",
+			"test_session_id",
+		)
 
 		assertEquals("test_integration_name", logger.integrationName)
 		assertEquals("test_integration_version", logger.integrationVersion)
+		assertEquals("test_device_id", logger.deviceId)
+		assertEquals("test_session_id", logger.sessionId)
 	}
 
 	// TODO: Figure out why this test passes locally but fails in the CI
