@@ -30,6 +30,9 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
+PARENT_PATH=$(cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P)
+cd $PARENT_PATH/..
+
 FILES_LIST=("demo/src/main/res/values/locals.xml")
 
 if [[ $ON ]];

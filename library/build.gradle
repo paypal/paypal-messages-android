@@ -74,7 +74,17 @@ tasks.register('addPreCommitGitHookOnBuild') {
 	println("✅ Added Pre Commit Git Hook Script.")
 }
 
-preBuild.doFirst { addPreCommitGitHookOnBuild }
+tasks.register('ignoreFilesOnBuild') {
+	group 'ignore'
+	exec {
+		commandLine('../scripts/ignore-files.sh', '-y')
+	}
+}
+
+preBuild.doFirst {
+	addPreCommitGitHookOnBuild
+	ignoreFilesOnBuild
+}
 
 tasks.withType(Test) {
 	useJUnitPlatform()
