@@ -17,6 +17,7 @@ data class PayPalMessageConfig(
 ) : Cloneable {
 	public override fun clone() = PayPalMessageConfig(data.clone(), style, viewStateCallbacks?.clone(), eventsCallbacks?.clone())
 
+	@KoverExcludeGenerated
 	fun setGlobalAnalytics(
 		integrationName: String = "",
 		integrationVersion: String = "",

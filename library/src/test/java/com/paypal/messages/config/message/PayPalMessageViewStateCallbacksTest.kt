@@ -39,7 +39,7 @@ class PayPalMessageViewStateCallbacksTest {
 		val clonedMessageViewState = messageViewState.clone()
 
 		assertEquals(messageViewState, clonedMessageViewState)
-		clonedMessageViewState.onLoading = { "NOT EQUAL" }
+		clonedMessageViewState.onLoading = { }
 		assertNotEquals(messageViewState, clonedMessageViewState)
 	}
 }
