@@ -116,16 +116,12 @@ koverReport {
 					// io
 					'com.paypal.messages.io.Api',
 					'com.paypal.messages.io.Api\$*',
-					'com.paypal.messages.io.Api\$Endpoints',
-					'com.paypal.messages.io.ApiMessageData',
-					'com.paypal.messages.io.ApiHashData',
 					'com.paypal.messages.io.LocalStorage*',
 					'com.paypal.messages.io.OnActionCompleted',
 					// logger,
 					'com.paypal.messages.logger.Logger*',
 					// utils
 					'com.paypal.messages.utils.LogCat*',
-					'com.paypal.messages.utils.PayPalErrors',
 					// UI Stuff
 					'*Fragment',
 					'*Fragment\$*',
