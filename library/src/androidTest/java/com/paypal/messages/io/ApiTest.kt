@@ -8,6 +8,7 @@ import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageData
 import com.paypal.messages.config.message.PayPalMessageStyle
+import com.paypal.messages.io.Api.preventEmptyValues
 import com.paypal.messages.utils.PayPalErrors
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
@@ -18,6 +19,8 @@ import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -68,16 +71,14 @@ class ApiTest {
 		val expectedPath = "credit-presentment/native/message"
 		val expectedQueryParts = arrayOf(
 			"client_id=test_client_id",
-			"devTouchpoint=false",
-			"ignore_cache=false",
 			"instance_id",
 			"session_id",
 		)
 
 		assertTrue(url.contains(expectedPath))
 		assertTrue(url.contains("client_id=test_client_id"))
-		assertTrue(url.contains("devTouchpoint=false"))
-		assertTrue(url.contains("ignore_cache=false"))
+		assertFalse(url.contains("devTouchpoint=false"))
+		assertFalse(url.contains("ignore_cache=false"))
 		assertTrue(url.contains("instance_id"))
 		assertTrue(url.contains("session_id"))
 		expectedQueryParts.forEach { assertTrue(url.contains(it)) }
@@ -100,8 +101,6 @@ class ApiTest {
 		val expectedPath = "credit-presentment/native/message"
 		val expectedQueryParts = arrayOf(
 			"client_id=test_client_id",
-			"devTouchpoint=false",
-			"ignore_cache=false",
 			"instance_id",
 			"session_id",
 			"amount=1.0",
@@ -112,8 +111,6 @@ class ApiTest {
 
 		assertTrue(url.contains(expectedPath))
 		assertTrue(url.contains("client_id=test_client_id"))
-		assertTrue(url.contains("devTouchpoint=false"))
-		assertTrue(url.contains("ignore_cache=false"))
 		assertTrue(url.contains("instance_id"))
 		assertTrue(url.contains("session_id"))
 		assertTrue(url.contains("amount=1.0"))
@@ -307,5 +304,42 @@ class ApiTest {
 		val request = Api.createLoggerRequest("{}")
 		val expectedPath = "v1/credit/upstream-messaging-events"
 		assertTrue(request.url.toString().contains(expectedPath))
+	}
+
+	@Test
+	fun testEmptyValuesInSerialization() {
+		val payloadJson = """
+		{
+			"data":{
+				"client_id":"",
+				"components":[
+					{
+						"__shared__":{},
+						"amount":"null",
+						"channel":"NATIVE",
+						"component_events":[],
+						"style_color":"BLACK",
+						"style_logo_type":"PRIMARY",
+						"style_text_align":"LEFT",
+						"type":"MESSAGE"
+					}
+				],
+				"device_id":"android_id",
+				"integration_type":"NATIVE_ANDROID",
+				"integration_name": "",
+				"integration_version": ""
+			}
+		}
+		""".trimIndent()
+
+		val updated = preventEmptyValues(payloadJson)
+
+		assertNotEquals(payloadJson, updated)
+		assertFalse(updated.contains("integration_name"))
+		assertFalse(updated.contains("integration_version"))
+
+		assertFalse(updated.contains("__shared__"))
+		assertFalse(updated.contains("amount"))
+		assertFalse(updated.contains("component_events"))
 	}
 }
