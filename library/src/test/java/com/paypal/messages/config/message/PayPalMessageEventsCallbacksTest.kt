@@ -33,7 +33,7 @@ class PayPalMessageEventsCallbacksTest {
 		val clonedMessageEvents = messageEvents.clone()
 
 		assertEquals(messageEvents, clonedMessageEvents)
-		clonedMessageEvents.onClick = { "NOT EQUAL" }
+		clonedMessageEvents.onClick = { }
 		assertNotEquals(messageEvents, clonedMessageEvents)
 	}
 }

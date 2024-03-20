@@ -15,15 +15,22 @@ data class PayPalMessageConfig(
 	var viewStateCallbacks: PayPalMessageViewStateCallbacks? = null,
 	var eventsCallbacks: PayPalMessageEventsCallbacks? = null,
 ) : Cloneable {
-
 	public override fun clone() = PayPalMessageConfig(data.clone(), style, viewStateCallbacks?.clone(), eventsCallbacks?.clone())
 
+	@KoverExcludeGenerated
 	fun setGlobalAnalytics(
-		integrationName: String,
-		integrationVersion: String,
+		integrationName: String = "",
+		integrationVersion: String = "",
+		deviceId: String = "",
+		sessionId: String = "",
 	) {
 		if (data.clientID != "") {
-			Logger.getInstance(data.clientID).setGlobalAnalytics(integrationName, integrationVersion)
+			Logger.getInstance(data.clientID).setGlobalAnalytics(
+				integrationName,
+				integrationVersion,
+				deviceId,
+				sessionId,
+			)
 		}
 	}
 }

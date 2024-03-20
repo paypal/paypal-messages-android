@@ -41,8 +41,8 @@ object Api {
 		instanceId: UUID,
 	) {
 		addQueryParameter("client_id", config.data.clientID)
-		devTouchpoint.toString()?.takeIf { it != "false" }?.let { addQueryParameter("devTouchpoint", it) }
-		ignoreCache.toString()?.takeIf { it != "false" }?.let { addQueryParameter("ignore_cache", it) }
+		devTouchpoint.toString().takeIf { it != "false" }?.let { addQueryParameter("devTouchpoint", it) }
+		ignoreCache.toString().takeIf { it != "false" }?.let { addQueryParameter("ignore_cache", it) }
 		addQueryParameter("instance_id", instanceId.toString())
 		addQueryParameter("session_id", sessionId.toString())
 
@@ -243,7 +243,7 @@ object Api {
 		}
 
 		val integrationVersion = obj.get("integration_version")
-		if (checkIfEmpty(integrationName.toString())) {
+		if (checkIfEmpty(integrationVersion.toString())) {
 			obj.remove("integration_version")
 		}
 

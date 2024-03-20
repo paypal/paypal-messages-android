@@ -17,6 +17,10 @@ class Logger private constructor() {
 		private set
 	var integrationVersion: String = ""
 		private set
+	var deviceId: String = ""
+		private set
+	var sessionId: String = ""
+		private set
 
 	companion object {
 		private const val TAG: String = "Logger"
@@ -54,9 +58,9 @@ class Logger private constructor() {
 			partnerAttributionId = null,
 			// merchantProfileHash will be later defined by pulling from LocalStorage
 			merchantProfileHash = null,
-			deviceId = Settings.Secure.ANDROID_ID,
+			deviceId = if (deviceId == "") Settings.Secure.ANDROID_ID else deviceId,
 			// TODO Determine SessionId for Logger
-			sessionId = "random_session_id",
+			sessionId = if (deviceId == "") "random_session_id" else sessionId,
 			integrationName = integrationName,
 			integrationVersion = integrationVersion,
 			components = mutableListOf(),
@@ -74,13 +78,27 @@ class Logger private constructor() {
 	}
 
 	fun setGlobalAnalytics(
-		integrationName: String,
-		integrationVersion: String,
+		integrationName: String = "",
+		integrationVersion: String = "",
+		deviceId: String = "",
+		sessionId: String = "",
 	) {
-		this.integrationName = integrationName
-		this.integrationVersion = integrationVersion
-		this.payload?.integrationName = integrationName
-		this.payload?.integrationVersion = integrationVersion
+		integrationName.takeIf { it != "" }?.let {
+			this.integrationName = it
+			this.payload?.integrationName = it
+		}
+		integrationVersion.takeIf { it != "" }?.let {
+			this.integrationVersion = it
+			this.payload?.integrationVersion = it
+		}
+		deviceId.takeIf { it != "" }?.let {
+			this.deviceId = it
+			this.payload?.deviceId = it
+		}
+		sessionId.takeIf { it != "" }?.let {
+			this.sessionId = it
+			this.payload?.sessionId = it
+		}
 	}
 
 	// Need to be able to append multiple events to a single payload, adding a modal event could

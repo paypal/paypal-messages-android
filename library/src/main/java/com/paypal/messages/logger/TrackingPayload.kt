@@ -17,9 +17,9 @@ data class TrackingPayload(
 
 	// Global Details
 	@SerializedName("device_id")
-	val deviceId: String,
+	var deviceId: String,
 	@SerializedName("session_id")
-	val sessionId: String,
+	var sessionId: String,
 	@SerializedName("instance_id")
 	val instanceId: String = UUID.randomUUID().toString(),
 	@SerializedName("integration_name")
