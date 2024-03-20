@@ -26,9 +26,12 @@ class PayPalMessageConfigTest {
 	}
 
 // 	@Test
+	@Suppress("unused")
 	fun testSetGlobalAnalytics() {
 		val name = "integration_name"
 		val version = "integration_version"
+		val deviceId = "device_id"
+		val sessionId = "session_id"
 
 // 		val mockLogger = mockk<Logger>()
 // 		val mockLoggerCompanion = mockk<Logger.Companion>("mockLoggerCompanion")
@@ -39,7 +42,7 @@ class PayPalMessageConfigTest {
 		val paypalMessageConfig = PayPalMessageConfig(PayPalMessageData(clientID = "1"))
 
 		// Set the integration name and version.
-		paypalMessageConfig.setGlobalAnalytics(name, version)
+		paypalMessageConfig.setGlobalAnalytics(name, version, deviceId, sessionId)
 
 		// Verify that the setGlobalAnalytics() method was called on the mock Logger object.
 // 		verify { mockLoggerCompanion.getInstance("") }

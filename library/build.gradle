@@ -65,19 +65,26 @@ android {
 	}
 }
 
+// if this exists, the CI should not run certain tasks
+def runnerFolder = new File('/home/runner')
+
 tasks.register('addPreCommitGitHookOnBuild') {
 	group 'git'
-	println("⚈ ⚈ ⚈ Running Add Pre Commit Git Hook Script on Build ⚈ ⚈ ⚈")
-	exec {
-		commandLine("cp", "../scripts/pre-commit", "../.git/hooks")
+	if (!runnerFolder.exists()) {
+		println('⚈ ⚈ ⚈ Running Add Pre Commit Git Hook Script on Build ⚈ ⚈ ⚈')
+		exec {
+			commandLine('cp', '../scripts/pre-commit', '../.git/hooks')
+		}
+		println('✅ Added Pre Commit Git Hook Script.')
 	}
-	println("✅ Added Pre Commit Git Hook Script.")
 }
 
 tasks.register('ignoreFilesOnBuild') {
 	group 'ignore'
-	exec {
-		commandLine('../scripts/ignore-files.sh', '-y')
+	if (!runnerFolder.exists()) {
+		exec {
+			commandLine('../scripts/ignore-files.sh', '-y')
+		}
 	}
 }
 
