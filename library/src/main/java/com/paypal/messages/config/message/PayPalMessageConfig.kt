@@ -18,10 +18,10 @@ data class PayPalMessageConfig(
 	public override fun clone() = PayPalMessageConfig(data.clone(), style, viewStateCallbacks?.clone(), eventsCallbacks?.clone())
 
 	fun setGlobalAnalytics(
-		integrationName: String,
-		integrationVersion: String,
-		deviceId: String,
-		sessionId: String,
+		integrationName: String = "",
+		integrationVersion: String = "",
+		deviceId: String = "",
+		sessionId: String = "",
 	) {
 		if (data.clientID != "") {
 			Logger.getInstance(data.clientID).setGlobalAnalytics(
