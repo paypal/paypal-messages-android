@@ -17,6 +17,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.IOException
+import org.json.JSONObject
 import java.util.UUID
 import com.paypal.messages.config.PayPalEnvironment as Env
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
@@ -40,8 +41,8 @@ object Api {
 		instanceId: UUID,
 	) {
 		addQueryParameter("client_id", config.data.clientID)
-		addQueryParameter("devTouchpoint", devTouchpoint.toString())
-		addQueryParameter("ignore_cache", ignoreCache.toString())
+		devTouchpoint.toString()?.takeIf { it != "false" }?.let { addQueryParameter("devTouchpoint", it) }
+		ignoreCache.toString()?.takeIf { it != "false" }?.let { addQueryParameter("ignore_cache", it) }
 		addQueryParameter("instance_id", instanceId.toString())
 		addQueryParameter("session_id", sessionId.toString())
 
@@ -227,9 +228,58 @@ object Api {
 		return request
 	}
 
+	fun preventEmptyValues(json: String): String {
+		fun checkIfEmpty(value: String): Boolean {
+			return (value == "{}" || value == "[]" || value == "null" || value == "")
+		}
+
+		val jsonObject = JSONObject(json)
+
+		val obj = jsonObject.getJSONObject("data")
+
+		val integrationName = obj.get("integration_name")
+		if (checkIfEmpty(integrationName.toString())) {
+			obj.remove("integration_name")
+		}
+
+		val integrationVersion = obj.get("integration_version")
+		if (checkIfEmpty(integrationName.toString())) {
+			obj.remove("integration_version")
+		}
+
+		val components = obj.getJSONArray("components")
+		val comp = components.getJSONObject(0)
+
+		val keysToRemove = mutableListOf<String>()
+
+		val keys = comp.keys()
+		while (keys.hasNext()) {
+			val key = keys.next()
+			val componentValue = comp.get(key)
+
+			if (checkIfEmpty(componentValue.toString())) {
+				keysToRemove.add(key)
+			}
+		}
+
+		// Remove marked keys
+		for (key in keysToRemove) {
+			comp.remove(key)
+		}
+
+		// Put the modified components back into obj
+		components.put(0, comp)
+		obj.put("components", components)
+
+		// Update the jsonObject if necessary
+		jsonObject.put("data", obj)
+
+		return jsonObject.toString()
+	}
+
 	fun callLoggerEndpoint(payload: TrackingPayload) {
 		val json = gson.toJson(CloudEvent(data = payload))
-		val request = createLoggerRequest(json)
+		val request = createLoggerRequest(preventEmptyValues(json))
 		val response = client.newCall(request).execute()
 		response.body?.string()?.let { LogCat.debug(TAG, "callLoggerEndpoint response: $it") }
 	}
