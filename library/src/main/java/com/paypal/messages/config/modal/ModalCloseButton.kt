@@ -15,4 +15,6 @@ data class ModalCloseButton(
 	val color: String,
 	@SerializedName("color_type")
 	val colorType: String,
+	@SerializedName("alternative_text")
+	val alternativeText: String,
 )
