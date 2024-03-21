@@ -105,6 +105,7 @@ internal class ModalFragment(
 		val rootView =
 			inflator.inflate(R.layout.paypal_message_modal_sheet_layout, container, false)
 		val closeButton = rootView.findViewById<ImageButton>(R.id.ModalCloseButton)
+		closeButton.contentDescription = closeButtonData?.alternativeText
 
 		closeButton.layoutParams.height = TypedValue.applyDimension(
 			TypedValue.COMPLEX_UNIT_DIP,

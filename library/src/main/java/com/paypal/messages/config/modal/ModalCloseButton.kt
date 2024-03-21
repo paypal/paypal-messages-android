@@ -4,17 +4,27 @@ import com.google.gson.annotations.SerializedName
 
 data class ModalCloseButton(
 	@SerializedName("width")
-	val width: Int,
+	var width: Int? = null,
 	@SerializedName("height")
-	val height: Int,
+	var height: Int? = null,
 	@SerializedName("available_width")
-	val availableWidth: Int,
+	var availableWidth: Int? = null,
 	@SerializedName("available_height")
-	val availableHeight: Int,
+	var availableHeight: Int? = null,
 	@SerializedName("color")
-	val color: String,
+	var color: String? = null,
 	@SerializedName("color_type")
-	val colorType: String,
+	var colorType: String? = null,
 	@SerializedName("alternative_text")
-	val alternativeText: String,
-)
+	var alternativeText: String? = null,
+) {
+	init {
+		width = width ?: 26
+		height = height ?: 26
+		availableWidth = availableWidth ?: 60
+		availableHeight = availableHeight ?: 60
+		color = color ?: "#001435"
+		colorType = colorType ?: "dark"
+		alternativeText = alternativeText ?: "PayPal learn more modal close"
+	}
+}
