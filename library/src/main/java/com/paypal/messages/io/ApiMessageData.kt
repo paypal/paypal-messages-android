@@ -24,6 +24,8 @@ object ApiMessageData {
 	data class ContentDetails(
 		@SerializedName("main")
 		val main: String?,
+		@SerializedName("main_alternative")
+		val mainAlternative: String?,
 		@SerializedName("disclaimer")
 		val disclaimer: String?,
 	)

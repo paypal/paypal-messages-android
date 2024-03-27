@@ -12,6 +12,7 @@ class ModalCloseButtonTest {
 		availableHeight = 200,
 		color = "#FFFFFF",
 		colorType = "solid",
+		alternativeText = "test_alternative_text",
 	)
 
 	@Test
@@ -22,6 +23,7 @@ class ModalCloseButtonTest {
 		assertEquals(modalCloseButton.availableHeight, 200)
 		assertEquals(modalCloseButton.color, "#FFFFFF")
 		assertEquals(modalCloseButton.colorType, "solid")
+		assertEquals(modalCloseButton.alternativeText, "test_alternative_text")
 	}
 
 	@Test
@@ -31,7 +33,8 @@ class ModalCloseButtonTest {
 
 		assertEquals(
 			json,
-			"{\"width\":100,\"height\":100,\"available_width\":200,\"available_height\":200,\"color\":\"#FFFFFF\",\"color_type\":\"solid\"}",
+			@Suppress("ktlint:standard:max-line-length")
+			"""{"width":100,"height":100,"available_width":200,"available_height":200,"color":"#FFFFFF","color_type":"solid","alternative_text":"test_alternative_text"}""",
 		)
 	}
 }
