@@ -368,7 +368,7 @@ internal class ModalFragment(
 	 */
 	@JavascriptInterface
 	fun paypalMessageModalCallbackHandler(passedParams: String) {
-		val params = if (passedParams != "") passedParams else "{\"name\": \"\", \"args\": [{}]"
+		val params = if (passedParams != "") passedParams else """{"name": "", "args": [{}]} """
 		val nameAndArgs = JsonParser.parseString(params).asJsonObject
 		val name = nameAndArgs.get("name").asString
 		val args = nameAndArgs.get("args").asJsonArray[0].asJsonObject

@@ -49,8 +49,9 @@ class ApiMessageDataTest {
 	)
 
 	private val main = "test_main"
+	private val mainAlternative = "test_alternative"
 	private val disclaimer = "test_disclaimer"
-	private val contentDetails = ApiMessageData.ContentDetails(main, disclaimer)
+	private val contentDetails = ApiMessageData.ContentDetails(main, mainAlternative, disclaimer)
 	private val contentOptions = ApiMessageData.ContentOptions(contentDetails, contentDetails)
 	private val response = ApiMessageData.Response(metadata, contentOptions)
 
@@ -65,7 +66,7 @@ class ApiMessageDataTest {
 		val json = gson.toJson(response)
 
 		@Suppress("ktlint:standard:max-line-length")
-		val expectedJson = """{"meta":{"credit_product_group":"PAYPAL_CREDIT","offer_country_code":"US","offer_type":"PAY_LATER_SHORT_TERM","message_type":"OFFER","modal_close_button":{"width":100,"height":100,"available_width":200,"available_height":200,"color":"#FFFFFF","color_type":"solid"},"variables":{"inline_logo_placeholder":"test_logo_placeholder"},"merchant_country_code":"US","credit_product_identifiers":["test_credit_product_identifier"],"debug_id":"test_debug_id","fdata":"test_fdata","tracking_keys":["test_tracking_key"],"originating_instance_id":"350e8400-e29b-41d4-a716-446655440000"},"content":{"default":{"main":"test_main","disclaimer":"test_disclaimer"},"generic":{"main":"test_main","disclaimer":"test_disclaimer"}}}"""
+		val expectedJson = """{"meta":{"credit_product_group":"PAYPAL_CREDIT","offer_country_code":"US","offer_type":"PAY_LATER_SHORT_TERM","message_type":"OFFER","modal_close_button":{"width":100,"height":100,"available_width":200,"available_height":200,"color":"#FFFFFF","color_type":"solid","alternative_text":"PayPal learn more modal close"},"variables":{"inline_logo_placeholder":"test_logo_placeholder"},"merchant_country_code":"US","credit_product_identifiers":["test_credit_product_identifier"],"debug_id":"test_debug_id","fdata":"test_fdata","tracking_keys":["test_tracking_key"],"originating_instance_id":"350e8400-e29b-41d4-a716-446655440000"},"content":{"default":{"main":"test_main","main_alternative":"test_alternative","disclaimer":"test_disclaimer"},"generic":{"main":"test_main","main_alternative":"test_alternative","disclaimer":"test_disclaimer"}}}"""
 		assertEquals(expectedJson, json)
 	}
 
@@ -80,20 +81,21 @@ class ApiMessageDataTest {
 		val json = gson.toJson(contentOptions)
 
 		@Suppress("ktlint:standard:max-line-length")
-		val expectedJson = """{"default":{"main":"test_main","disclaimer":"test_disclaimer"},"generic":{"main":"test_main","disclaimer":"test_disclaimer"}}"""
+		val expectedJson = """{"default":{"main":"test_main","main_alternative":"test_alternative","disclaimer":"test_disclaimer"},"generic":{"main":"test_main","main_alternative":"test_alternative","disclaimer":"test_disclaimer"}}"""
 		assertEquals(expectedJson, json)
 	}
 
 	@Test
 	fun testContentDetailsConstructor() {
 		assertEquals(main, contentDetails.main)
+		assertEquals(mainAlternative, contentDetails.mainAlternative)
 		assertEquals(disclaimer, contentDetails.disclaimer)
 	}
 
 	@Test
 	fun testContentDetailsSerialization() {
 		val json = gson.toJson(contentDetails)
-		assertEquals(json, """{"main":"test_main","disclaimer":"test_disclaimer"}""")
+		assertEquals(json, """{"main":"test_main","main_alternative":"test_alternative","disclaimer":"test_disclaimer"}""")
 	}
 
 	@Test
@@ -117,7 +119,7 @@ class ApiMessageDataTest {
 		val json = gson.toJson(metadata)
 
 		@Suppress("ktlint:standard:max-line-length")
-		val expectedJson = """{"credit_product_group":"PAYPAL_CREDIT","offer_country_code":"US","offer_type":"PAY_LATER_SHORT_TERM","message_type":"OFFER","modal_close_button":{"width":100,"height":100,"available_width":200,"available_height":200,"color":"#FFFFFF","color_type":"solid"},"variables":{"inline_logo_placeholder":"test_logo_placeholder"},"merchant_country_code":"US","credit_product_identifiers":["test_credit_product_identifier"],"debug_id":"test_debug_id","fdata":"test_fdata","tracking_keys":["test_tracking_key"],"originating_instance_id":"350e8400-e29b-41d4-a716-446655440000"}"""
+		val expectedJson = """{"credit_product_group":"PAYPAL_CREDIT","offer_country_code":"US","offer_type":"PAY_LATER_SHORT_TERM","message_type":"OFFER","modal_close_button":{"width":100,"height":100,"available_width":200,"available_height":200,"color":"#FFFFFF","color_type":"solid","alternative_text":"PayPal learn more modal close"},"variables":{"inline_logo_placeholder":"test_logo_placeholder"},"merchant_country_code":"US","credit_product_identifiers":["test_credit_product_identifier"],"debug_id":"test_debug_id","fdata":"test_fdata","tracking_keys":["test_tracking_key"],"originating_instance_id":"350e8400-e29b-41d4-a716-446655440000"}"""
 		assertEquals(expectedJson, json)
 	}
 
