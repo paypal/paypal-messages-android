@@ -28,6 +28,7 @@ class PayPalMessageViewTest {
 
 	private val defaultMain = "Test main"
 	private val defaultDisclaimer = "Test disclaimer"
+	private val defaultMainAlternative = "Test main alternative"
 	private val response = ApiMessageData.Response(
 		meta = ApiMessageData.Metadata(
 			creditProductGroup = ProductGroup.PAYPAL_CREDIT,
@@ -51,8 +52,8 @@ class PayPalMessageViewTest {
 			originatingInstanceId = UUID.randomUUID(),
 		),
 		content = ApiMessageData.ContentOptions(
-			default = ApiMessageData.ContentDetails(main = defaultMain, disclaimer = defaultDisclaimer),
-			generic = ApiMessageData.ContentDetails(main = "", disclaimer = ""),
+			default = ApiMessageData.ContentDetails(main = defaultMain, mainAlternative = defaultMainAlternative, disclaimer = defaultDisclaimer),
+			generic = ApiMessageData.ContentDetails(main = "", mainAlternative = "", disclaimer = ""),
 		),
 	)
 
