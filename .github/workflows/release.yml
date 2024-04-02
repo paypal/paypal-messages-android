@@ -9,7 +9,7 @@ jobs:
     uses: ./.github/workflows/lint.yml
 
   test:
-    uses: ./.github/workflows/test-release.yml
+    uses: ./.github/workflows/release-test.yml
 
   build:
     uses: ./.github/workflows/build.yml
@@ -55,9 +55,7 @@ jobs:
           SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
-        run: |
-          npx semantic-release@21
-          ./gradlew -PversionParam=1.0.0-alpha.001 -PsnapshotParam=-SNAPSHOT changeReleaseVersion
+        run: npx semantic-release@21
 
       - name: Publish to Maven
         uses: ./.github/actions/publish_all_modules

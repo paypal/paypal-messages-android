@@ -28,6 +28,7 @@ runs:
         ./gradlew --stacktrace clean publishToSonatype closeAndReleaseSonatypeStagingRepository
       shell: bash
       env:
+        RELEASE_SNAPSHOT: ${{ inputs.release_snapshot }}
         SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_user }}
         SONATYPE_NEXUS_PASSWORD: ${{ inputs.sonatype_password }}
         SIGNING_KEY_ID: ${{ inputs.signing_key_id }}
