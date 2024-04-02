@@ -60,6 +60,7 @@ jobs:
       - name: Publish to Maven
         uses: ./.github/actions/publish_all_modules
         with:
+          release_snapshot: "true"
           sonatype_user: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           sonatype_password: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
           signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
