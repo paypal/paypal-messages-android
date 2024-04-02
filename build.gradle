@@ -4,7 +4,7 @@ import org.jmailen.gradle.kotlinter.tasks.FormatTask
 
 buildscript {
 	ext.modules = [
-		"sdkVersionName"      : "1.0.0-alpha.01",
+		"sdkVersionName"      : "1.0.0-alpha.02",
 		"androidMinSdkVersion": 23,
 		"androidTargetVersion": 34
 	]
@@ -54,7 +54,7 @@ subprojects {
   group = "com.paypal.messages"
 }
 
-//./gradlew -PversionParam=0.0.1 -PsnapshotParam=-SNAPSHOT changeReleaseVersion
+//./gradlew -PversionParam=0.0.1 changeReleaseVersion
 tasks.register('changeReleaseVersion') {
 	doLast {
 		def topLevelGradleFile = file('./build.gradle')
