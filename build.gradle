@@ -33,7 +33,7 @@ tasks.register('ktFormat', FormatTask) {
 	report = file('build/reports/ktlint/format-report.txt')
 }
 
-// version modules.sdkVersionName
+version modules.sdkVersionName
 
 nexusPublishing {
 	repositories {
