@@ -106,8 +106,6 @@ koverReport {
 				)
 				classes(
 					// config
-					// TODO remove PayPalMessageConfig once parameter exclusion is fixed by kover repo
-					'com.paypal.messages.config.message.PayPalMessageConfig',
 					'com.paypal.messages.config.message.PayPalMessageEventsCallbacks\$*',
 					'com.paypal.messages.config.message.PayPalMessageViewStateCallbacks\$*',
 					'com.paypal.messages.config.modal.ModalEvents\$*',
