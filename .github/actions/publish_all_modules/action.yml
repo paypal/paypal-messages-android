@@ -1,6 +1,10 @@
 name: 'Publish All Modules'
 description: 'Publishes all modules'
 inputs:
+  release_snapshot:
+    description: 'Append Snapshot to version'
+    required: false
+    default: ''
   sonatype_user:
     description: 'Sonatype user'
     required: true
