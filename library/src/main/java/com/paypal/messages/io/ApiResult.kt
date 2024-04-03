@@ -17,8 +17,9 @@ sealed class ApiResult {
 	companion object {
 		fun getFailureWithDebugId(headers: Headers): ApiResult {
 			val headersMap = headers.toMultimap()
-			val error = headersMap["Paypal-Debug-Id"]?.firstOrNull()?.let {
-				PayPalErrors.InvalidResponseException("", it)
+			val error = headersMap["Paypal-Debug-Id"]?.let {
+				val debugId = it.firstOrNull()
+				PayPalErrors.InvalidResponseException("", debugId)
 			}
 			return Failure(error)
 		}
