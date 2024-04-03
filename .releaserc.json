@@ -2,7 +2,8 @@
 	"branches": [
 		"release",
 		{"name": "develop", "prerelease": true},
-		{"name": "prerelease", "prerelease": true}
+		{"name": "prerelease", "prerelease": true},
+		{"name": "minSdkMatch", "prerelease": true}
 	],
 	"tagFormat": "${version}",
 	"plugins": [
