@@ -92,7 +92,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		merchantID = config.data.merchantID
 		partnerAttributionID = config.data.partnerAttributionID
 		amount = config.data.amount
-		buyerCountry = config.data.clientID
+		buyerCountry = config.data.buyerCountry
 		offerType = config.data.offerType
 		pageType = config.data.pageType
 		color = config.style.color
