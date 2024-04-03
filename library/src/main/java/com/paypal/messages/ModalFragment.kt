@@ -157,7 +157,7 @@ internal class ModalFragment(
 				view: WebView?,
 				request: WebResourceRequest?,
 			): Boolean {
-				val currentUri = modalUrl?.let{ URI.create(it) }
+				val currentUri = modalUrl?.let { URI.create(it) }
 				val currentHost = currentUri?.host
 				val currentPath = currentUri?.path?.split("/")?.getOrNull(1)
 				val requestUri = request?.url ?: return false

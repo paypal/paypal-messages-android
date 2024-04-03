@@ -79,6 +79,7 @@ class PayPalMessageView @JvmOverloads constructor(
 				buyerCountry = this.buyerCountry,
 				offerType = this.offerType,
 				pageType = this.pageType,
+				environment = this.environment ?: PayPalEnvironment.SANDBOX,
 			),
 			style = MessageStyle(this.color, this.logoType, this.textAlign),
 			viewStateCallbacks = ViewStateCallbacks(this.onLoading, this.onSuccess, this.onError),
@@ -184,6 +185,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		set(arg) {
 			if (field != arg) {
 				field = arg
+				Api.env = arg ?: PayPalEnvironment.SANDBOX
 				debounceUpdateContent(Unit)
 			}
 		}
