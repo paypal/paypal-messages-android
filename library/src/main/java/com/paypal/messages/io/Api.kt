@@ -41,18 +41,21 @@ object Api {
 		instanceId: UUID,
 	) {
 		addQueryParameter("client_id", config.data.clientID)
-		devTouchpoint.toString()?.takeIf { it != "false" }?.let { addQueryParameter("devTouchpoint", it) }
-		ignoreCache.toString()?.takeIf { it != "false" }?.let { addQueryParameter("ignore_cache", it) }
+		if (devTouchpoint) addQueryParameter("dev_touchpoint", "true")
+		if (ignoreCache) addQueryParameter("ignore_cache", "true")
 		addQueryParameter("instance_id", instanceId.toString())
-		addQueryParameter("session_id", sessionId.toString())
+		sessionId?.let { addQueryParameter("session_id", it.toString()) }
 
 		if (!stageTag.isNullOrBlank()) { addQueryParameter("stage_tag", stageTag) }
-		config.style.logoType.let { addQueryParameter("logo_type", it.name.lowercase()) }
-		config.data.amount?.let { addQueryParameter("amount", it.toString()) }
-		config.data.buyerCountry?.let { addQueryParameter("buyer_country", it) }
-		config.data.offerType?.let { addQueryParameter("offer", it.name) }
 
-		hash?.let { addQueryParameter("merchant_config", it) }
+		addQueryParameter("logo_type", config.style.logoType.name.lowercase())
+		config.data.run {
+			amount?.let { addQueryParameter("amount", it.toString()) }
+			if (!buyerCountry.isNullOrBlank()) addQueryParameter("buyer_country", buyerCountry)
+			offerType?.let { addQueryParameter("offer", it.name) }
+		}
+
+		if (!hash.isNullOrBlank()) addQueryParameter("merchant_config", hash)
 	}
 
 	internal fun createMessageDataRequest(
@@ -209,7 +212,7 @@ object Api {
 			addQueryParameter("integration_type", BuildConfig.INTEGRATION_TYPE)
 			addQueryParameter("features", "native-modal")
 			amount?.let { addQueryParameter("amount", amount.toString()) }
-			buyerCountry?.let { addQueryParameter("buyer_country", buyerCountry) }
+			if (!buyerCountry.isNullOrBlank()) addQueryParameter("buyer_country", buyerCountry)
 			offer?.let { addQueryParameter("offer", it.name) }
 		}.build().toString()
 
@@ -243,7 +246,7 @@ object Api {
 		}
 
 		val integrationVersion = obj.get("integration_version")
-		if (checkIfEmpty(integrationName.toString())) {
+		if (checkIfEmpty(integrationVersion.toString())) {
 			obj.remove("integration_version")
 		}
 

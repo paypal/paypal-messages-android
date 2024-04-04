@@ -291,7 +291,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			val modalConfig = ModalConfig(
 				amount = this.amount,
 				buyerCountry = this.buyerCountry,
-				offer = this.offerType,
+				offer = response.meta?.offerType,
 				ignoreCache = false,
 				devTouchpoint = false,
 				stageTag = null,
@@ -314,7 +314,10 @@ class PayPalMessageView @JvmOverloads constructor(
 		// modal.show() above will display the modal on initial view, but if the user closes the modal
 		// it will become visually hidden and this method will re-display the modal without
 		// attempting to reattach it
-		modal.expand()
+		// the delay prevents noticeable shift when the offer type is changed
+		handler.postDelayed({
+			modal.expand()
+		}, 250)
 	}
 
 	override fun onDetachedFromWindow() {
@@ -491,6 +494,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 * @param response the response obtained from the message content fetch process
 	 */
 	private fun updateContentValues(response: ApiMessageData.Response) {
+		modal?.offerType = response.meta?.offerType
 		messageContent = formatMessageContent(response, logoType)
 		messageLogoTag = response.meta?.variables?.logoPlaceholder
 		messageDisclaimer = response.content?.default?.disclaimer

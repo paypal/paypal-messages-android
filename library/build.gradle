@@ -76,7 +76,7 @@ tasks.register('addPreCommitGitHookOnBuild') {
 
 preBuild.doFirst { addPreCommitGitHookOnBuild }
 
-tasks.withType(Test) {
+tasks.withType(Test).configureEach {
 	useJUnitPlatform()
 }
 
