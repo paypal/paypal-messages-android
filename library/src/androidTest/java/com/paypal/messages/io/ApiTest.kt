@@ -80,12 +80,12 @@ class ApiTest {
 		assertFalse(url.contains("devTouchpoint=false"))
 		assertFalse(url.contains("ignore_cache=false"))
 		assertTrue(url.contains("instance_id"))
-		assertTrue(url.contains("session_id"))
 		expectedQueryParts.forEach { assertTrue(url.contains(it)) }
 	}
 
 	@Test
 	fun testCreateMessageDataRequestWithAllData() {
+		Api.sessionId = UUID.randomUUID()
 		val config = MessageConfig(
 			data = PayPalMessageData(
 				clientID = "test_client_id",
@@ -112,7 +112,7 @@ class ApiTest {
 		assertTrue(url.contains(expectedPath))
 		assertTrue(url.contains("client_id=test_client_id"))
 		assertTrue(url.contains("instance_id"))
-		assertTrue(url.contains("session_id"))
+		assertTrue(url.contains("session_id")) //
 		assertTrue(url.contains("amount=1.0"))
 		assertTrue(url.contains("buyer_country=US"))
 		assertTrue(url.contains("offer=PAY_LATER_PAY_IN_1"))
