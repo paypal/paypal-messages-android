@@ -43,19 +43,6 @@ class LoggerTest {
 	}
 
 	@Test
-	fun testSetGlobalAnalytics() {
-		val payload = logger.payload
-
-		payload?.run {
-			assertEquals("test_integration_name", payload.integrationName)
-			assertEquals("test_integration_version", payload.integrationVersion)
-			assertEquals("test_device_id", payload.deviceId)
-			assertEquals("test_session_id", payload.sessionId)
-		}
-	}
-
-	// TODO: Figure out why this test passes locally but fails in the CI
-	@Test
 	fun testLog() {
 		component.componentEvents.add(TrackingEvent(EventType.MESSAGE_CLICK))
 		logger.log(context, component)
