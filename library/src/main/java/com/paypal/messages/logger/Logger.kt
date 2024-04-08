@@ -84,22 +84,18 @@ class Logger private constructor() {
 
 		// Check for an existing component payload for this component
 		this.payload?.run {
-			val oldComponent = components.find { it.instanceId == component.instanceId }
+			val index = components.indexOfFirst { it.instanceId == component.instanceId }
 
-			if (oldComponent != null) {
-				val oldEvents = oldComponent.componentEvents
-				component.componentEvents.addAll(0, oldEvents)
-
-				val index = components.indexOfFirst { it.instanceId == component.instanceId }
-
-				if (index != -1) {
-					// Replace the old component payload with our newly created one
-					components[index] = component
-				}
-			}
-			else {
+			if (index == -1) {
 				// This will be the first instance for this specific component
 				components.add(component)
+			}
+			else {
+				// Replace the old component payload with a newly created one
+				val oldComponent = components[index]
+				val oldEvents = oldComponent.componentEvents
+				component.componentEvents.addAll(0, oldEvents)
+				components[index] = component
 			}
 
 			val localStorage = LocalStorage(context)

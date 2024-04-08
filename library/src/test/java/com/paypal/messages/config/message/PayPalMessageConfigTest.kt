@@ -46,6 +46,8 @@ class PayPalMessageConfigTest {
 		assertEquals(sessionId, GlobalAnalytics.sessionId)
 	}
 
+	// This tests if PayPalMessageConfig sets GlobalAnalytics to empty strings when used
+	// It is also required for full test coverage as calculated by kover
 	@Test
 	fun testSetGlobalAnalyticsWithNoValues() {
 		PayPalMessageConfig.setGlobalAnalytics()
