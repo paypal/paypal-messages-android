@@ -51,6 +51,7 @@ fun toSentenceCase(input: String): String {
 }
 
 class JetpackActivity : ComponentActivity() {
+	private val environment = PayPalEnvironment.SANDBOX
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -59,7 +60,7 @@ class JetpackActivity : ComponentActivity() {
 			BasicTheme {
 				val context = LocalContext.current
 
-				var clientId: String by remember { mutableStateOf("") }
+				var clientId: String by remember { mutableStateOf(getString(R.string.client_id)) }
 
 				// Style Color
 				var backgroundColor by remember { mutableStateOf(Color.White) }
@@ -109,7 +110,7 @@ class JetpackActivity : ComponentActivity() {
 				val messageView = PayPalMessageView(
 					context,
 					config = PayPalMessageConfig(
-						data = PayPalMessageData(clientID = clientId, environment = PayPalEnvironment.SANDBOX),
+						data = PayPalMessageData(clientID = clientId, environment = environment),
 						viewStateCallbacks = PayPalMessageViewStateCallbacks(
 							onLoading = {
 								progressBar = true
