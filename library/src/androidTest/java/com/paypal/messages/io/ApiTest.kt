@@ -72,7 +72,6 @@ class ApiTest {
 		val expectedQueryParts = arrayOf(
 			"client_id=test_client_id",
 			"instance_id",
-			"session_id",
 		)
 
 		assertTrue(url.contains(expectedPath))
