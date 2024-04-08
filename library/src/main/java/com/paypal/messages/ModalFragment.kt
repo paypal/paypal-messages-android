@@ -84,7 +84,6 @@ internal class ModalFragment(
 	private var stageTag: String? = null
 
 	private var inErrorState: Boolean = false
-	private var currentUrl: String? = null
 	private var webView: WebView? = null
 	private var rootView: View? = null
 	private var dialog: BottomSheetDialog? = null
@@ -158,9 +157,9 @@ internal class ModalFragment(
 				view: WebView?,
 				request: WebResourceRequest?,
 			): Boolean {
-				val currentUri = URI.create(currentUrl)
-				val currentHost = currentUri.host
-				val currentPath = currentUri.path.split("/").getOrNull(1)
+				val currentUri = modalUrl?.let { URI.create(it) }
+				val currentHost = currentUri?.host
+				val currentPath = currentUri?.path?.split("/")?.getOrNull(1)
 				val requestUri = request?.url ?: return false
 				val requestHost = requestUri.host ?: return false
 				val requestPath = requestUri.pathSegments.getOrNull(0) ?: return false
@@ -190,7 +189,7 @@ internal class ModalFragment(
 					LogCat.debug(TAG, "Error Code ${e.errorCode}: ${e.description}")
 				}
 
-				val mainPageFailedToLoad = request?.url?.toString().equals(currentUrl)
+				val mainPageFailedToLoad = request?.url?.toString().equals(modalUrl)
 				val urlType = if (mainPageFailedToLoad) "Main" else "Non-main"
 				LogCat.debug(TAG, "$urlType URL failed: ${request?.url}")
 
@@ -210,7 +209,7 @@ internal class ModalFragment(
 					LogCat.debug(TAG, "HTTP Error Code ${e.statusCode}: ${e.reasonPhrase}\nData: ${e.data}")
 				}
 
-				val mainPageFailedToLoad = request?.url?.toString().equals(currentUrl)
+				val mainPageFailedToLoad = request?.url?.toString().equals(modalUrl)
 				val urlType = if (mainPageFailedToLoad) "Main" else "Non-main"
 				LogCat.debug(TAG, "$urlType URL failed: ${request?.url}")
 
@@ -312,7 +311,7 @@ internal class ModalFragment(
 	}
 
 	private fun openModalInBrowser() {
-		val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl))
+		val intent = Intent(Intent.ACTION_VIEW, Uri.parse(modalUrl))
 		requireActivity().startActivity(intent)
 	}
 
@@ -341,7 +340,7 @@ internal class ModalFragment(
 					modalUrl = url
 				}
 				else {
-					LogCat.debug(TAG, "Modal reopened with original URL: $currentUrl")
+					LogCat.debug(TAG, "Modal reopened with original URL: $modalUrl")
 				}
 			}
 			this.webView?.loadUrl(url)

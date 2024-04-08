@@ -79,6 +79,7 @@ class PayPalMessageView @JvmOverloads constructor(
 				buyerCountry = this.buyerCountry,
 				offerType = this.offerType,
 				pageType = this.pageType,
+				environment = this.environment ?: PayPalEnvironment.SANDBOX,
 			),
 			style = MessageStyle(this.color, this.logoType, this.textAlign),
 			viewStateCallbacks = ViewStateCallbacks(this.onLoading, this.onSuccess, this.onError),
@@ -91,7 +92,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		merchantID = config.data.merchantID
 		partnerAttributionID = config.data.partnerAttributionID
 		amount = config.data.amount
-		buyerCountry = config.data.clientID
+		buyerCountry = config.data.buyerCountry
 		offerType = config.data.offerType
 		pageType = config.data.pageType
 		color = config.style.color
@@ -184,6 +185,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		set(arg) {
 			if (field != arg) {
 				field = arg
+				Api.env = arg ?: PayPalEnvironment.SANDBOX
 				debounceUpdateContent(Unit)
 			}
 		}
@@ -289,7 +291,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			val modalConfig = ModalConfig(
 				amount = this.amount,
 				buyerCountry = this.buyerCountry,
-				offer = this.offerType,
+				offer = response.meta?.offerType,
 				ignoreCache = false,
 				devTouchpoint = false,
 				stageTag = null,
@@ -312,7 +314,10 @@ class PayPalMessageView @JvmOverloads constructor(
 		// modal.show() above will display the modal on initial view, but if the user closes the modal
 		// it will become visually hidden and this method will re-display the modal without
 		// attempting to reattach it
-		modal.expand()
+		// the delay prevents noticeable shift when the offer type is changed
+		handler.postDelayed({
+			modal.expand()
+		}, 250)
 	}
 
 	override fun onDetachedFromWindow() {
@@ -489,6 +494,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	 * @param response the response obtained from the message content fetch process
 	 */
 	private fun updateContentValues(response: ApiMessageData.Response) {
+		modal?.offerType = response.meta?.offerType
 		messageContent = formatMessageContent(response, logoType)
 		messageLogoTag = response.meta?.variables?.logoPlaceholder
 		messageDisclaimer = response.content?.default?.disclaimer

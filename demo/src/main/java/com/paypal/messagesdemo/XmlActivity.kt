@@ -146,7 +146,7 @@ class XmlActivity : AppCompatActivity() {
 			val amountString = amountEdit.text.toString()
 			val amount = if (amountString.isNotBlank()) amountString.toDouble() else null
 
-			val buyerCountry = buyerCountryEdit.text.toString().ifBlank { "US" }
+			val buyerCountry = buyerCountryEdit.text.toString().ifBlank { "" }
 
 			val backgroundColor = if (color === PayPalMessageColor.WHITE) Color.Black else Color.White
 			payPalMessage.setBackgroundColor(backgroundColor.hashCode())

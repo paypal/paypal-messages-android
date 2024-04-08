@@ -16,7 +16,7 @@ echo git diff --staged --name-only | grep -E '(library|demo)'
 echo ""
 echo "Running ktFormat to fix any auto-fixable issues"
 
-git stash --quiet --keep-index
+git stash --keep-index --quiet
 
 ./gradlew ktFormat
 
