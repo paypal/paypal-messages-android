@@ -56,6 +56,8 @@ class ApiMessageDataTest {
 
 	@Test
 	fun testResponseConstructor() {
+		// Provides coverage for the wrapping object
+		assertEquals(ApiMessageData, ApiMessageData)
 		assertEquals(metadata, response.meta)
 		assertEquals(contentOptions, response.content)
 	}

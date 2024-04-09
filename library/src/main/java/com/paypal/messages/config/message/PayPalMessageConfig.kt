@@ -1,6 +1,6 @@
 package com.paypal.messages.config.message
 
-import com.paypal.messages.logger.Logger
+import com.paypal.messages.config.GlobalAnalytics
 
 /**
  * [PayPalMessageConfig] is the main configuration model for interacting with the PayPalMessage component
@@ -15,15 +15,19 @@ data class PayPalMessageConfig(
 	var viewStateCallbacks: PayPalMessageViewStateCallbacks? = null,
 	var eventsCallbacks: PayPalMessageEventsCallbacks? = null,
 ) : Cloneable {
-
 	public override fun clone() = PayPalMessageConfig(data.clone(), style, viewStateCallbacks?.clone(), eventsCallbacks?.clone())
 
-	fun setGlobalAnalytics(
-		integrationName: String,
-		integrationVersion: String,
-	) {
-		if (data.clientID != "") {
-			Logger.getInstance(data.clientID).setGlobalAnalytics(integrationName, integrationVersion)
+	companion object {
+		fun setGlobalAnalytics(
+			integrationName: String = "",
+			integrationVersion: String = "",
+			deviceId: String = "",
+			sessionId: String = "",
+		) {
+			GlobalAnalytics.integrationName = integrationName
+			GlobalAnalytics.integrationVersion = integrationVersion
+			GlobalAnalytics.deviceId = deviceId
+			GlobalAnalytics.sessionId = sessionId
 		}
 	}
 }

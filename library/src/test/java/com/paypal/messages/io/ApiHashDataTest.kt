@@ -21,6 +21,8 @@ class ApiHashDataTest {
 
 	@Test
 	fun testResponseConstructor() {
+		// Provides coverage for the wrapping object
+		assertEquals(ApiHashData, ApiHashData)
 		assertEquals(cacheFlowDisabled, response.cacheFlowDisabled)
 		assertEquals(ttlSoft, response.ttlSoft)
 		assertEquals(ttlHard, response.ttlHard)

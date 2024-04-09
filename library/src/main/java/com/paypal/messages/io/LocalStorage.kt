@@ -3,8 +3,9 @@ package com.paypal.messages.io
 import android.content.Context
 import com.google.gson.Gson
 import com.paypal.messages.utils.LogCat
+import java.util.UUID
 
-class LocalStorage constructor(context: Context) {
+class LocalStorage(context: Context) {
 	private val TAG = this::class.java.simpleName
 	private val key = "PayPalUpstreamLocalStorage"
 	private val sharedPrefs = context.getSharedPreferences(key, Context.MODE_PRIVATE)
@@ -15,12 +16,28 @@ class LocalStorage constructor(context: Context) {
 	enum class StorageKeys(private val keyName: String) {
 		MERCHANT_HASH_DATA("merchantProfileHashData"),
 		TIMESTAMP("timestamp"),
+		DEVICE_ID("deviceId"),
 		;
 
 		override fun toString(): String {
 			return keyName
 		}
 	}
+
+	val deviceId: String
+		get() {
+			val deviceId = sharedPrefs.getString("${StorageKeys.DEVICE_ID}", null)
+			return if (deviceId == null) {
+				val newDeviceId = UUID.randomUUID().toString()
+				val editor = sharedPrefs.edit()
+				LogCat.debug(TAG, "No device ID found, setting device ID to: $newDeviceId")
+				editor.putString("${StorageKeys.DEVICE_ID}", newDeviceId)
+				editor.apply()
+				newDeviceId
+			} else {
+				deviceId
+			}
+		}
 
 	var merchantHashData: ApiHashData.Response?
 		get() {

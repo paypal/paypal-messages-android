@@ -1,7 +1,7 @@
 package com.paypal.messages.logger
 
 import android.content.Context
-import android.provider.Settings
+import com.paypal.messages.config.GlobalAnalytics
 import com.paypal.messages.io.Api
 import com.paypal.messages.io.LocalStorage
 import com.paypal.messages.utils.LogCat
@@ -11,12 +11,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 class Logger private constructor() {
-	var integrationName: String = ""
-		private set
-	var integrationVersion: String = ""
-		private set
+	private val uuidSessionId = UUID.randomUUID().toString()
 
 	companion object {
 		private const val TAG: String = "Logger"
@@ -37,7 +35,7 @@ class Logger private constructor() {
 		}
 	}
 
-	var payload: TrackingPayload? = null
+	internal var payload: TrackingPayload? = null
 		private set
 
 	// When we instantiate our class for the first time, there are some global vars we can set right
@@ -48,17 +46,17 @@ class Logger private constructor() {
 
 	private fun resetBasePayload(isInit: Boolean = false) {
 		LogCat.debug(TAG, if (isInit) "initBasePayload" else "resetBasePayload")
+		val sessionId = GlobalAnalytics.sessionId
 		this.payload = TrackingPayload(
 			clientId = clientId,
 			merchantId = null,
 			partnerAttributionId = null,
-			// merchantProfileHash will be later defined by pulling from LocalStorage
+			// merchantProfileHash and deviceId will be later defined by pulling from LocalStorage
 			merchantProfileHash = null,
-			deviceId = Settings.Secure.ANDROID_ID,
-			// TODO Determine SessionId for Logger
-			sessionId = "random_session_id",
-			integrationName = integrationName,
-			integrationVersion = integrationVersion,
+			deviceId = "",
+			sessionId = if (sessionId == "") uuidSessionId else sessionId,
+			integrationName = GlobalAnalytics.integrationName,
+			integrationVersion = GlobalAnalytics.integrationVersion,
 			components = mutableListOf(),
 		)
 	}
@@ -73,16 +71,6 @@ class Logger private constructor() {
 		}
 	}
 
-	fun setGlobalAnalytics(
-		integrationName: String,
-		integrationVersion: String,
-	) {
-		this.integrationName = integrationName
-		this.integrationVersion = integrationVersion
-		this.payload?.integrationName = integrationName
-		this.payload?.integrationVersion = integrationVersion
-	}
-
 	// Need to be able to append multiple events to a single payload, adding a modal event could
 	// add additional shared fields to the component level object
 
@@ -95,26 +83,26 @@ class Logger private constructor() {
 		// If we have an active call, we need to pull the current payload and modify it
 
 		// Check for an existing component payload for this component
-		val oldComponent = this.payload?.components?.find { it.instanceId == component.instanceId }
+		this.payload?.run {
+			val index = components.indexOfFirst { it.instanceId == component.instanceId }
 
-		if (oldComponent != null) {
-			val oldEvents = oldComponent.componentEvents
-			component.componentEvents.addAll(0, oldEvents)
-
-			val index = this.payload?.components?.indexOfFirst { it.instanceId == component.instanceId }
-
-			if (index != -1 && index != null) {
-				// Replace the old component payload with our newly created one
-				this.payload?.components?.set(index, component)
+			if (index == -1) {
+				// This will be the first instance for this specific component
+				components.add(component)
 			}
-		}
-		else {
-			// This will be the first instance for this specific component
-			this.payload?.components?.add(component)
-		}
+			else {
+				// Replace the old component payload with a newly created one
+				val oldComponent = components[index]
+				val oldEvents = oldComponent.componentEvents
+				component.componentEvents.addAll(0, oldEvents)
+				components[index] = component
+			}
 
-		this.payload?.merchantProfileHash = LocalStorage(context).merchantHash
-		this.payload?.let { sendEvent(context, it) }
+			val localStorage = LocalStorage(context)
+			merchantProfileHash = localStorage.merchantHash
+			deviceId = if (GlobalAnalytics.deviceId == "") localStorage.deviceId else GlobalAnalytics.deviceId
+			sendEvent(context, this)
+		}
 	}
 
 	private var job: Job? = null

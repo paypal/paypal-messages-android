@@ -1,5 +1,6 @@
 package com.paypal.messages.config.message
 
+import com.paypal.messages.config.GlobalAnalytics
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
@@ -25,31 +26,36 @@ class PayPalMessageConfigTest {
 		assertEquals(config.eventsCallbacks, eventsCallbacks)
 	}
 
-// 	@Test
+	@Test
 	fun testSetGlobalAnalytics() {
 		val name = "integration_name"
 		val version = "integration_version"
+		val deviceId = "device_id"
+		val sessionId = "session_id"
 
-// 		val mockLogger = mockk<Logger>()
-// 		val mockLoggerCompanion = mockk<Logger.Companion>("mockLoggerCompanion")
-// 		every { mockLoggerCompanion.getInstance(any()) } returns mockLogger
-// 		every { mockLogger.setGlobalAnalytics(name, version) } answers {}
+		assertEquals("", GlobalAnalytics.integrationName)
+		assertEquals("", GlobalAnalytics.integrationVersion)
+		assertEquals("", GlobalAnalytics.deviceId)
+		assertEquals("", GlobalAnalytics.sessionId)
 
-		// Create a PayPalMessageConfig object.
-		val paypalMessageConfig = PayPalMessageConfig(PayPalMessageData(clientID = "1"))
+		PayPalMessageConfig.setGlobalAnalytics(name, version, deviceId, sessionId)
 
-		// Set the integration name and version.
-		paypalMessageConfig.setGlobalAnalytics(name, version)
+		assertEquals(name, GlobalAnalytics.integrationName)
+		assertEquals(version, GlobalAnalytics.integrationVersion)
+		assertEquals(deviceId, GlobalAnalytics.deviceId)
+		assertEquals(sessionId, GlobalAnalytics.sessionId)
+	}
 
-		// Verify that the setGlobalAnalytics() method was called on the mock Logger object.
-// 		verify { mockLoggerCompanion.getInstance("") }
-// 		mockLogger.setGlobalAnalytics(name, version)
-// 		verify { mockLogger.setGlobalAnalytics(name, version) }
-// 		assertEquals(mockLogger, mockLoggerCompanion.getInstance(""))
-// 		val resultNameField = mockLogger.javaClass.getDeclaredField("integrationName")
-// 		resultNameField.isAccessible = true
-// 		val resultName = resultNameField.get(mockLogger)
-// 		assertEquals(name, resultName)
+	// This tests if PayPalMessageConfig sets GlobalAnalytics to empty strings when used
+	// It is also required for full test coverage as calculated by kover
+	@Test
+	fun testSetGlobalAnalyticsWithNoValues() {
+		PayPalMessageConfig.setGlobalAnalytics()
+
+		assertEquals("", GlobalAnalytics.integrationName)
+		assertEquals("", GlobalAnalytics.integrationVersion)
+		assertEquals("", GlobalAnalytics.deviceId)
+		assertEquals("", GlobalAnalytics.sessionId)
 	}
 
 	@Test
@@ -64,6 +70,23 @@ class PayPalMessageConfigTest {
 			style = style,
 			viewStateCallbacks = viewStateCallbacks,
 			eventsCallbacks = eventsCallbacks,
+		)
+
+		val cloneConfig = config.clone()
+
+		assertEquals(config, cloneConfig)
+		config.data = PayPalMessageData(clientID = "2")
+		assertNotEquals(config, cloneConfig)
+	}
+
+	@Test
+	fun testCloneWithNoCallbacks() {
+		val data = PayPalMessageData(clientID = "1")
+		val style = PayPalMessageStyle()
+
+		val config = PayPalMessageConfig(
+			data = data,
+			style = style,
 		)
 
 		val cloneConfig = config.clone()

@@ -14,7 +14,7 @@ class LogoTest {
 	@MethodSource("logoImageArguments")
 	fun testLogoImage(
 		logoType: LogoType,
-		productGroup: ProductGroup,
+		productGroup: ProductGroup?,
 		color: Color,
 		expectedResId: Int,
 	) {
@@ -28,7 +28,7 @@ class LogoTest {
 	@MethodSource("logoStringArguments")
 	fun testStringImage(
 		logoType: LogoType,
-		productGroup: ProductGroup,
+		productGroup: ProductGroup?,
 		expectedResId: Int,
 	) {
 		val logo = Logo(logoType, productGroup)
@@ -40,7 +40,7 @@ class LogoTest {
 	private companion object {
 		@JvmStatic
 		fun logoImageArguments(): Stream<Arguments> = Stream.of(
-			// PRIMARY
+			// PRIMARY CREDIT
 			Arguments.of(
 				LogoType.PRIMARY,
 				ProductGroup.PAYPAL_CREDIT,
@@ -66,6 +66,7 @@ class LogoTest {
 				R.drawable.logo_credit_primary_grayscale,
 			),
 
+			// PRIMARY PAY LATER
 			Arguments.of(
 				LogoType.PRIMARY,
 				ProductGroup.PAY_LATER,
@@ -90,8 +91,14 @@ class LogoTest {
 				Color.GRAYSCALE,
 				R.drawable.logo_primary_grayscale,
 			),
+			Arguments.of(
+				LogoType.PRIMARY,
+				null,
+				Color.BLACK,
+				R.drawable.logo_primary_standard,
+			),
 
-			// ALTERNATIVE
+			// ALTERNATIVE CREDIT
 			Arguments.of(
 				LogoType.ALTERNATIVE,
 				ProductGroup.PAYPAL_CREDIT,
@@ -117,6 +124,7 @@ class LogoTest {
 				R.drawable.logo_credit_alternative_grayscale,
 			),
 
+			// ALTERNATIVE PAY LATER
 			Arguments.of(
 				LogoType.ALTERNATIVE,
 				ProductGroup.PAY_LATER,
@@ -141,8 +149,14 @@ class LogoTest {
 				Color.GRAYSCALE,
 				R.drawable.logo_alternative_grayscale,
 			),
+			Arguments.of(
+				LogoType.ALTERNATIVE,
+				null,
+				Color.BLACK,
+				R.drawable.logo_alternative_standard,
+			),
 
-			// INLINE
+			// INLINE CREDIT
 			Arguments.of(
 				LogoType.INLINE,
 				ProductGroup.PAYPAL_CREDIT,
@@ -168,6 +182,7 @@ class LogoTest {
 				R.drawable.logo_credit_inline_grayscale,
 			),
 
+			// INLINE PAY LATER
 			Arguments.of(
 				LogoType.INLINE,
 				ProductGroup.PAY_LATER,
@@ -192,12 +207,19 @@ class LogoTest {
 				Color.GRAYSCALE,
 				R.drawable.logo_inline_grayscale,
 			),
+			Arguments.of(
+				LogoType.INLINE,
+				null,
+				Color.BLACK,
+				R.drawable.logo_inline_standard,
+			),
 		)
 
 		@JvmStatic
 		fun logoStringArguments(): Stream<Arguments> = Stream.of(
 			Arguments.of(LogoType.NONE, ProductGroup.PAYPAL_CREDIT, R.string.logo_none_label_credit),
 			Arguments.of(LogoType.NONE, ProductGroup.PAY_LATER, R.string.logo_none_label_default),
+			Arguments.of(LogoType.NONE, null, R.string.logo_none_label_default),
 		)
 	}
 }

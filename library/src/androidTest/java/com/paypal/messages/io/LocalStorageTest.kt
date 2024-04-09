@@ -5,6 +5,8 @@ import android.content.SharedPreferences
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -113,5 +115,20 @@ class LocalStorageTest {
 
 		val actualHashState = localStorage.getMerchantHashState()
 		assertEquals(LocalStorage.State.CACHE_DISABLED, actualHashState)
+	}
+
+	@Test
+	fun testDeviceId() {
+		val localStorage = LocalStorage(context)
+		val deviceIdFirstRetrieval = localStorage.deviceId
+
+		assertNotNull(deviceIdFirstRetrieval)
+		assertTrue(deviceIdFirstRetrieval != "")
+
+		val deviceIdSecondRetrieval = localStorage.deviceId
+		assertEquals(deviceIdFirstRetrieval, deviceIdSecondRetrieval)
+
+		val deviceIdThirdRetrieval = localStorage.deviceId
+		assertEquals(deviceIdFirstRetrieval, deviceIdThirdRetrieval)
 	}
 }

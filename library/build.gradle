@@ -3,7 +3,7 @@ plugins {
 	id 'kotlin-android'
 	id 'org.jetbrains.kotlin.android'
 	id 'de.mannodermaus.android-junit5' version "1.9.3.0"
-	id 'org.jetbrains.kotlinx.kover' version '0.7.4'
+	id 'org.jetbrains.kotlinx.kover' version '0.7.6'
 }
 
 android {
@@ -65,16 +65,33 @@ android {
 	}
 }
 
+// if this exists, the CI should not run certain tasks
+def runnerFolder = new File('/home/runner')
+
 tasks.register('addPreCommitGitHookOnBuild') {
 	group 'git'
-	println("⚈ ⚈ ⚈ Running Add Pre Commit Git Hook Script on Build ⚈ ⚈ ⚈")
-	exec {
-		commandLine("cp", "../scripts/pre-commit", "../.git/hooks")
+	if (!runnerFolder.exists()) {
+		println('⚈ ⚈ ⚈ Running Add Pre Commit Git Hook Script on Build ⚈ ⚈ ⚈')
+		exec {
+			commandLine('cp', '../scripts/pre-commit', '../.git/hooks')
+		}
+		println('✅ Added Pre Commit Git Hook Script.')
 	}
-	println("✅ Added Pre Commit Git Hook Script.")
 }
 
-preBuild.doFirst { addPreCommitGitHookOnBuild }
+tasks.register('ignoreFilesOnBuild') {
+	group 'ignore'
+	if (!runnerFolder.exists()) {
+		exec {
+			commandLine('../scripts/ignore-files.sh', '-y')
+		}
+	}
+}
+
+preBuild.doFirst {
+	addPreCommitGitHookOnBuild
+	ignoreFilesOnBuild
+}
 
 tasks.withType(Test).configureEach {
 	useJUnitPlatform()
@@ -84,6 +101,9 @@ koverReport {
 	androidReports('debug') {
 		filters {
 			excludes {
+				annotatedBy(
+					'*KoverExcludeGenerated'
+				)
 				classes(
 					// config
 					'com.paypal.messages.config.message.PayPalMessageEventsCallbacks\$*',
@@ -94,16 +114,12 @@ koverReport {
 					// io
 					'com.paypal.messages.io.Api',
 					'com.paypal.messages.io.Api\$*',
-					'com.paypal.messages.io.Api\$Endpoints',
-					'com.paypal.messages.io.ApiMessageData',
-					'com.paypal.messages.io.ApiHashData',
 					'com.paypal.messages.io.LocalStorage*',
 					'com.paypal.messages.io.OnActionCompleted',
 					// logger,
 					'com.paypal.messages.logger.Logger*',
 					// utils
 					'com.paypal.messages.utils.LogCat*',
-					'com.paypal.messages.utils.PayPalErrors',
 					// UI Stuff
 					'*Fragment',
 					'*Fragment\$*',
