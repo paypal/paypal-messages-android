@@ -45,7 +45,7 @@ jobs:
           signing_file_path: ${{ env.SIGNING_KEY_FILE_PATH }}
 
       - name: Set snapshot environment variable
-        run: echo "USE_SNAPSHOT=false" >> $GITHUB_ENV
+        run: echo "USE_SNAPSHOT=true" >> $GITHUB_ENV
 
       - name: Install Semantic Release Dependencies
         run: npm install
