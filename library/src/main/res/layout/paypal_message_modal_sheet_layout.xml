@@ -49,5 +49,5 @@
 		android:layout_marginEnd="12dip"
 		android:background="@drawable/ic_close"
 		android:scaleType="center"
-		android:contentDescription="Close modal" />
+		android:contentDescription="PayPal learn more modal close" />
 </RelativeLayout>

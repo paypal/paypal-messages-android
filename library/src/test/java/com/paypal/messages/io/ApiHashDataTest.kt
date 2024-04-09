@@ -34,7 +34,8 @@ class ApiHashDataTest {
 		val json = gson.toJson(response)
 		assertEquals(
 			json,
-			"{\"cache_flow_disabled\":true,\"ttl_soft\":1000,\"ttl_hard\":2000,\"merchant_profile\":{\"hash\":\"test_merchant_profile_hash\"}}",
+			@Suppress("ktlint:standard:max-line-length")
+			"""{"cache_flow_disabled":true,"ttl_soft":1000,"ttl_hard":2000,"merchant_profile":{"hash":"test_merchant_profile_hash"}}""",
 		)
 	}
 
@@ -46,6 +47,6 @@ class ApiHashDataTest {
 	@Test
 	fun testMerchantProfileSerialization() {
 		val json = gson.toJson(merchantProfile)
-		assertEquals(json, "{\"hash\":\"test_merchant_profile_hash\"}")
+		assertEquals(json, """{"hash":"test_merchant_profile_hash"}""")
 	}
 }

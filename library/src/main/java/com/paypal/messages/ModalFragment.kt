@@ -104,6 +104,7 @@ internal class ModalFragment(
 		val rootView =
 			inflator.inflate(R.layout.paypal_message_modal_sheet_layout, container, false)
 		val closeButton = rootView.findViewById<ImageButton>(R.id.ModalCloseButton)
+		closeButton.contentDescription = closeButtonData?.alternativeText
 
 		closeButton.layoutParams.height = TypedValue.applyDimension(
 			TypedValue.COMPLEX_UNIT_DIP,
@@ -366,7 +367,7 @@ internal class ModalFragment(
 	 */
 	@JavascriptInterface
 	fun paypalMessageModalCallbackHandler(passedParams: String) {
-		val params = if (passedParams != "") passedParams else "{\"name\": \"\", \"args\": [{}]"
+		val params = if (passedParams != "") passedParams else """{"name": "", "args": [{}]} """
 		val nameAndArgs = JsonParser.parseString(params).asJsonObject
 		val name = nameAndArgs.get("name").asString
 		val args = nameAndArgs.get("args").asJsonArray[0].asJsonObject

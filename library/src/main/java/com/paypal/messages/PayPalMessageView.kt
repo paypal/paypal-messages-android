@@ -20,6 +20,7 @@ import androidx.core.content.res.getFloatOrThrow
 import androidx.core.content.res.getIntOrThrow
 import androidx.core.content.res.use
 import com.paypal.messages.config.PayPalEnvironment
+import com.paypal.messages.config.ProductGroup
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.config.modal.ModalEvents
 import com.paypal.messages.io.Api
@@ -522,12 +523,22 @@ class PayPalMessageView @JvmOverloads constructor(
 		logoType: LogoType,
 	): String {
 		val builder = StringBuilder()
-		val messageContent = response.content?.default?.main
+		val mainContent = response.content?.default?.main
 		val logoTag = response.meta?.variables?.logoPlaceholder
 		val disclaimer = response.content?.default?.disclaimer
 
+		val productGroup = response.meta?.creditProductGroup
+		val brandingText = if (productGroup == ProductGroup.PAYPAL_CREDIT) "PayPal Credit" else "PayPal"
+
+		val alternativeText = response.content?.default?.mainAlternative
+			?: response.content?.generic?.mainAlternative
+			?: logoTag?.let { mainContent?.replace(it, brandingText) ?: "" }
+		val leadText = if (mainContent?.contains("$logoTag") == false) "$brandingText -" else ""
+		val accessibilityText = "$leadText $alternativeText $disclaimer".trim()
+		messageTextView.contentDescription = accessibilityText
+
 		// Append message content if it exists
-		messageContent?.let { content ->
+		mainContent?.let { content ->
 			// Append LogoTag if logotype is PRIMARY or ALTERNATIVE and tag is not present
 			logoTag?.let { tag ->
 				if (logoType in listOf(
