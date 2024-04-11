@@ -13,12 +13,9 @@ android {
 	defaultConfig {
 		minSdkVersion modules.androidMinSdkVersion
 		targetSdkVersion modules.androidTargetVersion
-
-		// TODO: Are versionCode and versionName needed for libraries here?
-		versionCode modules.sdkVersionCode
 		versionName modules.sdkVersionName
 		testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-	  testInstrumentationRunnerArguments clearPackageData: 'true'
+		testInstrumentationRunnerArguments clearPackageData: 'true'
 		consumerProguardFiles 'consumer-rules.pro'
 
 		buildConfigField('String', 'INTEGRATION_TYPE', "\"NATIVE_ANDROID\"")
