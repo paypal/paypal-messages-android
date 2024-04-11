@@ -1,8 +1,8 @@
-package com.paypal.messages.logger
+package com.paypal.messages.analytics
 
 import com.google.gson.annotations.SerializedName
 
-data class TrackingEvent(
+data class AnalyticsEvent(
 	@SerializedName("event_type")
 	var eventType: EventType,
 	@SerializedName("render_duration")

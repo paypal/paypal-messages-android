@@ -1,20 +1,20 @@
-package com.paypal.messages.logger
+package com.paypal.messages.analytics
 
 import com.google.gson.Gson
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class TrackingEventTest {
+class AnalyticsEventTest {
 	private val eventType = EventType.MESSAGE_CLICK
-	private val renderDuration = 100
-	private val requestDuration = 200
+	private val renderDuration = "100"
+	private val requestDuration = "200"
 	private val pageViewLinkName = "test_link_name"
 	private val pageViewLinkSource = "test_link_src"
 	private val data = "test_data"
 	private val errorName = "test_error_name"
 	private val errorDescription = "test_error_description"
 
-	private val trackingEvent = TrackingEvent(
+	private val analyticsEvent = AnalyticsEvent(
 		eventType = eventType,
 		renderDuration = renderDuration,
 		requestDuration = requestDuration,
@@ -27,20 +27,20 @@ class TrackingEventTest {
 
 	@Test
 	fun testConstructor() {
-		assertEquals(eventType, trackingEvent.eventType)
-		assertEquals(renderDuration, trackingEvent.renderDuration)
-		assertEquals(requestDuration, trackingEvent.requestDuration)
-		assertEquals(pageViewLinkName, trackingEvent.pageViewLinkName)
-		assertEquals(pageViewLinkSource, trackingEvent.pageViewLinkSource)
-		assertEquals(data, trackingEvent.data)
-		assertEquals(errorName, trackingEvent.errorName)
-		assertEquals(errorDescription, trackingEvent.errorDescription)
+		assertEquals(eventType, analyticsEvent.eventType)
+		assertEquals(renderDuration, analyticsEvent.renderDuration)
+		assertEquals(requestDuration, analyticsEvent.requestDuration)
+		assertEquals(pageViewLinkName, analyticsEvent.pageViewLinkName)
+		assertEquals(pageViewLinkSource, analyticsEvent.pageViewLinkSource)
+		assertEquals(data, analyticsEvent.data)
+		assertEquals(errorName, analyticsEvent.errorName)
+		assertEquals(errorDescription, analyticsEvent.errorDescription)
 	}
 
 	@Test
 	fun testSerialization() {
 		val gson = Gson()
-		val json = gson.toJson(trackingEvent)
+		val json = gson.toJson(analyticsEvent)
 
 		@Suppress("ktlint:standard:max-line-length")
 		val expectedJson = """{"event_type":"MESSAGE_CLICK","render_duration":100,"request_duration":200,"page_view_link_name":"test_link_name","page_view_link_source":"test_link_src","data":"test_data","error_name":"test_error_name","error_description":"test_error_description"}"""

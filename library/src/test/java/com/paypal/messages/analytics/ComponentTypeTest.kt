@@ -1,4 +1,4 @@
-package com.paypal.messages.logger
+package com.paypal.messages.analytics
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

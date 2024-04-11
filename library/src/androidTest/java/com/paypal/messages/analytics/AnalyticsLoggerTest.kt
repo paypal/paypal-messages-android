@@ -1,4 +1,4 @@
-package com.paypal.messages.logger
+package com.paypal.messages.analytics
 
 import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -12,10 +12,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class LoggerTest {
+class AnalyticsLoggerTest {
 	private lateinit var context: Context
-	private lateinit var logger: Logger
-	private lateinit var component: TrackingComponent
+	private lateinit var analyticsLogger: AnalyticsLogger
+	private lateinit var component: AnalyticsComponent
 
 	@Before
 	fun setUp() {
@@ -29,8 +29,8 @@ class LoggerTest {
 			"test_device_id",
 			"test_session_id",
 		)
-		logger = Logger.getInstance("test_client_id")
-		component = TrackingComponent(
+		analyticsLogger = AnalyticsLogger.getInstance("test_client_id")
+		component = AnalyticsComponent(
 			instanceId = "test_instance_id",
 			type = "test_type",
 			componentEvents = mutableListOf(),
@@ -39,15 +39,15 @@ class LoggerTest {
 
 	@Test
 	fun testGetInstance() {
-		assertNotNull(logger)
+		assertNotNull(analyticsLogger)
 	}
 
 	@Test
 	fun testLog() {
-		component.componentEvents.add(TrackingEvent(EventType.MESSAGE_CLICK))
-		logger.log(context, component)
+		component.componentEvents.add(AnalyticsEvent(EventType.MESSAGE_CLICK))
+		analyticsLogger.log(context, component)
 
-		val payload = logger.payload
+		val payload = analyticsLogger.payload
 		assertNotNull(payload)
 		payload?.run {
 			assertEquals("test_client_id", payload.clientId)

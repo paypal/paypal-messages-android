@@ -1,4 +1,4 @@
-package com.paypal.messages.logger
+package com.paypal.messages.analytics
 
 import com.google.gson.annotations.SerializedName
 import com.paypal.messages.config.PayPalMessageOfferType
@@ -7,7 +7,7 @@ import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 
-data class TrackingComponent(
+data class AnalyticsComponent(
 	// Integration Details
 	@SerializedName("offer_type")
 	val offerType: PayPalMessageOfferType? = null,
@@ -62,7 +62,7 @@ data class TrackingComponent(
 	@SerializedName("session_id")
 	val sessionId: String? = null,
 	@SerializedName("component_events")
-	val componentEvents: MutableList<TrackingEvent>,
+	val componentEvents: MutableList<AnalyticsEvent>,
 
 	// Dynamic Properties, not serialized by default
 	@Suppress("PropertyName")

@@ -1,10 +1,10 @@
 package com.paypal.messages.io
 
 import android.content.Context
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.paypal.messages.BuildConfig
-import com.paypal.messages.logger.CloudEvent
-import com.paypal.messages.logger.TrackingPayload
+import com.paypal.messages.analytics.AnalyticsPayload
+import com.paypal.messages.analytics.CloudEvent
 import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
 import kotlinx.coroutines.CoroutineScope
@@ -26,7 +26,7 @@ import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
 object Api {
 	private const val TAG = "Api"
 	private val client = OkHttpClient()
-	private val gson = Gson()
+	private val gson = GsonBuilder().setPrettyPrinting().create()
 	var env = Env.SANDBOX
 	var devTouchpoint: Boolean = false
 	var ignoreCache: Boolean = false
@@ -92,9 +92,8 @@ object Api {
 
 			if (code != 200) return ApiResult.Failure(PayPalErrors.FailedToFetchDataException("Code was $code"))
 
-			val bodyJsonNoFdata = bodyJson?.replace(""""fdata":".*?"""".toRegex(), "")
-			LogCat.debug(TAG, "callMessageDataEndpoint response: $bodyJsonNoFdata")
 			val body = gson.fromJson(bodyJson, ApiMessageData.Response::class.java)
+			LogCat.debug(TAG, "callMessageDataEndpoint response: ${gson.toJson(body)}")
 
 			val isValidResponse = body?.content != null && body.meta != null
 			return if (isValidResponse) {
@@ -281,7 +280,7 @@ object Api {
 		return jsonObject.toString()
 	}
 
-	fun callLoggerEndpoint(payload: TrackingPayload) {
+	fun callLoggerEndpoint(payload: AnalyticsPayload) {
 		val json = gson.toJson(CloudEvent(data = payload))
 		val request = createLoggerRequest(preventEmptyValues(json))
 		val response = client.newCall(request).execute()

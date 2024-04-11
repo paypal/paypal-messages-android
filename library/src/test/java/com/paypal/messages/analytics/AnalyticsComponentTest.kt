@@ -1,4 +1,4 @@
-package com.paypal.messages.logger
+package com.paypal.messages.analytics
 
 import com.google.gson.Gson
 import com.paypal.messages.config.PayPalMessageOfferType
@@ -9,7 +9,7 @@ import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class TrackingComponentTest {
+class AnalyticsComponentTest {
 	private val offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM
 	private val amount = "100.00"
 	private val pageType = PayPalMessagePageType.CART
@@ -33,9 +33,9 @@ class TrackingComponentTest {
 	private val instanceId = "test_instance_id"
 	private val originatingInstanceId = "test_originating_instance_id"
 	private val sessionId = "test_session_id"
-	private val componentEvents = mutableListOf(TrackingEvent(EventType.MESSAGE_CLICK))
+	private val componentEvents = mutableListOf(AnalyticsEvent(EventType.MESSAGE_CLICK))
 
-	private val trackingComponent = TrackingComponent(
+	private val analyticsComponent = AnalyticsComponent(
 		offerType = offerType,
 		amount = amount,
 		pageType = pageType,
@@ -64,36 +64,36 @@ class TrackingComponentTest {
 
 	@Test
 	fun testConstructor() {
-		assertEquals(offerType, trackingComponent.offerType)
-		assertEquals(amount, trackingComponent.amount)
-		assertEquals(pageType, trackingComponent.pageType)
-		assertEquals(buyerCountryCode, trackingComponent.buyerCountryCode)
-		assertEquals(channel, trackingComponent.channel)
-		assertEquals(styleLogoType, trackingComponent.styleLogoType)
-		assertEquals(styleColor, trackingComponent.styleColor)
-		assertEquals(styleTextAlign, trackingComponent.styleTextAlign)
-		assertEquals(messageType, trackingComponent.messageType)
-		assertEquals(views, trackingComponent.views)
-		assertEquals(qualifiedProducts, trackingComponent.qualifiedProducts)
-		assertEquals(integrationIdentifier, trackingComponent.integrationIdentifier)
-		assertEquals(fdata, trackingComponent.fdata)
-		assertEquals(debugId, trackingComponent.debugId)
-		assertEquals(experimentationExperienceIds, trackingComponent.experimentationExperienceIds)
-		assertEquals(experimentationTreatmentIds, trackingComponent.experimentationTreatmentIds)
-		assertEquals(creditProductIdentifiers, trackingComponent.creditProductIdentifiers)
-		assertEquals(offerCountryCode, trackingComponent.offerCountryCode)
-		assertEquals(merchantCountryCode, trackingComponent.merchantCountryCode)
-		assertEquals(type, trackingComponent.type)
-		assertEquals(instanceId, trackingComponent.instanceId)
-		assertEquals(originatingInstanceId, trackingComponent.originatingInstanceId)
-		assertEquals(sessionId, trackingComponent.sessionId)
-		assertEquals(componentEvents, trackingComponent.componentEvents)
+		assertEquals(offerType, analyticsComponent.offerType)
+		assertEquals(amount, analyticsComponent.amount)
+		assertEquals(pageType, analyticsComponent.pageType)
+		assertEquals(buyerCountryCode, analyticsComponent.buyerCountryCode)
+		assertEquals(channel, analyticsComponent.channel)
+		assertEquals(styleLogoType, analyticsComponent.styleLogoType)
+		assertEquals(styleColor, analyticsComponent.styleColor)
+		assertEquals(styleTextAlign, analyticsComponent.styleTextAlign)
+		assertEquals(messageType, analyticsComponent.messageType)
+		assertEquals(views, analyticsComponent.views)
+		assertEquals(qualifiedProducts, analyticsComponent.qualifiedProducts)
+		assertEquals(integrationIdentifier, analyticsComponent.integrationIdentifier)
+		assertEquals(fdata, analyticsComponent.fdata)
+		assertEquals(debugId, analyticsComponent.debugId)
+		assertEquals(experimentationExperienceIds, analyticsComponent.experimentationExperienceIds)
+		assertEquals(experimentationTreatmentIds, analyticsComponent.experimentationTreatmentIds)
+		assertEquals(creditProductIdentifiers, analyticsComponent.creditProductIdentifiers)
+		assertEquals(offerCountryCode, analyticsComponent.offerCountryCode)
+		assertEquals(merchantCountryCode, analyticsComponent.merchantCountryCode)
+		assertEquals(type, analyticsComponent.type)
+		assertEquals(instanceId, analyticsComponent.instanceId)
+		assertEquals(originatingInstanceId, analyticsComponent.originatingInstanceId)
+		assertEquals(sessionId, analyticsComponent.sessionId)
+		assertEquals(componentEvents, analyticsComponent.componentEvents)
 	}
 
 	@Test
 	fun testSerialization() {
 		val gson = Gson()
-		val json = gson.toJson(trackingComponent)
+		val json = gson.toJson(analyticsComponent)
 
 		@Suppress("ktlint:standard:max-line-length")
 		val expectedJson = """{"offer_type":"PAY_LATER_SHORT_TERM","amount":"100.00","page_type":"CART","buyer_country_code":"US","channel":"NATIVE","style_logo_type":"ALTERNATIVE","style_color":"MONOCHROME","style_text_align":"CENTER","message_type":"OFFER","views":["VIEW"],"qualified_products":["PRODUCT"],"fdata":"test_fdata","debug_id":"test_debug_id","experimentation_experience_ids":["EXP_1","EXP_2"],"experimentation_treatment_ids":["TRT_1","TRT_2"],"credit_product_identifiers":["CPI_1","CPI_2"],"offer_country_code":"US","merchant_country_code":"US","type":"OFFER","instance_id":"test_instance_id","originating_instance_id":"test_originating_instance_id","session_id":"test_session_id","component_events":[{"event_type":"MESSAGE_CLICK"}],"__shared__":{}}"""

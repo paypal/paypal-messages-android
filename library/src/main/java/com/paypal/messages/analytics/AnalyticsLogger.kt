@@ -1,4 +1,4 @@
-package com.paypal.messages.logger
+package com.paypal.messages.analytics
 
 import android.content.Context
 import com.paypal.messages.config.GlobalAnalytics
@@ -13,29 +13,29 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-class Logger private constructor() {
+class AnalyticsLogger private constructor() {
 	private val uuidSessionId = UUID.randomUUID().toString()
 
 	companion object {
 		private const val TAG: String = "Logger"
 
 		@Volatile
-		private var instance: Logger? = null
+		private var instance: AnalyticsLogger? = null
 		private lateinit var clientId: String
 
-		fun getInstance(clientId: String = ""): Logger {
+		fun getInstance(clientId: String = ""): AnalyticsLogger {
 			LogCat.debug(TAG, "getInstance clientId: $clientId")
 			this.clientId = clientId
 			return instance ?: synchronized(this) {
 				if (instance == null) {
-					instance = Logger()
+					instance = AnalyticsLogger()
 				}
 				instance!!
 			}
 		}
 	}
 
-	internal var payload: TrackingPayload? = null
+	internal var payload: AnalyticsPayload? = null
 		private set
 
 	// When we instantiate our class for the first time, there are some global vars we can set right
@@ -47,7 +47,7 @@ class Logger private constructor() {
 	private fun resetBasePayload(isInit: Boolean = false) {
 		LogCat.debug(TAG, if (isInit) "initBasePayload" else "resetBasePayload")
 		val sessionId = GlobalAnalytics.sessionId
-		this.payload = TrackingPayload(
+		this.payload = AnalyticsPayload(
 			clientId = clientId,
 			merchantId = null,
 			partnerAttributionId = null,
@@ -74,7 +74,7 @@ class Logger private constructor() {
 	// Need to be able to append multiple events to a single payload, adding a modal event could
 	// add additional shared fields to the component level object
 
-	fun log(context: Context, component: TrackingComponent) {
+	fun log(context: Context, component: AnalyticsComponent) {
 		// We have a component level scoped payload, that we need to add to our request.
 		// First we determine if this is a new component or not
 		// IF it is, we add it to our base payload with no issues
@@ -106,7 +106,7 @@ class Logger private constructor() {
 	}
 
 	private var job: Job? = null
-	private fun sendEvent(context: Context, finalPayload: TrackingPayload) {
+	private fun sendEvent(context: Context, finalPayload: AnalyticsPayload) {
 		job?.cancel()
 		job = CoroutineScope(Dispatchers.IO).launch {
 			delay(5000) // Wait 5 seconds before sending our payload

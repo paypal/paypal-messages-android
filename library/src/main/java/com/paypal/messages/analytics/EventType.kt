@@ -1,4 +1,4 @@
-package com.paypal.messages.logger
+package com.paypal.messages.analytics
 
 enum class EventType {
 	MESSAGE_RENDER,
@@ -8,4 +8,9 @@ enum class EventType {
 	MODAL_OPEN,
 	MODAL_CLOSE,
 	MODAL_ERROR,
+	;
+
+	override fun toString(): String {
+		return super.toString().lowercase()
+	}
 }

@@ -19,6 +19,11 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.res.getFloatOrThrow
 import androidx.core.content.res.getIntOrThrow
 import androidx.core.content.res.use
+import com.paypal.messages.analytics.AnalyticsComponent
+import com.paypal.messages.analytics.AnalyticsEvent
+import com.paypal.messages.analytics.AnalyticsLogger
+import com.paypal.messages.analytics.ComponentType
+import com.paypal.messages.analytics.EventType
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.ProductGroup
 import com.paypal.messages.config.modal.ModalConfig
@@ -27,11 +32,6 @@ import com.paypal.messages.io.Api
 import com.paypal.messages.io.ApiMessageData
 import com.paypal.messages.io.ApiResult
 import com.paypal.messages.io.OnActionCompleted
-import com.paypal.messages.logger.ComponentType
-import com.paypal.messages.logger.EventType
-import com.paypal.messages.logger.Logger
-import com.paypal.messages.logger.TrackingComponent
-import com.paypal.messages.logger.TrackingEvent
 import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
 import kotlinx.coroutines.CoroutineScope
@@ -473,7 +473,7 @@ class PayPalMessageView @JvmOverloads constructor(
 
 				// Log that we successfully rendered the message
 				logEvent(
-					TrackingEvent(
+					AnalyticsEvent(
 						eventType = EventType.MESSAGE_RENDER,
 						renderDuration = renderDuration.toString(),
 						requestDuration = requestDuration.toString(),
@@ -504,7 +504,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			onClick.invoke()
 			// Log Message Click
 			logEvent(
-				TrackingEvent(
+				AnalyticsEvent(
 					eventType = EventType.MESSAGE_CLICK,
 					pageViewLinkName = "banner_wrapper",
 					pageViewLinkSource = "message",
@@ -649,9 +649,9 @@ class PayPalMessageView @JvmOverloads constructor(
 		)
 	}
 
-	private fun logEvent(event: TrackingEvent) {
+	private fun logEvent(event: AnalyticsEvent) {
 		// Build component Information
-		val component = TrackingComponent(
+		val component = AnalyticsComponent(
 			offerType = this.offerType,
 			amount = this.amount.toString(),
 			pageType = this.pageType,
@@ -672,6 +672,6 @@ class PayPalMessageView @JvmOverloads constructor(
 			componentEvents = mutableListOf(event),
 		)
 
-		Logger.getInstance(clientId = clientID).log(context, component)
+		AnalyticsLogger.getInstance(clientId = clientID).log(context, component)
 	}
 }
