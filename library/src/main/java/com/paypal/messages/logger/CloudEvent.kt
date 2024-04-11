@@ -20,7 +20,7 @@ data class CloudEvent(
 	val data: TrackingPayload,
 ) {
 	init {
-		val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+		val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
 		val currentDate = Date()
 
 		val formattedDate = dateFormat.format(currentDate)

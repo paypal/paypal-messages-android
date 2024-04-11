@@ -214,10 +214,11 @@ object Api {
 			amount?.let { addQueryParameter("amount", amount.toString()) }
 			if (!buyerCountry.isNullOrBlank()) addQueryParameter("buyer_country", buyerCountry)
 			offer?.let { addQueryParameter("offer", it.name) }
-		}.build().toString()
+		}.build()
 
-		LogCat.debug(TAG, "createModalUrl: $url")
-		return url
+		val query = url.query?.replace("&", "\n  ")
+		LogCat.debug(TAG, "createModalUrl:\n  $url\n  $query")
+		return url.toString()
 	}
 
 	internal fun createLoggerRequest(json: String): Request {

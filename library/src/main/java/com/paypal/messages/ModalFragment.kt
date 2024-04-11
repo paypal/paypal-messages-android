@@ -355,8 +355,8 @@ internal class ModalFragment(
 		logEvent(
 			TrackingEvent(
 				eventType = EventType.MODAL_RENDER,
-				renderDuration,
-				requestDuration,
+				renderDuration = renderDuration.toString(),
+				requestDuration = requestDuration.toString(),
 			),
 		)
 	}

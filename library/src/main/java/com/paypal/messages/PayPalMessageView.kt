@@ -475,8 +475,8 @@ class PayPalMessageView @JvmOverloads constructor(
 				logEvent(
 					TrackingEvent(
 						eventType = EventType.MESSAGE_RENDER,
-						renderDuration,
-						requestDuration,
+						renderDuration = renderDuration.toString(),
+						requestDuration = requestDuration.toString(),
 					),
 				)
 			}
