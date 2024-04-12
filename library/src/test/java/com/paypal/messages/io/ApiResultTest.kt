@@ -22,7 +22,10 @@ class ApiResultTest {
 	fun testFailureToJson() {
 		val failure = ApiResult.Failure(PayPalErrors.InvalidResponseException("test_message", "test_debug_id"))
 
-		assertTrue(failure.error.message?.contains("test_message") ?: false)
+		assertTrue(
+			failure.error.message?.contains("test_message") ?: false,
+			"failure does not contain test_message",
+		)
 		assertEquals("test_debug_id", failure.error.debugId)
 	}
 

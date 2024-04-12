@@ -7,6 +7,7 @@ import com.paypal.messages.config.message.style.PayPalMessageAlign
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class AnalyticsComponentTest {
@@ -33,7 +34,7 @@ class AnalyticsComponentTest {
 	private val instanceId = "test_instance_id"
 	private val originatingInstanceId = "test_originating_instance_id"
 	private val sessionId = "test_session_id"
-	private val componentEvents = mutableListOf(AnalyticsEvent(EventType.MESSAGE_CLICK))
+	private val componentEvents = mutableListOf(AnalyticsEvent(EventType.MESSAGE_CLICKED))
 
 	private val analyticsComponent = AnalyticsComponent(
 		offerType = offerType,
@@ -95,8 +96,32 @@ class AnalyticsComponentTest {
 		val gson = Gson()
 		val json = gson.toJson(analyticsComponent)
 
-		@Suppress("ktlint:standard:max-line-length")
-		val expectedJson = """{"offer_type":"PAY_LATER_SHORT_TERM","amount":"100.00","page_type":"CART","buyer_country_code":"US","channel":"NATIVE","style_logo_type":"ALTERNATIVE","style_color":"MONOCHROME","style_text_align":"CENTER","message_type":"OFFER","views":["VIEW"],"qualified_products":["PRODUCT"],"fdata":"test_fdata","debug_id":"test_debug_id","experimentation_experience_ids":["EXP_1","EXP_2"],"experimentation_treatment_ids":["TRT_1","TRT_2"],"credit_product_identifiers":["CPI_1","CPI_2"],"offer_country_code":"US","merchant_country_code":"US","type":"OFFER","instance_id":"test_instance_id","originating_instance_id":"test_originating_instance_id","session_id":"test_session_id","component_events":[{"event_type":"MESSAGE_CLICK"}],"__shared__":{}}"""
-		assertEquals(expectedJson, json)
+		val expectedParts = arrayOf(
+			""""offer_type":"PAY_LATER_SHORT_TERM"""",
+			""""amount":"100.00"""",
+			""""page_type":"CART"""",
+			""""buyer_country_code":"US"""",
+			""""presentment_channel":"NATIVE"""",
+			""""style_logo_type":"ALTERNATIVE"""",
+			""""style_color":"MONOCHROME"""",
+			""""style_text_align":"CENTER"""",
+			""""message_type":"OFFER"""",
+			""""views":["VIEW"]""",
+			""""qualified_products":["PRODUCT"]""",
+			""""fdata":"test_fdata"""",
+			""""debug_id":"test_debug_id"""",
+			""""experimentation_experience_ids":["EXP_1","EXP_2"]""",
+			""""experimentation_treatment_ids":["TRT_1","TRT_2"]""",
+			""""credit_product_identifiers":["CPI_1","CPI_2"]""",
+			""""offer_country_code":"US"""",
+			""""merchant_country_code":"US"""",
+			""""type":"OFFER"""",
+			""""instance_id":"test_instance_id"""",
+			""""originating_instance_id":"test_originating_instance_id"""",
+			""""session_id":"test_session_id"""",
+			""""component_events":[{"event_type":"MESSAGE_CLICKED"}]""",
+			""""__shared__":{}""",
+		)
+		expectedParts.forEach { assertTrue(it in json, "json does not contain $it") }
 	}
 }

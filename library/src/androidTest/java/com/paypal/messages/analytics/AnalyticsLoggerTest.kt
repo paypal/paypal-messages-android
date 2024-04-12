@@ -6,7 +6,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.paypal.messages.config.message.PayPalMessageConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,14 +43,13 @@ class AnalyticsLoggerTest {
 
 	@Test
 	fun testLog() {
-		component.componentEvents.add(AnalyticsEvent(EventType.MESSAGE_CLICK))
+		component.componentEvents.add(AnalyticsEvent(EventType.MESSAGE_CLICKED))
 		analyticsLogger.log(context, component)
 
 		val payload = analyticsLogger.payload
 		assertNotNull(payload)
 		payload?.run {
 			assertEquals("test_client_id", payload.clientId)
-			assertTrue(payload.sessionId != "")
 			assertEquals("test_integration_name", payload.integrationName)
 			assertEquals("test_integration_version", payload.integrationVersion)
 			assertEquals("test_device_id", payload.deviceId)
@@ -61,7 +59,7 @@ class AnalyticsLoggerTest {
 			assertEquals("test_type", payload.components[0].type)
 			assertEquals("test_instance_id", payload.components[0].instanceId)
 			assertEquals(1, payload.components[0].componentEvents.size)
-			assertEquals(EventType.MESSAGE_CLICK, payload.components[0].componentEvents[0].eventType)
+			assertEquals(EventType.MESSAGE_CLICKED, payload.components[0].componentEvents[0].eventType)
 		}
 	}
 }

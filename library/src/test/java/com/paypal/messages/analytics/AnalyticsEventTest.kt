@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class AnalyticsEventTest {
-	private val eventType = EventType.MESSAGE_CLICK
+	private val eventType = EventType.MESSAGE_CLICKED
 	private val renderDuration = "100"
 	private val requestDuration = "200"
 	private val pageViewLinkName = "test_link_name"

@@ -123,7 +123,7 @@ class LocalStorageTest {
 		val deviceIdFirstRetrieval = localStorage.deviceId
 
 		assertNotNull(deviceIdFirstRetrieval)
-		assertTrue(deviceIdFirstRetrieval != "")
+		assertTrue("deviceIdFirstRetrieval not empty", deviceIdFirstRetrieval != "")
 
 		val deviceIdSecondRetrieval = localStorage.deviceId
 		assertEquals(deviceIdFirstRetrieval, deviceIdSecondRetrieval)

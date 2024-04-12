@@ -474,7 +474,7 @@ class PayPalMessageView @JvmOverloads constructor(
 				// Log that we successfully rendered the message
 				logEvent(
 					AnalyticsEvent(
-						eventType = EventType.MESSAGE_RENDER,
+						eventType = EventType.MESSAGE_RENDERED,
 						renderDuration = renderDuration.toString(),
 						requestDuration = requestDuration.toString(),
 					),
@@ -505,7 +505,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			// Log Message Click
 			logEvent(
 				AnalyticsEvent(
-					eventType = EventType.MESSAGE_CLICK,
+					eventType = EventType.MESSAGE_CLICKED,
 					pageViewLinkName = "banner_wrapper",
 					pageViewLinkSource = "message",
 				),

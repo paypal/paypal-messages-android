@@ -68,8 +68,14 @@ class PayPalMessageViewTest {
 		payPalMessageView.onActionCompleted(ApiResult.Success(response))
 
 		val messageTextView = payPalMessageView.findViewById<TextView>(R.id.content)
-		assertTrue(messageTextView.text.toString().contains(defaultMain))
-		assertTrue(messageTextView.text.toString().contains(defaultDisclaimer))
+		assertTrue(
+			"text does not contain defaultMain value: $defaultMain",
+			messageTextView.text.toString().contains(defaultMain),
+		)
+		assertTrue(
+			"text does not contain defaultDisclaimer value: $defaultDisclaimer",
+			messageTextView.text.toString().contains(defaultDisclaimer),
+		)
 	}
 
 	@Test
@@ -89,7 +95,10 @@ class PayPalMessageViewTest {
 		config.viewStateCallbacks = PayPalMessageViewStateCallbacks(onLoading = emptyFunction)
 		config.eventsCallbacks = PayPalMessageEventsCallbacks(onClick = emptyFunction)
 
-		assertTrue(payPalMessageView.getConfig().data.amount!!.equals(100.00))
+		assertTrue(
+			"amount does not equal 100.00",
+			payPalMessageView.getConfig().data.amount!!.equals(100.00),
+		)
 		assertFalse(payPalMessageView.getConfig().viewStateCallbacks?.onLoading == emptyFunction)
 		assertFalse(payPalMessageView.getConfig().eventsCallbacks?.onClick == emptyFunction)
 	}

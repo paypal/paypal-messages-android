@@ -32,35 +32,35 @@ class GsonTest {
 	fun testJsonValueToAnyWithNumber() {
 		val parsedJson = JsonParser.parseString("1")
 		val number = Gson::class.jsonValueToAny(parsedJson)
-		assertTrue(number is Number)
+		assertTrue(number is Number, "number is not Number")
 	}
 
 	@Test
 	fun testJsonValueToAnyWithBoolean() {
 		val parsedJson = JsonParser.parseString("true")
 		val boolean = Gson::class.jsonValueToAny(parsedJson)
-		assertTrue(boolean is Boolean)
+		assertTrue(boolean is Boolean, "boolean is not Boolean")
 	}
 
 	@Test
 	fun testJsonValueToAnyWithString() {
 		val parsedJson = JsonParser.parseString("string")
 		val string = Gson::class.jsonValueToAny(parsedJson)
-		assertTrue(string is String)
+		assertTrue(string is String, "string is not String")
 	}
 
 	@Test
 	fun testJsonValueToAnyWithArray() {
 		val parsedJson = JsonParser.parseString("[1]")
 		val array = Gson::class.jsonValueToAny(parsedJson)
-		assertTrue(array is JsonArray)
+		assertTrue(array is JsonArray, "array is not JsonArray")
 	}
 
 	@Test
 	fun testJsonValueToAnyWithObject() {
 		val parsedJson = JsonParser.parseString("{}")
 		val map = Gson::class.jsonValueToAny(parsedJson)
-		assertTrue(map is MutableMap<*, *>)
+		assertTrue(map is MutableMap<*, *>, "map is not MutableMap<*, *>")
 	}
 
 	@Test

@@ -119,7 +119,7 @@ internal class ModalFragment(
 		closeButton.background.colorFilter = PorterDuffColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP)
 
 		closeButton?.setOnClickListener {
-			logEvent(AnalyticsEvent(eventType = EventType.MODAL_CLOSE))
+			logEvent(AnalyticsEvent(eventType = EventType.MODAL_CLOSED))
 			dialog?.hide()
 		}
 
@@ -325,7 +325,7 @@ internal class ModalFragment(
 
 	// This function is called when the modal is usually already instantiated
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-		logEvent(AnalyticsEvent(eventType = EventType.MODAL_OPEN))
+		logEvent(AnalyticsEvent(eventType = EventType.MODAL_OPENED))
 		this.onLoading()
 		val url = Api.createModalUrl(clientId, amount, buyerCountry, offerType)
 
@@ -354,7 +354,7 @@ internal class ModalFragment(
 
 		logEvent(
 			AnalyticsEvent(
-				eventType = EventType.MODAL_RENDER,
+				eventType = EventType.MODAL_RENDERED,
 				renderDuration = renderDuration.toString(),
 				requestDuration = requestDuration.toString(),
 			),
@@ -388,7 +388,7 @@ internal class ModalFragment(
 				}
 				logEvent(
 					AnalyticsEvent(
-						eventType = EventType.MODAL_CLICK,
+						eventType = EventType.MODAL_CLICKED,
 						pageViewLinkSource = pageViewLinkSource,
 						pageViewLinkName = pageViewLinkName,
 					),
@@ -401,7 +401,7 @@ internal class ModalFragment(
 				this.onCalculate()
 				logEvent(
 					AnalyticsEvent(
-						eventType = EventType.MODAL_CLICK,
+						eventType = EventType.MODAL_CLICKED,
 						data = "$calculatorAmount",
 					),
 					shared,

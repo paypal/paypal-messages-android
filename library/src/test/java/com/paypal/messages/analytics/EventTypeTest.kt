@@ -6,32 +6,32 @@ import org.junit.jupiter.api.Test
 class EventTypeTest {
 	@Test
 	fun testMessageRender() {
-		assertEquals(EventType.MESSAGE_RENDER.toString(), "MESSAGE_RENDER")
+		assertEquals(EventType.MESSAGE_RENDERED.toString(), "MESSAGE_RENDER")
 	}
 
 	@Test
 	fun testMessageClick() {
-		assertEquals(EventType.MESSAGE_CLICK.toString(), "MESSAGE_CLICK")
+		assertEquals(EventType.MESSAGE_CLICKED.toString(), "MESSAGE_CLICK")
 	}
 
 	@Test
 	fun testModalRender() {
-		assertEquals(EventType.MODAL_RENDER.toString(), "MODAL_RENDER")
+		assertEquals(EventType.MODAL_RENDERED.toString(), "MODAL_RENDER")
 	}
 
 	@Test
 	fun testModalClick() {
-		assertEquals(EventType.MODAL_CLICK.toString(), "MODAL_CLICK")
+		assertEquals(EventType.MODAL_CLICKED.toString(), "MODAL_CLICK")
 	}
 
 	@Test
 	fun testModalOpen() {
-		assertEquals(EventType.MODAL_OPEN.toString(), "MODAL_OPEN")
+		assertEquals(EventType.MODAL_OPENED.toString(), "MODAL_OPEN")
 	}
 
 	@Test
 	fun testModalClose() {
-		assertEquals(EventType.MODAL_CLOSE.toString(), "MODAL_CLOSE")
+		assertEquals(EventType.MODAL_CLOSED.toString(), "MODAL_CLOSE")
 	}
 
 	@Test
