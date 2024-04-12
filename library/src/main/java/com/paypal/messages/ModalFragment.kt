@@ -325,7 +325,7 @@ internal class ModalFragment(
 
 	// This function is called when the modal is usually already instantiated
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-		logEvent(AnalyticsEvent(eventType = EventType.MODAL_OPENED))
+		logEvent(AnalyticsEvent(eventType = EventType.MODAL_VIEWED))
 		this.onLoading()
 		val url = Api.createModalUrl(clientId, amount, buyerCountry, offerType)
 

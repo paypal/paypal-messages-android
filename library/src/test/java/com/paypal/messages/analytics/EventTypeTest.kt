@@ -26,7 +26,7 @@ class EventTypeTest {
 
 	@Test
 	fun testModalOpen() {
-		assertEquals(EventType.MODAL_OPENED.toString(), "modal_opened")
+		assertEquals(EventType.MODAL_VIEWED.toString(), "modal_opened")
 	}
 
 	@Test
