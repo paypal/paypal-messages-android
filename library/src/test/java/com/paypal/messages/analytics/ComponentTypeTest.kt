@@ -6,11 +6,11 @@ import org.junit.jupiter.api.Test
 class ComponentTypeTest {
 	@Test
 	fun testModal() {
-		assertEquals(ComponentType.MODAL.toString(), "MODAL")
+		assertEquals(ComponentType.MODAL.toString(), "modal")
 	}
 
 	@Test
 	fun testMessage() {
-		assertEquals(ComponentType.MESSAGE.toString(), "MESSAGE")
+		assertEquals(ComponentType.MESSAGE.toString(), "message")
 	}
 }
