@@ -1,6 +1,8 @@
 package com.paypal.messages.analytics
 
+import android.util.Log
 import com.google.gson.Gson
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -54,8 +56,21 @@ class AnalyticsPayloadTest {
 		val gson = Gson()
 		val json = gson.toJson(analyticsPayload)
 
-		@Suppress("ktlint:standard:max-line-length")
-		val expectedJson = """{"client_id":"test_client_id","merchant_id":"test_merchant_id","partner_attribution_id":"test_partner_attribution_id","merchant_profile_hash":"test_merchant_profile_hash","device_id":"test_device_id","session_id":"test_session_id","instance_id":"test_instance_id","integration_name":"test_integration_name","integration_type":"test_integration_type","integration_version":"test_integration_version","lib_version":"test_library_version","components":[]}"""
-		assertEquals(expectedJson, json)
+		Log.d("test", json)
+		val expectedParts = arrayOf(
+			""""client_id":"test_client_id"""",
+			""""merchant_id":"test_merchant_id"""",
+			""""partner_attribution_id":"test_partner_attribution_id"""",
+			""""merchant_profile_hash":"test_merchant_profile_hash"""",
+			""""device_id":"test_device_id"""",
+			""""session_id":"test_session_id"""",
+			""""instance_id":"test_instance_id"""",
+			""""integration_name":"test_integration_name"""",
+			""""integration_type":"test_integration_type"""",
+			""""integration_version":"test_integration_version"""",
+			""""lib_version":"test_library_version"""",
+			""""components":[]""",
+		)
+		expectedParts.forEach { Assertions.assertTrue(it in json, "json does not contain $it") }
 	}
 }

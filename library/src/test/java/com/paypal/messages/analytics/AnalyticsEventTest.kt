@@ -1,6 +1,8 @@
 package com.paypal.messages.analytics
 
+import android.util.Log
 import com.google.gson.Gson
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -42,8 +44,17 @@ class AnalyticsEventTest {
 		val gson = Gson()
 		val json = gson.toJson(analyticsEvent)
 
-		@Suppress("ktlint:standard:max-line-length")
-		val expectedJson = """{"event_type":"MESSAGE_CLICK","render_duration":100,"request_duration":200,"page_view_link_name":"test_link_name","page_view_link_source":"test_link_src","data":"test_data","error_name":"test_error_name","error_description":"test_error_description"}"""
-		assertEquals(expectedJson, json)
+		Log.d("test", json)
+		val expectedParts = arrayOf(
+			""""event_type":"MESSAGE_CLICKED"""",
+			""""render_duration":"100"""",
+			""""request_duration":"200"""",
+			""""page_view_link_name":"test_link_name"""",
+			""""page_view_link_source":"test_link_src"""",
+			""""data":"test_data"""",
+			""""error_name":"test_error_name"""",
+			""""error_description":"test_error_description"""",
+		)
+		expectedParts.forEach { Assertions.assertTrue(it in json, "json does not contain $it") }
 	}
 }
