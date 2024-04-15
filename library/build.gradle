@@ -105,6 +105,8 @@ koverReport {
 					'*KoverExcludeGenerated'
 				)
 				classes(
+					// AnalyticsLogger,
+					'com.paypal.messages.logger.AnalyticsLogger*',
 					// config
 					'com.paypal.messages.config.message.PayPalMessageEventsCallbacks\$*',
 					'com.paypal.messages.config.message.PayPalMessageViewStateCallbacks\$*',
@@ -116,8 +118,6 @@ koverReport {
 					'com.paypal.messages.io.Api\$*',
 					'com.paypal.messages.io.LocalStorage*',
 					'com.paypal.messages.io.OnActionCompleted',
-					// logger,
-					'com.paypal.messages.logger.Logger*',
 					// utils
 					'com.paypal.messages.utils.LogCat*',
 					// UI Stuff

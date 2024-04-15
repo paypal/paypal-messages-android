@@ -1,6 +1,5 @@
 package com.paypal.messages.analytics
 
-import android.util.Log
 import com.google.gson.Gson
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -44,7 +43,6 @@ class AnalyticsEventTest {
 		val gson = Gson()
 		val json = gson.toJson(analyticsEvent)
 
-		Log.d("test", json)
 		val expectedParts = arrayOf(
 			""""event_type":"MESSAGE_CLICKED"""",
 			""""render_duration":"100"""",
