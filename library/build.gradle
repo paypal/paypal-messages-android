@@ -106,7 +106,7 @@ koverReport {
 				)
 				classes(
 					// AnalyticsLogger,
-					'com.paypal.messages.logger.AnalyticsLogger*',
+					'com.paypal.messages.analytics.AnalyticsLogger*',
 					// config
 					'com.paypal.messages.config.message.PayPalMessageEventsCallbacks\$*',
 					'com.paypal.messages.config.message.PayPalMessageViewStateCallbacks\$*',

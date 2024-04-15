@@ -99,7 +99,13 @@ class PayPalMessageViewTest {
 			"amount does not equal 100.00",
 			payPalMessageView.getConfig().data.amount!!.equals(100.00),
 		)
-		assertFalse(payPalMessageView.getConfig().viewStateCallbacks?.onLoading == emptyFunction)
-		assertFalse(payPalMessageView.getConfig().eventsCallbacks?.onClick == emptyFunction)
+		assertFalse(
+			"viewStateCallbacks.onClick was not an empty function",
+			payPalMessageView.getConfig().viewStateCallbacks?.onLoading == emptyFunction,
+		)
+		assertFalse(
+			"eventsCallbacks.onClick was not an empty function",
+			payPalMessageView.getConfig().eventsCallbacks?.onClick == emptyFunction,
+		)
 	}
 }

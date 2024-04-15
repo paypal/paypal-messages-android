@@ -17,7 +17,7 @@ class AnalyticsLogger private constructor() {
 	private val uuidSessionId = UUID.randomUUID().toString()
 
 	companion object {
-		private const val TAG: String = "Logger"
+		private const val TAG: String = "AnalyticsLogger"
 
 		@Volatile
 		private var instance: AnalyticsLogger? = null
