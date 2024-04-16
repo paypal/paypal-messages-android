@@ -1,5 +1,6 @@
 package com.paypal.messages.config
 
+import com.paypal.messages.analytics.GlobalAnalytics
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

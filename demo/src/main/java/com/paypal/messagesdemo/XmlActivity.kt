@@ -190,7 +190,7 @@ class XmlActivity : AppCompatActivity() {
 		binding = ActivityMessageBinding.inflate(layoutInflater)
 		setContentView(binding.root)
 
-		PayPalMessageConfig.setGlobalAnalytics()
+		PayPalMessageConfig.setGlobalAnalytics("", "")
 		val config = PayPalMessageConfig(data = PayPalMessageData(clientID = "someClientID"))
 		val message = PayPalMessageView(context = this, config = config)
 		message.getConfig()
