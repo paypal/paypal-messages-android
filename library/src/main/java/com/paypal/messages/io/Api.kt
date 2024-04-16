@@ -170,7 +170,10 @@ object Api {
 				return ApiResult.getFailureWithDebugId(response.headers)
 			}
 
-			LogCat.debug(TAG, "callMessageHashEndpoint response: $bodyJson")
+			LogCat.debug(
+				TAG,
+				"callMessageHashEndpoint response: ${bodyJson?.let { JSONObject(it).toString(2) }}}",
+			)
 
 			val hashResponse = gson.fromJson(bodyJson, ApiHashData.Response::class.java)
 			return ApiResult.Success(hashResponse)
@@ -221,12 +224,14 @@ object Api {
 	}
 
 	internal fun createLoggerRequest(json: String): Request {
+		LogCat.debug(TAG, "json after removal: ${JSONObject(json).toString(2)}")
 		val request = Request.Builder().apply {
 			url(env.url(Env.Endpoints.LOGGER))
 			post(json.toRequestBody("application/json".toMediaType()))
 		}.build()
 
-		val jsonNoFdata = json.replace(""""fdata":".*?"""".toRegex(), "")
+		val jsonNoFdata = JSONObject(json).toString(2)
+			.replace(""""fdata":.*?",""".toRegex(), "")
 		LogCat.debug(TAG, "createLoggerRequest: $request\npayloadJson: $jsonNoFdata")
 		return request
 	}
