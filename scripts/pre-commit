@@ -12,18 +12,14 @@ if [[ "$stagedFilesCount" -eq "0" ]]; then
 fi
 
 echo "Found $stagedFilesCount staged files."
-echo git diff --staged --name-only | grep -E '(library|demo)'
+git diff --staged --name-only | grep -E '(library|demo)'
 echo ""
 echo "Running ktFormat to fix any auto-fixable issues"
 
-git stash --keep-index --quiet
-
 ./gradlew ktFormat
 
-git add library/
-git add demo/
-
-git stash pop --quiet
+# Only re-add staged files that are in library/ or demo/ folders
+git diff --staged --name-only | grep -E '(library|demo)' | xargs git add
 
 echo "***********************************************"
 echo "Added changed files to commit"
