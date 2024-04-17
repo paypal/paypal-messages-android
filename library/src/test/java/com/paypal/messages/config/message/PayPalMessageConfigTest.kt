@@ -50,7 +50,7 @@ class PayPalMessageConfigTest {
 	// It is also required for full test coverage as calculated by kover
 	@Test
 	fun testSetGlobalAnalyticsWithNoValues() {
-		PayPalMessageConfig.setGlobalAnalytics()
+		PayPalMessageConfig.setGlobalAnalytics("", "")
 
 		assertEquals("", GlobalAnalytics.integrationName)
 		assertEquals("", GlobalAnalytics.integrationVersion)
