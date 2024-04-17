@@ -33,7 +33,6 @@ class AnalyticsComponentTest {
 	private val type = "OFFER"
 	private val instanceId = "test_instance_id"
 	private val originatingInstanceId = "test_originating_instance_id"
-	private val sessionId = "test_session_id"
 	private val componentEvents = mutableListOf(AnalyticsEvent(EventType.MESSAGE_CLICKED))
 
 	private val analyticsComponent = AnalyticsComponent(
@@ -59,7 +58,6 @@ class AnalyticsComponentTest {
 		type = type,
 		instanceId = instanceId,
 		originatingInstanceId = originatingInstanceId,
-		sessionId = sessionId,
 		componentEvents = componentEvents,
 	)
 
@@ -87,7 +85,6 @@ class AnalyticsComponentTest {
 		assertEquals(type, analyticsComponent.type)
 		assertEquals(instanceId, analyticsComponent.instanceId)
 		assertEquals(originatingInstanceId, analyticsComponent.originatingInstanceId)
-		assertEquals(sessionId, analyticsComponent.sessionId)
 		assertEquals(componentEvents, analyticsComponent.componentEvents)
 	}
 
@@ -118,7 +115,6 @@ class AnalyticsComponentTest {
 			""""type":"OFFER"""",
 			""""instance_id":"test_instance_id"""",
 			""""originating_instance_id":"test_originating_instance_id"""",
-			""""session_id":"test_session_id"""",
 			""""component_events":[{"event_type":"MESSAGE_CLICKED"}]""",
 			""""__shared__":{}""",
 		)

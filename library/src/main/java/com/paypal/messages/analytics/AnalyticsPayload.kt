@@ -16,10 +16,6 @@ data class AnalyticsPayload(
 	var merchantProfileHash: String? = null,
 
 	// Global Details
-	@SerializedName("device_id")
-	var deviceId: String,
-	@SerializedName("session_id")
-	var sessionId: String,
 	@SerializedName("instance_id")
 	val instanceId: String = UUID.randomUUID().toString(),
 	@SerializedName("integration_name")

@@ -30,20 +30,14 @@ class PayPalMessageConfigTest {
 	fun testSetGlobalAnalytics() {
 		val name = "integration_name"
 		val version = "integration_version"
-		val deviceId = "device_id"
-		val sessionId = "session_id"
 
 		assertEquals("", GlobalAnalytics.integrationName)
 		assertEquals("", GlobalAnalytics.integrationVersion)
-		assertEquals("", GlobalAnalytics.deviceId)
-		assertEquals("", GlobalAnalytics.sessionId)
 
-		PayPalMessageConfig.setGlobalAnalytics(name, version, deviceId, sessionId)
+		PayPalMessageConfig.setGlobalAnalytics(name, version)
 
 		assertEquals(name, GlobalAnalytics.integrationName)
 		assertEquals(version, GlobalAnalytics.integrationVersion)
-		assertEquals(deviceId, GlobalAnalytics.deviceId)
-		assertEquals(sessionId, GlobalAnalytics.sessionId)
 	}
 
 	// This tests if PayPalMessageConfig sets GlobalAnalytics to empty strings when used
@@ -54,8 +48,6 @@ class PayPalMessageConfigTest {
 
 		assertEquals("", GlobalAnalytics.integrationName)
 		assertEquals("", GlobalAnalytics.integrationVersion)
-		assertEquals("", GlobalAnalytics.deviceId)
-		assertEquals("", GlobalAnalytics.sessionId)
 	}
 
 	@Test

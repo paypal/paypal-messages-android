@@ -8,7 +8,5 @@ class GlobalAnalyticsTest {
 	fun testGlobalAnalyticsUnset() {
 		assertEquals("", GlobalAnalytics.integrationName)
 		assertEquals("", GlobalAnalytics.integrationVersion)
-		assertEquals("", GlobalAnalytics.deviceId)
-		assertEquals("", GlobalAnalytics.sessionId)
 	}
 }

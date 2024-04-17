@@ -89,7 +89,6 @@ class ApiTest {
 
 	@Test
 	fun testCreateMessageDataRequestWithAllData() {
-		Api.sessionId = UUID.randomUUID()
 		val config = MessageConfig(
 			data = PayPalMessageData(
 				clientID = "test_client_id",
@@ -111,7 +110,6 @@ class ApiTest {
 		val expectedQueryParts = arrayOf(
 			"client_id=test_client_id",
 			"instance_id",
-			"session_id",
 			"amount=1.0",
 			"buyer_country=US",
 			"offer=PAY_LATER_PAY_IN_1",
@@ -383,7 +381,6 @@ class ApiTest {
 						"type":"MESSAGE"
 					}
 				],
-				"device_id":"android_id",
 				"integration_type":"NATIVE_ANDROID",
 				"integration_name": "",
 				"integration_version": ""
