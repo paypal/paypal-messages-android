@@ -25,8 +25,6 @@ class AnalyticsLoggerTest {
 		PayPalMessageConfig.setGlobalAnalytics(
 			"test_integration_name",
 			"test_integration_version",
-			"test_device_id",
-			"test_session_id",
 		)
 		analyticsLogger = AnalyticsLogger.getInstance("test_client_id")
 		component = AnalyticsComponent(
@@ -52,8 +50,6 @@ class AnalyticsLoggerTest {
 			assertEquals("test_client_id", payload.clientId)
 			assertEquals("test_integration_name", payload.integrationName)
 			assertEquals("test_integration_version", payload.integrationVersion)
-			assertEquals("test_device_id", payload.deviceId)
-			assertEquals("test_session_id", payload.sessionId)
 
 			assertEquals(1, payload.components.size)
 			assertEquals("test_type", payload.components[0].type)

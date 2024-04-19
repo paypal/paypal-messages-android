@@ -21,13 +21,9 @@ data class PayPalMessageConfig(
 		fun setGlobalAnalytics(
 			integrationName: String,
 			integrationVersion: String,
-			deviceId: String = "",
-			sessionId: String = "",
 		) {
 			GlobalAnalytics.integrationName = integrationName
 			GlobalAnalytics.integrationVersion = integrationVersion
-			GlobalAnalytics.deviceId = deviceId
-			GlobalAnalytics.sessionId = sessionId
 		}
 	}
 }

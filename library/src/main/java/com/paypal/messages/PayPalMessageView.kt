@@ -280,7 +280,6 @@ class PayPalMessageView @JvmOverloads constructor(
 			updateFromAttributes(typedArray)
 		}
 		if (config.data.clientID === "") LogCat.error(TAG, "ClientID is an empty string")
-		Api.sessionId = UUID.randomUUID()
 		updateMessageContent()
 	}
 
@@ -661,7 +660,6 @@ class PayPalMessageView @JvmOverloads constructor(
 			type = ComponentType.MESSAGE.toString(),
 			instanceId = this.instanceId.toString(),
 			originatingInstanceId = Api.originatingInstanceId.toString(),
-			sessionId = Api.sessionId.toString(),
 			componentEvents = mutableListOf(event),
 		)
 

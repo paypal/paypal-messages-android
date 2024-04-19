@@ -1,8 +1,8 @@
 package com.paypal.messages.analytics
 
 import com.google.gson.Gson
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class AnalyticsEventTest {
@@ -53,6 +53,7 @@ class AnalyticsEventTest {
 			""""error_name":"test_error_name"""",
 			""""error_description":"test_error_description"""",
 		)
-		expectedParts.forEach { Assertions.assertTrue(it in json, "json does not contain $it") }
+
+		expectedParts.forEach { assertTrue(it in json, "json does not contain $it") }
 	}
 }

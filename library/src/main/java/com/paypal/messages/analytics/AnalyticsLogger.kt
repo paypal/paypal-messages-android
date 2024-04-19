@@ -10,11 +10,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 class AnalyticsLogger private constructor() {
-	private val uuidSessionId = UUID.randomUUID().toString()
-
 	companion object {
 		private const val TAG: String = "AnalyticsLogger"
 
@@ -45,15 +42,12 @@ class AnalyticsLogger private constructor() {
 
 	private fun resetBasePayload(isInit: Boolean = false) {
 		LogCat.debug(TAG, if (isInit) "initBasePayload" else "resetBasePayload")
-		val sessionId = GlobalAnalytics.sessionId
 		this.payload = AnalyticsPayload(
 			clientId = clientId,
 			merchantId = null,
 			partnerAttributionId = null,
-			// merchantProfileHash and deviceId will be later defined by pulling from LocalStorage
+			// merchantProfileHash will be later defined by pulling from LocalStorage
 			merchantProfileHash = null,
-			deviceId = "",
-			sessionId = if (sessionId == "") uuidSessionId else sessionId,
 			integrationName = GlobalAnalytics.integrationName,
 			integrationVersion = GlobalAnalytics.integrationVersion,
 			components = mutableListOf(),
@@ -99,7 +93,6 @@ class AnalyticsLogger private constructor() {
 
 			val localStorage = LocalStorage(context)
 			merchantProfileHash = localStorage.merchantHash
-			deviceId = if (GlobalAnalytics.deviceId == "") localStorage.deviceId else GlobalAnalytics.deviceId
 			sendEvent(context, this)
 		}
 	}

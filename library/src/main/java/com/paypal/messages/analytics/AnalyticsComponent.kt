@@ -59,8 +59,6 @@ data class AnalyticsComponent(
 	val instanceId: String? = null,
 	@SerializedName("originating_instance_id")
 	val originatingInstanceId: String? = null,
-	@SerializedName("session_id")
-	val sessionId: String? = null,
 	@SerializedName("component_events")
 	val componentEvents: MutableList<AnalyticsEvent>,
 

@@ -32,7 +32,6 @@ object Api {
 	var ignoreCache: Boolean = false
 	var stageTag: String? = null
 	var originatingInstanceId: UUID? = null
-	var sessionId: UUID? = null
 	var ioDispatcher = Dispatchers.IO
 
 	private fun HttpUrl.Builder.setMessageDataQuery(
@@ -44,7 +43,6 @@ object Api {
 		if (devTouchpoint) addQueryParameter("dev_touchpoint", "true")
 		if (ignoreCache) addQueryParameter("ignore_cache", "true")
 		addQueryParameter("instance_id", instanceId.toString())
-		sessionId?.let { addQueryParameter("session_id", it.toString()) }
 
 		if (!stageTag.isNullOrBlank()) { addQueryParameter("stage_tag", stageTag) }
 
@@ -224,7 +222,6 @@ object Api {
 	}
 
 	internal fun createLoggerRequest(json: String): Request {
-		LogCat.debug(TAG, "json after removal: ${JSONObject(json).toString(2)}")
 		val request = Request.Builder().apply {
 			url(env.url(Env.Endpoints.LOGGER))
 			post(json.toRequestBody("application/json".toMediaType()))
