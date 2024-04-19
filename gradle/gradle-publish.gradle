@@ -42,9 +42,9 @@ afterEvaluate {
 			}
 		}
 		repositories {
-		    maven {
-		        url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-		    }
+			maven {
+				url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+			}
 		}
 	}
 
