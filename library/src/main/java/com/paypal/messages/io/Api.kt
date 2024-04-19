@@ -222,7 +222,6 @@ object Api {
 	}
 
 	internal fun createLoggerRequest(json: String): Request {
-		LogCat.debug(TAG, "json after removal: ${JSONObject(json).toString(2)}")
 		val request = Request.Builder().apply {
 			url(env.url(Env.Endpoints.LOGGER))
 			post(json.toRequestBody("application/json".toMediaType()))

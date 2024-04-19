@@ -53,6 +53,7 @@ class AnalyticsEventTest {
 			""""error_name":"test_error_name"""",
 			""""error_description":"test_error_description"""",
 		)
+
 		expectedParts.forEach { assertTrue(it in json, "json does not contain $it") }
 	}
 }

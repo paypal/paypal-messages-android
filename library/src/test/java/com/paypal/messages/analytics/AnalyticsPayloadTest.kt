@@ -61,6 +61,7 @@ class AnalyticsPayloadTest {
 			""""lib_version":"test_library_version"""",
 			""""components":[]""",
 		)
+
 		expectedParts.forEach { Assertions.assertTrue(it in json, "json does not contain $it") }
 	}
 }
