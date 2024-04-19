@@ -67,7 +67,6 @@ class PayPalMessageView @JvmOverloads constructor(
 ) : FrameLayout(context, attributeSet, defStyleAttr), OnActionCompleted {
 	private val TAG = "PayPalMessage"
 	private var messageTextView: TextView
-	private var updateInProgress = false
 	private var instanceId = UUID.randomUUID()
 
 	fun getConfig(): MessageConfig {
@@ -441,23 +440,18 @@ class PayPalMessageView @JvmOverloads constructor(
 	 * This function updates message content uses [Api.getMessageWithHash] to fetch the data.
 	 */
 	private fun updateMessageContent() {
-		LogCat.debug(TAG, "updateMessageContent config: ${getConfig()}")
-		if (!updateInProgress) {
-			// Call OnLoading callback and prepare view for the process
-			onLoading.invoke()
-			messageTextView.visibility = View.GONE
-			updateInProgress = true
-			LogCat.debug(TAG, "Firing request to get message")
+		// Call OnLoading callback and prepare view for the process
+		onLoading.invoke()
+		LogCat.debug(TAG, "Firing request to get message with config: ${getConfig()}")
 
-			requestDuration = measureTimeMillis {
-				Api.getMessageWithHash(
-					context,
-					getConfig(),
-					this.instanceId,
-					this,
-				)
-			}.toInt()
-		}
+		requestDuration = measureTimeMillis {
+			Api.getMessageWithHash(
+				context,
+				getConfig(),
+				this.instanceId,
+				this,
+			)
+		}.toInt()
 	}
 
 	override fun onActionCompleted(result: ApiResult) {
@@ -487,7 +481,6 @@ class PayPalMessageView @JvmOverloads constructor(
 				result.error?.let { this.onError(it) }
 			}
 		}
-		updateInProgress = false
 	}
 
 	/**

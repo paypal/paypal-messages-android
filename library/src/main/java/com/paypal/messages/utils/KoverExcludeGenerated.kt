@@ -1,4 +1,4 @@
-package com.paypal.messages.config.message
+package com.paypal.messages.utils
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(

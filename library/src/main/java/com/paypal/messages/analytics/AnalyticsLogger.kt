@@ -1,7 +1,6 @@
 package com.paypal.messages.analytics
 
 import android.content.Context
-import com.paypal.messages.config.GlobalAnalytics
 import com.paypal.messages.io.Api
 import com.paypal.messages.io.LocalStorage
 import com.paypal.messages.utils.LogCat

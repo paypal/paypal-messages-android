@@ -1,4 +1,4 @@
-package com.paypal.messages.config
+package com.paypal.messages.analytics
 
 object GlobalAnalytics {
 	var integrationName: String = ""

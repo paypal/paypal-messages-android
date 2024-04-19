@@ -1,6 +1,6 @@
 package com.paypal.messages.config.message
 
-import com.paypal.messages.config.GlobalAnalytics
+import com.paypal.messages.analytics.GlobalAnalytics
 
 /**
  * [PayPalMessageConfig] is the main configuration model for interacting with the PayPalMessage component
@@ -19,8 +19,8 @@ data class PayPalMessageConfig(
 
 	companion object {
 		fun setGlobalAnalytics(
-			integrationName: String = "",
-			integrationVersion: String = "",
+			integrationName: String,
+			integrationVersion: String,
 			deviceId: String = "",
 			sessionId: String = "",
 		) {
