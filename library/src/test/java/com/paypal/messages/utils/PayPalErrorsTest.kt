@@ -27,6 +27,7 @@ class PayPalErrorsTest {
 
 		assertTrue(
 			exception.message?.contains("Failed to get Message Data: test_message") ?: false,
+			"FailedToFetchDataException with ID does not contain expected message",
 		)
 		assertEquals("test_id", exception.debugId)
 
@@ -34,6 +35,7 @@ class PayPalErrorsTest {
 
 		assertTrue(
 			exceptionNoId.message?.contains("Failed to get Message Data: test_message") ?: false,
+			"FailedToFetchDataException with no ID does not contain expected message",
 		)
 		assertEquals(null, exceptionNoId.debugId)
 	}
@@ -47,6 +49,7 @@ class PayPalErrorsTest {
 				"Attempted to create a enum_name with an invalid index. " +
 					"Please use an index that is between 0 and 9 and try again.",
 			) ?: false,
+			"IllegalEnumArgException does not contain expected message",
 		)
 		assertEquals(null, exception.debugId)
 	}
@@ -55,12 +58,18 @@ class PayPalErrorsTest {
 	fun testInvalidClientIdException() {
 		val exception = PayPalErrors.InvalidClientIdException("test_message", "test_id")
 
-		assertTrue(exception.message?.contains("Invalid ClientID: test_message") ?: false)
+		assertTrue(
+			exception.message?.contains("Invalid ClientID: test_message") ?: false,
+			"InvalidClientIdException with ID does not contain expected message",
+		)
 		assertEquals("test_id", exception.debugId)
 
 		val exceptionNoId = PayPalErrors.InvalidClientIdException("test_message")
 
-		assertTrue(exceptionNoId.message?.contains("Invalid ClientID: test_message") ?: false)
+		assertTrue(
+			exceptionNoId.message?.contains("Invalid ClientID: test_message") ?: false,
+			"InvalidClientIdException with no ID does not contain expected message",
+		)
 		assertEquals(null, exceptionNoId.debugId)
 	}
 
@@ -68,12 +77,18 @@ class PayPalErrorsTest {
 	fun testInvalidResponseException() {
 		val exception = PayPalErrors.InvalidResponseException("test_message", "test_id")
 
-		assertTrue(exception.message?.contains("Invalid Response: test_message") ?: false)
+		assertTrue(
+			exception.message?.contains("Invalid Response: test_message") ?: false,
+			"InvalidResponseException with ID does not contain expected message",
+		)
 		assertEquals("test_id", exception.debugId)
 
 		val exceptionNoId = PayPalErrors.InvalidResponseException("test_message")
 
-		assertTrue(exceptionNoId.message?.contains("Invalid Response: test_message") ?: false)
+		assertTrue(
+			exceptionNoId.message?.contains("Invalid Response: test_message") ?: false,
+			"InvalidResponseException with no ID does not contain expected message",
+		)
 		assertEquals(null, exceptionNoId.debugId)
 	}
 
@@ -81,12 +96,18 @@ class PayPalErrorsTest {
 	fun testModalFailedToLoadException() {
 		val exception = PayPalErrors.ModalFailedToLoad("test_message", "test_id")
 
-		assertTrue(exception.message?.contains("Modal failed to open: test_message") ?: false)
+		assertTrue(
+			exception.message?.contains("Modal failed to open: test_message") ?: false,
+			"ModalFailedToLoadException with ID does not contain expected message",
+		)
 		assertEquals("test_id", exception.debugId)
 
 		val exceptionNoId = PayPalErrors.ModalFailedToLoad("test_message")
 
-		assertTrue(exceptionNoId.message?.contains("Modal failed to open: test_message") ?: false)
+		assertTrue(
+			exceptionNoId.message?.contains("Modal failed to open: test_message") ?: false,
+			"ModalFailedToLoadException with no ID does not contain expected message",
+		)
 		assertEquals(null, exceptionNoId.debugId)
 	}
 }

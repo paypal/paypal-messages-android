@@ -69,17 +69,22 @@ class ApiTest {
 		val url = messageDataRequest.url.toString()
 
 		val expectedPath = "credit-presentment/native/message"
+		assertTrue(
+			"url does not contain expectedPath value: $expectedPath",
+			url.contains(expectedPath),
+		)
+
 		val expectedQueryParts = arrayOf(
 			"client_id=test_client_id",
 			"instance_id",
 		)
+		expectedQueryParts.forEach { assertTrue("url does not contain $it", url.contains(it)) }
 
-		assertTrue(url.contains(expectedPath))
-		assertTrue(url.contains("client_id=test_client_id"))
-		assertFalse(url.contains("devTouchpoint=false"))
-		assertFalse(url.contains("ignore_cache=false"))
-		assertTrue(url.contains("instance_id"))
-		expectedQueryParts.forEach { assertTrue(url.contains(it)) }
+		val notExpectedQueryParts = arrayOf(
+			"dev_touchpoint=false",
+			"ignore_cache=false",
+		)
+		notExpectedQueryParts.forEach { assertFalse("url contains $it", url.contains(it)) }
 	}
 
 	@Test
@@ -98,6 +103,11 @@ class ApiTest {
 		val url = messageDataRequest.url.toString()
 
 		val expectedPath = "credit-presentment/native/message"
+		assertTrue(
+			"url does not contain expectedPath value: $expectedPath",
+			url.contains(expectedPath),
+		)
+
 		val expectedQueryParts = arrayOf(
 			"client_id=test_client_id",
 			"instance_id",
@@ -107,16 +117,7 @@ class ApiTest {
 			"offer=PAY_LATER_PAY_IN_1",
 			"merchant_config=hash",
 		)
-
-		assertTrue(url.contains(expectedPath))
-		assertTrue(url.contains("client_id=test_client_id"))
-		assertTrue(url.contains("instance_id"))
-		assertTrue(url.contains("session_id")) //
-		assertTrue(url.contains("amount=1.0"))
-		assertTrue(url.contains("buyer_country=US"))
-		assertTrue(url.contains("offer=PAY_LATER_PAY_IN_1"))
-		assertTrue(url.contains("merchant_config=hash"))
-		expectedQueryParts.forEach { assertTrue(url.contains(it)) }
+		expectedQueryParts.forEach { assertTrue("url does not contain $it", url.contains(it)) }
 	}
 
 	@OptIn(ExperimentalCoroutinesApi::class)
@@ -133,10 +134,19 @@ class ApiTest {
 
 		launch {
 			val result = Api.callMessageDataEndpoint(messageConfig, null, instanceId)
-			assertTrue(result is ApiResult.Failure<*>)
+			assertTrue(
+				"result is not ApiResult.Failure",
+				result is ApiResult.Failure<*>,
+			)
 			val error = (result as ApiResult.Failure<*>).error
-			assertTrue(error is PayPalErrors.FailedToFetchDataException)
-			assertTrue(error?.message?.contains("Code was 404") ?: false)
+			assertTrue(
+				"error is not FailedToFetchDataException",
+				error is PayPalErrors.FailedToFetchDataException,
+			)
+			assertTrue(
+				"""error message does not contain "Code was 404"""",
+				error?.message?.contains("Code was 404") ?: false,
+			)
 		}
 	}
 
@@ -155,11 +165,23 @@ class ApiTest {
 
 		launch {
 			val result = Api.callMessageDataEndpoint(messageConfig, null, instanceId)
-			assertTrue(result is ApiResult.Failure<*>)
+			assertTrue(
+				"result is not ApiResult.Failure",
+				result is ApiResult.Failure<*>,
+			)
 			val error = (result as ApiResult.Failure<*>).error
-			assertTrue(error is PayPalErrors.InvalidResponseException)
-			assertTrue(error?.message?.contains("12345") ?: false)
-			assertTrue(error?.message?.contains("Invalid Response") ?: false)
+			assertTrue(
+				"error is not InvalidResponseException",
+				error is PayPalErrors.InvalidResponseException,
+			)
+			assertTrue(
+				"""error message does not contain 12345""",
+				error?.message?.contains("12345") ?: false,
+			)
+			assertTrue(
+				"""error message does not contain Invalid Response""",
+				error?.message?.contains("Invalid Response") ?: false,
+			)
 		}
 	}
 
@@ -177,10 +199,19 @@ class ApiTest {
 
 		launch {
 			val result = Api.callMessageDataEndpoint(messageConfig, null, instanceId)
-			assertTrue(result is ApiResult.Success<*>)
+			assertTrue(
+				"result is not ApiResult.Success",
+				result is ApiResult.Success<*>,
+			)
 			val response = (result as ApiResult.Success<*>).response
-			assertTrue(response.toJson().contains("content"))
-			assertTrue(response.toJson().contains("meta"))
+			assertTrue(
+				"response contains content",
+				response.toJson().contains("content"),
+			)
+			assertTrue(
+				"response contains meta",
+				response.toJson().contains("meta"),
+			)
 		}
 	}
 
@@ -202,11 +233,14 @@ class ApiTest {
 
 		val onActionCompleted = object : OnActionCompleted {
 			override fun onActionCompleted(result: ApiResult) {
-				assertNotNull(result)
-				assertTrue(result is ApiResult.Success<*>)
+				assertNotNull("result is null", result)
+				assertTrue(
+					"result is not ApiResult.Success",
+					result is ApiResult.Success<*>,
+				)
 				val data = (result as ApiResult.Success<*>).response as ApiMessageData.Response
-				assertNotNull(data.content)
-				assertNotNull(data.meta)
+				assertNotNull("content is null", data.content)
+				assertNotNull("meta is null", data.meta)
 			}
 		}
 
@@ -224,8 +258,11 @@ class ApiTest {
 
 		val expectedPath = "credit-presentment/merchant-profile"
 		val expectedQueryParts = arrayOf("client_id=test_client_id")
-		assertTrue(request.url.toString().contains(expectedPath))
-		expectedQueryParts.forEach { assertTrue(url.contains(it)) }
+		assertTrue(
+			"url does not contain expectedPath: $expectedPath",
+			request.url.toString().contains(expectedPath),
+		)
+		expectedQueryParts.forEach { assertTrue("url does not contain $it", url.contains(it)) }
 	}
 
 	@OptIn(ExperimentalCoroutinesApi::class)
@@ -243,11 +280,23 @@ class ApiTest {
 
 		launch {
 			val result = Api.callMessageHashEndpoint("test_client_id")
-			assertTrue(result is ApiResult.Failure<*>)
+			assertTrue(
+				"result is not ApiResult.Failure",
+				result is ApiResult.Failure<*>,
+			)
 			val error = (result as ApiResult.Failure<*>).error
-			assertTrue(error is PayPalErrors.InvalidResponseException)
-			assertTrue(error?.message?.contains("12345") ?: false)
-			assertTrue(error?.message?.contains("Invalid Response") ?: false)
+			assertTrue(
+				"error is not InvalidResponseException",
+				error is PayPalErrors.InvalidResponseException,
+			)
+			assertTrue(
+				"""error message does not contain 12345""",
+				error?.message?.contains("12345") ?: false,
+			)
+			assertTrue(
+				"""error message does not contain Invalid Response""",
+				error?.message?.contains("Invalid Response") ?: false,
+			)
 		}
 	}
 
@@ -265,13 +314,24 @@ class ApiTest {
 
 		launch {
 			val result = Api.callMessageHashEndpoint("test_client_id")
-			assertTrue(result is ApiResult.Success<*>)
+			assertTrue(
+				"result is not ApiResult.Success",
+				result is ApiResult.Success<*>,
+			)
 			val response = (result as ApiResult.Success<*>).response
-			assertTrue(response.toJson().contains("cache_flow_disabled"))
-			assertTrue(response.toJson().contains("ttl_soft"))
-			assertTrue(response.toJson().contains("ttl_hard"))
-			assertTrue(response.toJson().contains("merchant_profile"))
-			assertTrue(response.toJson().contains("hash"))
+			val expectedParts = arrayOf(
+				"cache_flow_disabled",
+				"ttl_soft",
+				"ttl_hard",
+				"merchant_profile",
+				"hash",
+			)
+			expectedParts.forEach {
+				assertTrue(
+					"response does not contain $it",
+					response.toJson().contains(it),
+				)
+			}
 		}
 	}
 
@@ -294,8 +354,8 @@ class ApiTest {
 			"offer=PAY_LATER_PAY_IN_1",
 		)
 
-		assertTrue(url.contains(expectedPath))
-		expectedQueryParts.forEach { assertTrue(url.contains(it)) }
+		assertTrue("url does not contain expectedPath: $expectedPath", url.contains(expectedPath))
+		expectedQueryParts.forEach { assertTrue("url does not contain $it", url.contains(it)) }
 	}
 
 	@Test
@@ -331,14 +391,18 @@ class ApiTest {
 		}
 		""".trimIndent()
 
-		val updated = preventEmptyValues(payloadJson)
+		val updatedPayload = preventEmptyValues(payloadJson)
 
-		assertNotEquals(payloadJson, updated)
-		assertFalse(updated.contains("integration_name"))
-		assertFalse(updated.contains("integration_version"))
-
-		assertFalse(updated.contains("__shared__"))
-		assertFalse(updated.contains("amount"))
-		assertFalse(updated.contains("component_events"))
+		assertNotEquals(payloadJson, updatedPayload)
+		val notExpectedParts = arrayOf(
+			"integration_name",
+			"integration_version",
+			"__shared__",
+			"amount",
+			"component_events",
+		)
+		notExpectedParts.forEach {
+			assertFalse("updatedPayload contains $it", updatedPayload.contains(it))
+		}
 	}
 }

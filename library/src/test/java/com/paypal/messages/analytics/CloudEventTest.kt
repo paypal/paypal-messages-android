@@ -1,4 +1,4 @@
-package com.paypal.messages.logger
+package com.paypal.messages.analytics
 
 import com.google.gson.Gson
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -16,7 +16,7 @@ class CloudEventTest {
 	private val integrationType = "test_integration_type"
 	private val integrationVersion = "test_integration_version"
 	private val libraryVersion = "test_library_version"
-	private val components = mutableListOf<TrackingComponent>()
+	private val components = mutableListOf<AnalyticsComponent>()
 	private val specVersion = "1.0"
 	private val type = "com.paypal.credit.upstream-presentment.v1"
 	private val source = "urn:paypal:event-src:v1:android:messages"
@@ -25,7 +25,7 @@ class CloudEventTest {
 	@Suppress("ktlint:standard:max-line-length")
 	private val dataSchema = "ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json"
 
-	private val data = TrackingPayload(
+	private val data = AnalyticsPayload(
 		clientId = clientId,
 		merchantId = merchantId,
 		partnerAttributionId = partnerAttributionId,

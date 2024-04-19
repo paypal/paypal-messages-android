@@ -29,10 +29,10 @@ class PayPalEnvironmentTest {
 
 	@Test
 	fun testIsProduction() {
-		assertTrue(Env.LIVE.isProduction)
-		assertTrue(Env.SANDBOX.isProduction)
-		assertFalse(Env.STAGE.isProduction)
-		assertFalse(Env.LOCAL.isProduction)
+		assertTrue(Env.LIVE.isProduction, "LIVE is not production")
+		assertTrue(Env.SANDBOX.isProduction, "SANDBOX is not production")
+		assertFalse(Env.STAGE.isProduction, "STAGE is production")
+		assertFalse(Env.LOCAL.isProduction, "LOCAL is production")
 	}
 
 	@Test

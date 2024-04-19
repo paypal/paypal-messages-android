@@ -1,4 +1,4 @@
-package com.paypal.messages.logger
+package com.paypal.messages.analytics
 
 import com.google.gson.annotations.SerializedName
 import java.text.SimpleDateFormat
@@ -17,10 +17,10 @@ data class CloudEvent(
 	@SerializedName("dataschema")
 	val dataSchema: String = "ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json",
 	var time: String = "",
-	val data: TrackingPayload,
+	val data: AnalyticsPayload,
 ) {
 	init {
-		val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+		val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
 		val currentDate = Date()
 
 		val formattedDate = dateFormat.format(currentDate)

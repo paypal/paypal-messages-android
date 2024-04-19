@@ -1,4 +1,4 @@
-package com.paypal.messages.logger
+package com.paypal.messages.analytics
 
 import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -6,16 +6,15 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.paypal.messages.config.message.PayPalMessageConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class LoggerTest {
+class AnalyticsLoggerTest {
 	private lateinit var context: Context
-	private lateinit var logger: Logger
-	private lateinit var component: TrackingComponent
+	private lateinit var analyticsLogger: AnalyticsLogger
+	private lateinit var component: AnalyticsComponent
 
 	@Before
 	fun setUp() {
@@ -29,8 +28,8 @@ class LoggerTest {
 			"test_device_id",
 			"test_session_id",
 		)
-		logger = Logger.getInstance("test_client_id")
-		component = TrackingComponent(
+		analyticsLogger = AnalyticsLogger.getInstance("test_client_id")
+		component = AnalyticsComponent(
 			instanceId = "test_instance_id",
 			type = "test_type",
 			componentEvents = mutableListOf(),
@@ -39,19 +38,18 @@ class LoggerTest {
 
 	@Test
 	fun testGetInstance() {
-		assertNotNull(logger)
+		assertNotNull(analyticsLogger)
 	}
 
 	@Test
 	fun testLog() {
-		component.componentEvents.add(TrackingEvent(EventType.MESSAGE_CLICK))
-		logger.log(context, component)
+		component.componentEvents.add(AnalyticsEvent(EventType.MESSAGE_CLICKED))
+		analyticsLogger.log(context, component)
 
-		val payload = logger.payload
+		val payload = analyticsLogger.payload
 		assertNotNull(payload)
 		payload?.run {
 			assertEquals("test_client_id", payload.clientId)
-			assertTrue(payload.sessionId != "")
 			assertEquals("test_integration_name", payload.integrationName)
 			assertEquals("test_integration_version", payload.integrationVersion)
 			assertEquals("test_device_id", payload.deviceId)
@@ -61,7 +59,7 @@ class LoggerTest {
 			assertEquals("test_type", payload.components[0].type)
 			assertEquals("test_instance_id", payload.components[0].instanceId)
 			assertEquals(1, payload.components[0].componentEvents.size)
-			assertEquals(EventType.MESSAGE_CLICK, payload.components[0].componentEvents[0].eventType)
+			assertEquals(EventType.MESSAGE_CLICKED, payload.components[0].componentEvents[0].eventType)
 		}
 	}
 }

@@ -23,7 +23,7 @@ import com.paypal.messagesdemo.databinding.ActivityMessageBinding
 
 class XmlActivity : AppCompatActivity() {
 	private lateinit var binding: ActivityMessageBinding
-	private val TAG = "XmlActivity"
+	private val TAG = "PPM:XmlActivity"
 	private var color: PayPalMessageColor = PayPalMessageColor.BLACK
 	private var logoType: PayPalMessageLogoType = PayPalMessageLogoType.PRIMARY
 	private var textAlign: PayPalMessageAlign = PayPalMessageAlign.LEFT

@@ -1,6 +1,5 @@
 package com.paypal.messagesdemo
 
-import android.content.ContentValues.TAG
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -51,6 +50,7 @@ fun toSentenceCase(input: String): String {
 }
 
 class JetpackActivity : ComponentActivity() {
+	private val TAG = "PPM:JetpackActivity"
 	private val environment = PayPalEnvironment.SANDBOX
 
 	override fun onCreate(savedInstanceState: Bundle?) {

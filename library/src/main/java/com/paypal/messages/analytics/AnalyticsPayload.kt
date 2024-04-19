@@ -1,10 +1,10 @@
-package com.paypal.messages.logger
+package com.paypal.messages.analytics
 
 import com.google.gson.annotations.SerializedName
 import com.paypal.messages.BuildConfig
 import java.util.UUID
 
-data class TrackingPayload(
+data class AnalyticsPayload(
 	// Integration Details
 	@SerializedName("client_id")
 	val clientId: String,
@@ -32,5 +32,5 @@ data class TrackingPayload(
 	val libraryVersion: String = BuildConfig.LIBRARY_VERSION,
 	// Event Groups
 	@SerializedName("components")
-	val components: MutableList<TrackingComponent>,
+	val components: MutableList<AnalyticsComponent>,
 )
