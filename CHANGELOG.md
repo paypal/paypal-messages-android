@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.0-develop.2](https://github.com/paypal/paypal-messages-android/compare/1.0.0-develop.1...1.0.0-develop.2) (2024-04-23)
+
+
+### Features
+
+* remove session id and device id ([#35](https://github.com/paypal/paypal-messages-android/issues/35)) ([20367ca](https://github.com/paypal/paypal-messages-android/commit/20367cae6b6060c76cb266042ec5687f0f2e63c6))
+
+
+### Bug Fixes
+
+* allow messages to be updated any time ([#34](https://github.com/paypal/paypal-messages-android/issues/34)) ([ef69ce9](https://github.com/paypal/paypal-messages-android/commit/ef69ce97242a7c1d5e83e5344f08c75201533104))
+* update tracking format ([#33](https://github.com/paypal/paypal-messages-android/issues/33)) ([dc8dd61](https://github.com/paypal/paypal-messages-android/commit/dc8dd6168970394650bac413b01230cc37696f61))
+
 ## 1.0.0-develop.1 (2024-04-11)
 
 
