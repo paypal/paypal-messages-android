@@ -53,11 +53,6 @@ jobs:
       - name: GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
-          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
         run: npx semantic-release@21
 
       - name: Publish to Maven
@@ -65,6 +60,6 @@ jobs:
         with:
           sonatype_user: ${{ secrets.SONATYPE_SDKS_NEXUS_USERNAME }}
           sonatype_password: ${{ secrets.SONATYPE_SDKS_NEXUS_PASSWORD }}
-          signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
-          signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
+          signing_key_id: ${{ secrets.SIGNING_SDKS_KEY_ID }}
+          signing_key_password: ${{ secrets.SIGNING_SDKS_KEY_PASSWORD }}
+          signing_key_file: ${{ env.SIGNING_SDKS_KEY_FILE_PATH }}
