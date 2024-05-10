@@ -18,7 +18,7 @@ data class AnalyticsComponent(
 	@SerializedName("buyer_country_code")
 	val buyerCountryCode: String? = null,
 	@SerializedName("presentment_channel")
-	val channel: String? = "NATIVE",
+	val channel: String? = "UPSTREAM",
 
 	// Message Only
 	@SerializedName("style_logo_type")

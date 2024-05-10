@@ -44,7 +44,7 @@ class AnalyticsEventTest {
 		val json = gson.toJson(analyticsEvent)
 
 		val expectedParts = arrayOf(
-			""""event_type":"MESSAGE_CLICKED"""",
+			""""event_type":"message_clicked"""",
 			""""render_duration":"100"""",
 			""""request_duration":"200"""",
 			""""page_view_link_name":"test_link_name"""",

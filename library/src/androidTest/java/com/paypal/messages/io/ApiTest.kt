@@ -373,12 +373,12 @@ class ApiTest {
 					{
 						"__shared__":{},
 						"amount":"null",
-						"channel":"NATIVE",
+						"channel":"UPSTREAM",
 						"component_events":[],
-						"style_color":"BLACK",
-						"style_logo_type":"PRIMARY",
-						"style_text_align":"LEFT",
-						"type":"MESSAGE"
+						"style_color":"black",
+						"style_logo_type":"primary",
+						"style_text_align":"left",
+						"type":"message"
 					}
 				],
 				"integration_type":"NATIVE_ANDROID",

@@ -4,7 +4,7 @@ import android.util.Log
 
 object LogCat {
 	private const val prefix = "PPMessages"
-	private const val SHOW_FULL_MESSAGES = false
+	private const val SHOW_FULL_MESSAGES = true
 
 	private fun reduceLongMessage(message: String): String {
 		if (SHOW_FULL_MESSAGES) return message

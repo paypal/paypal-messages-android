@@ -15,7 +15,7 @@ class AnalyticsComponentTest {
 	private val amount = "100.00"
 	private val pageType = PayPalMessagePageType.CART
 	private val buyerCountryCode = "US"
-	private val channel = "NATIVE"
+	private val channel = "UPSTREAM"
 	private val styleLogoType = PayPalMessageLogoType.ALTERNATIVE
 	private val styleColor = PayPalMessageColor.MONOCHROME
 	private val styleTextAlign = PayPalMessageAlign.CENTER
@@ -98,10 +98,10 @@ class AnalyticsComponentTest {
 			""""amount":"100.00"""",
 			""""page_type":"CART"""",
 			""""buyer_country_code":"US"""",
-			""""presentment_channel":"NATIVE"""",
-			""""style_logo_type":"ALTERNATIVE"""",
-			""""style_color":"MONOCHROME"""",
-			""""style_text_align":"CENTER"""",
+			""""presentment_channel":"UPSTREAM"""",
+			""""style_logo_type":"alternative"""",
+			""""style_color":"monochrome"""",
+			""""style_text_align":"center"""",
 			""""message_type":"OFFER"""",
 			""""views":["VIEW"]""",
 			""""qualified_products":["PRODUCT"]""",
@@ -115,7 +115,7 @@ class AnalyticsComponentTest {
 			""""type":"OFFER"""",
 			""""instance_id":"test_instance_id"""",
 			""""originating_instance_id":"test_originating_instance_id"""",
-			""""component_events":[{"event_type":"MESSAGE_CLICKED"}]""",
+			""""component_events":[{"event_type":"message_clicked"}]""",
 			""""__shared__":{}""",
 		)
 		expectedParts.forEach { assertTrue(it in json, "json does not contain $it") }

@@ -1,5 +1,6 @@
 package com.paypal.messages.config.message.style
 
+import com.google.gson.annotations.SerializedName
 import com.paypal.messages.R
 import com.paypal.messages.utils.PayPalErrors
 
@@ -12,9 +13,16 @@ enum class PayPalMessageColor(
 	val value: Int,
 	val colorResId: Int,
 ) {
+	@SerializedName("black")
 	BLACK(value = 0, colorResId = R.color.gray_700),
+
+	@SerializedName("white")
 	WHITE(value = 1, colorResId = R.color.white),
+
+	@SerializedName("monochrome")
 	MONOCHROME(value = 2, colorResId = R.color.black),
+
+	@SerializedName("grayscale")
 	GRAYSCALE(value = 3, colorResId = R.color.gray_700),
 	;
 
