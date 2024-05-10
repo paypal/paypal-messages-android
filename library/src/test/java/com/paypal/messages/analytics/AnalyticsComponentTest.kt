@@ -3,7 +3,7 @@ package com.paypal.messages.analytics
 import com.google.gson.Gson
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.PayPalMessagePageType
-import com.paypal.messages.config.message.style.PayPalMessageAlign
+import com.paypal.messages.config.message.style.PayPalMessageAlignment
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -18,7 +18,7 @@ class AnalyticsComponentTest {
 	private val channel = "UPSTREAM"
 	private val styleLogoType = PayPalMessageLogoType.ALTERNATIVE
 	private val styleColor = PayPalMessageColor.MONOCHROME
-	private val styleTextAlign = PayPalMessageAlign.CENTER
+	private val styleTextAlign = PayPalMessageAlignment.CENTER
 	private val messageType = "OFFER"
 	private val views = mutableListOf("VIEW")
 	private val qualifiedProducts = mutableListOf("PRODUCT")
