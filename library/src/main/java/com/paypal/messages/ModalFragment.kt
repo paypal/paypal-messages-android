@@ -429,7 +429,7 @@ internal class ModalFragment(
 
 	private fun logEvent(event: AnalyticsEvent, dynamicKeys: MutableMap<String, Any>? = null) {
 		val component = AnalyticsComponent(
-			amount = this.amount.toString(),
+			amount = if (this.amount == null) "" else this.amount.toString(),
 			buyerCountryCode = this.buyerCountry,
 			type = ComponentType.MODAL.toString(),
 			instanceId = this.instanceId.toString(),
