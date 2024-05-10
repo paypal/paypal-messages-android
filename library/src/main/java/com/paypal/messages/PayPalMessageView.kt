@@ -499,8 +499,8 @@ class PayPalMessageView @JvmOverloads constructor(
 			logEvent(
 				AnalyticsEvent(
 					eventType = EventType.MESSAGE_CLICKED,
-					pageViewLinkName = "banner_wrapper",
-					pageViewLinkSource = "message",
+					pageViewLinkName = if (messageDisclaimer != "") messageDisclaimer else "Learn more",
+					pageViewLinkSource = "learn_more",
 				),
 			)
 			showWebView(response)
