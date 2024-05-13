@@ -2,8 +2,8 @@ package com.paypal.messages.io
 
 import android.content.Context
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonObject
 import com.paypal.messages.BuildConfig
-import com.paypal.messages.analytics.AnalyticsPayload
 import com.paypal.messages.analytics.CloudEvent
 import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
@@ -283,7 +283,7 @@ object Api {
 		return jsonObject.toString()
 	}
 
-	fun callLoggerEndpoint(payload: AnalyticsPayload) {
+	fun callLoggerEndpoint(payload: JsonObject) {
 		val json = gson.toJson(CloudEvent(data = payload))
 		val request = createLoggerRequest(preventEmptyValues(json))
 		val response = client.newCall(request).execute()

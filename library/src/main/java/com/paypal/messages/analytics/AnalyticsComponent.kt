@@ -1,5 +1,8 @@
 package com.paypal.messages.analytics
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.PayPalMessagePageType
@@ -7,6 +10,9 @@ import com.paypal.messages.config.message.PayPalMessageStyle
 import com.paypal.messages.config.message.style.PayPalMessageAlignment
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
+import com.paypal.messages.extensions.getJsonObject
+
+val gson: Gson = GsonBuilder().setPrettyPrinting().create()
 
 /**
  * [AnalyticsComponent] holds data used for logging analytics information
@@ -73,4 +79,20 @@ data class AnalyticsComponent(
 	// Dynamic Properties, not serialized by default
 	@Suppress("PropertyName")
 	val __shared__: MutableMap<String, Any>? = mutableMapOf(),
-)
+) {
+	fun getData(): JsonObject {
+		val componentJson = gson.getJsonObject(this)
+
+		val sharedJson = componentJson.get("__shared__")
+		if (sharedJson != null) {
+			val sharedJsonCopy = sharedJson.deepCopy().asJsonObject
+			componentJson.remove("__shared__")
+
+			for ((key, value) in sharedJsonCopy.entrySet()) {
+				componentJson.add(key, value)
+			}
+		}
+
+		return componentJson
+	}
+}
