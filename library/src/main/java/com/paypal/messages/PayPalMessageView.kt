@@ -343,15 +343,16 @@ class PayPalMessageView @JvmOverloads constructor(
 			}
 			// Apply disclaimer style
 			messageDisclaimer?.let { builder.setupDisclaimer(color, it) }
+			// TextView has textAlignment so this prevents clashing variables
+			val payPalMessageViewTextAlignment = textAlignment
 			// Apply everything to the text view
 			messageTextView.apply {
 				visibility = View.VISIBLE
 				setTextColor(ContextCompat.getColor(context, color.colorResId))
-				gravity = when (textAlignment) {
-					Alignment.LEFT.value -> Gravity.START
-					Alignment.CENTER.value -> Gravity.CENTER_HORIZONTAL
-					Alignment.RIGHT.value -> Gravity.END
-					else -> Gravity.START
+				gravity = when (payPalMessageViewTextAlignment) {
+					Alignment.LEFT -> Gravity.START
+					Alignment.CENTER -> Gravity.CENTER_HORIZONTAL
+					Alignment.RIGHT -> Gravity.END
 				}
 				text = builder
 			}
