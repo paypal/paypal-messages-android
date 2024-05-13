@@ -120,10 +120,7 @@ internal class ModalFragment(
 		val colorInt = Color.parseColor(this.closeButtonData?.color)
 		closeButton.background.colorFilter = PorterDuffColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP)
 
-		closeButton?.setOnClickListener {
-			logEvent(AnalyticsEvent(eventType = EventType.MODAL_CLOSED))
-			dialog?.hide()
-		}
+		closeButton?.setOnClickListener { dialog?.hide() }
 
 		// If we already have a WebView, don't reset it
 		LogCat.debug(TAG, "Configuring WebView Settings and Handlers")

@@ -18,9 +18,6 @@ enum class EventType {
 	@SerializedName("modal_viewed")
 	MODAL_VIEWED,
 
-	@SerializedName("modal_closed")
-	MODAL_CLOSED,
-
 	@SerializedName("modal_error")
 	MODAL_ERROR,
 	;
