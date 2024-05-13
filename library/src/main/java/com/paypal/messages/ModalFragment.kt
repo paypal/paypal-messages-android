@@ -413,7 +413,7 @@ internal class ModalFragment(
 			"onReady" -> {
 				logEvent(
 					AnalyticsEvent(
-						eventType = EventType.MESSAGE_RENDERED,
+						eventType = EventType.MODAL_RENDERED,
 						renderDuration = args.get("render_duration")?.asString ?: "",
 						requestDuration = args.get("request_duration")?.asString ?: "",
 					),
