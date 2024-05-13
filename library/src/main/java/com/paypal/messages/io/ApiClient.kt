@@ -1,6 +1,7 @@
 package com.paypal.messages.io
 
 import android.annotation.SuppressLint
+import com.paypal.messages.utils.KoverExcludeGenerated
 import okhttp3.OkHttpClient
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
@@ -14,12 +15,14 @@ object ApiClient {
 		@SuppressLint("CustomX509TrustManager")
 		object : X509TrustManager {
 			@SuppressLint("TrustAllX509TrustManager")
+			@KoverExcludeGenerated
 			override fun checkClientTrusted(
 				chain: Array<out X509Certificate>?,
 				authType: String?,
 			) {}
 
 			@SuppressLint("TrustAllX509TrustManager")
+			@KoverExcludeGenerated
 			override fun checkServerTrusted(
 				chain: Array<out X509Certificate>?,
 				authType: String?,

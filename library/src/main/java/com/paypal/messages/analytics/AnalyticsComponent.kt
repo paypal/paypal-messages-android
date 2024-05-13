@@ -11,8 +11,7 @@ import com.paypal.messages.config.message.style.PayPalMessageAlignment
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.extensions.getJsonObject
-
-val gson: Gson = GsonBuilder().setPrettyPrinting().create()
+import com.paypal.messages.utils.KoverExcludeGenerated
 
 /**
  * [AnalyticsComponent] holds data used for logging analytics information
@@ -80,7 +79,10 @@ data class AnalyticsComponent(
 	@Suppress("PropertyName")
 	val __shared__: MutableMap<String, Any>? = mutableMapOf(),
 ) {
+	// TODO: Move all Gson to its own wrapping class
+	@KoverExcludeGenerated
 	fun getData(): JsonObject {
+		val gson: Gson = GsonBuilder().setPrettyPrinting().create()
 		val componentJson = gson.getJsonObject(this)
 
 		val sharedJson = componentJson.get("__shared__")
