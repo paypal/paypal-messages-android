@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.0-develop.3](https://github.com/paypal/paypal-messages-android/compare/1.0.0-develop.2...1.0.0-develop.3) (2024-05-14)
+
+
+### Bug Fixes
+
+* general analytics fixes ([#36](https://github.com/paypal/paypal-messages-android/issues/36)) ([ff2ac5a](https://github.com/paypal/paypal-messages-android/commit/ff2ac5a9674b9ba5ca12a39854d2bab46a7d7234))
+* modal analytics fixes ([#37](https://github.com/paypal/paypal-messages-android/issues/37)) ([c95246f](https://github.com/paypal/paypal-messages-android/commit/c95246f72a2ec60a940b44be2aaaa8f7289badce))
+
 ## [1.0.0-develop.2](https://github.com/paypal/paypal-messages-android/compare/1.0.0-develop.1...1.0.0-develop.2) (2024-04-23)
 
 
