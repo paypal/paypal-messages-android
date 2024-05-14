@@ -1,5 +1,6 @@
 package com.paypal.messages.io
 
+import android.annotation.SuppressLint
 import android.content.Context
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
@@ -17,7 +18,12 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.IOException
 import org.json.JSONObject
+import java.security.cert.X509Certificate
 import java.util.UUID
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 import com.paypal.messages.config.PayPalEnvironment as Env
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
