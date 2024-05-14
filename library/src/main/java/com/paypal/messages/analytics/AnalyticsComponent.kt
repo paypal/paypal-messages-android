@@ -3,10 +3,18 @@ package com.paypal.messages.analytics
 import com.google.gson.annotations.SerializedName
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.PayPalMessagePageType
-import com.paypal.messages.config.message.style.PayPalMessageAlign
+import com.paypal.messages.config.message.PayPalMessageStyle
+import com.paypal.messages.config.message.style.PayPalMessageAlignment
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 
+/**
+ * [AnalyticsComponent] holds data used for logging analytics information
+ *
+ * Note on styleTextAlign here vs [PayPalMessageStyle].textAlignment:
+ * To match with other integrations, the [PayPalMessageStyle] value will be textAlignment
+ * but for logging purposes, the key will be style_text_align
+ */
 data class AnalyticsComponent(
 	// Integration Details
 	@SerializedName("offer_type")
@@ -18,7 +26,7 @@ data class AnalyticsComponent(
 	@SerializedName("buyer_country_code")
 	val buyerCountryCode: String? = null,
 	@SerializedName("presentment_channel")
-	val channel: String? = "NATIVE",
+	val channel: String? = "UPSTREAM",
 
 	// Message Only
 	@SerializedName("style_logo_type")
@@ -26,7 +34,7 @@ data class AnalyticsComponent(
 	@SerializedName("style_color")
 	val styleColor: PayPalMessageColor? = null,
 	@SerializedName("style_text_align")
-	val styleTextAlign: PayPalMessageAlign? = null,
+	val styleTextAlign: PayPalMessageAlignment? = null,
 	@SerializedName("message_type")
 	val messageType: String? = null,
 

@@ -1,5 +1,6 @@
 package com.paypal.messages.io
 
+import android.annotation.SuppressLint
 import android.content.Context
 import com.google.gson.GsonBuilder
 import com.paypal.messages.BuildConfig
@@ -18,13 +19,53 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.IOException
 import org.json.JSONObject
+import java.security.cert.X509Certificate
 import java.util.UUID
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 import com.paypal.messages.config.PayPalEnvironment as Env
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 import com.paypal.messages.config.message.PayPalMessageConfig as MessageConfig
 
 object Api {
 	private const val TAG = "Api"
+
+	private val trustAllCerts = arrayOf<TrustManager>(
+		@SuppressLint("CustomX509TrustManager")
+		object : X509TrustManager {
+			@SuppressLint("TrustAllX509TrustManager")
+			override fun checkClientTrusted(
+				chain: Array<out X509Certificate>?,
+				authType: String?,
+			) {}
+
+			@SuppressLint("TrustAllX509TrustManager")
+			override fun checkServerTrusted(
+				chain: Array<out X509Certificate>?,
+				authType: String?,
+			) {}
+
+			override fun getAcceptedIssuers() = arrayOf<X509Certificate>()
+		},
+	)
+
+	private val sslContext: SSLContext = SSLContext.getInstance("SSL")
+		.apply {
+			this.init(null, trustAllCerts, java.security.SecureRandom())
+		}
+
+	// Create an ssl socket factory with our all-trusting manager
+	private val sslSocketFactory: SSLSocketFactory = sslContext.socketFactory
+
+	// connect to server
+	@Suppress("unused")
+	private val insecureClient = OkHttpClient.Builder()
+		.sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
+		.hostnameVerifier { _, _ -> true }
+		.build()
+
 	private val client = OkHttpClient()
 	private val gson = GsonBuilder().setPrettyPrinting().create()
 	var env = Env.SANDBOX

@@ -38,7 +38,7 @@ import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
 import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
-import com.paypal.messages.config.message.style.PayPalMessageAlign
+import com.paypal.messages.config.message.style.PayPalMessageAlignment
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.io.Api
@@ -84,9 +84,9 @@ class JetpackActivity : ComponentActivity() {
 
 				// Style Alignment
 				val alignmentGroupOptions = listOf(
-					PayPalMessageAlign.LEFT,
-					PayPalMessageAlign.CENTER,
-					PayPalMessageAlign.RIGHT,
+					PayPalMessageAlignment.LEFT,
+					PayPalMessageAlignment.CENTER,
+					PayPalMessageAlignment.RIGHT,
 				)
 				var messageAlignment by remember { mutableStateOf(alignmentGroupOptions[0]) }
 
@@ -143,7 +143,7 @@ class JetpackActivity : ComponentActivity() {
 					backgroundColor = if (messageColor === PayPalMessageColor.WHITE) Color.Black else Color.White
 					messageView.color = messageColor
 					messageView.logoType = messageLogo
-					messageView.textAlign = messageAlignment
+					messageView.textAlignment = messageAlignment
 
 					messageView.offerType = when (offerType) {
 						offerGroupOptions[0] -> PayPalMessageOfferType.PAY_LATER_SHORT_TERM
@@ -233,7 +233,7 @@ class JetpackActivity : ComponentActivity() {
 						RadioOptions(
 							logoGroupOptions = alignmentGroupOptions,
 							selected = messageAlignment,
-							onSelected = { text: PayPalMessageAlign ->
+							onSelected = { text: PayPalMessageAlignment ->
 								messageAlignment = text
 							},
 						)

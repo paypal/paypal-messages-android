@@ -49,7 +49,7 @@ import com.paypal.messages.config.message.PayPalMessageData as MessageData
 import com.paypal.messages.config.message.PayPalMessageEventsCallbacks as EventsCallbacks
 import com.paypal.messages.config.message.PayPalMessageStyle as MessageStyle
 import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks as ViewStateCallbacks
-import com.paypal.messages.config.message.style.PayPalMessageAlign as Align
+import com.paypal.messages.config.message.style.PayPalMessageAlignment as Alignment
 import com.paypal.messages.config.message.style.PayPalMessageColor as Color
 import com.paypal.messages.config.message.style.PayPalMessageLogoType as LogoType
 
@@ -81,7 +81,7 @@ class PayPalMessageView @JvmOverloads constructor(
 				pageType = this.pageType,
 				environment = this.environment ?: PayPalEnvironment.SANDBOX,
 			),
-			style = MessageStyle(this.color, this.logoType, this.textAlign),
+			style = MessageStyle(this.color, this.logoType, this.textAlignment),
 			viewStateCallbacks = ViewStateCallbacks(this.onLoading, this.onSuccess, this.onError),
 			eventsCallbacks = EventsCallbacks(this.onClick, this.onApply),
 		)
@@ -97,7 +97,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		pageType = config.data.pageType
 		color = config.style.color
 		logoType = config.style.logoType
-		textAlign = config.style.textAlign
+		textAlignment = config.style.textAlignment
 		onLoading = config.viewStateCallbacks?.onLoading ?: {}
 		onSuccess = config.viewStateCallbacks?.onSuccess ?: {}
 		onError = config.viewStateCallbacks?.onError ?: {}
@@ -207,7 +207,7 @@ class PayPalMessageView @JvmOverloads constructor(
 				debounceUpdateContent(Unit)
 			}
 		}
-	var textAlign: Align = config.style.textAlign
+	var textAlignment: Alignment = config.style.textAlignment
 		set(arg) {
 			if (field != arg) {
 				field = arg
@@ -343,14 +343,16 @@ class PayPalMessageView @JvmOverloads constructor(
 			}
 			// Apply disclaimer style
 			messageDisclaimer?.let { builder.setupDisclaimer(color, it) }
+			// TextView has textAlignment so this prevents clashing variables
+			val payPalMessageViewTextAlignment = textAlignment
 			// Apply everything to the text view
 			messageTextView.apply {
 				visibility = View.VISIBLE
 				setTextColor(ContextCompat.getColor(context, color.colorResId))
-				gravity = when (textAlign) {
-					Align.LEFT -> Gravity.START
-					Align.CENTER -> Gravity.CENTER_HORIZONTAL
-					Align.RIGHT -> Gravity.END
+				gravity = when (payPalMessageViewTextAlignment) {
+					Alignment.LEFT -> Gravity.START
+					Alignment.CENTER -> Gravity.CENTER_HORIZONTAL
+					Alignment.RIGHT -> Gravity.END
 				}
 				text = builder
 			}
@@ -426,10 +428,10 @@ class PayPalMessageView @JvmOverloads constructor(
 		}
 
 		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_text_align)) {
-			textAlign = Align(
+			textAlignment = Alignment(
 				typedArray.getInt(
 					R.styleable.PayPalMessageView_paypal_text_align,
-					Align.LEFT.value,
+					Alignment.LEFT.value,
 				),
 			)
 		}
@@ -498,8 +500,8 @@ class PayPalMessageView @JvmOverloads constructor(
 			logEvent(
 				AnalyticsEvent(
 					eventType = EventType.MESSAGE_CLICKED,
-					pageViewLinkName = "banner_wrapper",
-					pageViewLinkSource = "message",
+					pageViewLinkName = if (messageDisclaimer != "") messageDisclaimer else "Learn more",
+					pageViewLinkSource = "learn_more",
 				),
 			)
 			showWebView(response)
@@ -650,7 +652,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			buyerCountryCode = this.buyerCountry,
 			styleLogoType = this.logoType,
 			styleColor = this.color,
-			styleTextAlign = this.textAlign,
+			styleTextAlign = this.textAlignment,
 			messageType = this.messageDataResponse?.meta?.messageType,
 			fdata = this.messageDataResponse?.meta?.fdata,
 			debugId = this.messageDataResponse?.meta?.debugId,

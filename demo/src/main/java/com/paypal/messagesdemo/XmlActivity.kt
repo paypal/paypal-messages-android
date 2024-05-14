@@ -15,7 +15,7 @@ import com.paypal.messages.config.PayPalMessagePageType
 import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
 import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
-import com.paypal.messages.config.message.style.PayPalMessageAlign
+import com.paypal.messages.config.message.style.PayPalMessageAlignment
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.io.Api
@@ -26,7 +26,7 @@ class XmlActivity : AppCompatActivity() {
 	private val TAG = "PPM:XmlActivity"
 	private var color: PayPalMessageColor = PayPalMessageColor.BLACK
 	private var logoType: PayPalMessageLogoType = PayPalMessageLogoType.PRIMARY
-	private var textAlign: PayPalMessageAlign = PayPalMessageAlign.LEFT
+	private var textAlignment: PayPalMessageAlignment = PayPalMessageAlignment.LEFT
 	private var offerType: PayPalMessageOfferType? = null
 	private val environment = PayPalEnvironment.SANDBOX
 
@@ -45,6 +45,7 @@ class XmlActivity : AppCompatActivity() {
 				data = PayPalMessageData(
 					clientID = getString(R.string.client_id),
 					environment = environment,
+					pageType = PayPalMessagePageType.CART,
 				),
 				viewStateCallbacks = PayPalMessageViewStateCallbacks(
 					onLoading = {
@@ -105,11 +106,11 @@ class XmlActivity : AppCompatActivity() {
 
 		val alignmentRadioGroup = binding.alignmentRadioGroup
 		alignmentRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-			textAlign = when (checkedId) {
-				R.id.styleLeft -> PayPalMessageAlign.LEFT
-				R.id.styleCenter -> PayPalMessageAlign.CENTER
-				R.id.styleRight -> PayPalMessageAlign.RIGHT
-				else -> PayPalMessageAlign.LEFT
+			textAlignment = when (checkedId) {
+				R.id.styleLeft -> PayPalMessageAlignment.LEFT
+				R.id.styleCenter -> PayPalMessageAlignment.CENTER
+				R.id.styleRight -> PayPalMessageAlignment.RIGHT
+				else -> PayPalMessageAlignment.LEFT
 			}
 		}
 
@@ -160,7 +161,7 @@ class XmlActivity : AppCompatActivity() {
 
 			payPalMessage.color = color
 			payPalMessage.logoType = logoType
-			payPalMessage.textAlign = textAlign
+			payPalMessage.textAlignment = textAlignment
 		}
 
 		// Restore default options and reset UI
