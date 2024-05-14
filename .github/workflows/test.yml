@@ -61,7 +61,7 @@ jobs:
 
   test_instrumentation:
     name: Instrumentation Tests
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
