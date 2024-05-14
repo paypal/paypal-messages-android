@@ -9,13 +9,12 @@ import com.paypal.messages.config.PayPalMessageOfferType
  */
 data class ModalConfig(
 	var amount: Double? = null,
-	var currency: String? = null,
 	var buyerCountry: String? = null,
-	var offer: PayPalMessageOfferType? = null,
 	var channel: Channel = Channel.NATIVE,
-	var ignoreCache: Boolean = false,
 	var devTouchpoint: Boolean = false,
-	var stageTag: String? = null,
 	var events: ModalEvents? = null,
+	var ignoreCache: Boolean = false,
 	var modalCloseButton: ModalCloseButton,
+	var offer: PayPalMessageOfferType? = null,
+	var stageTag: String? = null,
 )

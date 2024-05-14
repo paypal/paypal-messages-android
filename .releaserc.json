@@ -1,0 +1,81 @@
+{
+	"branches": [
+		"release",
+		{"name": "develop", "prerelease": true},
+		{"name": "prerelease", "prerelease": true}
+	],
+	"tagFormat": "${version}",
+	"plugins": [
+		[
+			"@semantic-release/commit-analyzer",
+			{
+				"preset": "conventionalcommits",
+				"releaseRules": [
+					{ "type": "refactor", "release": "patch" },
+					{ "type": "perf", "release": "patch" },
+					{ "type": "style", "release": "patch" },
+					{ "type": "revert", "release": "patch" }
+				]
+			}
+		],
+		[
+			"@semantic-release/release-notes-generator",
+			{
+				"preset": "conventionalcommits",
+				"presetConfig": {
+					"types": [
+						{ "type": "feat", "section": "Features" },
+						{ "type": "fix", "section": "Bug Fixes" },
+						{ "type": "perf", "section": "Performance Improvements" },
+						{ "type": "revert", "section": "Reverts" },
+						{ "type": "docs", "section": "Documentation" },
+						{ "type": "style", "section": "Styles" },
+						{ "type": "chore", "section": "Miscellaneous Chores", "hidden": true },
+						{ "type": "refactor", "section": "Code Refactoring" },
+						{ "type": "test", "section": "Tests" },
+						{ "type": "build", "section": "Build System" },
+						{ "type": "ci", "section": "Continuous Integration" }
+					]
+				}
+			}
+		],
+		[
+			"@semantic-release/changelog",
+			{
+				"changelogTitle": "# Changelog"
+			}
+		],
+		[
+			"@semantic-release/exec",
+			{
+				"prepareCmd": "./gradlew --stacktrace -PversionParam=${nextRelease.version} changeReleaseVersion clean :library:assemble",
+				"successCmd": "echo"
+			}
+		],
+		[
+			"@semantic-release/git",
+			{
+				"assets": [
+					"gradle/*",
+					"library/*",
+					"readme-images/*",
+					"build.gradle",
+					"CHANGELOG.md",
+					"gradle.properties",
+					"gradlew",
+					"gradlew.bat",
+					"LICENSE",
+					"README.md",
+					"settings.gradle"
+				],
+				"message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+			}
+		],
+		[
+			"@semantic-release/github",
+			{
+				"assets": ["library/build/outputs/aar/*.aar"]
+			}
+		]
+	]
+}

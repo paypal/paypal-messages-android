@@ -4,10 +4,10 @@ import android.util.Log
 
 object LogCat {
 	private const val prefix = "PPMessages"
-	private const val SHOW_FULL_MESSAGES = false
-	
+	private const val SHOW_FULL_MESSAGES = true
+
 	private fun reduceLongMessage(message: String): String {
-		if (SHOW_FULL_MESSAGES) { return message }
+		if (SHOW_FULL_MESSAGES) return message
 		return message.split("\n").take(10).joinToString("\n")
 	}
 
@@ -21,6 +21,12 @@ object LogCat {
 	@JvmOverloads
 	fun debug(tag: String, message: String, throwable: Throwable? = null) {
 		Log.d("$prefix:$tag", reduceLongMessage(message), throwable)
+	}
+
+	@JvmStatic
+	@JvmOverloads
+	fun info(tag: String, message: String, throwable: Throwable? = null) {
+		Log.i("$prefix:$tag", reduceLongMessage(message), throwable)
 	}
 
 	@JvmStatic

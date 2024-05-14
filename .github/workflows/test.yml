@@ -1,0 +1,93 @@
+name: Test
+on: [pull_request, workflow_dispatch, workflow_call]
+
+concurrency:
+  group: test-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  test_unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'microsoft'
+          cache: gradle
+
+      - name: Run Unit Tests
+        run: ./gradlew testReleaseUnitTest
+        continue-on-error: false
+
+  test_unit_coverage:
+    name: Unit Tests Coverage
+    runs-on: ubuntu-latest
+    # test coverage only runs on PRs
+    if: ${{ github.event_name == 'pull_request' }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Run Unit Tests Coverage
+        run: ./gradlew koverXmlReportDebug
+
+      - name: Show Coverage Report XML
+        run: cat library/build/reports/kover/reportDebug.xml
+
+      - name: Add coverage report to PR
+        id: kover
+        uses: mi-kas/kover-report@v1.8
+        with:
+          path: ${{ github.workspace }}/library/build/reports/kover/reportDebug.xml
+          title: Code Coverage
+          update-comment: true
+          min-coverage-overall: 85
+          min-coverage-changed-files: 85
+          coverage-counter-type: LINE
+
+  test_instrumentation:
+    name: Instrumentation Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Run Instrumentation Tests
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 23
+          target: google_apis
+          arch: x86_64
+          script: ./gradlew connectedCheck --info | tee connectedCheck.log
+        continue-on-error: true
+
+      - name: Show Test XML
+        run: |
+          mkdir -p library/build/outputs/androidTest-results/connected/logs
+          grep -E 'com.paypal.*Test.*(SUCCESS|FAILED|failed)' connectedCheck.log > library/build/outputs/androidTest-results/connected/logs/connectedCheck.xml
+          cat library/build/outputs/androidTest-results/connected/**/*.xml
+          echo ""
+          error_count=$(grep -E 'com.paypal.*Test.*(FAILED|failed|failure)' library/build/outputs/androidTest-results/connected/**/*.xml | wc -l | awk '{$1=$1};1')
+          if [[ "$error_count" -ne "0" ]]; then echo "Tests failed. See above"; exit 1; fi

@@ -1,6 +1,69 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+import org.jmailen.gradle.kotlinter.tasks.LintTask
+import org.jmailen.gradle.kotlinter.tasks.FormatTask
+
+buildscript {
+	ext.modules = [
+		"sdkVersionName"      : "1.0.0-develop.3",
+		"androidMinSdkVersion": 23,
+		"androidTargetVersion": 34
+	]
+}
+
 plugins {
-  id 'com.android.application' version '8.0.2' apply false
-  id 'com.android.library' version '8.0.2' apply false
-  id 'org.jetbrains.kotlin.android' version '1.8.22' apply false
+	id 'com.android.application' version '8.0.2' apply false
+	id 'com.android.library' version '8.0.2' apply false
+	id 'org.jetbrains.kotlin.android' version '1.8.22' apply false
+	id 'org.jmailen.kotlinter' version '3.16.0'
+	id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
+	id 'signing'
+}
+
+tasks.register('ktLint', LintTask) {
+	group 'formatting'
+	source files('demo/src', 'library/src')
+	reports = [
+		'checkstyle': file('build/reports/ktlint/main-lint.xml')
+	]
+}
+
+tasks.register('ktFormat', FormatTask) {
+	group 'formatting'
+	source files('demo/src', 'library/src')
+	report = file('build/reports/ktlint/format-report.txt')
+}
+
+version modules.sdkVersionName
+
+nexusPublishing {
+	repositories {
+		sonatype {
+			username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
+			password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
+			repositoryDescription = 'Paypal Messages'
+			packageGroup = 'com.paypal'
+		}
+	}
+	transitionCheckOptions {
+		// give nexus sonatype more time to close the staging repository
+		delayBetween.set(Duration.ofSeconds(20))
+	}
+}
+
+subprojects {
+  group = "com.paypal.messages"
+}
+
+//./gradlew -PversionParam=0.0.1 changeReleaseVersion
+tasks.register('changeReleaseVersion') {
+	doLast {
+		def topLevelGradleFile = file('./build.gradle')
+		def topLevelGradleFileText = topLevelGradleFile.getText('UTF-8')
+		def useSnapshot = System.getenv('USE_SNAPSHOT')
+		def snapshotParam = useSnapshot == "true" || useSnapshot == true ? "-SNAPSHOT" : ""
+		
+		def updatedScript =
+			topLevelGradleFileText.replaceFirst(/("sdkVersionName"\s*: )".*",/, '$1"' + versionParam + snapshotParam + '",')
+		topLevelGradleFile.write(updatedScript, 'UTF-8')
+	}
 }

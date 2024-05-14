@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+	<base-config cleartextTrafficPermitted="@string/clear_text_config">
+		<trust-anchors>
+			<certificates src="system" />
+		</trust-anchors>
+	</base-config>
+</network-security-config>
+
+<!--
+When updating to API 24+, use
+<application android:networkSecurityConfig="@xml/network_security_config" />
+-->
