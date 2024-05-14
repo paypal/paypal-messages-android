@@ -1,6 +1,10 @@
 package com.paypal.messages.analytics
 
 import android.content.Context
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonArray
+import com.paypal.messages.extensions.getJsonElement
+import com.paypal.messages.extensions.getJsonObject
 import com.paypal.messages.io.Api
 import com.paypal.messages.io.LocalStorage
 import com.paypal.messages.utils.LogCat
@@ -12,6 +16,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class AnalyticsLogger private constructor() {
+	private val gson = GsonBuilder().setPrettyPrinting().create()
 	companion object {
 		private const val TAG: String = "AnalyticsLogger"
 
@@ -99,6 +104,12 @@ class AnalyticsLogger private constructor() {
 
 	private var job: Job? = null
 	private fun sendEvent(context: Context, finalPayload: AnalyticsPayload) {
+		val payloadJson = gson.getJsonObject(finalPayload)
+
+		val jsonArray = JsonArray()
+		finalPayload.components.forEach { jsonArray.add(it.getData()) }
+		payloadJson.add("components", jsonArray)
+
 		job?.cancel()
 		job = CoroutineScope(Dispatchers.IO).launch {
 			delay(5000) // Wait 5 seconds before sending our payload
@@ -111,8 +122,8 @@ class AnalyticsLogger private constructor() {
 			}
 			LogCat.debug(TAG, "merchantHash: ${hash}\npayloadSummary:\n$payloadSummary")
 
-			finalPayload.merchantProfileHash = hash
-			Api.callLoggerEndpoint(finalPayload)
+			payloadJson.add("merchant_profile_hash", gson.getJsonElement("$hash"))
+			Api.callLoggerEndpoint(payloadJson)
 			resetBasePayload()
 		}
 	}

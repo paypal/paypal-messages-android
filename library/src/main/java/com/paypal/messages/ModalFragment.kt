@@ -29,6 +29,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import com.paypal.messages.analytics.AnalyticsComponent
 import com.paypal.messages.analytics.AnalyticsEvent
@@ -53,6 +54,7 @@ internal class ModalFragment(
 ) : BottomSheetDialogFragment() {
 	private val TAG = "PayPalMessageModal"
 	private val offsetTop = 50.dp
+	private val gson = GsonBuilder().setPrettyPrinting().create()
 
 	private var modalUrl: String? = null
 
@@ -118,10 +120,7 @@ internal class ModalFragment(
 		val colorInt = Color.parseColor(this.closeButtonData?.color)
 		closeButton.background.colorFilter = PorterDuffColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP)
 
-		closeButton?.setOnClickListener {
-			logEvent(AnalyticsEvent(eventType = EventType.MODAL_CLOSED))
-			dialog?.hide()
-		}
+		closeButton?.setOnClickListener { dialog?.hide() }
 
 		// If we already have a WebView, don't reset it
 		LogCat.debug(TAG, "Configuring WebView Settings and Handlers")
@@ -371,7 +370,7 @@ internal class ModalFragment(
 		val nameAndArgs = JsonParser.parseString(params).asJsonObject
 		val name = nameAndArgs.get("name").asString
 		val args = nameAndArgs.get("args").asJsonArray[0].asJsonObject
-		LogCat.debug(TAG, "CallbackHandler:\n  name = $name\n  args = $args")
+		LogCat.debug(TAG, "CallbackHandler:\n  name = $name\n  args = ${gson.toJson(args)}")
 
 		// If __shared__ does not exist, use an empty object
 		val sharedJson = args.get("__shared__") ?: JsonParser.parseString("{}")
@@ -403,6 +402,17 @@ internal class ModalFragment(
 					AnalyticsEvent(
 						eventType = EventType.MODAL_CLICKED,
 						data = "$calculatorAmount",
+					),
+					shared,
+				)
+			}
+
+			"onReady" -> {
+				logEvent(
+					AnalyticsEvent(
+						eventType = EventType.MODAL_RENDERED,
+						renderDuration = args.get("render_duration")?.asString ?: "",
+						requestDuration = args.get("request_duration")?.asString ?: "",
 					),
 					shared,
 				)

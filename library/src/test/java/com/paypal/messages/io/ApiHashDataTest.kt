@@ -32,6 +32,7 @@ class ApiHashDataTest {
 	@Test
 	fun testResponseSerialization() {
 		val json = gson.toJson(response)
+		// TODO: Make this a loop over expectedParts like ModalCloseButtonTest.testSerialization
 		assertEquals(
 			json,
 			@Suppress("ktlint:standard:max-line-length")

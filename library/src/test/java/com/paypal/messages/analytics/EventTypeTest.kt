@@ -30,11 +30,6 @@ class EventTypeTest {
 	}
 
 	@Test
-	fun testModalClose() {
-		assertEquals(EventType.MODAL_CLOSED.toString(), "modal_closed")
-	}
-
-	@Test
 	fun testModalError() {
 		assertEquals(EventType.MODAL_ERROR.toString(), "modal_error")
 	}

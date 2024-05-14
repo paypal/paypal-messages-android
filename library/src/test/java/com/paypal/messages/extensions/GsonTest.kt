@@ -68,4 +68,19 @@ class GsonTest {
 		val parsedJson = JsonParser.parseString("null")
 		assertThrows<IllegalArgumentException> { Gson::class.jsonValueToAny(parsedJson) }
 	}
+
+	private val gson = Gson()
+
+	@Test
+	fun testGetJsonObject() {
+		data class TestClass(val testKey: String)
+		val jsonObject = gson.getJsonObject(TestClass("test_value"))
+		assertEquals(jsonObject.get("testKey").asString, "test_value")
+	}
+
+	@Test
+	fun testGetJsonElement() {
+		val jsonElement = gson.getJsonElement("test_value")
+		assertEquals(jsonElement.asString, "test_value")
+	}
 }

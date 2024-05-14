@@ -1,6 +1,7 @@
 package com.paypal.messages.analytics
 
 import com.google.gson.Gson
+import com.paypal.messages.extensions.getJsonObject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -24,17 +25,20 @@ class CloudEventTest {
 	@Suppress("ktlint:standard:max-line-length")
 	private val dataSchema = "ppaas:events.credit.FinancingPresentmentAsyncAPISpecification/v1/schema/json/credit_upstream_presentment_event.json"
 
-	private val data = AnalyticsPayload(
-		clientId = clientId,
-		merchantId = merchantId,
-		partnerAttributionId = partnerAttributionId,
-		merchantProfileHash = merchantProfileHash,
-		instanceId = instanceId,
-		integrationName = integrationName,
-		integrationType = integrationType,
-		integrationVersion = integrationVersion,
-		libraryVersion = libraryVersion,
-		components = components,
+	private val gson = Gson()
+	private val data = gson.getJsonObject(
+		AnalyticsPayload(
+			clientId = clientId,
+			merchantId = merchantId,
+			partnerAttributionId = partnerAttributionId,
+			merchantProfileHash = merchantProfileHash,
+			instanceId = instanceId,
+			integrationName = integrationName,
+			integrationType = integrationType,
+			integrationVersion = integrationVersion,
+			libraryVersion = libraryVersion,
+			components = components,
+		),
 	)
 
 	private val cloudWrappedEvent = CloudEvent(
