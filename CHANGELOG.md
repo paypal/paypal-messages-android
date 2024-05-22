@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.1](https://github.com/paypal/paypal-messages-android/compare/1.0.0...1.0.1) (2024-05-22)
+
+
+### Code Refactoring
+
+* send integration name and integration version in message request ([#42](https://github.com/paypal/paypal-messages-android/issues/42)) ([baf3e8a](https://github.com/paypal/paypal-messages-android/commit/baf3e8a48fb1edc44a27ff847b5bf452060f161c))
+
+
+### Continuous Integration
+
+* add sync step ([a69e7e9](https://github.com/paypal/paypal-messages-android/commit/a69e7e9a1a8f87536d03b871686c8abe5bb0347c))
+* fix release os ([#41](https://github.com/paypal/paypal-messages-android/issues/41)) ([8e2ee37](https://github.com/paypal/paypal-messages-android/commit/8e2ee379053d5e95da7191f3c78df9cb4fd73193))
+
 ## 1.0.0 (2024-05-14)
 
 
