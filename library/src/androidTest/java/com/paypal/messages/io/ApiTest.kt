@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
+import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
 import com.paypal.messages.config.message.PayPalMessageStyle
 import com.paypal.messages.io.Api.preventEmptyValues
@@ -98,6 +99,7 @@ class ApiTest {
 			),
 			style = PayPalMessageStyle(),
 		)
+		PayPalMessageConfig.setGlobalAnalytics("test_integration_name", "test_integration_version")
 		val messageDataRequest = Api.createMessageDataRequest(config, "hash", instanceId)
 		val url = messageDataRequest.url.toString()
 
@@ -114,6 +116,8 @@ class ApiTest {
 			"buyer_country=US",
 			"offer=PAY_LATER_PAY_IN_1",
 			"merchant_config=hash",
+			"integration_name=test_integration_name",
+			"integration_version=test_integration_version",
 		)
 		expectedQueryParts.forEach { assertTrue("url does not contain $it", url.contains(it)) }
 	}

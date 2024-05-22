@@ -60,6 +60,14 @@ jobs:
           SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
         run: npx semantic-release@21
 
+      - name: Sync release to develop
+        uses: devmasx/merge-branch@master
+        with:
+          type: now
+          from_branch: release
+          target_branch: develop
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Publish to Maven
         uses: ./.github/actions/publish_all_modules
         with:

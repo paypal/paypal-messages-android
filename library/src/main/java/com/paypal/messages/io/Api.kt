@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.paypal.messages.BuildConfig
 import com.paypal.messages.analytics.CloudEvent
+import com.paypal.messages.analytics.GlobalAnalytics
 import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +45,11 @@ object Api {
 		if (devTouchpoint) addQueryParameter("dev_touchpoint", "true")
 		if (ignoreCache) addQueryParameter("ignore_cache", "true")
 		addQueryParameter("instance_id", instanceId.toString())
+
+		GlobalAnalytics.integrationName.takeIf { it.isNotEmpty() }?.let {
+			addQueryParameter("integration_name", GlobalAnalytics.integrationName)
+			addQueryParameter("integration_version", GlobalAnalytics.integrationVersion)
+		}
 
 		if (!stageTag.isNullOrBlank()) { addQueryParameter("stage_tag", stageTag) }
 
