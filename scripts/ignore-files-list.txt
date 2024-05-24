@@ -1,0 +1,2 @@
+demo/src/main/res/values/locals.xml
+.idea/dictionaries/base.xml
