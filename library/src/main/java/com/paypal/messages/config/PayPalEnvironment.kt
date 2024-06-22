@@ -3,45 +3,34 @@ package com.paypal.messages.config
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
-enum class PayPalEnvironment {
-	LOCAL,
-	STAGE,
-	SANDBOX,
-	LIVE,
-	;
+sealed class PayPalEnvironment {
+	abstract val presentmentUrl: String
+	abstract val loggerBaseUrl: String
+	abstract val isProduction: Boolean
 
-	val isProduction: Boolean
-		get() = this == LIVE || this == SANDBOX
-
-	private var host: String? = null
-	private var port: Int? = null
-
-	companion object {
-		fun local(port: Int = 8443): PayPalEnvironment {
-			LOCAL.port = port
-			return LOCAL
-		}
-		fun stage(host: String): PayPalEnvironment {
-			STAGE.host = host
-			return STAGE
-		}
+	class LocalEnvironment(port: Int) : PayPalEnvironment() {
+		override val presentmentUrl = "http://localhost:$port"
+		override val loggerBaseUrl = presentmentUrl
+		override val isProduction = false
 	}
 
-	private val presentmentUrl: String
-		get() = when (this) {
-			LOCAL -> "http://localhost:$port"
-			STAGE -> "https://www.$host"
-			SANDBOX -> "https://www.sandbox.paypal.com"
-			LIVE -> "https://www.paypal.com"
-		}
+	class StageEnvironment(host: String) : PayPalEnvironment() {
+		override val presentmentUrl = "https://www.$host"
+		override val loggerBaseUrl = "https://api.$host"
+		override val isProduction = false
+	}
 
-	private val loggerBaseUrl: String
-		get() = when (this) {
-			LOCAL -> presentmentUrl
-			STAGE -> "https://api.$host"
-			SANDBOX -> "https://api.sandbox.paypal.com"
-			LIVE -> "https://api.paypal.com"
-		}
+	class SandboxEnvironment : PayPalEnvironment() {
+		override val presentmentUrl = "https://www.sandbox.paypal.com"
+		override val loggerBaseUrl = "https://api.sandbox.paypal.com"
+		override val isProduction = true
+	}
+
+	class LiveEnvironment : PayPalEnvironment() {
+		override val presentmentUrl = "https://www.paypal.com"
+		override val loggerBaseUrl = "https://api.paypal.com"
+		override val isProduction = true
+	}
 
 	enum class Endpoints(val path: String) {
 		MESSAGE_DATA("credit-presentment/native/message"),
@@ -53,5 +42,19 @@ enum class PayPalEnvironment {
 	fun url(endpoint: Endpoints): HttpUrl {
 		val baseUrl = if (endpoint === Endpoints.LOGGER) loggerBaseUrl else presentmentUrl
 		return "$baseUrl/${endpoint.path}".toHttpUrl()
+	}
+
+	@Suppress("FunctionName")
+	companion object {
+		fun LOCAL(port: Int = 8443): LocalEnvironment {
+			return LocalEnvironment(port)
+		}
+
+		fun STAGE(host: String): StageEnvironment {
+			return StageEnvironment(host)
+		}
+
+		val SANDBOX = SandboxEnvironment()
+		val LIVE = LiveEnvironment()
 	}
 }
