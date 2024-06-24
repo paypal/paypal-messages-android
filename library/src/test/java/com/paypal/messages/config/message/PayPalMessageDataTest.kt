@@ -12,6 +12,7 @@ class PayPalMessageDataTest {
 
 	@Test
 	fun testConstructor() {
+		val localEnvironment = PayPalEnvironment.LOCAL()
 		val data = PayPalMessageData(
 			clientID = initialClientID,
 			amount = 115.0,
@@ -20,7 +21,7 @@ class PayPalMessageDataTest {
 			buyerCountry = "buyer_country_test",
 			merchantID = "merchant_id_test",
 			partnerAttributionID = "partner_attribution_id_test",
-			environment = PayPalEnvironment.LOCAL,
+			environment = localEnvironment,
 		)
 
 		assertEquals(data.clientID, initialClientID)
@@ -30,7 +31,7 @@ class PayPalMessageDataTest {
 		assertEquals(data.buyerCountry, "buyer_country_test")
 		assertEquals(data.merchantID, "merchant_id_test")
 		assertEquals(data.partnerAttributionID, "partner_attribution_id_test")
-		assertEquals(data.environment, PayPalEnvironment.LOCAL)
+		assertEquals(data.environment, localEnvironment)
 	}
 
 	@Test
@@ -43,7 +44,7 @@ class PayPalMessageDataTest {
 			buyerCountry = "ES",
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 			pageType = PayPalMessagePageType.CART,
-			environment = PayPalEnvironment.LOCAL,
+			environment = PayPalEnvironment.LOCAL(),
 		)
 
 		val data = oldData.clone()
