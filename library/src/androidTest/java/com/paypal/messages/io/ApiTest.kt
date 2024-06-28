@@ -126,7 +126,7 @@ class ApiTest {
 	@Test
 	fun testCallMessageDataEndpointWith404() = runTest(standardTestDispatcher) {
 		val mockServerPort = mockWebServer.url("").port
-		Api.env = PayPalEnvironment.LOCAL(mockServerPort)
+		Api.env = PayPalEnvironment.DEVELOP(mockServerPort)
 
 		val mockMessageDataResponse = MockResponse()
 			.setResponseCode(404)
@@ -156,7 +156,7 @@ class ApiTest {
 	@Test
 	fun testCallMessageDataEndpointWithBadData() = runTest(standardTestDispatcher) {
 		val mockServerPort = mockWebServer.url("").port
-		Api.env = PayPalEnvironment.LOCAL(mockServerPort)
+		Api.env = PayPalEnvironment.DEVELOP(mockServerPort)
 
 		val mockMessageDataResponse = MockResponse()
 			.setResponseCode(200)
@@ -191,7 +191,7 @@ class ApiTest {
 	@Test
 	fun testCallMessageDataEndpointWithGoodData() = runTest(standardTestDispatcher) {
 		val mockServerPort = mockWebServer.url("").port
-		Api.env = PayPalEnvironment.LOCAL(mockServerPort)
+		Api.env = PayPalEnvironment.DEVELOP(mockServerPort)
 
 		val mockMessageDataResponse = MockResponse()
 			.setResponseCode(200)
@@ -222,7 +222,7 @@ class ApiTest {
 	fun testGetMessageWithHash() = runTest(standardTestDispatcher) {
 		val mockServerPort = mockWebServer.url("").port
 		Api.ioDispatcher = standardTestDispatcher
-		Api.env = PayPalEnvironment.LOCAL(mockServerPort)
+		Api.env = PayPalEnvironment.DEVELOP(mockServerPort)
 
 		val mockMerchantProfileResponse = MockResponse()
 			.setBody(merchantProfileHashData)
@@ -271,7 +271,7 @@ class ApiTest {
 	@Test
 	fun testCallMessageHashEndpointWithFailure() = runTest(standardTestDispatcher) {
 		val mockServerPort = mockWebServer.url("").port
-		Api.env = PayPalEnvironment.LOCAL(mockServerPort)
+		Api.env = PayPalEnvironment.DEVELOP(mockServerPort)
 
 		val mockHashDataResponse = MockResponse()
 			.setResponseCode(404)
@@ -306,7 +306,7 @@ class ApiTest {
 	@Test
 	fun testCallMessageHashEndpointWithSuccess() = runTest(standardTestDispatcher) {
 		val mockServerPort = mockWebServer.url("").port
-		Api.env = PayPalEnvironment.LOCAL(mockServerPort)
+		Api.env = PayPalEnvironment.DEVELOP(mockServerPort)
 
 		val mockHashDataResponse = MockResponse()
 			.setResponseCode(200)

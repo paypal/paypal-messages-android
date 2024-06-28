@@ -12,7 +12,7 @@ class PayPalMessageDataTest {
 
 	@Test
 	fun testConstructor() {
-		val localEnvironment = PayPalEnvironment.LOCAL()
+		val localEnvironment = PayPalEnvironment.DEVELOP()
 		val data = PayPalMessageData(
 			clientID = initialClientID,
 			amount = 115.0,
@@ -44,7 +44,7 @@ class PayPalMessageDataTest {
 			buyerCountry = "ES",
 			offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
 			pageType = PayPalMessagePageType.CART,
-			environment = PayPalEnvironment.LOCAL(),
+			environment = PayPalEnvironment.DEVELOP(),
 		)
 
 		val data = oldData.clone()

@@ -8,15 +8,11 @@ sealed class PayPalEnvironment {
 	abstract val loggerBaseUrl: String
 	abstract val isProduction: Boolean
 
-	class LocalEnvironment(port: Int) : PayPalEnvironment() {
-		override val presentmentUrl = "http://localhost:$port"
-		override val loggerBaseUrl = presentmentUrl
-		override val isProduction = false
-	}
-
-	class StageEnvironment(host: String) : PayPalEnvironment() {
-		override val presentmentUrl = "https://www.$host"
-		override val loggerBaseUrl = "https://api.$host"
+	class DevelopEnvironment(host: String, port: Int? = null) : PayPalEnvironment() {
+		private val localUrl = "http://localhost:$port"
+		private val isLocal = host == "localhost"
+		override val presentmentUrl = if (isLocal) localUrl else "https://www.$host"
+		override val loggerBaseUrl = if (isLocal) localUrl else "https://api.$host"
 		override val isProduction = false
 	}
 
@@ -46,12 +42,11 @@ sealed class PayPalEnvironment {
 
 	@Suppress("FunctionName")
 	companion object {
-		fun LOCAL(port: Int = 8443): LocalEnvironment {
-			return LocalEnvironment(port)
+		fun DEVELOP(host: String): DevelopEnvironment {
+			return DevelopEnvironment(host)
 		}
-
-		fun STAGE(host: String): StageEnvironment {
-			return StageEnvironment(host)
+		fun DEVELOP(port: Int = 8443): DevelopEnvironment {
+			return DevelopEnvironment("localhost", port)
 		}
 
 		val SANDBOX = SandboxEnvironment()
