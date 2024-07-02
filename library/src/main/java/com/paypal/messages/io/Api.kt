@@ -29,7 +29,7 @@ object Api {
 	// if connecting to a test environment, use ApiClient.insecureClient
 	private val client = ApiClient.secureClient
 	private val gson = GsonBuilder().setPrettyPrinting().create()
-	var env = Env.SANDBOX
+	var env: Env = Env.SANDBOX
 	var devTouchpoint: Boolean = false
 	var ignoreCache: Boolean = false
 	var stageTag: String? = null
