@@ -444,6 +444,7 @@ internal class ModalFragment(
 			type = ComponentType.MODAL.toString(),
 			instanceId = this.instanceId.toString(),
 			componentEvents = mutableListOf(event),
+			offerType = this.offerType,
 			__shared__ = dynamicKeys,
 		)
 
