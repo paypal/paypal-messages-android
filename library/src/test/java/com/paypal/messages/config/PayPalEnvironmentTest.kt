@@ -9,10 +9,10 @@ import com.paypal.messages.config.PayPalEnvironment as Env
 class PayPalEnvironmentTest {
 	@Test
 	fun testIsProduction() {
-		assertTrue(Env.LIVE.isProduction, "LIVE is not production")
-		assertTrue(Env.SANDBOX.isProduction, "SANDBOX is not production")
-		assertFalse(Env.DEVELOP("").isProduction, "STAGE is production")
-		assertFalse(Env.DEVELOP().isProduction, "LOCAL is production")
+		assertTrue(Env.LIVE.isProduction, "LIVE is not production but it should be")
+		assertTrue(Env.SANDBOX.isProduction, "SANDBOX is not production but it should be")
+		assertFalse(Env.DEVELOP("").isProduction, "STAGE is production but it shouldn't be")
+		assertFalse(Env.DEVELOP().isProduction, "LOCAL is production but it shouldn't be")
 	}
 
 	@Test
