@@ -136,7 +136,7 @@
 				android:id="@+id/offerTypeLabel"
 				android:paddingTop="12dp"
 				android:paddingBottom="12dp"
-				android:layout_marginRight="12dp"
+				android:layout_marginEnd="12dp"
 				android:textStyle="bold"
 				android:textSize="16sp"/>
 			<Button
@@ -275,6 +275,12 @@
 				app:layout_constraintStart_toStartOf="parent"
 				app:layout_constraintTop_toTopOf="parent" />
 		</androidx.constraintlayout.widget.ConstraintLayout>
+
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="80dp"
+			android:text="@string/messages_modal_text"
+			android:id="@+id/messagesModalText" />
 
 <!--		<com.paypal.messages.PayPalMessageView-->
 <!--			android:layout_width="match_parent"-->

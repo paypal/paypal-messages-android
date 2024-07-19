@@ -5,10 +5,12 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color
 import com.paypal.messages.PayPalMessageView
+import com.paypal.messages.PayPalMessagesModalView
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.PayPalMessagePageType
@@ -18,6 +20,7 @@ import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
 import com.paypal.messages.config.message.style.PayPalMessageAlignment
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
+import com.paypal.messages.config.modal.PayPalMessagesModalConfig
 import com.paypal.messages.io.Api
 import com.paypal.messagesdemo.databinding.ActivityMessageBinding
 
@@ -34,6 +37,17 @@ class XmlActivity : AppCompatActivity() {
 		super.onCreate(savedInstanceState)
 		binding = ActivityMessageBinding.inflate(layoutInflater)
 		setContentView(binding.root)
+
+		val modalConfig = PayPalMessagesModalConfig(
+			clientID = getString(R.string.client_id),
+			amount = 300.0,
+			offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM,
+		)
+		val modal = PayPalMessagesModalView(context = this, config = modalConfig)
+		val messagesModalText = binding.messagesModalText
+		messagesModalText.setOnClickListener {
+			modal.show()
+		}
 
 		val messageWrapper = binding.messageWrapper
 		val progressBar = binding.progressBar
@@ -205,5 +219,27 @@ class XmlActivity : AppCompatActivity() {
 		message.onLoading = {}
 		message.onSuccess = {}
 		message.onError = {}
+
+		val modalConfig = PayPalMessagesModalConfig(clientID = "someClientID")
+		val modal = PayPalMessagesModalView(context = this, config = modalConfig)
+		modal.getConfig()
+		modal.setConfig(modalConfig)
+		modal.environment = PayPalEnvironment.SANDBOX
+		modal.clientID = ""
+		modal.merchantID = ""
+		modal.partnerAttributionID = ""
+		modal.onClick = {}
+		modal.onApply = {}
+		modal.onLoading = {}
+		modal.onSuccess = {}
+		modal.onError = {}
+		modal.onCalculate = {}
+		modal.onShow = {}
+		modal.onClose = {}
+
+		val textView = TextView(this)
+		textView.setOnClickListener {
+			modal.show()
+		}
 	}
 }
