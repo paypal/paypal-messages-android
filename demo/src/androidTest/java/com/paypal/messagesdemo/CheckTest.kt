@@ -66,7 +66,7 @@ object GravityMatcher {
 }
 
 @RunWith(AndroidJUnit4ClassRunner::class)
-public class CheckTest {
+public class CheckXmlTest {
 	var expectedColor: Int? = null
 
 	@get:Rule
@@ -156,7 +156,7 @@ public class CheckTest {
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
 		onView(withId(R.id.content)).check(matches(withText("%paypal_logo% Buy now, pay later. Learn more")))
-		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(PayPalMessageAlignment.RIGHT.value)))
+		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.RIGHT)))
 	}
 
 	@Test
@@ -187,7 +187,86 @@ public class CheckTest {
 		onView(withId(R.id.content))
 			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
 	}
-	
-	// MONOCHROME
-	// GRAYSCALE
+
+	fun testGenericMonochromeBuyNowPayLaterMessage() {
+		// Perform a delay
+		onView(isRoot()).perform(waitFor(500))
+		onView(withId(Demo.id.styleMonochrome)).perform(click())
+		submit()
+
+		// Get the actual color value from the resource ID
+		activityScenarioRule.scenario.onActivity { activity ->
+			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.MONOCHROME.colorResId)
+		}
+
+		// Use the custom matcher to check the text color of the TextView
+		onView(withId(R.id.content))
+			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
+	}
+
+	fun testGenericGrayscaleBuyNowPayLaterMessage() {
+		// Perform a delay
+		onView(isRoot()).perform(waitFor(500))
+		onView(withId(Demo.id.styleGrayscale)).perform(click())
+		submit()
+
+		// Get the actual color value from the resource ID
+		activityScenarioRule.scenario.onActivity { activity ->
+			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.GRAYSCALE.colorResId)
+		}
+
+		// Use the custom matcher to check the text color of the TextView
+		onView(withId(R.id.content))
+			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
+	}
+}
+
+@RunWith(AndroidJUnit4ClassRunner::class)
+public class CheckJetPackTest {
+	var expectedColor: Int? = null
+
+	@get:Rule
+	val activityScenarioRule = ActivityScenarioRule(JetpackActivity::class.java)
+
+	// Custom ViewAction to wait
+	fun waitFor(millis: Long): ViewAction {
+		return object : ViewAction {
+			override fun getConstraints(): Matcher<View> {
+				return isRoot()
+			}
+
+			override fun getDescription(): String {
+				return "wait for $millis milliseconds"
+			}
+
+			override fun perform(uiController: UiController, view: View) {
+				uiController.loopMainThreadForAtLeast(millis)
+			}
+		}
+	}
+
+	fun submit() {
+		onView(withId(Demo.id.submit)).perform(scrollTo())
+		onView(withId(Demo.id.submit)).perform(click())
+		onView(isRoot()).perform(waitFor(500))
+	}
+
+	@Test
+	fun testGenericBuyNowPayLaterMessage() {
+		// Perform a delay
+		onView(isRoot()).perform(waitFor(500))
+
+		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
+		onView(withId(R.id.content)).check(matches(withText("%paypal_logo% Buy now, pay later. Learn more")))
+		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.LEFT)))
+
+		// Get the actual color value from the resource ID
+		activityScenarioRule.scenario.onActivity { activity ->
+			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.BLACK.colorResId)
+		}
+
+		// Use the custom matcher to check the text color of the TextView
+		onView(withId(R.id.content))
+			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
+	}
 }
