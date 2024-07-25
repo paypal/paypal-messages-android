@@ -9,8 +9,10 @@ import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
+import androidx.test.espresso.action.ViewActions.clearText
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
+import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.isRoot
@@ -187,6 +189,26 @@ private fun closeModal() {
 	onView(withId(R.id.ModalCloseButton)).perform(click())
 }
 
+private fun clickOffer(offerId: Int) {
+	onView(withId(offerId)).perform(click())
+}
+
+private fun clickShortTermOffer() {
+	clickOffer(com.paypal.messagesdemo.R.id.offerShortTerm)
+}
+
+private fun clickLongTermOffer() {
+	clickOffer(com.paypal.messagesdemo.R.id.offerLongTerm)
+}
+
+private fun clickPayIn1() {
+	clickOffer(com.paypal.messagesdemo.R.id.offerPayIn1)
+}
+
+private fun clickNIOffer() {
+	clickOffer(com.paypal.messagesdemo.R.id.offerCredit)
+}
+
 @RunWith(AndroidJUnit4ClassRunner::class)
 public class XmlDemoTest {
 	var expectedColor: Int? = null
@@ -289,6 +311,55 @@ public class XmlDemoTest {
 		testPi4ModalContent()
 	}
 
+	@Test
+	fun testShorTermMessage() {
+		onView(isRoot()).perform(waitFor(500))
+		clickShortTermOffer()
+		submit()
+		onView(isRoot()).perform(waitFor(500))
+	}
+
+	@Test
+	fun testShortTermNonQualifyingMessage() {
+		onView(isRoot()).perform(waitFor(500))
+		clickShortTermOffer()
+
+		onView(withId(com.paypal.messagesdemo.R.id.amount)).perform(typeText("15"))
+		submit()
+		onView(isRoot()).perform(waitFor(500))
+		onView(withId(R.id.content)).check(matches(withText(containsString("payments on purchases of "))))
+		onView(isRoot()).perform(waitFor(500))
+		onView(withId(com.paypal.messagesdemo.R.id.amount)).perform(clearText())
+		onView(withId(com.paypal.messagesdemo.R.id.amount)).perform(typeText("2000"))
+		submit()
+		onView(withId(R.id.content)).check(matches(withText(containsString("payments on purchases of "))))
+
+		onView(isRoot()).perform(waitFor(500))
+	}
+
+	@Test
+	fun testShortTermQualifyingMessage() {
+		onView(isRoot()).perform(waitFor(500))
+		clickShortTermOffer()
+
+		onView(withId(com.paypal.messagesdemo.R.id.amount)).perform(typeText("1000"))
+		submit()
+		onView(isRoot()).perform(waitFor(500))
+		onView(withId(R.id.content)).check(matches(withText(containsString("250"))))
+	}
+
+	@Test
+	fun testShortTermMessageAndModal() {
+		onView(isRoot()).perform(waitFor(500))
+		clickShortTermOffer()
+		submit()
+		onView(isRoot()).perform(waitFor(500))
+		clickMessage()
+		testPi4ModalContent()
+		closeModal()
+	}
+
+	// Demo inputs
 	@Test
 	fun testGenericInlineLogoBuyNowPayLaterMessage() {
 		// Perform a delay
@@ -425,7 +496,7 @@ public class InlineXmlTest {
 	}
 
 	@Test
-	fun testGenericMessageAndModal() {
+	fun testGenericModalCloseWithBackButton() {
 		onView(isRoot()).perform(waitFor(500))
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
