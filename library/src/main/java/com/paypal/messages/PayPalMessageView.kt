@@ -284,8 +284,8 @@ class PayPalMessageView @JvmOverloads constructor(
 	}
 
 	private fun showWebView(response: ApiMessageData.Response) {
-		val modal = modal ?: run {
-			val modal = ModalFragment(clientID)
+		val modal = this.modal ?: run {
+			val newModal = ModalFragment(clientID)
 			// Build modal config
 			val modalConfig = ModalConfig(
 				amount = this.amount,
@@ -302,12 +302,15 @@ class PayPalMessageView @JvmOverloads constructor(
 				modalCloseButton = response.meta?.modalCloseButton!!,
 			)
 
-			modal.init(modalConfig)
-			modal.show((context as AppCompatActivity).supportFragmentManager, modal.tag)
+			newModal.init(modalConfig)
 
-			this.modal = modal
+			val activity = context as? AppCompatActivity
+			if (activity != null && !activity.isFinishing && !activity.isDestroyed) {
+				newModal.show(activity.supportFragmentManager, newModal.tag)
+				this.modal = newModal
+			}
 
-			modal
+			newModal
 		}
 
 		// modal.show() above will display the modal on initial view, but if the user closes the modal
@@ -315,15 +318,21 @@ class PayPalMessageView @JvmOverloads constructor(
 		// attempting to reattach it
 		// the delay prevents noticeable shift when the offer type is changed
 		handler.postDelayed({
-			modal.expand()
+			if (modal.isAdded) {
+				modal.expand()
+			}
 		}, 250)
 	}
 
 	override fun onDetachedFromWindow() {
 		super.onDetachedFromWindow()
 		// The modal will not dismiss (destroy) itself, it will only hide/show when opening and closing
-		// so we need to cleanup the modal instance if the message is removed
-		this.modal?.dismiss()
+		// so we need to clean up the modal instance if the message is removed
+		this.modal?.let {
+			if (it.isAdded) {
+				it.dismiss()
+			}
+		}
 	}
 
 	/**

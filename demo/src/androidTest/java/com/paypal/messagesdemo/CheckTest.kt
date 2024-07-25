@@ -104,36 +104,27 @@ private fun submit() {
 	onView(isRoot()).perform(waitFor(500))
 }
 
-private fun testPi4Present() {
+private fun pi4Present() {
 	onWebView(ViewMatchers.withId(R.id.ModalWebView)).withElement(DriverAtoms.findElement(Locator.TAG_NAME, "body")).check(
 		WebViewAssertions.webMatches(DriverAtoms.getText(), containsString("Interest-free payments every 2 weeks, starting today.")),
 	)
 }
 
-private fun testPayMonthlyPresent() {
+private fun payMonthlyPresent() {
 	onWebView(ViewMatchers.withId(R.id.ModalWebView)).withElement(DriverAtoms.findElement(Locator.TAG_NAME, "body")).check(
 		WebViewAssertions.webMatches(DriverAtoms.getText(), containsString("Split your purchase into equal monthly payments.")),
 	)
 }
 
-private fun testNIPresent() {
+private fun niPresent() {
 	onWebView(ViewMatchers.withId(R.id.ModalWebView)).withElement(DriverAtoms.findElement(Locator.TAG_NAME, "body")).check(
 		WebViewAssertions.webMatches(DriverAtoms.getText(), containsString("No Interest if paid in full in 6 months for purchases of \$99+.")),
 	)
 }
 
-private fun testCloseButtonPresent() {
+private fun closeButtonPresent() {
 	onView(withId(R.id.ModalCloseButton)).check(
 		matches(ViewMatchers.isDisplayed()),
-	)
-}
-
-private fun testTerms() {
-	onWebView(ViewMatchers.withId(R.id.ModalWebView)).withElement(DriverAtoms.findElement(Locator.TAG_NAME, "body")).check(
-		WebViewAssertions.webMatches(
-			DriverAtoms.getText(),
-			containsString("Terms apply for each option. Offer availability may depend on consumer & merchant eligibility."),
-		),
 	)
 }
 
@@ -143,15 +134,15 @@ private fun clickTileByIndex(index: Int) {
 		.perform(DriverAtoms.webClick())
 }
 
-private fun clickTilePi4() {
+private fun clickPi4Tile() {
 	clickTileByIndex(1)
 }
 
-private fun clickTilePayMonthly() {
+private fun clickPayMonthlyTile() {
 	clickTileByIndex(2)
 }
 
-private fun clickTileNI() {
+private fun clickNiTile() {
 	clickTileByIndex(3)
 }
 
@@ -167,22 +158,22 @@ private fun clickSeeOtherModalOptions() {
 	).withElement(DriverAtoms.findElement(Locator.ID, "productListLink")).perform(DriverAtoms.webClick())
 }
 
-private fun testModalContent(expectedText: String) {
+private fun modalContent(expectedText: String) {
 	onWebView(ViewMatchers.withId(R.id.ModalWebView))
 		.withElement(DriverAtoms.findElement(Locator.TAG_NAME, "body"))
 		.check(WebViewAssertions.webMatches(DriverAtoms.getText(), containsString(expectedText)))
 }
 
-private fun testPi4ModalContent() {
-	testModalContent("Pay in 4")
+private fun pi4ModalContent() {
+	modalContent("Pay in 4")
 }
 
-private fun testPayMonthlyContent() {
-	testModalContent("Pay Monthly")
+private fun payMonthlyContent() {
+	modalContent("Pay Monthly")
 }
 
-private fun testNIContent() {
-	testModalContent("Credit")
+private fun niContent() {
+	modalContent("Credit")
 }
 
 private fun closeModal() {
@@ -247,7 +238,7 @@ public class XmlDemoTest {
 			matches(ViewMatchers.isDisplayed()),
 		)
 
-		testModalContent("Pay Later options")
+		modalContent("Pay Later options")
 	}
 
 	@Test
@@ -260,21 +251,21 @@ public class XmlDemoTest {
 			matches(ViewMatchers.isDisplayed()),
 		)
 
-		testCloseButtonPresent()
-		testPi4Present()
-		testPayMonthlyPresent()
-		testNIPresent()
+		closeButtonPresent()
+		pi4Present()
+		payMonthlyPresent()
+		niPresent()
 
-		clickTileNI()
-		testNIContent()
+		clickNiTile()
+		niContent()
 		clickSeeOtherModalOptions()
 
-		clickTilePi4()
-		testPi4ModalContent()
+		clickPi4Tile()
+		pi4ModalContent()
 		clickSeeOtherModalOptions()
 
-		clickTilePayMonthly()
-		testPayMonthlyContent()
+		clickPayMonthlyTile()
+		payMonthlyContent()
 		clickSeeOtherModalOptions()
 
 		closeModal()
@@ -303,12 +294,12 @@ public class XmlDemoTest {
 			matches(ViewMatchers.isDisplayed()),
 		)
 
-		clickTilePi4()
-		testPi4ModalContent()
+		clickPi4Tile()
+		pi4ModalContent()
 		closeModal()
 
 		clickMessage()
-		testPi4ModalContent()
+		pi4ModalContent()
 	}
 
 	@Test
@@ -355,8 +346,22 @@ public class XmlDemoTest {
 		submit()
 		onView(isRoot()).perform(waitFor(500))
 		clickMessage()
-		testPi4ModalContent()
+		pi4ModalContent()
 		closeModal()
+	}
+
+	@Test
+	fun testShortTermOpenAndSwitchModal() {
+		onView(isRoot()).perform(waitFor(500))
+		clickShortTermOffer()
+		submit()
+		onView(isRoot()).perform(waitFor(500))
+		clickMessage()
+		pi4ModalContent()
+		clickSeeOtherModalOptions()
+		onView(isRoot()).perform(waitFor(200))
+		clickPi4Tile()
+		pi4ModalContent()
 	}
 
 	// Demo inputs
@@ -507,11 +512,11 @@ public class InlineXmlTest {
 			matches(ViewMatchers.isDisplayed()),
 		)
 
-		testModalContent("Pay Later options")
+		modalContent("Pay Later options")
 		Espresso.pressBack()
 		clickMessage()
 		onView(isRoot()).perform(waitFor(5000))
-		testModalContent("Pay Later options")
+		modalContent("Pay Later options")
 
 		closeModal()
 	}
