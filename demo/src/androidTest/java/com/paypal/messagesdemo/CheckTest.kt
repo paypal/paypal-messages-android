@@ -104,19 +104,19 @@ private fun submit() {
 	onView(isRoot()).perform(waitFor(500))
 }
 
-private fun pi4Present() {
+private fun checkPi4TilePresent() {
 	onWebView(ViewMatchers.withId(R.id.ModalWebView)).withElement(DriverAtoms.findElement(Locator.TAG_NAME, "body")).check(
 		WebViewAssertions.webMatches(DriverAtoms.getText(), containsString("Interest-free payments every 2 weeks, starting today.")),
 	)
 }
 
-private fun payMonthlyPresent() {
+private fun checkPayMonthlyTilePresent() {
 	onWebView(ViewMatchers.withId(R.id.ModalWebView)).withElement(DriverAtoms.findElement(Locator.TAG_NAME, "body")).check(
 		WebViewAssertions.webMatches(DriverAtoms.getText(), containsString("Split your purchase into equal monthly payments.")),
 	)
 }
 
-private fun niPresent() {
+private fun checkNiTilePresent() {
 	onWebView(ViewMatchers.withId(R.id.ModalWebView)).withElement(DriverAtoms.findElement(Locator.TAG_NAME, "body")).check(
 		WebViewAssertions.webMatches(DriverAtoms.getText(), containsString("No Interest if paid in full in 6 months for purchases of \$99+.")),
 	)
@@ -164,15 +164,15 @@ private fun modalContent(expectedText: String) {
 		.check(WebViewAssertions.webMatches(DriverAtoms.getText(), containsString(expectedText)))
 }
 
-private fun pi4ModalContent() {
+private fun checkPi4ModalContent() {
 	modalContent("Pay in 4")
 }
 
-private fun payMonthlyContent() {
+private fun checkPayMonthlyContent() {
 	modalContent("Pay Monthly")
 }
 
-private fun niContent() {
+private fun checkNIContent() {
 	modalContent("Credit")
 }
 
@@ -200,6 +200,18 @@ private fun clickNIOffer() {
 	clickOffer(com.paypal.messagesdemo.R.id.offerCredit)
 }
 
+private fun typeAmount(text: String) {
+	onView(withId(com.paypal.messagesdemo.R.id.amount)).perform(typeText(text))
+}
+
+private fun clearAmount() {
+	onView(withId(com.paypal.messagesdemo.R.id.amount)).perform(clearText())
+}
+
+private fun checkMessage(text: String) {
+	onView(withId(R.id.content)).check(matches(withText(containsString(text))))
+}
+
 @RunWith(AndroidJUnit4ClassRunner::class)
 public class XmlDemoTest {
 	var expectedColor: Int? = null
@@ -213,7 +225,7 @@ public class XmlDemoTest {
 		onView(isRoot()).perform(waitFor(500))
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		onView(withId(R.id.content)).check(matches(withText("%paypal_logo% Buy now, pay later. Learn more")))
+		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
 		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.LEFT)))
 
 		// Get the actual color value from the resource ID
@@ -231,7 +243,7 @@ public class XmlDemoTest {
 		onView(isRoot()).perform(waitFor(500))
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		onView(withId(R.id.content)).check(matches(withText("%paypal_logo% Buy now, pay later. Learn more")))
+		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
 		clickMessage()
 
 		onView(withId(R.id.ModalWebView)).check(
@@ -252,20 +264,20 @@ public class XmlDemoTest {
 		)
 
 		closeButtonPresent()
-		pi4Present()
-		payMonthlyPresent()
-		niPresent()
+		checkPi4TilePresent()
+		checkPayMonthlyTilePresent()
+		checkNiTilePresent()
 
 		clickNiTile()
-		niContent()
+		checkNIContent()
 		clickSeeOtherModalOptions()
 
 		clickPi4Tile()
-		pi4ModalContent()
+		checkPi4ModalContent()
 		clickSeeOtherModalOptions()
 
 		clickPayMonthlyTile()
-		payMonthlyContent()
+		checkPayMonthlyContent()
 		clickSeeOtherModalOptions()
 
 		closeModal()
@@ -295,11 +307,11 @@ public class XmlDemoTest {
 		)
 
 		clickPi4Tile()
-		pi4ModalContent()
+		checkPi4ModalContent()
 		closeModal()
 
 		clickMessage()
-		pi4ModalContent()
+		checkPi4ModalContent()
 	}
 
 	@Test
@@ -315,13 +327,13 @@ public class XmlDemoTest {
 		onView(isRoot()).perform(waitFor(500))
 		clickShortTermOffer()
 
-		onView(withId(com.paypal.messagesdemo.R.id.amount)).perform(typeText("15"))
+		typeAmount("15")
 		submit()
 		onView(isRoot()).perform(waitFor(500))
 		onView(withId(R.id.content)).check(matches(withText(containsString("payments on purchases of "))))
 		onView(isRoot()).perform(waitFor(500))
-		onView(withId(com.paypal.messagesdemo.R.id.amount)).perform(clearText())
-		onView(withId(com.paypal.messagesdemo.R.id.amount)).perform(typeText("2000"))
+		clearAmount()
+		typeAmount("2000")
 		submit()
 		onView(withId(R.id.content)).check(matches(withText(containsString("payments on purchases of "))))
 
@@ -346,7 +358,7 @@ public class XmlDemoTest {
 		submit()
 		onView(isRoot()).perform(waitFor(500))
 		clickMessage()
-		pi4ModalContent()
+		checkPi4ModalContent()
 		closeModal()
 	}
 
@@ -357,11 +369,56 @@ public class XmlDemoTest {
 		submit()
 		onView(isRoot()).perform(waitFor(500))
 		clickMessage()
-		pi4ModalContent()
+		checkPi4ModalContent()
 		clickSeeOtherModalOptions()
 		onView(isRoot()).perform(waitFor(200))
 		clickPi4Tile()
-		pi4ModalContent()
+		checkPi4ModalContent()
+	}
+
+	@Test
+	fun testShortTermQualifyingModal() {
+		onView(isRoot()).perform(waitFor(500))
+		clickShortTermOffer()
+		typeAmount("1000")
+		submit()
+		onView(isRoot()).perform(waitFor(500))
+		clickMessage()
+		checkPi4ModalContent()
+	}
+
+	@Test
+	fun testLongTermNonQualifyingMessage() {
+		onView(isRoot()).perform(waitFor(500))
+		clickLongTermOffer()
+		typeAmount("15")
+		submit()
+		onView(isRoot()).perform(waitFor(500))
+		checkMessage("%paypal_logo% Pay monthly")
+		clearAmount()
+		typeAmount("20000")
+		submit()
+		checkMessage("%paypal_logo% Pay monthly")
+	}
+
+	@Test
+	fun testLongTermQualifyingMessage() {
+		onView(isRoot()).perform(waitFor(500))
+		clickLongTermOffer()
+		typeAmount("1000")
+		submit()
+		onView(isRoot()).perform(waitFor(500))
+		checkMessage("$95.55")
+	}
+
+	@Test
+	fun testLongTermNoAmountMessage() {
+		onView(isRoot()).perform(waitFor(500))
+		clickLongTermOffer()
+		submit()
+		onView(isRoot()).perform(waitFor(500))
+		clickMessage()
+		checkPayMonthlyContent()
 	}
 
 	// Demo inputs
@@ -373,7 +430,7 @@ public class XmlDemoTest {
 		submit()
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		onView(withId(R.id.content)).check(matches(withText("Buy now, pay later with %paypal_logo%. Learn more")))
+		checkMessage("Buy now, pay later with %paypal_logo%. Learn more")
 	}
 
 	@Test
@@ -384,7 +441,7 @@ public class XmlDemoTest {
 		submit()
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		onView(withId(R.id.content)).check(matches(withText("%paypal_logo% Buy now, pay later. Learn more")))
+		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
 	}
 
 	@Test
@@ -406,7 +463,7 @@ public class XmlDemoTest {
 		submit()
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		onView(withId(R.id.content)).check(matches(withText("%paypal_logo% Buy now, pay later. Learn more")))
+		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
 		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.RIGHT)))
 	}
 
@@ -418,7 +475,7 @@ public class XmlDemoTest {
 		submit()
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		onView(withId(R.id.content)).check(matches(withText("%paypal_logo% Buy now, pay later. Learn more")))
+		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
 		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(PayPalMessageAlignment.CENTER.value)))
 	}
 
@@ -487,7 +544,7 @@ public class InlineXmlTest {
 		onView(isRoot()).perform(waitFor(500))
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		onView(withId(R.id.content)).check(matches(withText("%paypal_logo% Buy now, pay later. Learn more")))
+		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
 		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.LEFT)))
 
 		// Get the actual color value from the resource ID
@@ -505,7 +562,7 @@ public class InlineXmlTest {
 		onView(isRoot()).perform(waitFor(500))
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		onView(withId(R.id.content)).check(matches(withText("%paypal_logo% Buy now, pay later. Learn more")))
+		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
 		clickMessage()
 
 		onView(withId(R.id.ModalWebView)).check(
@@ -541,7 +598,7 @@ public class CheckJetPackTest {
 		onView(isRoot()).perform(waitFor(500))
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		onView(withId(R.id.content)).check(matches(withText("%paypal_logo% Buy now, pay later. Learn more")))
+		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
 		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.LEFT)))
 
 		// Get the actual color value from the resource ID
