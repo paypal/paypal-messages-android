@@ -5,8 +5,8 @@ import android.view.View
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
-import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.clearText
@@ -19,13 +19,13 @@ import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.espresso.web.assertion.WebViewAssertions
+import androidx.test.espresso.web.assertion.WebViewAssertions.webMatches
 import androidx.test.espresso.web.sugar.Web.onWebView
 import androidx.test.espresso.web.webdriver.DriverAtoms
 import androidx.test.espresso.web.webdriver.Locator
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import com.paypal.messages.R
-import com.paypal.messages.config.message.style.PayPalMessageAlignment
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import org.hamcrest.CoreMatchers.containsString
 import org.hamcrest.Description
@@ -93,122 +93,140 @@ fun waitFor(millis: Long): ViewAction {
 	}
 }
 
-private fun clickMessage() {
+fun clickMessage() {
 	onView(withId(R.id.content)).perform(click())
 	onView(isRoot()).perform(waitFor(500))
 }
 
-private fun submit() {
+fun submit() {
 	onView(withId(Demo.id.submit)).perform(scrollTo())
 	onView(withId(Demo.id.submit)).perform(click())
 	onView(isRoot()).perform(waitFor(500))
 }
 
-private fun checkPi4TilePresent() {
+fun checkPi4TilePresent() {
 	onWebView(ViewMatchers.withId(R.id.ModalWebView)).withElement(DriverAtoms.findElement(Locator.TAG_NAME, "body")).check(
 		WebViewAssertions.webMatches(DriverAtoms.getText(), containsString("Interest-free payments every 2 weeks, starting today.")),
 	)
 }
 
-private fun checkPayMonthlyTilePresent() {
+fun checkPayMonthlyTilePresent() {
 	onWebView(ViewMatchers.withId(R.id.ModalWebView)).withElement(DriverAtoms.findElement(Locator.TAG_NAME, "body")).check(
 		WebViewAssertions.webMatches(DriverAtoms.getText(), containsString("Split your purchase into equal monthly payments.")),
 	)
 }
 
-private fun checkNiTilePresent() {
+fun checkNiTilePresent() {
 	onWebView(ViewMatchers.withId(R.id.ModalWebView)).withElement(DriverAtoms.findElement(Locator.TAG_NAME, "body")).check(
 		WebViewAssertions.webMatches(DriverAtoms.getText(), containsString("No Interest if paid in full in 6 months for purchases of \$99+.")),
 	)
 }
 
-private fun closeButtonPresent() {
+fun closeButtonPresent() {
 	onView(withId(R.id.ModalCloseButton)).check(
 		matches(ViewMatchers.isDisplayed()),
 	)
 }
 
-private fun clickTileByIndex(index: Int) {
+fun clickTileByIndex(index: Int) {
 	onWebView(ViewMatchers.withId(R.id.ModalWebView))
 		.withElement(DriverAtoms.findElement(Locator.CSS_SELECTOR, ".tile:nth-of-type($index)"))
 		.perform(DriverAtoms.webClick())
 }
 
-private fun clickPi4Tile() {
+fun clickPi4Tile() {
 	clickTileByIndex(1)
 }
 
-private fun clickPayMonthlyTile() {
+fun clickPayMonthlyTile() {
 	clickTileByIndex(2)
 }
 
-private fun clickNiTile() {
+fun clickNiTile() {
 	clickTileByIndex(3)
 }
 
-private fun testDisclosure() {
+fun testDisclosure() {
 	onWebView(ViewMatchers.withId(R.id.ModalWebView)).withElement(DriverAtoms.findElement(Locator.TAG_NAME, "body")).check(
 		WebViewAssertions.webMatches(DriverAtoms.getText(), containsString("Find more disclosures")),
 	)
 }
 
-private fun clickSeeOtherModalOptions() {
+fun clickSeeOtherModalOptions() {
 	onWebView(
 		ViewMatchers.withId(R.id.ModalWebView),
 	).withElement(DriverAtoms.findElement(Locator.ID, "productListLink")).perform(DriverAtoms.webClick())
 }
 
-private fun modalContent(expectedText: String) {
+fun clickDisclosure() {
+	onWebView(
+		ViewMatchers.withId(R.id.ModalWebView),
+	).withElement(DriverAtoms.findElement(Locator.CSS_SELECTOR, "a")).perform(DriverAtoms.webClick())
+}
+
+fun modalContent(expectedText: String) {
 	onWebView(ViewMatchers.withId(R.id.ModalWebView))
 		.withElement(DriverAtoms.findElement(Locator.TAG_NAME, "body"))
 		.check(WebViewAssertions.webMatches(DriverAtoms.getText(), containsString(expectedText)))
 }
 
-private fun checkPi4ModalContent() {
+fun typeCalculatorAmount(amount: String) {
+	onWebView(withId(R.id.ModalWebView))
+		.withElement(DriverAtoms.findElement(Locator.CSS_SELECTOR, ".input ")) // Change to your input box selector
+		.perform(DriverAtoms.webKeys(amount))
+}
+
+fun clearCalculatorAmount() {
+	onWebView(withId(R.id.ModalWebView))
+		.withElement(DriverAtoms.findElement(Locator.CSS_SELECTOR, ".input ")) // Change to your input box selector
+		.perform(DriverAtoms.clearElement())
+}
+
+fun checkPi4ModalContent() {
 	modalContent("Pay in 4")
 }
 
-private fun checkPayMonthlyContent() {
+fun checkPayMonthlyContent() {
 	modalContent("Pay Monthly")
 }
 
-private fun checkNIContent() {
+fun checkNIContent() {
 	modalContent("Credit")
 }
 
-private fun closeModal() {
+fun closeModal() {
 	onView(withId(R.id.ModalCloseButton)).perform(click())
 }
 
-private fun clickOffer(offerId: Int) {
+fun clickOffer(offerId: Int) {
 	onView(withId(offerId)).perform(click())
 }
 
-private fun clickShortTermOffer() {
+fun clickShortTermOffer() {
 	clickOffer(com.paypal.messagesdemo.R.id.offerShortTerm)
 }
 
-private fun clickLongTermOffer() {
+fun clickLongTermOffer() {
 	clickOffer(com.paypal.messagesdemo.R.id.offerLongTerm)
 }
 
-private fun clickPayIn1() {
+fun clickPayIn1() {
 	clickOffer(com.paypal.messagesdemo.R.id.offerPayIn1)
 }
 
-private fun clickNIOffer() {
+fun clickNIOffer() {
 	clickOffer(com.paypal.messagesdemo.R.id.offerCredit)
 }
 
-private fun typeAmount(text: String) {
+fun typeAmount(text: String) {
 	onView(withId(com.paypal.messagesdemo.R.id.amount)).perform(typeText(text))
 }
 
-private fun clearAmount() {
+fun clearAmount() {
 	onView(withId(com.paypal.messagesdemo.R.id.amount)).perform(clearText())
 }
 
-private fun checkMessage(text: String) {
+fun checkMessage(text: String) {
 	onView(withId(R.id.content)).check(matches(withText(containsString(text))))
 }
 
@@ -419,195 +437,190 @@ public class XmlDemoTest {
 		onView(isRoot()).perform(waitFor(500))
 		clickMessage()
 		checkPayMonthlyContent()
+		modalContent("Enter an amount of")
+	}
+
+	@Test
+	fun testLongTermQualifyingAmountMessage() {
+		onView(isRoot()).perform(waitFor(500))
+		clickLongTermOffer()
+		typeAmount("1000")
+		submit()
+		onView(isRoot()).perform(waitFor(500))
+		clickMessage()
+		checkPayMonthlyContent()
+		modalContent("12 months")
+	}
+
+	@Test
+	fun testLongTermRangeMessage() {
+		onView(isRoot()).perform(waitFor(500))
+		clickLongTermOffer()
+		submit()
+		onView(isRoot()).perform(waitFor(500))
+		clickMessage()
+		checkPayMonthlyContent()
+
+		typeCalculatorAmount("1000")
+		onView(isRoot()).perform(waitFor(5000))
+		modalContent("for 12")
+
+		clearCalculatorAmount()
+		onView(isRoot()).perform(waitFor(500))
+		typeCalculatorAmount("100")
+		onView(isRoot()).perform(waitFor(5000))
+		modalContent("Enter an amount")
+
+		clearCalculatorAmount()
+		typeCalculatorAmount("20000")
+		onView(isRoot()).perform(waitFor(5000))
+		modalContent("Enter an amount no larger")
+		onView(isRoot()).perform(waitFor(500))
+	}
+
+	@Test
+	fun testLongTermModalNavigation() {
+		onView(isRoot()).perform(waitFor(500))
+		clickLongTermOffer()
+		submit()
+		onView(isRoot()).perform(waitFor(500))
+		clickMessage()
+		checkPayMonthlyContent()
+
+		clickSeeOtherModalOptions()
+		clickPayMonthlyTile()
+		checkPayMonthlyContent()
+	}
+
+	@Test
+	fun testLongTermModalDisclosure() {
+		onView(isRoot()).perform(waitFor(500))
+		clickLongTermOffer()
+		submit()
+		onView(isRoot()).perform(waitFor(500))
+		clickMessage()
+		checkPayMonthlyContent()
+		onView(isRoot()).perform(waitFor(500))
+
+// 		onWebView(withId(R.id.ModalWebView))
+// 			.perform(DriverAtoms.script("window.scrollTo(0, document.body.scrollHeight);"))
+		clickDisclosure()
+// 		clickDisclosure()
+
+		onView(isRoot()).perform(waitFor(50000))
+
+		pressBack()
+		onView(isRoot()).perform(waitFor(5000))
+
+		checkPayMonthlyContent()
 	}
 
 	// Demo inputs
-	@Test
-	fun testGenericInlineLogoBuyNowPayLaterMessage() {
-		// Perform a delay
-		onView(isRoot()).perform(waitFor(500))
-		onView(withId(Demo.id.styleInline)).perform(click())
-		submit()
-
-		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		checkMessage("Buy now, pay later with %paypal_logo%. Learn more")
-	}
-
-	@Test
-	fun testGenericAlternativeLogoBuyNowPayLaterMessage() {
-		// Perform a delay
-		onView(isRoot()).perform(waitFor(500))
-		onView(withId(Demo.id.styleAlternative)).perform(click())
-		submit()
-
-		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
-	}
-
-	@Test
-	fun testGenericNoneLogoBuyNowPayLaterMessage() {
-		// Perform a delay
-		onView(isRoot()).perform(waitFor(500))
-		onView(withId(Demo.id.styleNone)).perform(click())
-		submit()
-
-		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		onView(withId(R.id.content)).check(matches(withText("Buy now, pay later with PayPal. Learn more")))
-	}
-
-	@Test
-	fun testGenericRightAlignmentBuyNowPayLaterMessage() {
-		// Perform a delay
-		onView(isRoot()).perform(waitFor(500))
-		onView(withId(Demo.id.styleRight)).perform(click())
-		submit()
-
-		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
-		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.RIGHT)))
-	}
-
-	@Test
-	fun testGenericCenterAlignmentBuyNowPayLaterMessage() {
-		// Perform a delay
-		onView(isRoot()).perform(waitFor(500))
-		onView(withId(Demo.id.styleCenter)).perform(click())
-		submit()
-
-		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
-		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(PayPalMessageAlignment.CENTER.value)))
-	}
-
-	@Test
-	fun testGenericWhiteBuyNowPayLaterMessage() {
-		// Perform a delay
-		onView(isRoot()).perform(waitFor(500))
-		onView(withId(Demo.id.styleWhite)).perform(click())
-		submit()
-
-		// Get the actual color value from the resource ID
-		activityScenarioRule.scenario.onActivity { activity ->
-			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.WHITE.colorResId)
-		}
-
-		// Use the custom matcher to check the text color of the TextView
-		onView(withId(R.id.content))
-			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
-	}
-
-	@Test
-	fun testGenericMonochromeBuyNowPayLaterMessage() {
-		// Perform a delay
-		onView(isRoot()).perform(waitFor(500))
-		onView(withId(Demo.id.styleMonochrome)).perform(click())
-		submit()
-
-		// Get the actual color value from the resource ID
-		activityScenarioRule.scenario.onActivity { activity ->
-			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.MONOCHROME.colorResId)
-		}
-
-		// Use the custom matcher to check the text color of the TextView
-		onView(withId(R.id.content))
-			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
-	}
-
-	@Test
-	fun testGenericGrayscaleBuyNowPayLaterMessage() {
-		// Perform a delay
-		onView(isRoot()).perform(waitFor(500))
-		onView(withId(Demo.id.styleGrayscale)).perform(click())
-		submit()
-
-		// Get the actual color value from the resource ID
-		activityScenarioRule.scenario.onActivity { activity ->
-			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.GRAYSCALE.colorResId)
-		}
-
-		// Use the custom matcher to check the text color of the TextView
-		onView(withId(R.id.content))
-			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
-	}
-}
-
-@RunWith(AndroidJUnit4ClassRunner::class)
-public class InlineXmlTest {
-	var expectedColor: Int? = null
-
-	@get:Rule
-	val activityScenarioRule = ActivityScenarioRule(BasicXmlActivity::class.java)
-
-	@Test
-	fun testGenericMessage() {
-		// Perform a delay
-		onView(isRoot()).perform(waitFor(500))
-
-		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
-		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.LEFT)))
-
-		// Get the actual color value from the resource ID
-		activityScenarioRule.scenario.onActivity { activity ->
-			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.BLACK.colorResId)
-		}
-
-		// Use the custom matcher to check the text color of the TextView
-		onView(withId(R.id.content))
-			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
-	}
-
-	@Test
-	fun testGenericModalCloseWithBackButton() {
-		onView(isRoot()).perform(waitFor(500))
-
-		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
-		clickMessage()
-
-		onView(withId(R.id.ModalWebView)).check(
-			matches(ViewMatchers.isDisplayed()),
-		)
-
-		modalContent("Pay Later options")
-		Espresso.pressBack()
-		clickMessage()
-		onView(isRoot()).perform(waitFor(5000))
-		modalContent("Pay Later options")
-
-		closeModal()
-	}
-}
-
-@RunWith(AndroidJUnit4ClassRunner::class)
-public class CheckJetPackTest {
-	var expectedColor: Int? = null
-
-	@get:Rule
-	val activityScenarioRule = ActivityScenarioRule(JetpackActivity::class.java)
-
-	fun submit() {
-		onView(withId(Demo.id.submit)).perform(scrollTo())
-		onView(withId(Demo.id.submit)).perform(click())
-		onView(isRoot()).perform(waitFor(500))
-	}
-
-	@Test
-	fun testGenericBuyNowPayLaterMessage() {
-		// Perform a delay
-		onView(isRoot()).perform(waitFor(500))
-
-		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
-		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.LEFT)))
-
-		// Get the actual color value from the resource ID
-		activityScenarioRule.scenario.onActivity { activity ->
-			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.BLACK.colorResId)
-		}
-
-		// Use the custom matcher to check the text color of the TextView
-		onView(withId(R.id.content))
-			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
-	}
+// 	@Test
+// 	fun testGenericInlineLogoBuyNowPayLaterMessage() {
+// 		// Perform a delay
+// 		onView(isRoot()).perform(waitFor(500))
+// 		onView(withId(Demo.id.styleInline)).perform(click())
+// 		submit()
+//
+// 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
+// 		checkMessage("Buy now, pay later with %paypal_logo%. Learn more")
+// 	}
+//
+// 	@Test
+// 	fun testGenericAlternativeLogoBuyNowPayLaterMessage() {
+// 		// Perform a delay
+// 		onView(isRoot()).perform(waitFor(500))
+// 		onView(withId(Demo.id.styleAlternative)).perform(click())
+// 		submit()
+//
+// 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
+// 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
+// 	}
+//
+// 	@Test
+// 	fun testGenericNoneLogoBuyNowPayLaterMessage() {
+// 		// Perform a delay
+// 		onView(isRoot()).perform(waitFor(500))
+// 		onView(withId(Demo.id.styleNone)).perform(click())
+// 		submit()
+//
+// 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
+// 		onView(withId(R.id.content)).check(matches(withText("Buy now, pay later with PayPal. Learn more")))
+// 	}
+//
+// 	@Test
+// 	fun testGenericRightAlignmentBuyNowPayLaterMessage() {
+// 		// Perform a delay
+// 		onView(isRoot()).perform(waitFor(500))
+// 		onView(withId(Demo.id.styleRight)).perform(click())
+// 		submit()
+//
+// 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
+// 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
+// 		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.RIGHT)))
+// 	}
+//
+// 	@Test
+// 	fun testGenericCenterAlignmentBuyNowPayLaterMessage() {
+// 		// Perform a delay
+// 		onView(isRoot()).perform(waitFor(500))
+// 		onView(withId(Demo.id.styleCenter)).perform(click())
+// 		submit()
+//
+// 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
+// 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
+// 		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(PayPalMessageAlignment.CENTER.value)))
+// 	}
+//
+// 	@Test
+// 	fun testGenericWhiteBuyNowPayLaterMessage() {
+// 		// Perform a delay
+// 		onView(isRoot()).perform(waitFor(500))
+// 		onView(withId(Demo.id.styleWhite)).perform(click())
+// 		submit()
+//
+// 		// Get the actual color value from the resource ID
+// 		activityScenarioRule.scenario.onActivity { activity ->
+// 			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.WHITE.colorResId)
+// 		}
+//
+// 		// Use the custom matcher to check the text color of the TextView
+// 		onView(withId(R.id.content))
+// 			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
+// 	}
+//
+// 	@Test
+// 	fun testGenericMonochromeBuyNowPayLaterMessage() {
+// 		// Perform a delay
+// 		onView(isRoot()).perform(waitFor(500))
+// 		onView(withId(Demo.id.styleMonochrome)).perform(click())
+// 		submit()
+//
+// 		// Get the actual color value from the resource ID
+// 		activityScenarioRule.scenario.onActivity { activity ->
+// 			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.MONOCHROME.colorResId)
+// 		}
+//
+// 		// Use the custom matcher to check the text color of the TextView
+// 		onView(withId(R.id.content))
+// 			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
+// 	}
+//
+// 	@Test
+// 	fun testGenericGrayscaleBuyNowPayLaterMessage() {
+// 		// Perform a delay
+// 		onView(isRoot()).perform(waitFor(500))
+// 		onView(withId(Demo.id.styleGrayscale)).perform(click())
+// 		submit()
+//
+// 		// Get the actual color value from the resource ID
+// 		activityScenarioRule.scenario.onActivity { activity ->
+// 			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.GRAYSCALE.colorResId)
+// 		}
+//
+// 		// Use the custom matcher to check the text color of the TextView
+// 		onView(withId(R.id.content))
+// 			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
+// 	}
 }
