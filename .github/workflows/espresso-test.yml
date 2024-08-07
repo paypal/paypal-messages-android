@@ -33,26 +33,28 @@ jobs:
       - name: Build APK
         run: ./gradlew assembleRelease
 
-      - name: Upload AP to BrowserStack
+      - name: Upload App to BrowserStack
         env:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
         run: |
           APK_PATH=$(find . -name "*.apk" | head -n 1)
-          curl -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
-               -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/app" \
-               -F "file=@$APK_PATH"
-
-          APP_URL=$(echo $UPLOAD_RESPONSE | jq -r '.app_url)
-
-          curl -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
-          -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/test-suite" \
-          -F "file=@$APK_PATH"
- 
-          # Extracting test_suite_name and test_suite_url
-          TEST_SUITE_URL=$(echo $UPLOAD_RESPONSE | jq -r '.test_suite_url')
+            
+          # Upload app APK and capture response
+          APP_UPLOAD_RESPONSE=$(curl -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
+                                      -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/app" \
+                                      -F "file=@$APK_PATH")
           
-          # Use the test_suite_name and test_suite_url in another cURL request
+          APP_URL=$(echo $APP_UPLOAD_RESPONSE | jq -r '.app_url')
+
+          # Upload test suite APK and capture response
+          TEST_SUITE_UPLOAD_RESPONSE=$(curl -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
+                                            -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/test-suite" \
+                                            -F "file=@$APK_PATH")
+          
+          TEST_SUITE_URL=$(echo $TEST_SUITE_UPLOAD_RESPONSE | jq -r '.test_suite_url')
+
+          # Use the app_url and test_suite_url in another cURL request
           curl -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
               -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/build" \
               -d "{\"app\": \"$APP_URL\", \"testSuite\": \"$TEST_SUITE_URL\", \"devices\": [\"Samsung Galaxy S9 Plus-9.0\"]}" \
