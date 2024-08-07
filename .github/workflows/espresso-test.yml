@@ -40,22 +40,45 @@ jobs:
         run: |
           APK_PATH=$(find . -name "*.apk" | head -n 1)
             
+          echo "APK path: $APK_PATH"
+          
+          if [[ -z "$APK_PATH" ]]; then
+            echo "Error: APK file not found."
+            exit 1
+          fi
+
           # Upload app APK and capture response
-          APP_UPLOAD_RESPONSE=$(curl -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
+          APP_UPLOAD_RESPONSE=$(curl -s -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
                                       -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/app" \
                                       -F "file=@$APK_PATH")
           
+          echo "App upload response: $APP_UPLOAD_RESPONSE"
+
           APP_URL=$(echo $APP_UPLOAD_RESPONSE | jq -r '.app_url')
 
+          if [[ -z "$APP_URL" ]]; then
+            echo "Error: App URL not found in response."
+            exit 1
+          fi
+
           # Upload test suite APK and capture response
-          TEST_SUITE_UPLOAD_RESPONSE=$(curl -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
+          TEST_SUITE_UPLOAD_RESPONSE=$(curl -s -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
                                             -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/test-suite" \
                                             -F "file=@$APK_PATH")
           
+          echo "Test suite upload response: $TEST_SUITE_UPLOAD_RESPONSE"
+
           TEST_SUITE_URL=$(echo $TEST_SUITE_UPLOAD_RESPONSE | jq -r '.test_suite_url')
 
+          if [[ -z "$TEST_SUITE_URL" ]]; then
+            echo "Error: Test suite URL not found in response."
+            exit 1
+          fi
+
           # Use the app_url and test_suite_url in another cURL request
-          curl -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
+          FINAL_RESPONSE=$(curl -s -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
               -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/build" \
               -d "{\"app\": \"$APP_URL\", \"testSuite\": \"$TEST_SUITE_URL\", \"devices\": [\"Samsung Galaxy S9 Plus-9.0\"]}" \
-              -H "Content-Type: application/json"
+              -H "Content-Type: application/json")
+          
+          echo "Final response: $FINAL_RESPONSE"
