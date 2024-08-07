@@ -43,21 +43,17 @@ jobs:
                -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/app" \
                -F "file=@$APK_PATH"
 
-      - name: Upload to test suite
-        env:
-          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
-          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-        run: |
-          APK_PATH=$(find . -name "*.apk" | head -n 1)
-          curl -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
-              -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/test-suite" \
-              -F "file=@$APK_PATH"
+          APP_URL=$(echo $UPLOAD_RESPONSE | jq -r '.app_url)
 
-      # - name: Execute Espresso Tests
-      #   env:
-      #     BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
-      #     BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-      #   run: |
-      #     -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/build" \
-      #     -d '{"app": "bs://j3c874f21852ea50957a3fdc33f47514288c4ba4", "testSuite": "bs://f7c874f21852ba57957a3fde31f47514288c4ba4", "devices": ["Samsung Galaxy S9 Plus-9.0"]}' \
-      #     -H "Content-Type: application/json" 
+          curl -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
+          -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/test-suite" \
+          -F "file=@$APK_PATH"
+ 
+          # Extracting test_suite_name and test_suite_url
+          TEST_SUITE_URL=$(echo $UPLOAD_RESPONSE | jq -r '.test_suite_url')
+          
+          # Use the test_suite_name and test_suite_url in another cURL request
+          curl -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
+              -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/build" \
+              -d "{\"app\": \"$APP_URL\", \"testSuite\": \"$TEST_SUITE_URL\", \"devices\": [\"Samsung Galaxy S9 Plus-9.0\"]}" \
+              -H "Content-Type: application/json"
