@@ -1,0 +1,63 @@
+name: Espresso Test
+
+on:
+  push:
+    branches:
+      - feature-testing-tool
+  pull_request:
+    branches:
+      - feature-testing-tool
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build APK
+        run: ./gradlew assembleRelease
+
+      - name: Upload AP to BrowserStack
+        env:
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+        run: |
+          APK_PATH=$(find . -name "*.apk" | head -n 1)
+          curl -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
+               -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/app" \
+               -F "file=@$APK_PATH"
+
+      - name: Upload to test suite
+        env:
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+        run: |
+          APK_PATH=$(find . -name "*.apk" | head -n 1)
+          curl -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
+              -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/test-suite" \
+              -F "file=@$APK_PATH"
+
+      # - name: Execute Espresso Tests
+      #   env:
+      #     BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      #     BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      #   run: |
+      #     -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/build" \
+      #     -d '{"app": "bs://j3c874f21852ea50957a3fdc33f47514288c4ba4", "testSuite": "bs://f7c874f21852ba57957a3fde31f47514288c4ba4", "devices": ["Samsung Galaxy S9 Plus-9.0"]}' \
+      #     -H "Content-Type: application/json" 
