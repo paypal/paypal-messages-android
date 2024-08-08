@@ -30,10 +30,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Build APK
-        run: ./gradlew assembleRelease
-
-      - name: Build Test APK
+      - name: Build APKs
         run: ./gradlew assembleRelease assembleAndroidTest
 
       - name: Upload App to BrowserStack
