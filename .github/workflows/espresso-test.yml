@@ -31,7 +31,9 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Build APKs
-        run: ./gradlew assembleRelease assembleAndroidTest
+        run: |
+          ./gradlew assembleRelease
+          ./gradlew assembleAndroidTest
 
       - name: Upload App to BrowserStack
         env:
