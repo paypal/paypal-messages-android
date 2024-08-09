@@ -82,7 +82,7 @@ jobs:
           # Use the app_url and test_suite_url in another cURL request
           FINAL_RESPONSE=$(curl -s -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" \
               -X POST "https://api-cloud.browserstack.com/app-automate/espresso/v2/build" \
-              -d "{\"app\": \"$APP_URL\", \"testSuite\": \"$TEST_SUITE_URL\", \"devices\": [\"Samsung Galaxy S9 Plus-9.0\"]}" \
+              -d "{\"app\": \"$APP_URL\", \"testSuite\": \"$TEST_SUITE_URL\", \"devices\": [\"Samsung Galaxy S23-13.0\"]}" \
               -H "Content-Type: application/json")
           
           echo "Final response: $FINAL_RESPONSE"
