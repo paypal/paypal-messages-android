@@ -14,10 +14,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
@@ -40,8 +40,8 @@ jobs:
           BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
         run: |
-          APP_APK_PATH=$(find . -name "*-release.apk" | head -n 1)
-          TEST_APK_PATH=$(find . -name "*-androidTest.apk" | head -n 1)
+          APP_APK_PATH=./demo/build/outputs/apk/release/demo-release-unsigned.apk 
+          TEST_APK_PATH=./library/build/outputs/apk/androidTest/debug/library-debug-androidTest.apk
           
           echo "App APK path: $APP_APK_PATH"
           echo "Test APK path: $TEST_APK_PATH"
