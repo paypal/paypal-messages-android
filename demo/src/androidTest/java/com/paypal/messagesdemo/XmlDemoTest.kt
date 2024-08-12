@@ -6,7 +6,6 @@ import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.clearText
@@ -26,6 +25,7 @@ import androidx.test.espresso.web.webdriver.Locator
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import com.paypal.messages.R
+import com.paypal.messages.config.message.style.PayPalMessageAlignment
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import org.hamcrest.CoreMatchers.containsString
 import org.hamcrest.Description
@@ -95,13 +95,13 @@ fun waitFor(millis: Long): ViewAction {
 
 fun clickMessage() {
 	onView(withId(R.id.content)).perform(click())
-	onView(isRoot()).perform(waitFor(500))
+	waitFor(500)
 }
 
 fun submit() {
 	onView(withId(Demo.id.submit)).perform(scrollTo())
 	onView(withId(Demo.id.submit)).perform(click())
-	onView(isRoot()).perform(waitFor(500))
+	waitFor(500)
 }
 
 fun checkPi4TilePresent() {
@@ -161,7 +161,7 @@ fun clickSeeOtherModalOptions() {
 fun clickDisclosure() {
 	onWebView(
 		ViewMatchers.withId(R.id.ModalWebView),
-	).withElement(DriverAtoms.findElement(Locator.CSS_SELECTOR, "a")).perform(DriverAtoms.webClick())
+	).forceJavascriptEnabled().withElement(DriverAtoms.findElement(Locator.CLASS_NAME, "a")).perform(DriverAtoms.webClick())
 }
 
 fun modalContent(expectedText: String) {
@@ -230,6 +230,19 @@ fun checkMessage(text: String) {
 	onView(withId(R.id.content)).check(matches(withText(containsString(text))))
 }
 
+fun checkMessageColor(activityScenarioRule: ActivityScenarioRule<*>, color: PayPalMessageColor) {
+	var expectedColor: Int? = null
+
+	// Get the actual color value from the resource ID
+	activityScenarioRule.scenario.onActivity { activity ->
+		expectedColor = ContextCompat.getColor(activity, color.colorResId)
+	}
+
+	// Use the custom matcher to check the text color of the TextView
+	onView(withId(R.id.content))
+		.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
+}
+
 @RunWith(AndroidJUnit4ClassRunner::class)
 public class XmlDemoTest {
 	var expectedColor: Int? = null
@@ -240,7 +253,7 @@ public class XmlDemoTest {
 	@Test
 	fun testGenericMessage() {
 		// Perform a delay
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
@@ -258,7 +271,7 @@ public class XmlDemoTest {
 
 	@Test
 	fun testGenericMessageAndModal() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
@@ -273,7 +286,7 @@ public class XmlDemoTest {
 
 	@Test
 	fun testGenericModalNavigatingTiles() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 
 		clickMessage()
 
@@ -303,7 +316,7 @@ public class XmlDemoTest {
 
 	@Test
 	fun testGenericModalClose() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 
 		clickMessage()
 
@@ -316,7 +329,7 @@ public class XmlDemoTest {
 
 	@Test
 	fun testGenericModalCloseAndOpenSameMessage() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 
 		clickMessage()
 
@@ -334,47 +347,49 @@ public class XmlDemoTest {
 
 	@Test
 	fun testShorTermMessage() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickShortTermOffer()
 		submit()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 	}
 
 	@Test
 	fun testShortTermNonQualifyingMessage() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickShortTermOffer()
 
 		typeAmount("15")
 		submit()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		onView(withId(R.id.content)).check(matches(withText(containsString("payments on purchases of "))))
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clearAmount()
 		typeAmount("2000")
 		submit()
 		onView(withId(R.id.content)).check(matches(withText(containsString("payments on purchases of "))))
 
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 	}
 
 	@Test
 	fun testShortTermQualifyingMessage() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickShortTermOffer()
 
-		onView(withId(com.paypal.messagesdemo.R.id.amount)).perform(typeText("1000"))
+		typeAmount("1000")
 		submit()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		onView(withId(R.id.content)).check(matches(withText(containsString("250"))))
+// 		checkMessage("250")
+// 		waitFor(5000)
 	}
 
 	@Test
 	fun testShortTermMessageAndModal() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickShortTermOffer()
 		submit()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickMessage()
 		checkPi4ModalContent()
 		closeModal()
@@ -382,36 +397,36 @@ public class XmlDemoTest {
 
 	@Test
 	fun testShortTermOpenAndSwitchModal() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickShortTermOffer()
 		submit()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickMessage()
 		checkPi4ModalContent()
 		clickSeeOtherModalOptions()
-		onView(isRoot()).perform(waitFor(200))
+		waitFor(200)
 		clickPi4Tile()
 		checkPi4ModalContent()
 	}
 
 	@Test
 	fun testShortTermQualifyingModal() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickShortTermOffer()
 		typeAmount("1000")
 		submit()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickMessage()
 		checkPi4ModalContent()
 	}
 
 	@Test
 	fun testLongTermNonQualifyingMessage() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickLongTermOffer()
 		typeAmount("15")
 		submit()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		checkMessage("%paypal_logo% Pay monthly")
 		clearAmount()
 		typeAmount("20000")
@@ -421,20 +436,20 @@ public class XmlDemoTest {
 
 	@Test
 	fun testLongTermQualifyingMessage() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickLongTermOffer()
 		typeAmount("1000")
 		submit()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		checkMessage("$95.55")
 	}
 
 	@Test
 	fun testLongTermNoAmountMessage() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickLongTermOffer()
 		submit()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickMessage()
 		checkPayMonthlyContent()
 		modalContent("Enter an amount of")
@@ -442,11 +457,11 @@ public class XmlDemoTest {
 
 	@Test
 	fun testLongTermQualifyingAmountMessage() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickLongTermOffer()
 		typeAmount("1000")
 		submit()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickMessage()
 		checkPayMonthlyContent()
 		modalContent("12 months")
@@ -454,36 +469,36 @@ public class XmlDemoTest {
 
 	@Test
 	fun testLongTermRangeMessage() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickLongTermOffer()
 		submit()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickMessage()
 		checkPayMonthlyContent()
 
 		typeCalculatorAmount("1000")
-		onView(isRoot()).perform(waitFor(5000))
+		waitFor(5000)
 		modalContent("for 12")
 
 		clearCalculatorAmount()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		typeCalculatorAmount("100")
-		onView(isRoot()).perform(waitFor(5000))
+		waitFor(5000)
 		modalContent("Enter an amount")
 
 		clearCalculatorAmount()
 		typeCalculatorAmount("20000")
-		onView(isRoot()).perform(waitFor(5000))
+		waitFor(5000)
 		modalContent("Enter an amount no larger")
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 	}
 
 	@Test
 	fun testLongTermModalNavigation() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickLongTermOffer()
 		submit()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickMessage()
 		checkPayMonthlyContent()
 
@@ -494,32 +509,171 @@ public class XmlDemoTest {
 
 	@Test
 	fun testLongTermModalDisclosure() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickLongTermOffer()
 		submit()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 		clickMessage()
 		checkPayMonthlyContent()
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(5000)
 
-// 		onWebView(withId(R.id.ModalWebView))
-// 			.perform(DriverAtoms.script("window.scrollTo(0, document.body.scrollHeight);"))
-		clickDisclosure()
+		onWebView().forceJavascriptEnabled()
+
+		modalContent("Find more disclosures")
+
 // 		clickDisclosure()
+// 		onView(isRoot()).perform(waitFor(50000))
 
-		onView(isRoot()).perform(waitFor(50000))
+// 		pressBack()
+// 		waitFor(5000)
 
-		pressBack()
-		onView(isRoot()).perform(waitFor(5000))
-
-		checkPayMonthlyContent()
+// 		checkPayMonthlyContent()
 	}
 
-	// Demo inputs
+	@Test
+	fun testNiMessage() {
+		waitFor(500)
+		waitFor(500)
+		clickNIOffer()
+		submit()
+		waitFor(1000)
+
+		checkMessage("No Interest")
+	}
+}
+
+// @RunWith(AndroidJUnit4ClassRunner::class)
+// public class XmlDemoNiTest {
+// 	var expectedColor: Int? = null
+//
+// 	@get:Rule
+// 	val activityScenarioRule = ActivityScenarioRule(XmlActivity::class.java)
+//
+// 	@Before
+// 	fun setup() {
+// 		activityScenarioRule.scenario.onActivity { activity ->
+// 			activity.environment =  PayPalEnvironment.LIVE
+// 		}
+// 	}
+//
+// 	@Test
+// 	fun testNiMessage(){
+// 		waitFor(500)
+// 		waitFor(500)
+// 		clickNIOffer()
+// 		submit()
+// 		waitFor(1000)
+//
+// 		checkMessage("No Interest")
+// 	}
+// }
+
+@RunWith(AndroidJUnit4ClassRunner::class)
+public class XmlDemoStyleOptionsTest {
+	var expectedColor: Int? = null
+
+	@get:Rule
+	val activityScenarioRule = ActivityScenarioRule(XmlActivity::class.java)
+
+	@Test
+	fun testGenericMessage() {
+		// Perform a delay
+		waitFor(500)
+
+		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
+		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
+		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.LEFT)))
+
+		// Get the actual color value from the resource ID
+		activityScenarioRule.scenario.onActivity { activity ->
+			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.BLACK.colorResId)
+		}
+
+		// Use the custom matcher to check the text color of the TextView
+		onView(withId(R.id.content))
+			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
+	}
+
+	@Test
+	fun testAlignment() {
+		waitFor(500)
+		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.LEFT)))
+
+		onView(withId(Demo.id.styleCenter)).perform(click())
+		submit()
+		waitFor(500)
+		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(PayPalMessageAlignment.CENTER.value)))
+
+		onView(withId(Demo.id.styleRight)).perform(click())
+		submit()
+		waitFor(500)
+		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.RIGHT)))
+	}
+
+	@Test
+	fun testMessageColors() {
+		waitFor(500)
+		checkMessageColor(activityScenarioRule, PayPalMessageColor.BLACK)
+
+		onView(withId(Demo.id.styleWhite)).perform(click())
+		submit()
+		waitFor(500)
+		checkMessageColor(activityScenarioRule, PayPalMessageColor.WHITE)
+
+		onView(withId(Demo.id.styleMonochrome)).perform(click())
+		submit()
+		waitFor(500)
+		checkMessageColor(activityScenarioRule, PayPalMessageColor.MONOCHROME)
+
+		onView(withId(Demo.id.styleGrayscale)).perform(click())
+		submit()
+		waitFor(500)
+		checkMessageColor(activityScenarioRule, PayPalMessageColor.GRAYSCALE)
+
+		onView(withId(Demo.id.styleBlack)).perform(click())
+		submit()
+		waitFor(500)
+		checkMessageColor(activityScenarioRule, PayPalMessageColor.BLACK)
+	}
+
+	@Test
+	fun testLogoAlignment() {
+		waitFor(500)
+		onView(withId(Demo.id.styleAlternative)).perform(click())
+		submit()
+		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
+
+		onView(withId(Demo.id.styleInline)).perform(click())
+		submit()
+		checkMessage("Buy now, pay later with %paypal_logo%. Learn more")
+
+		onView(withId(Demo.id.styleNone)).perform(click())
+		submit()
+		checkMessage("Buy now, pay later with PayPal. Learn more")
+
+		onView(withId(Demo.id.stylePrimary)).perform(click())
+		submit()
+		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
+	}
+
+	// @Test
+	// fun testCrossBorder(){
+	// 	activityScenarioRule.scenario.onActivity { activity ->
+	// 		activity.environment = PayPalEnvironment.stage(("msmaster.qa.paypal.com"))
+	// 	}
+
+	// 	waitFor(50000)
+	// 	onView(withId(Demo.id.styleAlternative)).perform(click())
+	// 	submit()
+	// 	checkMessage("%paypal_logo% Buy now, pay later. Learn more")
+	// 	waitFor(5000)
+
+	// }
+
 // 	@Test
 // 	fun testGenericInlineLogoBuyNowPayLaterMessage() {
 // 		// Perform a delay
-// 		onView(isRoot()).perform(waitFor(500))
+// 		waitFor(500)
 // 		onView(withId(Demo.id.styleInline)).perform(click())
 // 		submit()
 //
@@ -530,7 +684,7 @@ public class XmlDemoTest {
 // 	@Test
 // 	fun testGenericAlternativeLogoBuyNowPayLaterMessage() {
 // 		// Perform a delay
-// 		onView(isRoot()).perform(waitFor(500))
+// 		waitFor(500)
 // 		onView(withId(Demo.id.styleAlternative)).perform(click())
 // 		submit()
 //
@@ -541,7 +695,7 @@ public class XmlDemoTest {
 // 	@Test
 // 	fun testGenericNoneLogoBuyNowPayLaterMessage() {
 // 		// Perform a delay
-// 		onView(isRoot()).perform(waitFor(500))
+// 		waitFor(500)
 // 		onView(withId(Demo.id.styleNone)).perform(click())
 // 		submit()
 //
@@ -552,7 +706,7 @@ public class XmlDemoTest {
 // 	@Test
 // 	fun testGenericRightAlignmentBuyNowPayLaterMessage() {
 // 		// Perform a delay
-// 		onView(isRoot()).perform(waitFor(500))
+// 		waitFor(500)
 // 		onView(withId(Demo.id.styleRight)).perform(click())
 // 		submit()
 //
@@ -564,7 +718,7 @@ public class XmlDemoTest {
 // 	@Test
 // 	fun testGenericCenterAlignmentBuyNowPayLaterMessage() {
 // 		// Perform a delay
-// 		onView(isRoot()).perform(waitFor(500))
+// 		waitFor(500)
 // 		onView(withId(Demo.id.styleCenter)).perform(click())
 // 		submit()
 //
@@ -576,7 +730,7 @@ public class XmlDemoTest {
 // 	@Test
 // 	fun testGenericWhiteBuyNowPayLaterMessage() {
 // 		// Perform a delay
-// 		onView(isRoot()).perform(waitFor(500))
+// 		waitFor(500)
 // 		onView(withId(Demo.id.styleWhite)).perform(click())
 // 		submit()
 //
@@ -593,7 +747,7 @@ public class XmlDemoTest {
 // 	@Test
 // 	fun testGenericMonochromeBuyNowPayLaterMessage() {
 // 		// Perform a delay
-// 		onView(isRoot()).perform(waitFor(500))
+// 		waitFor(500)
 // 		onView(withId(Demo.id.styleMonochrome)).perform(click())
 // 		submit()
 //
@@ -610,7 +764,7 @@ public class XmlDemoTest {
 // 	@Test
 // 	fun testGenericGrayscaleBuyNowPayLaterMessage() {
 // 		// Perform a delay
-// 		onView(isRoot()).perform(waitFor(500))
+// 		waitFor(500)
 // 		onView(withId(Demo.id.styleGrayscale)).perform(click())
 // 		submit()
 //

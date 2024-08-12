@@ -6,7 +6,6 @@ import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers
-import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
@@ -26,7 +25,7 @@ public class InlineXmlTest {
 	@Test
 	fun testGenericMessage() {
 		// Perform a delay
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
@@ -44,7 +43,7 @@ public class InlineXmlTest {
 
 	@Test
 	fun testGenericModalCloseWithBackButton() {
-		onView(isRoot()).perform(waitFor(500))
+		waitFor(500)
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
@@ -57,7 +56,7 @@ public class InlineXmlTest {
 		modalContent("Pay Later options")
 		Espresso.pressBack()
 		clickMessage()
-		onView(isRoot()).perform(waitFor(5000))
+		waitFor(5000)
 		modalContent("Pay Later options")
 
 		closeModal()
