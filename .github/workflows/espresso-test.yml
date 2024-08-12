@@ -30,10 +30,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: Add Client ID
+        env:
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+        run: ./gradlew updateLocalsXmlFile -PclientId="$CLIENT_ID"
+
       - name: Build APKs
         run: |
-          ./gradlew assembleRelease
-          ./gradlew assembleAndroidTest
+          ./gradlew :demo:assembleRelease
+          ./gradlew :demo:assembleAndroidTest
 
       - name: Upload App to BrowserStack
         env:
@@ -41,7 +46,7 @@ jobs:
           BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
         run: |
           APP_APK_PATH=./demo/build/outputs/apk/release/demo-release-unsigned.apk 
-          TEST_APK_PATH=./library/build/outputs/apk/androidTest/debug/library-debug-androidTest.apk
+          TEST_APK_PATH=./demo/build/outputs/apk/androidTest/debug/demo-debug-androidTest.apk
           
           echo "App APK path: $APP_APK_PATH"
           echo "Test APK path: $TEST_APK_PATH"
