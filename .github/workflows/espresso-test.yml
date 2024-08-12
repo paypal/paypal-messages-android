@@ -37,7 +37,7 @@ jobs:
 
       - name: Build APKs
         run: |
-          ./gradlew :demo:assembleRelease :demo:assembleAndroidTest
+          ./gradlew :demo:assembleDebug :demo:assembleAndroidTest
 
       - name: Upload App to BrowserStack
         env:
