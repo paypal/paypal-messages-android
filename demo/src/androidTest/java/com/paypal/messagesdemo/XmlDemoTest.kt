@@ -253,7 +253,7 @@ public class XmlDemoTest {
 	@Test
 	fun testGenericMessage() {
 		// Perform a delay
-		waitFor(500)
+		waitFor(5000)
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
@@ -271,7 +271,7 @@ public class XmlDemoTest {
 
 	@Test
 	fun testGenericMessageAndModal() {
-		waitFor(500)
+		waitFor(5000)
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
@@ -286,7 +286,7 @@ public class XmlDemoTest {
 
 	@Test
 	fun testGenericModalNavigatingTiles() {
-		waitFor(500)
+		waitFor(5000)
 
 		clickMessage()
 
@@ -316,7 +316,7 @@ public class XmlDemoTest {
 
 	@Test
 	fun testGenericModalClose() {
-		waitFor(500)
+		waitFor(5000)
 
 		clickMessage()
 
@@ -329,7 +329,7 @@ public class XmlDemoTest {
 
 	@Test
 	fun testGenericModalCloseAndOpenSameMessage() {
-		waitFor(500)
+		waitFor(5000)
 
 		clickMessage()
 
