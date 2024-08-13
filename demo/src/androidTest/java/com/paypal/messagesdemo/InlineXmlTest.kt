@@ -23,8 +23,7 @@ public class InlineXmlTest {
 
 	@Test
 	fun testGenericMessage() {
-		// Perform a delay
-		waitForApp(2000)
+		waitForApp(500)
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
@@ -46,15 +45,14 @@ public class InlineXmlTest {
 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
 
 		clickMessage()
-		waitForApp(2000)
+		waitForApp(1000)
 		modalContent("Get more info")
 
 		Espresso.pressBack()
-		waitForApp(5000)
+		waitForApp(500)
 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
 		clickMessage()
-		waitForApp(5000)
+		waitForApp(1000)
 		modalContent("Get more info")
-		waitForApp(2000)
 	}
 }

@@ -26,13 +26,13 @@ public class JetPackTest {
 	fun submit() {
 		onView(withId(Demo.id.submit)).perform(scrollTo())
 		onView(withId(Demo.id.submit)).perform(click())
-		waitFor(500)
+		waitForApp(500)
 	}
 
 	@Test
 	fun testGenericBuyNowPayLaterMessage() {
 		// Perform a delay
-		waitFor(500)
+		waitForApp(500)
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
