@@ -205,6 +205,5 @@ class XmlActivity : AppCompatActivity() {
 		message.onLoading = {}
 		message.onSuccess = {}
 		message.onError = {}
-		EnvVars.getClientId(PayPalEnvironment.STAGE)
 	}
 }
