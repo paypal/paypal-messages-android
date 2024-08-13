@@ -93,6 +93,10 @@ fun waitFor(millis: Long): ViewAction {
 	}
 }
 
+fun waitForApp(millis: Long) {
+	onView(isRoot()).perform(waitFor(millis))
+}
+
 fun clickMessage() {
 	onView(withId(R.id.content)).perform(click())
 	waitFor(500)
@@ -638,7 +642,7 @@ public class XmlDemoStyleOptionsTest {
 
 	@Test
 	fun testLogoAlignment() {
-		waitFor(500)
+		waitFor(5000)
 		onView(withId(Demo.id.styleAlternative)).perform(click())
 		submit()
 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
@@ -654,6 +658,7 @@ public class XmlDemoStyleOptionsTest {
 		onView(withId(Demo.id.stylePrimary)).perform(click())
 		submit()
 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
+		waitFor(1000)
 	}
 
 	// @Test
