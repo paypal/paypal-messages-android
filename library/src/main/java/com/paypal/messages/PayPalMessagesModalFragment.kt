@@ -40,7 +40,7 @@ import com.paypal.messages.config.modal.PayPalMessagesModalConfig as MessagesMod
  * Interacting with their content will show more information about the
  * product itself and the option to apply
  */
-class PayPalMessagesModalView @JvmOverloads constructor(
+class PayPalMessagesModalFragment @JvmOverloads constructor(
 	context: Context,
 	attributeSet: AttributeSet? = null,
 	defStyleAttr: Int = 0,

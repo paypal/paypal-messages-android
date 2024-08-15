@@ -122,10 +122,8 @@ koverReport {
 					'*Fragment\$*',
 					'*Activity',
 					'*Activity\$*',
-					'com.paypal.messages.PayPalMessageView*',
-					'com.paypal.messages.PayPalMessagesModalView*',
-					'com.paypal.messages.RoundedWebView',
-					'com.paypal.messages.RoundedWebView\$*',
+					'*View',
+					'*View\$*',
 					'*.databinding.*',
 					'*.BuildConfig'
 				)

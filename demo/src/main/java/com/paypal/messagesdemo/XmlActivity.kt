@@ -10,7 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color
 import com.paypal.messages.PayPalMessageView
-import com.paypal.messages.PayPalMessagesModalView
+import com.paypal.messages.PayPalMessagesModalFragment
 import com.paypal.messages.config.Channel
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
@@ -44,7 +44,7 @@ class XmlActivity : AppCompatActivity() {
 			amount = 300.0,
 			offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM,
 		)
-		val modal = PayPalMessagesModalView(context = this, config = modalConfig)
+		val modal = PayPalMessagesModalFragment(context = this, config = modalConfig)
 		val messagesModalText = binding.messagesModalText
 		messagesModalText.setOnClickListener {
 			modal.show()
@@ -201,7 +201,7 @@ class XmlActivity : AppCompatActivity() {
 	@Override
 	private fun activityPaused() {
 		val modalConfig = PayPalMessagesModalConfig(clientID = "someClientID")
-		val modal = PayPalMessagesModalView(context = this, config = modalConfig)
+		val modal = PayPalMessagesModalFragment(context = this, config = modalConfig)
 		modal.hide()
 	}
 
@@ -230,7 +230,7 @@ class XmlActivity : AppCompatActivity() {
 		message.onError = {}
 
 		val modalConfig = PayPalMessagesModalConfig(clientID = "someClientID")
-		val modal = PayPalMessagesModalView(context = this, config = modalConfig)
+		val modal = PayPalMessagesModalFragment(context = this, config = modalConfig)
 		modal.getConfig()
 		modal.setConfig(modalConfig)
 		modal.environment = PayPalEnvironment.SANDBOX
