@@ -39,16 +39,22 @@ class XmlActivity : AppCompatActivity() {
 		binding = ActivityMessageBinding.inflate(layoutInflater)
 		setContentView(binding.root)
 
+		val messagesModalText = binding.messagesModalText
 		val modalConfig = PayPalMessagesModalConfig(
 			clientID = getString(R.string.client_id),
 			amount = 300.0,
 			offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM,
 		)
 		val modal = PayPalMessagesModalFragment(context = this, config = modalConfig)
-		val messagesModalText = binding.messagesModalText
 		messagesModalText.setOnClickListener {
 			modal.show()
 		}
+
+// 		// XML can also be used
+// 		val xmlModal = binding.xmlModal
+// 		messagesModalText.setOnClickListener {
+// 			xmlModal.show()
+// 		}
 
 		val messageWrapper = binding.messageWrapper
 		val progressBar = binding.progressBar

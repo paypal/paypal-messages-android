@@ -283,10 +283,18 @@
 			android:text="@string/messages_modal_text" />
 
 <!--		<com.paypal.messages.PayPalMessageView-->
+<!--			android:id="@+id/xmlMessage"-->
 <!--			android:layout_width="match_parent"-->
 <!--			android:layout_height="80dp"-->
 <!--			app:paypal_client_id="@string/client_id"-->
 <!--			/>-->
+
+		<com.paypal.messages.PayPalMessagesModalFragment
+			android:id="@+id/xmlModal"
+			android:layout_width="0dp"
+			android:layout_height="0dp"
+			app:paypal_client_id="@string/client_id"
+			/>
 
 		<LinearLayout
 			android:orientation="horizontal"

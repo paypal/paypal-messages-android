@@ -319,6 +319,20 @@ class PayPalMessagesModalFragment @JvmOverloads constructor(
 				null
 			}
 		}
+
+		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_page_type)) {
+			pageType = try {
+				PayPalMessagePageType(typedArray.getIntOrThrow(R.styleable.PayPalMessageView_paypal_page_type))
+			}
+			catch (ex: Exception) {
+				LogCat.error(TAG, "Error parsing page_type attribute")
+				null
+			}
+		}
+
+		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_buyer_country)) {
+			buyerCountry = typedArray.getString(R.styleable.PayPalMessageView_paypal_buyer_country)
+		}
 	}
 
 	override fun onActionCompleted(result: ApiResult) {
