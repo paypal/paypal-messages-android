@@ -60,27 +60,33 @@ internal class ModalFragment(
 
 	// MODAL CONFIG VALUES
 	var amount: Double? = null
-		set(amountArg) {
-			if (field != amountArg) {
-				field = amountArg
-				setJsValue(name = "amount", value = amountArg)
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				setJsValue(name = "amount", value = arg)
 			}
 		}
 	var buyerCountry: String? = null
-		set(buyerCountryArg) {
-			if (field != buyerCountryArg) {
-				field = buyerCountryArg
-				setJsValue(name = "buyerCountry", value = buyerCountry)
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				setJsValue(name = "buyerCountry", value = arg)
 			}
 		}
-	private var channel: Channel = Channel.NATIVE
+	var channel: String? = Channel.UPSTREAM.toString()
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				setJsValue(name = "channel", value = arg)
+			}
+		}
 	private var devTouchpoint: Boolean = true
 	private var ignoreCache: Boolean = false
 	var offerType: OfferType? = null
-		set(offerArg) {
-			if (field != offerArg) {
-				field = offerArg
-				setJsValue(name = "offer", value = offerArg.toString())
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				setJsValue(name = "offer", value = arg.toString())
 			}
 		}
 	private var stageTag: String? = null
@@ -244,6 +250,10 @@ internal class ModalFragment(
 
 	fun expand() {
 		this.dialog?.show()
+	}
+
+	fun hide() {
+		this.dialog?.hide()
 	}
 
 	fun init(config: ModalConfig) {

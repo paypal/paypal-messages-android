@@ -1,5 +1,6 @@
 package com.paypal.messages.config.message
 
+import com.paypal.messages.config.Channel
 import com.paypal.messages.io.Api
 import com.paypal.messages.config.PayPalEnvironment as Environment
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
@@ -16,6 +17,7 @@ data class PayPalMessageData(
 	var partnerAttributionID: String? = null,
 	var amount: Double? = null,
 	var buyerCountry: String? = null,
+	var channel: String? = Channel.UPSTREAM.toString(),
 	var offerType: OfferType? = null,
 	var pageType: PageType? = null,
 	var environment: Environment = Environment.SANDBOX,

@@ -166,6 +166,14 @@ class PayPalMessageView @JvmOverloads constructor(
 				debounceUpdateContent(Unit)
 			}
 		}
+	var channel: String? = config.data.channel
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				if (modal != null) modal?.channel = field
+				debounceUpdateContent(Unit)
+			}
+		}
 	var offerType: OfferType? = config.data.offerType
 		set(arg) {
 			if (field != arg) {

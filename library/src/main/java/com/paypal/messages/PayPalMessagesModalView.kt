@@ -2,6 +2,8 @@ package com.paypal.messages
 
 import android.content.Context
 import android.content.res.TypedArray
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
@@ -13,6 +15,7 @@ import com.paypal.messages.analytics.AnalyticsEvent
 import com.paypal.messages.analytics.AnalyticsLogger
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
+import com.paypal.messages.config.PayPalMessagePageType
 import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.config.modal.ModalEvents
@@ -131,6 +134,7 @@ class PayPalMessagesModalView @JvmOverloads constructor(
 		set(arg) {
 			if (field != arg) {
 				field = arg
+				if (modal != null) modal?.amount = field
 				debounceUpdateContent(Unit)
 			}
 		}
@@ -138,10 +142,27 @@ class PayPalMessagesModalView @JvmOverloads constructor(
 		set(arg) {
 			if (field != arg) {
 				field = arg
+				if (modal != null) modal?.buyerCountry = field
+				debounceUpdateContent(Unit)
+			}
+		}
+	var channel: String? = config.channel
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				if (modal != null) modal?.channel = field
 				debounceUpdateContent(Unit)
 			}
 		}
 	var offerType: PayPalMessageOfferType? = config.offerType
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				if (modal != null) modal?.offerType = field
+				debounceUpdateContent(Unit)
+			}
+		}
+	var pageType: PayPalMessagePageType? = config.pageType
 		set(arg) {
 			if (field != arg) {
 				field = arg
@@ -255,9 +276,13 @@ class PayPalMessagesModalView @JvmOverloads constructor(
 		// it will become visually hidden and this method will re-display the modal without
 		// attempting to reattach it
 		// the delay prevents noticeable shift when the offer type is changed
-// 		handler.postDelayed({
-		modal.expand()
-// 		}, 250)
+		Handler(Looper.getMainLooper()).postDelayed({
+			modal.expand()
+		}, 250)
+	}
+
+	fun hide() {
+		modal?.hide()
 	}
 
 	override fun onDetachedFromWindow() {

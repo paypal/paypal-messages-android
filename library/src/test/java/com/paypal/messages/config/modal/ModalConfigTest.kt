@@ -29,7 +29,7 @@ class ModalConfigTest {
 		assertEquals(modalConfig.amount, 115.00)
 		assertEquals(modalConfig.buyerCountry, "US")
 		assertEquals(modalConfig.offer, PayPalMessageOfferType.PAY_LATER_SHORT_TERM)
-		assertEquals(modalConfig.channel, Channel.NATIVE)
+		assertEquals(modalConfig.channel, Channel.UPSTREAM.toString())
 		assertEquals(modalConfig.ignoreCache, true)
 		assertEquals(modalConfig.devTouchpoint, true)
 		assertEquals(modalConfig.stageTag, "test_tag")

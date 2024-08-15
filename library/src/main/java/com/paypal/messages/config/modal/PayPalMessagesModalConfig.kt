@@ -1,6 +1,8 @@
 package com.paypal.messages.config.modal
 
+import com.paypal.messages.config.Channel
 import com.paypal.messages.config.PayPalMessageOfferType
+import com.paypal.messages.config.PayPalMessagePageType
 import com.paypal.messages.io.Api
 import com.paypal.messages.config.PayPalEnvironment as Environment
 
@@ -16,8 +18,10 @@ data class PayPalMessagesModalConfig(
 	var partnerAttributionID: String? = null,
 	var amount: Double? = null,
 	var buyerCountry: String? = null,
+	var channel: String? = Channel.UPSTREAM.toString(),
 	var callbacks: ModalEvents? = null,
 	var offerType: PayPalMessageOfferType? = null,
+	var pageType: PayPalMessagePageType? = null,
 	var environment: Environment = Environment.SANDBOX,
 ) : Cloneable {
 	init {

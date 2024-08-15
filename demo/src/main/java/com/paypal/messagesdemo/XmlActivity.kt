@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color
 import com.paypal.messages.PayPalMessageView
 import com.paypal.messages.PayPalMessagesModalView
+import com.paypal.messages.config.Channel
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.PayPalMessagePageType
@@ -197,6 +198,13 @@ class XmlActivity : AppCompatActivity() {
 		submitButton.setOnClickListener { updateMessageData() }
 	}
 
+	@Override
+	private fun activityPaused() {
+		val modalConfig = PayPalMessagesModalConfig(clientID = "someClientID")
+		val modal = PayPalMessagesModalView(context = this, config = modalConfig)
+		modal.hide()
+	}
+
 	/**
 	 * Prevents unused warnings inside of PayPalMessageView and PayPalMessageConfig
 	 */
@@ -214,6 +222,7 @@ class XmlActivity : AppCompatActivity() {
 		message.merchantID = ""
 		message.partnerAttributionID = ""
 		message.pageType = PayPalMessagePageType.CART
+		message.channel = Channel.UPSTREAM.toString()
 		message.onClick = {}
 		message.onApply = {}
 		message.onLoading = {}
@@ -228,6 +237,8 @@ class XmlActivity : AppCompatActivity() {
 		modal.clientID = ""
 		modal.merchantID = ""
 		modal.partnerAttributionID = ""
+		modal.channel = Channel.UPSTREAM.toString()
+		modal.pageType = PayPalMessagePageType.CART
 		modal.onClick = {}
 		modal.onApply = {}
 		modal.onLoading = {}
