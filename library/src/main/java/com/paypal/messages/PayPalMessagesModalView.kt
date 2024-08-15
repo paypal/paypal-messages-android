@@ -56,14 +56,14 @@ class PayPalMessagesModalView @JvmOverloads constructor(
 			offerType = this.offerType,
 			environment = this.environment ?: PayPalEnvironment.SANDBOX,
 			callbacks = ModalEvents(
-				this.onClick,
-				this.onApply,
-				this.onLoading,
-				this.onSuccess,
-				this.onError,
-				this.onCalculate,
-				this.onShow,
-				this.onClose,
+				onClick = this.onClick,
+				onApply = this.onApply,
+				onLoading = this.onLoading,
+				onSuccess = this.onSuccess,
+				onError = this.onError,
+				onCalculate = this.onCalculate,
+				onShow = this.onShow,
+				onClose = this.onClose,
 			),
 		)
 	}
