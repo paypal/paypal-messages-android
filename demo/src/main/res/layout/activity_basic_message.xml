@@ -18,6 +18,7 @@
 		<com.paypal.messages.PayPalMessageView
 			android:layout_width="match_parent"
 			android:layout_height="80dp"
+			app:paypal_environment="LIVE"
 			app:paypal_client_id="@string/client_id"
 			/>
 

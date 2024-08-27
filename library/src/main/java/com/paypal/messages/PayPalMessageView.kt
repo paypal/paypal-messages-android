@@ -410,6 +410,15 @@ class PayPalMessageView @JvmOverloads constructor(
 			buyerCountry = typedArray.getString(R.styleable.PayPalMessageView_paypal_buyer_country)
 		}
 
+		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_environment)) {
+			environment = when(typedArray.getString(R.styleable.PayPalMessageView_paypal_environment)) {
+				"LIVE" -> PayPalEnvironment.LIVE
+				"SANDBOX" -> PayPalEnvironment.SANDBOX
+				"DEVELOP" -> PayPalEnvironment.DEVELOP()
+				else -> PayPalEnvironment.SANDBOX
+			}
+		}
+
 		/**
 		 * STYLE
 		 */

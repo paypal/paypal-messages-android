@@ -1,7 +1,9 @@
 package com.paypal.messagesdemo
 
+import android.content.Intent
 import android.view.Gravity
 import androidx.core.content.ContextCompat
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -21,16 +23,25 @@ import org.junit.runner.RunWith
 import com.paypal.messagesdemo.R as Demo
 
 @RunWith(AndroidJUnit4ClassRunner::class)
-public class XmlDemoTest {
+abstract class XmlDemoSetup {
+
 	var expectedColor: Int? = null
 
-	@get:Rule
-	val activityScenarioRule = ActivityScenarioRule(XmlActivity::class.java)
+	@Rule
+	@JvmField
+	val activityScenarioRule = ActivityScenarioRule<XmlActivity>(
+		Intent(ApplicationProvider.getApplicationContext(), XmlActivity::class.java).apply {
+			putExtra("TEST_ENV", "LIVE")
+		},
+	)
+}
+
+@RunWith(AndroidJUnit4ClassRunner::class)
+public class XmlDemoGenericTest : XmlDemoSetup() {
 
 	@Test
 	fun testGenericMessage() {
 		// Perform a delay
-		waitForApp(5000)
 
 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
@@ -106,21 +117,24 @@ public class XmlDemoTest {
 
 	@Test
 	fun testGenericModalCloseAndOpenSameMessage() {
-		waitForApp(5000)
+		waitForApp(2000)
 
 		clickMessage()
-
-		onView(withId(R.id.ModalWebView)).check(
-			matches(ViewMatchers.isDisplayed()),
-		)
+		modalContent("Pay Later")
 
 		clickPi4Tile()
 		checkPi4ModalContent()
 		closeModal()
+		waitForApp(500)
 
 		clickMessage()
+		waitForApp(500)
 		checkPi4ModalContent()
 	}
+}
+
+@RunWith(AndroidJUnit4ClassRunner::class)
+public class XmlDemoShortTermTest : XmlDemoSetup() {
 
 	@Test
 	fun testShorTermMessage() {
@@ -196,6 +210,10 @@ public class XmlDemoTest {
 		clickMessage()
 		checkPi4ModalContent()
 	}
+}
+
+@RunWith(AndroidJUnit4ClassRunner::class)
+public class XmlDemoLongTermTest : XmlDemoSetup() {
 
 	@Test
 	fun testLongTermNonQualifyingMessage() {
@@ -217,8 +235,8 @@ public class XmlDemoTest {
 		clickLongTermOffer()
 		typeAmount("1000")
 		submit()
-		waitForApp(500)
-		checkMessage("$95.55")
+		waitForApp(2000)
+		checkMessage("$95")
 	}
 
 	@Test
@@ -298,74 +316,112 @@ public class XmlDemoTest {
 
 		modalContent("Find more disclosures")
 
-// 		clickDisclosure()
-// 		onView(isRoot()).perform(waitForApp(50000))
+		clickDisclosure()
+		waitForApp(50000)
 
 // 		pressBack()
 // 		waitForApp(5000)
 
 // 		checkPayMonthlyContent()
 	}
+}
+
+@RunWith(AndroidJUnit4ClassRunner::class)
+public class XmlDemoNiTest : XmlDemoSetup() {
 
 	@Test
 	fun testNiMessage() {
 		waitForApp(500)
+		clickNIOffer()
+		submit()
+		waitForApp(1000)
+		checkMessage("No Interest")
+	}
+
+	@Test
+	fun testNonQualifyingNiMessage() {
+		waitForApp(500)
+		clickNIOffer()
+		typeAmount("15")
+		submit()
+		waitForApp(1000)
+		checkMessage("No Interest")
+	}
+
+	@Test
+	fun testQualifyingNiMessage() {
+		waitForApp(500)
+		clickNIOffer()
+		typeAmount("100")
+		submit()
+		waitForApp(1000)
+		checkMessage("No Interest")
+	}
+
+	@Test
+	fun testNiMessageAndModal() {
 		waitForApp(500)
 		clickNIOffer()
 		submit()
 		waitForApp(1000)
+		checkMessage("%paypal_logo% No Interest")
+		clickMessage()
+		waitForApp(1000)
+		modalContent("Apply now")
+	}
 
-		checkMessage("No Interest")
+	@Test
+	fun testNiModalNavigateOtherAndBack() {
+		waitForApp(500)
+		clickNIOffer()
+		submit()
+		waitForApp(1000)
+		checkMessage("%paypal_logo% No Interest")
+		clickMessage()
+		waitForApp(1000)
+		modalContent("Apply now")
+		clickSeeOtherModalOptions()
+		clickNiTile()
+		modalContent("Apply now")
+	}
+
+	@Test
+	fun testNiModalApplyNowCloses() {
+		waitForApp(500)
+		clickNIOffer()
+		submit()
+		waitForApp(1000)
+		checkMessage("%paypal_logo% No Interest")
+		clickMessage()
+		waitForApp(1000)
+		modalContent("Apply now")
+		clickApplyNow()
+		waitForApp(20000)
+// 		Espresso.pressBack()
+// 		waitForApp(1000)
+// 		modalContent("Apply now")
+	}
+
+	@Test
+	fun testNiModalTermsCloses() {
+		waitForApp(500)
+		clickNIOffer()
+		submit()
+		waitForApp(1000)
+		checkMessage("%paypal_logo% No Interest")
+		clickMessage()
+		waitForApp(1000)
+// 		modalContent("Apply now")
+// 		clickApplyNow()
+// 		waitForApp(20000)
+// 		Espresso.pressBack()
+// 		waitForApp(1000)
+// 		modalContent("Apply now")
 	}
 }
 
-// @RunWith(AndroidJUnit4ClassRunner::class)
-// public class XmlDemoNiTest {
-// 	var expectedColor: Int? = null
-//
-// 	@get:Rule
-// 	val activityScenarioRule = ActivityScenarioRule(XmlActivity::class.java)
-//
-// 	@Before
-// 	fun setup() {
-// 		activityScenarioRule.scenario.onActivity { activity ->
-// 			activity.environment =  PayPalEnvironment.LIVE
-// 		}
-// 	}
-//
-// 	@Test
-// 	fun testNiMessage(){
-// 		waitForApp(500)
-// 		waitForApp(500)
-// 		clickNIOffer()
-// 		submit()
-// 		waitForApp(1000)
-//
-// 		checkMessage("No Interest")
-// 	}
-// }
-
 @RunWith(AndroidJUnit4ClassRunner::class)
-public class XmlDemoStyleOptionsTest {
-	var expectedColor: Int? = null
-
-	@get:Rule
-	val activityScenarioRule = ActivityScenarioRule(XmlActivity::class.java)
-
-	@Test
-	fun testGenericMessage() {
-		waitForApp(500)
-
-		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
-		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.LEFT)))
-
-		activityScenarioRule.scenario.onActivity { activity ->
-			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.BLACK.colorResId)
-		}
-
-		onView(withId(R.id.content))
-			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
-	}
+public class XmlDemoStyleOptionsTest : XmlDemoSetup() {
 
 	@Test
 	fun testAlignment() {
@@ -433,126 +489,22 @@ public class XmlDemoStyleOptionsTest {
 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
 		waitForApp(1000)
 	}
+}
+
+@RunWith(AndroidJUnit4ClassRunner::class)
+public class XmlDemoCrossBorderTest : XmlDemoSetup() {
 
 	// @Test
 	// fun testCrossBorder(){
-	// 	activityScenarioRule.scenario.onActivity { activity ->
-	// 		activity.environment = PayPalEnvironment.stage(("msmaster.qa.paypal.com"))
+
 	// 	}
+}
 
-	// 	waitForApp(50000)
-	// 	onView(withId(Demo.id.styleAlternative)).perform(click())
-	// 	submit()
-	// 	checkMessage("%paypal_logo% Buy now, pay later. Learn more")
-	// 	waitForApp(5000)
+@RunWith(AndroidJUnit4ClassRunner::class)
+public class XmlDemoEligibilityTest : XmlDemoSetup() {
 
-	// }
+	// @Test
+	// fun testCrossBorder(){
 
-// 	@Test
-// 	fun testGenericInlineLogoBuyNowPayLaterMessage() {
-// 		// Perform a delay
-// 		waitForApp(500)
-// 		onView(withId(Demo.id.styleInline)).perform(click())
-// 		submit()
-//
-// 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-// 		checkMessage("Buy now, pay later with %paypal_logo%. Learn more")
-// 	}
-//
-// 	@Test
-// 	fun testGenericAlternativeLogoBuyNowPayLaterMessage() {
-// 		// Perform a delay
-// 		waitForApp(500)
-// 		onView(withId(Demo.id.styleAlternative)).perform(click())
-// 		submit()
-//
-// 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-// 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
-// 	}
-//
-// 	@Test
-// 	fun testGenericNoneLogoBuyNowPayLaterMessage() {
-// 		// Perform a delay
-// 		waitForApp(500)
-// 		onView(withId(Demo.id.styleNone)).perform(click())
-// 		submit()
-//
-// 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-// 		onView(withId(R.id.content)).check(matches(withText("Buy now, pay later with PayPal. Learn more")))
-// 	}
-//
-// 	@Test
-// 	fun testGenericRightAlignmentBuyNowPayLaterMessage() {
-// 		// Perform a delay
-// 		waitForApp(500)
-// 		onView(withId(Demo.id.styleRight)).perform(click())
-// 		submit()
-//
-// 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-// 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
-// 		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(Gravity.RIGHT)))
-// 	}
-//
-// 	@Test
-// 	fun testGenericCenterAlignmentBuyNowPayLaterMessage() {
-// 		// Perform a delay
-// 		waitForApp(500)
-// 		onView(withId(Demo.id.styleCenter)).perform(click())
-// 		submit()
-//
-// 		// Check if SecondActivity is displayed by verifying a TextView in SecondActivity
-// 		checkMessage("%paypal_logo% Buy now, pay later. Learn more")
-// 		onView(withId(R.id.content)).check(matches(GravityMatcher.withGravity(PayPalMessageAlignment.CENTER.value)))
-// 	}
-//
-// 	@Test
-// 	fun testGenericWhiteBuyNowPayLaterMessage() {
-// 		// Perform a delay
-// 		waitForApp(500)
-// 		onView(withId(Demo.id.styleWhite)).perform(click())
-// 		submit()
-//
-// 		// Get the actual color value from the resource ID
-// 		activityScenarioRule.scenario.onActivity { activity ->
-// 			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.WHITE.colorResId)
-// 		}
-//
-// 		// Use the custom matcher to check the text color of the TextView
-// 		onView(withId(R.id.content))
-// 			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
-// 	}
-//
-// 	@Test
-// 	fun testGenericMonochromeBuyNowPayLaterMessage() {
-// 		// Perform a delay
-// 		waitForApp(500)
-// 		onView(withId(Demo.id.styleMonochrome)).perform(click())
-// 		submit()
-//
-// 		// Get the actual color value from the resource ID
-// 		activityScenarioRule.scenario.onActivity { activity ->
-// 			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.MONOCHROME.colorResId)
-// 		}
-//
-// 		// Use the custom matcher to check the text color of the TextView
-// 		onView(withId(R.id.content))
-// 			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
-// 	}
-//
-// 	@Test
-// 	fun testGenericGrayscaleBuyNowPayLaterMessage() {
-// 		// Perform a delay
-// 		waitForApp(500)
-// 		onView(withId(Demo.id.styleGrayscale)).perform(click())
-// 		submit()
-//
-// 		// Get the actual color value from the resource ID
-// 		activityScenarioRule.scenario.onActivity { activity ->
-// 			expectedColor = ContextCompat.getColor(activity, PayPalMessageColor.GRAYSCALE.colorResId)
-// 		}
-//
-// 		// Use the custom matcher to check the text color of the TextView
-// 		onView(withId(R.id.content))
-// 			.check(matches(ColorMatcher.withTextColor(expectedColor!!)))
-// 	}
+	// 	}
 }

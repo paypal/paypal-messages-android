@@ -33,7 +33,7 @@ jobs:
       - name: Add Client ID
         env:
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
-        run: ./gradlew updateLocalsXmlFile -PclientId="$CLIENT_ID"
+        run: ./gradlew updateLocalsXmlFile
 
       - name: Build APKs
         run: |

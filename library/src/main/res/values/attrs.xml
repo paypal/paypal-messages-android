@@ -43,5 +43,6 @@
 		</attr>
 
 		<attr name="paypal_buyer_country" format="string"/>
+		<attr name="paypal_environment" format="string"/>
 	</declare-styleable>
 </resources>
