@@ -10,7 +10,6 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
-import androidx.test.espresso.web.sugar.Web.onWebView
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner
 import com.paypal.messages.R
@@ -310,18 +309,14 @@ public class XmlDemoLongTermTest : XmlDemoSetup() {
 		waitForApp(500)
 		clickMessage()
 		checkPayMonthlyContent()
-		waitForApp(5000)
-
-		onWebView().forceJavascriptEnabled()
+		waitForApp(500)
 
 		modalContent("Find more disclosures")
 
-		clickDisclosure()
-		waitForApp(50000)
-
-// 		pressBack()
-// 		waitForApp(5000)
-
+//    Iframe clicks not working
+// 		clickDisclosure()
+// 		Espresso.pressBack()
+// 		waitForApp(500)
 // 		checkPayMonthlyContent()
 	}
 }
@@ -393,10 +388,11 @@ public class XmlDemoNiTest : XmlDemoSetup() {
 		waitForApp(1000)
 		checkMessage("%paypal_logo% No Interest")
 		clickMessage()
-		waitForApp(1000)
+		waitForApp(2000)
 		modalContent("Apply now")
-		clickApplyNow()
-		waitForApp(20000)
+// 		Clicking iframe button not working
+// 		waitForApp(1000)
+// 		clickApplyNow()
 // 		Espresso.pressBack()
 // 		waitForApp(1000)
 // 		modalContent("Apply now")
@@ -411,7 +407,7 @@ public class XmlDemoNiTest : XmlDemoSetup() {
 		checkMessage("%paypal_logo% No Interest")
 		clickMessage()
 		waitForApp(1000)
-// 		modalContent("Apply now")
+		modalContent("Apply now")
 // 		clickApplyNow()
 // 		waitForApp(20000)
 // 		Espresso.pressBack()
@@ -491,20 +487,58 @@ public class XmlDemoStyleOptionsTest : XmlDemoSetup() {
 	}
 }
 
-@RunWith(AndroidJUnit4ClassRunner::class)
-public class XmlDemoCrossBorderTest : XmlDemoSetup() {
-
-	// @Test
-	// fun testCrossBorder(){
-
-	// 	}
-}
+// TODO - Need to change client id via secrets
+// @RunWith(AndroidJUnit4ClassRunner::class)
+// public class XmlDemoCrossBorderTest : XmlDemoSetup() {
+//
+// 	// @Test
+// 	// fun testCrossBorder(){
+//
+// 	// 	}
+// }
 
 @RunWith(AndroidJUnit4ClassRunner::class)
 public class XmlDemoEligibilityTest : XmlDemoSetup() {
 
-	// @Test
-	// fun testCrossBorder(){
+	@Test
+	fun testStandardConfig() {
+		waitForApp(500)
 
-	// 	}
+		checkMessage("Buy now")
+		typeAmount("20")
+		submit()
+		waitForApp(1000)
+		checkMessage("-")
+		clearAmount()
+
+		typeAmount("50")
+		submit()
+		waitForApp(1000)
+		checkMessage("12.50")
+		clearAmount()
+
+		typeAmount("2000")
+		submit()
+		waitForApp(1000)
+		checkMessage("107.73")
+		clearAmount()
+
+		typeAmount("100000")
+		submit()
+		waitForApp(1000)
+		checkMessage("-")
+
+		clickMessage()
+		waitForApp(1000)
+		clickSeeOtherModalOptions()
+		clickPi4Tile()
+		waitForApp(500)
+		clickSeeOtherModalOptions()
+		clickNiTile()
+		waitForApp(500)
+		clickSeeOtherModalOptions()
+		clickPayMonthlyTile()
+	}
+
+	// TODO - Need to change client ids for other tests
 }

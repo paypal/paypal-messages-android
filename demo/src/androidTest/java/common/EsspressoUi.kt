@@ -160,10 +160,7 @@ fun clickSeeOtherModalOptions() {
 fun clickDisclosure() {
 	onWebView(
 		ViewMatchers.withId(R.id.ModalWebView),
-	).withElement(DriverAtoms.findElement(Locator.XPATH, "/html/body/div/div[3]/div/div[5]/main/div/div[2]/a")).perform(DriverAtoms.webClick())
-// 	onWebView(
-// 		ViewMatchers.withId(R.id.ModalWebView),
-// 	).forceJavascriptEnabled().withElement(DriverAtoms.findElement(Locator.XPATH, "/html/body/div/div[3]/div/div[5]/main/div/div[2]/a")).perform(DriverAtoms.webClick())
+	).withElement(DriverAtoms.findElement(Locator.CLASS_NAME, "inline-link ")).perform(DriverAtoms.webClick())
 }
 
 fun modalContent(expectedText: String) {
@@ -174,20 +171,20 @@ fun modalContent(expectedText: String) {
 
 fun typeCalculatorAmount(amount: String) {
 	onWebView(withId(R.id.ModalWebView))
-		.withElement(DriverAtoms.findElement(Locator.CSS_SELECTOR, ".input ")) // Change to your input box selector
+		.withElement(DriverAtoms.findElement(Locator.CSS_SELECTOR, ".input "))
 		.perform(DriverAtoms.webKeys(amount))
 }
 
 fun clearCalculatorAmount() {
 	onWebView(withId(R.id.ModalWebView))
-		.withElement(DriverAtoms.findElement(Locator.CSS_SELECTOR, ".input ")) // Change to your input box selector
+		.withElement(DriverAtoms.findElement(Locator.CSS_SELECTOR, ".input "))
 		.perform(DriverAtoms.clearElement())
 }
 
 fun clickApplyNow() {
-	onWebView(withId(R.id.ModalWebView))
-		.withElement(DriverAtoms.findElement(Locator.CSS_SELECTOR, "button.button")) // Change to your input box selector
-		.perform(DriverAtoms.webClick())
+	onWebView(
+		withId(R.id.ModalWebView),
+	).withElement(DriverAtoms.findElement(Locator.CLASS_NAME, ".button.content__row")).perform(DriverAtoms.webClick())
 }
 
 fun checkPi4ModalContent() {
