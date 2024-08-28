@@ -306,14 +306,14 @@ public class XmlDemoLongTermTest : XmlDemoSetup() {
 		waitForApp(500)
 		clickLongTermOffer()
 		submit()
-		waitForApp(500)
+		waitForApp(2000)
 		clickMessage()
 		checkPayMonthlyContent()
-		waitForApp(500)
+		waitForApp(2000)
 
 		modalContent("Find more disclosures")
 
-//    Iframe clicks not working
+// 		Iframe clicks not working
 // 		clickDisclosure()
 // 		Espresso.pressBack()
 // 		waitForApp(500)
