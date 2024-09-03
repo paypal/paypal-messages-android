@@ -80,7 +80,7 @@ jobs:
           api-level: 23
           target: google_apis
           arch: x86_64
-          script: ./gradlew connectedCheck --info | tee connectedCheck.log --exclude 'com.paypal.messagesdemo'
+          script: ./gradlew connectedCheck --info | tee connectedCheck.log -x InlineXmlTest -x JetPackTest -x XmlDemoGenericTest -x XmlDemoShortTermTest -x XmlDemoLongTermTest -x XmlDemoNiTest -x XmlDemoStyleOptionsTest -x XmlDemoEligibilityTest
         continue-on-error: true
 
       - name: Show Test XML
