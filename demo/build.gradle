@@ -57,19 +57,6 @@ android {
       excludes += '/META-INF/{AL2.0,LGPL2.1}'
     }
   }
-	testOptions {
-		androidTestOptions {
-			execution 'ANDROIDX_TEST_ORCHESTRATOR'
-			androidTest.all {
-				if (project.hasProperty('excludeTests')) {
-					def excludePattern = project.property('excludeTests')
-					filter {
-						excludeTestsMatching excludePattern
-					}
-				}
-			}
-		}
-	}
 }
 
 dependencies {
