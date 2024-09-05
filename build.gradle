@@ -94,3 +94,19 @@ class ReplaceStringTask extends DefaultTask {
 
     }
 }
+
+android {
+    testOptions {
+        androidTestOptions {
+            execution 'ANDROIDX_TEST_ORCHESTRATOR'
+            androidTest.all {
+                if (project.hasProperty('excludeTests')) {
+                    def excludePattern = project.property('excludeTests')
+                    filter {
+                        excludeTestsMatching excludePattern
+                    }
+                }
+            }
+        }
+    }
+}
