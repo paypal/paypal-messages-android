@@ -74,10 +74,6 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Remove espresso tests
-        run: |
-          rm -rf paypal-messages-android/demo/src/androidTest/java/com/paypal/messagesdemo
-
       - name: Run Instrumentation Tests
         uses: ReactiveCircus/android-emulator-runner@v2
         with:

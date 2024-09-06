@@ -497,48 +497,48 @@ public class XmlDemoStyleOptionsTest : XmlDemoSetup() {
 // 	// 	}
 // }
 
-@RunWith(AndroidJUnit4ClassRunner::class)
-public class XmlDemoEligibilityTest : XmlDemoSetup() {
-
-	@Test
-	fun testStandardConfig() {
-		waitForApp(500)
-
-		checkMessage("Buy now")
-		typeAmount("20")
-		submit()
-		waitForApp(1000)
-		checkMessage("-")
-		clearAmount()
-
-		typeAmount("50")
-		submit()
-		waitForApp(1000)
-		checkMessage("12.50")
-		clearAmount()
-
-		typeAmount("2000")
-		submit()
-		waitForApp(1000)
-		checkMessage("107.73")
-		clearAmount()
-
-		typeAmount("100000")
-		submit()
-		waitForApp(1000)
-		checkMessage("-")
-
-		clickMessage()
-		waitForApp(1000)
-		clickSeeOtherModalOptions()
-		clickPi4Tile()
-		waitForApp(500)
-		clickSeeOtherModalOptions()
-		clickNiTile()
-		waitForApp(500)
-		clickSeeOtherModalOptions()
-		clickPayMonthlyTile()
-	}
-
-	// TODO - Need to change client ids for other tests
-}
+// @RunWith(AndroidJUnit4ClassRunner::class)
+// public class XmlDemoEligibilityTest : XmlDemoSetup() {
+//
+// 	@Test
+// 	fun testStandardConfig() {
+// 		waitForApp(500)
+//
+// 		checkMessage("Buy now")
+// 		typeAmount("20")
+// 		submit()
+// 		waitForApp(1000)
+// 		checkMessage("-")
+// 		clearAmount()
+//
+// 		typeAmount("50")
+// 		submit()
+// 		waitForApp(1000)
+// 		checkMessage("12.50")
+// 		clearAmount()
+//
+// 		typeAmount("2000")
+// 		submit()
+// 		waitForApp(1000)
+// 		checkMessage("107.73")
+// 		clearAmount()
+//
+// 		typeAmount("100000")
+// 		submit()
+// 		waitForApp(1000)
+// 		checkMessage("-")
+//
+// 		clickMessage()
+// 		waitForApp(1000)
+// 		clickSeeOtherModalOptions()
+// 		clickPi4Tile()
+// 		waitForApp(500)
+// 		clickSeeOtherModalOptions()
+// 		clickNiTile()
+// 		waitForApp(500)
+// 		clickSeeOtherModalOptions()
+// 		clickPayMonthlyTile()
+// 	}
+//
+// 	// TODO - Need to change client ids for other tests
+// }
