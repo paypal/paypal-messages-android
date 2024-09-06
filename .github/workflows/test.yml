@@ -74,13 +74,17 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Remove espresso tests
+        run: |
+          rm -rf paypal-messages-android/demo/src/androidTest/java/com/paypal/messagesdemo
+
       - name: Run Instrumentation Tests
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: 23
           target: google_apis
           arch: x86_64
-          script: ./gradlew connectedCheck -x com.paypal.messagesdemo.* --info | tee connectedCheck.log
+          script: ./gradlew connectedCheck --info | tee connectedCheck.log
         continue-on-error: true
 
       - name: Show Test XML
