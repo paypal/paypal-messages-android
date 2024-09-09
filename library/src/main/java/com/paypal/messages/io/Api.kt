@@ -42,6 +42,7 @@ object Api {
 		instanceId: UUID,
 	) {
 		addQueryParameter("client_id", config.data.clientID)
+		addQueryParameter("integration_type", BuildConfig.INTEGRATION_TYPE)
 		if (devTouchpoint) addQueryParameter("dev_touchpoint", "true")
 		if (ignoreCache) addQueryParameter("ignore_cache", "true")
 		addQueryParameter("instance_id", instanceId.toString())
