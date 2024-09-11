@@ -1,7 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<!--
+		Message and Modal XML Attributes include paypal_client_id, paypal_offer_type, paypal_amount, paypal_page_type, paypal_buyer_country
+		Messages can be styled with paypal_text_color, paypal_logo_type, paypal_text_align
+
+		These attributes are used in both MessageView and MessagesModalView.
+		Declaring them here prevents a conflict from happening and they get reused below.
+	-->
+	<attr name="paypal_client_id" format="string" />
+
+	<attr name="paypal_offer_type" format="enum">
+		<enum name="PAY_LATER_SHORT_TERM" value="0" />
+		<enum name="PAY_LATER_LONG_TERM" value="1" />
+		<enum name="PAY_LATER_PAY_IN_1" value="2" />
+		<enum name="PAYPAL_CREDIT_NO_INTEREST" value="3" />
+	</attr>
+
+	<attr name="paypal_amount" format="float"/>
+
+	<attr name="paypal_buyer_country" format="string"/>
+
+	<attr name="paypal_page_type" format="enum">
+		<enum name="CART" value="0" />
+		<enum name="CHECKOUT" value="1" />
+		<enum name="HOME" value="2" />
+		<enum name="MINI_CART" value="3" />
+		<enum name="PRODUCT_DETAILS" value="4" />
+		<enum name="PRODUCT_LISTING" value="5" />
+		<enum name="SEARCH_RESULTS" value="6" />
+	</attr>
+
 	<declare-styleable name="PayPalMessageView">
-		<attr name="paypal_client_id" format="string" />
+		<attr name="paypal_client_id" />
 
 		<attr name="paypal_text_color" format="enum">
 			<enum name="black" value="0" />
@@ -23,25 +53,23 @@
 			<enum name="center" value="2" />
 		</attr>
 
-		<attr name="paypal_offer_type" format="enum">
-			<enum name="PAY_LATER_SHORT_TERM" value="0" />
-			<enum name="PAY_LATER_LONG_TERM" value="1" />
-			<enum name="PAY_LATER_PAY_IN_1" value="2" />
-			<enum name="PAYPAL_CREDIT_NO_INTEREST" value="3" />
-		</attr>
+		<attr name="paypal_offer_type" />
 
-		<attr name="paypal_amount" format="float"/>
+		<attr name="paypal_amount" />
 
-		<attr name="paypal_page_type" format="enum">
-			<enum name="CART" value="0" />
-			<enum name="CHECKOUT" value="1" />
-			<enum name="HOME" value="2" />
-			<enum name="MINI_CART" value="3" />
-			<enum name="PRODUCT_DETAILS" value="4" />
-			<enum name="PRODUCT_LISTING" value="5" />
-			<enum name="SEARCH_RESULTS" value="6" />
-		</attr>
+		<attr name="paypal_page_type" />
 
-		<attr name="paypal_buyer_country" format="string"/>
+		<attr name="paypal_buyer_country" />
+	</declare-styleable>
+	<declare-styleable name="PayPalMessagesModalView">
+		<attr name="paypal_client_id" />
+
+		<attr name="paypal_offer_type" />
+
+		<attr name="paypal_amount" />
+
+		<attr name="paypal_page_type" />
+
+		<attr name="paypal_buyer_country" />
 	</declare-styleable>
 </resources>

@@ -136,7 +136,7 @@
 				android:id="@+id/offerTypeLabel"
 				android:paddingTop="12dp"
 				android:paddingBottom="12dp"
-				android:layout_marginRight="12dp"
+				android:layout_marginEnd="12dp"
 				android:textStyle="bold"
 				android:textSize="16sp"/>
 			<Button
@@ -238,21 +238,21 @@
 
 		<RadioGroup
 			android:layout_width="match_parent"
-			android:layout_height="48dp"
+			android:layout_height="28dp"
 			android:orientation="horizontal">
 
 			<com.google.android.material.switchmaterial.SwitchMaterial
-				android:text="Ignore Cache"
-				android:layout_width="wrap_content"
-				android:layout_height="match_parent"
 				android:id="@+id/ignoreCache"
-				android:textStyle="bold"
-				android:layout_weight="1"/>
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="Ignore Cache"
+				android:textStyle="bold" />
 
 			<com.google.android.material.switchmaterial.SwitchMaterial
 				android:text="Dev Touchpoint"
 				android:layout_width="wrap_content"
-				android:layout_height="match_parent"
+				android:layout_height="wrap_content"
 				android:id="@+id/devTouchpoint"
 				android:textStyle="bold"
 				android:layout_weight="1"/>
@@ -276,23 +276,37 @@
 				app:layout_constraintTop_toTopOf="parent" />
 		</androidx.constraintlayout.widget.ConstraintLayout>
 
+		<TextView
+			android:id="@+id/messagesModalText"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="@string/messages_modal_text" />
+
 <!--		<com.paypal.messages.PayPalMessageView-->
+<!--			android:id="@+id/xmlMessage"-->
 <!--			android:layout_width="match_parent"-->
 <!--			android:layout_height="80dp"-->
 <!--			app:paypal_client_id="@string/client_id"-->
 <!--			/>-->
 
+		<com.paypal.messages.PayPalMessagesModalFragment
+			android:id="@+id/xmlModal"
+			android:layout_width="0dp"
+			android:layout_height="0dp"
+			app:paypal_client_id="@string/client_id"
+			/>
+
 		<LinearLayout
 			android:orientation="horizontal"
 			android:layout_width="match_parent"
-			android:layout_height="match_parent">
+			android:layout_height="match_parent"
+			android:layout_marginTop="20dp">
 
 			<Button
 				android:id="@+id/reset"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:text="@string/reload_label"
-				android:layout_marginTop="24dp"/>
+				android:text="@string/reload_label"/>
 			<View
 				android:layout_width="0dp"
 				android:layout_height="0dp"
@@ -302,8 +316,7 @@
 				android:text="Submit"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:id="@+id/submit"
-				android:layout_marginTop="24dp"/>
+				android:id="@+id/submit"/>
 
 		</LinearLayout>
 

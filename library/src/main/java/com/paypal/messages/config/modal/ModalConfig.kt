@@ -10,7 +10,7 @@ import com.paypal.messages.config.PayPalMessageOfferType
 data class ModalConfig(
 	var amount: Double? = null,
 	var buyerCountry: String? = null,
-	var channel: Channel = Channel.NATIVE,
+	var channel: String = Channel.UPSTREAM.toString(),
 	var devTouchpoint: Boolean = false,
 	var events: ModalEvents? = null,
 	var ignoreCache: Boolean = false,
