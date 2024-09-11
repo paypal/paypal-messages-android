@@ -61,7 +61,7 @@
 
 		<attr name="paypal_buyer_country" />
 	</declare-styleable>
-	<declare-styleable name="PayPalMessagesModalView">
+	<declare-styleable name="PayPalMessagesModalFragment">
 		<attr name="paypal_client_id" />
 
 		<attr name="paypal_offer_type" />
