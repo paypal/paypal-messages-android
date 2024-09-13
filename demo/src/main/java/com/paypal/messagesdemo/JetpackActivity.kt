@@ -1,5 +1,6 @@
 package com.paypal.messagesdemo
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -49,9 +50,17 @@ fun toSentenceCase(input: String): String {
 	return input.lowercase().replaceFirstChar { it.titlecase() }
 }
 
+fun determineEnvironment(intent: Intent): PayPalEnvironment {
+	return when (intent.getStringExtra("TEST_ENV")) {
+		"LIVE" -> PayPalEnvironment.LIVE
+		"SANDBOX" -> PayPalEnvironment.SANDBOX
+		"DEVELOP" -> PayPalEnvironment.DEVELOP()
+		else -> PayPalEnvironment.SANDBOX // Default value if no match is found
+	}
+}
+
 class JetpackActivity : ComponentActivity() {
 	private val TAG = "PPM:JetpackActivity"
-	private val environment = PayPalEnvironment.SANDBOX
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -59,6 +68,8 @@ class JetpackActivity : ComponentActivity() {
 		setContent {
 			BasicTheme {
 				val context = LocalContext.current
+
+				var environment by remember { mutableStateOf(determineEnvironment(intent)) }
 
 				var clientId: String by remember { mutableStateOf(getString(R.string.client_id)) }
 
@@ -305,6 +316,7 @@ class JetpackActivity : ComponentActivity() {
 							modifier = Modifier
 								.padding(top = 16.dp, bottom = 32.dp, start = 8.dp, end = 8.dp)
 								.background(color = backgroundColor)
+								.height(40.dp)
 								.fillMaxWidth(),
 							factory = {
 								messageView

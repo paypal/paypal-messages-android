@@ -28,13 +28,19 @@ class XmlActivity : AppCompatActivity() {
 	private var logoType: PayPalMessageLogoType = PayPalMessageLogoType.PRIMARY
 	private var textAlignment: PayPalMessageAlignment = PayPalMessageAlignment.LEFT
 	private var offerType: PayPalMessageOfferType? = null
-	private val environment = PayPalEnvironment.SANDBOX
+	private var environment: PayPalEnvironment = PayPalEnvironment.SANDBOX
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		binding = ActivityMessageBinding.inflate(layoutInflater)
 		setContentView(binding.root)
 
+		environment = when(intent.getStringExtra("TEST_ENV")) {
+			"LIVE" -> PayPalEnvironment.LIVE
+			"SANDBOX" -> PayPalEnvironment.SANDBOX
+			"DEVELOP" -> PayPalEnvironment.DEVELOP()
+			else -> environment
+		}
 		val messageWrapper = binding.messageWrapper
 		val progressBar = binding.progressBar
 		val resetButton = binding.reset

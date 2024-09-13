@@ -61,9 +61,36 @@ tasks.register('changeReleaseVersion') {
 		def topLevelGradleFileText = topLevelGradleFile.getText('UTF-8')
 		def useSnapshot = System.getenv('USE_SNAPSHOT')
 		def snapshotParam = useSnapshot == "true" || useSnapshot == true ? "-SNAPSHOT" : ""
-		
+
 		def updatedScript =
 			topLevelGradleFileText.replaceFirst(/("sdkVersionName"\s*: )".*",/, '$1"' + versionParam + snapshotParam + '",')
 		topLevelGradleFile.write(updatedScript, 'UTF-8')
 	}
+}
+
+
+
+task updateLocalsXmlFile(type: ReplaceStringTask) {
+    replacementString = System.getenv('CLIENT_ID') ?: "REPLACE_WITH_CLIENT_ID_IN_LOCALS_XML"
+}
+
+class ReplaceStringTask extends DefaultTask {
+    @Input
+    String replacementString
+
+    @TaskAction
+    void updateLocalsXml() {
+        def filePath = "demo/src/main/res/values/locals.xml"
+        def file = project.file(filePath)  // Use project's file method
+
+        // Read the current contents of locals.xml
+        def currentContent = file.text
+
+        // Perform replacement
+        def modifiedContent = currentContent.replaceAll("REPLACE_WITH_CLIENT_ID_IN_LOCALS_XML", replacementString)
+
+        // Write the modified content back to locals.xml
+        file.text = modifiedContent
+
+    }
 }

@@ -322,8 +322,12 @@ class PayPalMessageView @JvmOverloads constructor(
 	override fun onDetachedFromWindow() {
 		super.onDetachedFromWindow()
 		// The modal will not dismiss (destroy) itself, it will only hide/show when opening and closing
-		// so we need to cleanup the modal instance if the message is removed
-		this.modal?.dismiss()
+		// so we need to clean up the modal instance if the message is removed
+		this.modal?.let {
+			if (it.isAdded) {
+				it.dismiss()
+			}
+		}
 	}
 
 	/**
@@ -404,6 +408,15 @@ class PayPalMessageView @JvmOverloads constructor(
 
 		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_buyer_country)) {
 			buyerCountry = typedArray.getString(R.styleable.PayPalMessageView_paypal_buyer_country)
+		}
+
+		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_environment)) {
+			environment = when(typedArray.getString(R.styleable.PayPalMessageView_paypal_environment)) {
+				"LIVE" -> PayPalEnvironment.LIVE
+				"SANDBOX" -> PayPalEnvironment.SANDBOX
+				"DEVELOP" -> PayPalEnvironment.DEVELOP()
+				else -> PayPalEnvironment.SANDBOX
+			}
 		}
 
 		/**
