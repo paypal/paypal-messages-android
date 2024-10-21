@@ -14,7 +14,6 @@ import com.paypal.messages.analytics.AnalyticsComponent
 import com.paypal.messages.analytics.AnalyticsEvent
 import com.paypal.messages.analytics.AnalyticsLogger
 import com.paypal.messages.analytics.ComponentType
-import com.paypal.messages.analytics.EventType
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.PayPalMessagePageType
@@ -246,14 +245,6 @@ class PayPalMessagesModalFragment @JvmOverloads constructor(
 	}
 
 	fun show() {
-		// Since show is called as part of a merchant's onClickListener, we log that event here
-		logEvent(
-			AnalyticsEvent(
-				eventType = EventType.STANDALONE_MODAL_CLICKED,
-				pageViewLinkName = "Standalone modal, text set by merchant",
-				pageViewLinkSource = "merchant_text",
-			),
-		)
 		val modal = modal ?: run {
 			val modal = ModalFragment(clientID)
 			// Build modal config
@@ -351,7 +342,7 @@ class PayPalMessagesModalFragment @JvmOverloads constructor(
 			buyerCountryCode = this.buyerCountry,
 			instanceId = this.instanceId.toString(),
 			originatingInstanceId = Api.originatingInstanceId.toString(),
-			type = ComponentType.STANDALONE_MODAL.toString(),
+			type = ComponentType.MODAL.toString(),
 			componentEvents = mutableListOf(event),
 		)
 

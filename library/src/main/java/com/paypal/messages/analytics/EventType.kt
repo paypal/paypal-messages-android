@@ -20,9 +20,6 @@ enum class EventType {
 
 	@SerializedName("modal_error")
 	MODAL_ERROR,
-
-	@SerializedName("standalone_modal_clicked")
-	STANDALONE_MODAL_CLICKED,
 	;
 
 	override fun toString(): String {

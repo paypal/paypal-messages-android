@@ -8,9 +8,6 @@ enum class ComponentType {
 
 	@SerializedName("message")
 	MESSAGE,
-
-	@SerializedName("standalone_modal")
-	STANDALONE_MODAL,
 	;
 
 	override fun toString(): String {
