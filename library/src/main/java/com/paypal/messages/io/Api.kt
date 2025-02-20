@@ -244,7 +244,7 @@ object Api {
 		}.build()
 
 		val jsonNoFdata = JSONObject(json).toString(2)
-			.replace("""fdata":.*?",""".toRegex(), "")
+			.replace(""""fdata":.*?",""".toRegex(), "")
 		LogCat.debug(TAG, "createLoggerRequest: $request\npayloadJson: $jsonNoFdata")
 		return request
 	}
