@@ -1,6 +1,7 @@
 package com.paypal.messages.io
 
 import android.content.Context
+import android.util.Base64
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.paypal.messages.BuildConfig
@@ -230,13 +231,20 @@ object Api {
 	}
 
 	internal fun createLoggerRequest(json: String): Request {
+		// 	Create authorization header for logs: Basic <base64_client_id>
+		val jsonObj = JSONObject(json).getJSONObject("data")
+		val clientIdStr = jsonObj.get("client_id").toString()
+		val clientIdBytes = clientIdStr.toByteArray(charset = Charsets.UTF_8)
+		val encodedClientId = "Basic " + Base64.encodeToString(clientIdBytes, Base64.NO_WRAP)
+
 		val request = Request.Builder().apply {
+			header("Authorization", encodedClientId)
 			url(env.url(Env.Endpoints.LOGGER))
 			post(json.toRequestBody("application/json".toMediaType()))
 		}.build()
 
 		val jsonNoFdata = JSONObject(json).toString(2)
-			.replace(""""fdata":.*?",""".toRegex(), "")
+			.replace("""fdata":.*?",""".toRegex(), "")
 		LogCat.debug(TAG, "createLoggerRequest: $request\npayloadJson: $jsonNoFdata")
 		return request
 	}
