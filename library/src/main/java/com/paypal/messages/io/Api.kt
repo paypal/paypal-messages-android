@@ -231,11 +231,28 @@ object Api {
 	}
 
 	internal fun createLoggerRequest(json: String): Request {
+		val jsonObject = JSONObject(json)
+
 		// 	Create authorization header for logs: Basic <base64_client_id>
-		val jsonObj = JSONObject(json).getJSONObject("data")
-		val clientIdStr = jsonObj.get("client_id").toString()
-		val clientIdBytes = clientIdStr.toByteArray(charset = Charsets.UTF_8)
-		val encodedClientId = "Basic " + Base64.encodeToString(clientIdBytes, Base64.NO_WRAP)
+		val dataObject = try {
+			jsonObject.getJSONObject("data")
+		} catch (error: Exception) {
+			LogCat.error(TAG, "Error parsing json data")
+			null
+		}
+		val clientIdString = try {
+			dataObject?.getString("client_id")
+		} catch (error: Exception) {
+			LogCat.error(TAG, "Error parsing client_id")
+			null
+		}
+		val clientIdBytes = clientIdString!!.toByteArray(charset = Charsets.UTF_8)
+		val encodedClientId = try {
+			"Basic " + Base64.encodeToString(clientIdBytes, Base64.NO_WRAP)
+		} catch (error: Exception) {
+			LogCat.error(TAG, "Error encoding client_id")
+			null
+		}
 
 		val request = Request.Builder().apply {
 			header("Authorization", encodedClientId)
@@ -243,7 +260,7 @@ object Api {
 			post(json.toRequestBody("application/json".toMediaType()))
 		}.build()
 
-		val jsonNoFdata = JSONObject(json).toString(2)
+		val jsonNoFdata = jsonObject.toString(2)
 			.replace(""""fdata":.*?",""".toRegex(), "")
 		LogCat.debug(TAG, "createLoggerRequest: $request\npayloadJson: $jsonNoFdata")
 		return request
