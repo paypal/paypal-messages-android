@@ -361,9 +361,29 @@ class ApiTest {
 	}
 
 	@Test
-	fun testCreateLoggerRequest() {
-		val request = Api.createLoggerRequest("{}")
+	fun testCreateLoggerRequestWithClientId() {
+		val request = Api.createLoggerRequest("""{"data": {"client_id": "mockClientId"}}""")
 		val expectedPath = "v1/credit/upstream-messaging-events"
+
+		assertTrue(!request.header("Authorization").isNullOrEmpty())
+		assertTrue(request.url.toString().contains(expectedPath))
+	}
+
+	@Test
+	fun testCreateLoggerRequestWithNoClientId() {
+		val request = Api.createLoggerRequest("""{"data": {}}""")
+		val expectedPath = "v1/credit/upstream-messaging-events"
+
+		assertTrue(request.header("Authorization").isNullOrEmpty())
+		assertTrue(request.url.toString().contains(expectedPath))
+	}
+
+	@Test
+	fun testCreateLoggerRequestWithNoData() {
+		val request = Api.createLoggerRequest("""{}""")
+		val expectedPath = "v1/credit/upstream-messaging-events"
+
+		assertTrue(request.header("Authorization").isNullOrEmpty())
 		assertTrue(request.url.toString().contains(expectedPath))
 	}
 

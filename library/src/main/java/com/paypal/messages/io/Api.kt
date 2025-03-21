@@ -234,28 +234,17 @@ object Api {
 		val jsonObject = JSONObject(json)
 
 		// 	Create authorization header for logs: Basic <base64_client_id>
-		val dataObject = try {
+		val encodedClientId = runCatching {
 			jsonObject.getJSONObject("data")
-		} catch (error: Exception) {
-			LogCat.error(TAG, "Error parsing json data")
-			null
-		}
-		val clientIdString = try {
-			dataObject?.getString("client_id")
-		} catch (error: Exception) {
-			LogCat.error(TAG, "Error parsing client_id")
-			null
-		}
-		val clientIdBytes = clientIdString!!.toByteArray(charset = Charsets.UTF_8)
-		val encodedClientId = try {
-			"Basic " + Base64.encodeToString(clientIdBytes, Base64.NO_WRAP)
-		} catch (error: Exception) {
-			LogCat.error(TAG, "Error encoding client_id")
-			null
-		}
+				.getString("client_id")
+				.toByteArray(charset = Charsets.UTF_8)
+				.let { Base64.encodeToString(it, Base64.NO_WRAP) }
+		}.onFailure { error ->
+			LogCat.error(TAG, "Error processing client_id: ${error.message}")
+		}.getOrNull()
 
 		val request = Request.Builder().apply {
-			header("Authorization", encodedClientId)
+			if (encodedClientId is String) header("Authorization", "Basic $encodedClientId")
 			url(env.url(Env.Endpoints.LOGGER))
 			post(json.toRequestBody("application/json".toMediaType()))
 		}.build()
