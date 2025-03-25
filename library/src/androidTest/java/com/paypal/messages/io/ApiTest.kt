@@ -374,7 +374,7 @@ class ApiTest {
 		val request = Api.createLoggerRequest("""{"data": {}}""")
 		val expectedPath = "v1/credit/upstream-messaging-events"
 
-		assertTrue(request.header("Authorization").isNullOrEmpty())
+		assertTrue(request.header("Authorization")!!.contains("Basic null"))
 		assertTrue(request.url.toString().contains(expectedPath))
 	}
 
@@ -383,7 +383,7 @@ class ApiTest {
 		val request = Api.createLoggerRequest("""{}""")
 		val expectedPath = "v1/credit/upstream-messaging-events"
 
-		assertTrue(request.header("Authorization").isNullOrEmpty())
+		assertTrue(request.header("Authorization")!!.contains("Basic null"))
 		assertTrue(request.url.toString().contains(expectedPath))
 	}
 

@@ -244,7 +244,7 @@ object Api {
 		}.getOrNull()
 
 		val request = Request.Builder().apply {
-			if (encodedClientId is String) header("Authorization", "Basic $encodedClientId")
+			header("Authorization", "Basic $encodedClientId")
 			url(env.url(Env.Endpoints.LOGGER))
 			post(json.toRequestBody("application/json".toMediaType()))
 		}.build()
