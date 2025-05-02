@@ -61,9 +61,20 @@ tasks.register('changeReleaseVersion') {
 		def topLevelGradleFileText = topLevelGradleFile.getText('UTF-8')
 		def useSnapshot = System.getenv('USE_SNAPSHOT')
 		def snapshotParam = useSnapshot == "true" || useSnapshot == true ? "-SNAPSHOT" : ""
-		
+
 		def updatedScript =
 			topLevelGradleFileText.replaceFirst(/("sdkVersionName"\s*: )".*",/, '$1"' + versionParam + snapshotParam + '",')
 		topLevelGradleFile.write(updatedScript, 'UTF-8')
+	}
+}
+
+android {
+	buildTypes {
+		debug {
+			buildConfigField("Boolean", "IS_DEV", "true")
+		}
+		release {
+			buildConfigField("Boolean", "IS_DEV", "false")
+		}
 	}
 }
