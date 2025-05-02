@@ -67,14 +67,3 @@ tasks.register('changeReleaseVersion') {
 		topLevelGradleFile.write(updatedScript, 'UTF-8')
 	}
 }
-
-android {
-	buildTypes {
-		debug {
-			buildConfigField("Boolean", "IS_DEV", "true")
-		}
-		release {
-			buildConfigField("Boolean", "IS_DEV", "false")
-		}
-	}
-}
