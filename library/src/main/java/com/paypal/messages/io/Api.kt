@@ -29,7 +29,7 @@ object Api {
 	// if connecting to a test environment, use ApiClient.insecureClient
 	private val client = ApiClient.secureClient
 	private val gson = GsonBuilder().setPrettyPrinting().create()
-	var env = Env.SANDBOX
+	var env: Env = Env.SANDBOX
 	var devTouchpoint: Boolean = false
 	var ignoreCache: Boolean = false
 	var stageTag: String? = null
@@ -42,6 +42,7 @@ object Api {
 		instanceId: UUID,
 	) {
 		addQueryParameter("client_id", config.data.clientID)
+		addQueryParameter("integration_type", BuildConfig.INTEGRATION_TYPE)
 		if (devTouchpoint) addQueryParameter("dev_touchpoint", "true")
 		if (ignoreCache) addQueryParameter("ignore_cache", "true")
 		addQueryParameter("instance_id", instanceId.toString())

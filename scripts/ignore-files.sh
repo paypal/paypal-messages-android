@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# Add files to be ignored into ignore-files-list.txt
 # Files can be ignored with
 #   ./scripts/ignore-files.sh -y
 # Files can stop being ignored with
@@ -30,25 +31,37 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
+# Change to root folder (paypal-messages-android)
 SCRIPT_PATH=$(dirname "${BASH_SOURCE[0]}")
 PARENT_PATH=$(cd "$SCRIPT_PATH" ; pwd -P)
 cd $PARENT_PATH/..
 
-FILES_LIST=("demo/src/main/res/values/locals.xml")
-
 if [[ $ON ]];
 then
 	echo "Ignoring files"
-	echo "git update-index --skip-worktree $FILES_LIST"
-	# Ignores future changes to the specified files
-	git update-index --skip-worktree $FILES_LIST
 elif [[ $OFF ]];
 then
 	echo "Stop ignoring files"
-	echo "git update-index --no-skip-worktree $FILES_LIST"
-	# Stops ignoring files
-	git update-index --no-skip-worktree $FILES_LIST
 fi
+
+ignoreFilesList="scripts/ignore-files-list.txt"
+exec 3<$ignoreFilesList
+
+while
+	IFS= read -r ignoreFileName <&3
+do
+	if [[ $ON ]];
+	then
+		echo "git update-index --skip-worktree $ignoreFileName"
+		# Ignores future changes to the specified files
+		git update-index --skip-worktree $ignoreFileName
+	elif [[ $OFF ]];
+	then
+		echo "git update-index --no-skip-worktree $ignoreFileName"
+		# Stops ignoring files
+		git update-index --no-skip-worktree $ignoreFileName
+	fi
+done
 
 if [[ $LIST ]];
 then
