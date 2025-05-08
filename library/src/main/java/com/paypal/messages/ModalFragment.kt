@@ -149,8 +149,12 @@ internal class ModalFragment(
 			// TODO remove for production
 			@SuppressLint("WebViewClientOnReceivedSslError")
 			override fun onReceivedSslError(v: WebView, handler: SslErrorHandler, e: SslError) {
-				LogCat.debug(TAG, "Bypassing SSL check")
-				handler.proceed()
+				if (BuildConfig.IS_DEV) {
+					LogCat.debug(TAG, "Bypassing SSL check")
+					handler.proceed()
+				} else {
+					handler.cancel()
+				}
 			}
 
 			override fun shouldOverrideUrlLoading(
