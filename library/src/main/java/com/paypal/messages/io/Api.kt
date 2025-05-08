@@ -293,7 +293,28 @@ object Api {
 	fun callLoggerEndpoint(payload: JsonObject) {
 		val json = gson.toJson(CloudEvent(data = payload))
 		val request = createLoggerRequest(preventEmptyValues(json))
-		val response = client.newCall(request).execute()
-		response.body?.string()?.let { LogCat.debug(TAG, "callLoggerEndpoint response: $it") }
+		try {
+			val response = client.newCall(request).execute()
+			val responseBody = response.body?.string()
+			if (response.isSuccessful) {
+				responseBody?.let { LogCat.debug(TAG, "callLoggerEndpoint response: $it") }
+			} else {
+				val errorBody = responseBody ?: "No response body"
+				LogCat.error(TAG, "callLoggerEndpoint failed with code ${response.code}: $errorBody")
+				// Handle specific error codes if needed
+				if (response.code in 500..599) {
+					LogCat.error(TAG, "Retrying callLoggerEndpoint after ${response.code} error...")
+					// retry once
+					Thread.sleep(2000)
+					callLoggerEndpoint(payload)
+				} else {
+					// Handle other non-successful responses
+					LogCat.error(TAG, "Received non-5xx error code: ${response.code}")
+				}
+			}
+		} catch (e: IOException) {
+			// Handle network errors or other IO exceptions
+			LogCat.error(TAG, "callLoggerEndpoint IOException: ${e.message}")
+		}
 	}
 }
