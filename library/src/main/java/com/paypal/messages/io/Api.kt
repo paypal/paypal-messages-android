@@ -290,7 +290,7 @@ object Api {
 		return jsonObject.toString()
 	}
 
-	fun callLoggerEndpoint(payload: JsonObject) {
+	fun callLoggerEndpoint(payload: JsonObject, isSecondTry: Boolean = false) {
 		val json = gson.toJson(CloudEvent(data = payload))
 		val request = createLoggerRequest(preventEmptyValues(json))
 		try {
@@ -306,7 +306,9 @@ object Api {
 					LogCat.error(TAG, "Retrying callLoggerEndpoint after ${response.code} error...")
 					// retry once
 					Thread.sleep(2000)
-					callLoggerEndpoint(payload)
+					if (!isSecondTry) {
+						callLoggerEndpoint(payload, true)
+					}
 				} else {
 					// Handle other non-successful responses
 					LogCat.error(TAG, "Received non-5xx error code: ${response.code}")
