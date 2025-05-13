@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/paypal/paypal-messages-android/compare/1.0.2...1.0.3) (2025-05-13)
+
+
+### Bug Fixes
+
+* handle unavailable logger api request ([#55](https://github.com/paypal/paypal-messages-android/issues/55)) ([34b76f5](https://github.com/paypal/paypal-messages-android/commit/34b76f51dde40ab470357ca5057a0049346da7d9))
+
 ## [1.0.2](https://github.com/paypal/paypal-messages-android/compare/1.0.1...1.0.2) (2025-05-08)
 
 
