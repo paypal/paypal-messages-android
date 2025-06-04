@@ -168,8 +168,6 @@ class JetpackActivity : ComponentActivity() {
 					messageAlignment = alignmentGroupOptions[0]
 
 					offerType = null
-					messageView.offerType = null
-
 					amount = ""
 					buyerCountry = ""
 					stageTag = ""
@@ -305,6 +303,7 @@ class JetpackActivity : ComponentActivity() {
 							modifier = Modifier
 								.padding(top = 16.dp, bottom = 32.dp, start = 8.dp, end = 8.dp)
 								.background(color = backgroundColor)
+								.height(40.dp)
 								.fillMaxWidth(),
 							factory = {
 								messageView

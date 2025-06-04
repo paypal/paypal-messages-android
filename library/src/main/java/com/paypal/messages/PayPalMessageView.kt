@@ -28,10 +28,10 @@ import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.ProductGroup
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.config.modal.ModalEvents
+import com.paypal.messages.data.PayPalMessageDataCallback
+import com.paypal.messages.data.PayPalMessageDataProvider
 import com.paypal.messages.io.Api
 import com.paypal.messages.io.ApiMessageData
-import com.paypal.messages.io.ApiResult
-import com.paypal.messages.io.OnActionCompleted
 import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
 import kotlinx.coroutines.CoroutineScope
@@ -64,10 +64,22 @@ class PayPalMessageView @JvmOverloads constructor(
 	attributeSet: AttributeSet? = null,
 	defStyleAttr: Int = 0,
 	config: MessageConfig = MessageConfig(MessageData(clientID = "")),
-) : FrameLayout(context, attributeSet, defStyleAttr), OnActionCompleted {
+) : FrameLayout(context, attributeSet, defStyleAttr), PayPalMessageDataCallback {
 	private val TAG = "PayPalMessage"
 	private var messageTextView: TextView
 	private var instanceId = UUID.randomUUID()
+	private val dataProvider = PayPalMessageDataProvider()
+
+	// Message Content
+	private var logo = Logo()
+	private var messageContent: String? = null
+	private var messageDisclaimer: String? = null
+	private var messageLogoTag: String? = null
+	private var messageDataResponse: ApiMessageData.Response? = null
+	private var requestDuration: Int? = null
+
+	// Modal Instance
+	private var modal: ModalFragment? = null
 
 	fun getConfig(): MessageConfig {
 		return MessageConfig(
@@ -256,21 +268,6 @@ class PayPalMessageView @JvmOverloads constructor(
 			}
 		}
 
-	// Full Message Data
-	private var messageDataResponse: ApiMessageData.Response? = null
-
-	// Message Content
-	private var logo = Logo()
-	private var messageContent: String? = null
-	private var messageDisclaimer: String? = null
-	private var messageLogoTag: String? = null
-
-	// Modal Instance
-	private var modal: ModalFragment? = null
-
-	// Stats
-	private var requestDuration: Int? = null
-
 	init {
 		LayoutInflater.from(context).inflate(R.layout.paypal_message_view, this, true)
 
@@ -438,50 +435,44 @@ class PayPalMessageView @JvmOverloads constructor(
 	}
 
 	/**
-	 * This function updates message content uses [Api.getMessageWithHash] to fetch the data.
+	 * This function updates message content using the PayPalMessageDataProvider.
 	 */
 	private fun updateMessageContent() {
-		// Call OnLoading callback and prepare view for the process
-		onLoading.invoke()
 		LogCat.debug(TAG, "Firing request to get message with config: ${getConfig()}")
-
-		requestDuration = measureTimeMillis {
-			Api.getMessageWithHash(
-				context,
-				getConfig(),
-				this.instanceId,
-				this,
-			)
-		}.toInt()
+		dataProvider.fetchMessageData(
+			context,
+			getConfig(),
+			this.instanceId,
+			this,
+		)
 	}
 
-	override fun onActionCompleted(result: ApiResult) {
-		when (result) {
-			is ApiResult.Success<*> -> {
-				LogCat.debug(TAG, "onActionCompleted Success")
-				val renderDuration = measureTimeMillis {
-					this.onSuccess.invoke()
-					this.messageDataResponse = result.response as ApiMessageData.Response
-					updateContentValues(result.response)
-					updateMessageUi()
-				}.toInt()
+	override fun onLoading() {
+		onLoading.invoke()
+	}
 
-				// Log that we successfully rendered the message
-				logEvent(
-					AnalyticsEvent(
-						eventType = EventType.MESSAGE_RENDERED,
-						renderDuration = renderDuration.toString(),
-						requestDuration = requestDuration.toString(),
-					),
-				)
-			}
+	override fun onSuccess(response: ApiMessageData.Response, duration: Int) {
+		LogCat.debug(TAG, "onSuccess")
+		val renderDuration = measureTimeMillis {
+			this.onSuccess.invoke()
+			this.messageDataResponse = response
+			this.requestDuration = duration
+			updateContentValues(response)
+			updateMessageUi()
+		}.toInt()
 
-			is ApiResult.Failure<*> -> {
-				LogCat.debug(TAG, "onActionCompleted Failure")
-				// If we encountered a failure, we expect an exception to be returned.
-				result.error?.let { this.onError(it) }
-			}
-		}
+		// Log that we successfully rendered the message
+		logEvent(
+			AnalyticsEvent(
+				eventType = EventType.MESSAGE_RENDERED,
+				renderDuration = renderDuration.toString(),
+				requestDuration = duration.toString(),
+			),
+		)
+	}
+
+	override fun onError(error: PayPalErrors.Base) {
+		LogCat.debug(TAG, "onError")
 	}
 
 	/**

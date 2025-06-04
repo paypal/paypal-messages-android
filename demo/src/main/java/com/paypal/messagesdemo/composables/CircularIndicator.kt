@@ -15,6 +15,5 @@ fun CircularIndicator(progressBar: Boolean) {
 		modifier = Modifier
 			.width(32.dp),
 		color = MaterialTheme.colorScheme.secondary,
-		trackColor = MaterialTheme.colorScheme.surfaceVariant,
 	)
 }
