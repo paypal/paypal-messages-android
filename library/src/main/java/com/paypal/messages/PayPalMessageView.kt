@@ -14,7 +14,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.getFloatOrThrow
 import androidx.core.content.res.getIntOrThrow
@@ -26,8 +25,6 @@ import com.paypal.messages.analytics.ComponentType
 import com.paypal.messages.analytics.EventType
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.ProductGroup
-import com.paypal.messages.config.modal.ModalConfig
-import com.paypal.messages.config.modal.ModalEvents
 import com.paypal.messages.data.PayPalMessageDataCallback
 import com.paypal.messages.data.PayPalMessageDataProvider
 import com.paypal.messages.io.Api
@@ -69,6 +66,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var messageTextView: TextView
 	private var instanceId = UUID.randomUUID()
 	private val dataProvider = PayPalMessageDataProvider()
+	private var clickHandler: com.paypal.messages.data.PayPalMessageClickHandler? = null
 
 	// Message Content
 	private var logo = Logo()
@@ -77,9 +75,6 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var messageLogoTag: String? = null
 	private var messageDataResponse: ApiMessageData.Response? = null
 	private var requestDuration: Int? = null
-
-	// Modal Instance
-	private var modal: ModalFragment? = null
 
 	fun getConfig(): MessageConfig {
 		return MessageConfig(
@@ -166,7 +161,6 @@ class PayPalMessageView @JvmOverloads constructor(
 		set(arg) {
 			if (field != arg) {
 				field = arg
-				if (modal != null) modal?.amount = field
 				debounceUpdateContent(Unit)
 			}
 		}
@@ -174,7 +168,6 @@ class PayPalMessageView @JvmOverloads constructor(
 		set(arg) {
 			if (field != arg) {
 				field = arg
-				if (modal != null) modal?.buyerCountry = field
 				debounceUpdateContent(Unit)
 			}
 		}
@@ -182,7 +175,6 @@ class PayPalMessageView @JvmOverloads constructor(
 		set(arg) {
 			if (field != arg) {
 				field = arg
-				if (modal != null) modal?.offerType = field
 				debounceUpdateContent(Unit)
 			}
 		}
@@ -280,47 +272,11 @@ class PayPalMessageView @JvmOverloads constructor(
 		updateMessageContent()
 	}
 
-	private fun showWebView(response: ApiMessageData.Response) {
-		val modal = modal ?: run {
-			val modal = ModalFragment(clientID)
-			// Build modal config
-			val modalConfig = ModalConfig(
-				amount = this.amount,
-				buyerCountry = this.buyerCountry,
-				offer = response.meta?.offerType,
-				ignoreCache = false,
-				devTouchpoint = false,
-				stageTag = null,
-				events = ModalEvents(
-					onApply = this.onApply,
-					onClick = this.onClick,
-					onError = this.onError,
-				),
-				modalCloseButton = response.meta?.modalCloseButton!!,
-			)
-
-			modal.init(modalConfig)
-			modal.show((context as AppCompatActivity).supportFragmentManager, modal.tag)
-
-			this.modal = modal
-
-			modal
-		}
-
-		// modal.show() above will display the modal on initial view, but if the user closes the modal
-		// it will become visually hidden and this method will re-display the modal without
-		// attempting to reattach it
-		// the delay prevents noticeable shift when the offer type is changed
-		handler.postDelayed({
-			modal.expand()
-		}, 250)
-	}
-
 	override fun onDetachedFromWindow() {
 		super.onDetachedFromWindow()
-		// The modal will not dismiss (destroy) itself, it will only hide/show when opening and closing
-		// so we need to cleanup the modal instance if the message is removed
-		this.modal?.dismiss()
+		// Clean up click handler which will dismiss any modals
+		clickHandler?.onCleanup()
+		clickHandler = null
 	}
 
 	/**
@@ -480,22 +436,28 @@ class PayPalMessageView @JvmOverloads constructor(
 	 * @param response the response obtained from the message content fetch process
 	 */
 	private fun updateContentValues(response: ApiMessageData.Response) {
-		modal?.offerType = response.meta?.offerType
 		messageContent = formatMessageContent(response, logoType)
 		messageLogoTag = response.meta?.variables?.logoPlaceholder
 		messageDisclaimer = response.content?.default?.disclaimer
 		logo = Logo(logoType, response.meta?.creditProductGroup)
+		
+		// Create click handler if it doesn't exist
+		if (clickHandler == null) {
+			clickHandler = dataProvider.createClickHandler(
+				context,
+				getConfig(),
+				instanceId,
+			) { event -> logEvent(event) }
+		}
+		
+		// Set click listener
 		messageTextView.setOnClickListener {
-			onClick.invoke()
-			// Log Message Click
-			logEvent(
-				AnalyticsEvent(
-					eventType = EventType.MESSAGE_CLICKED,
-					pageViewLinkName = if (messageDisclaimer != "") messageDisclaimer else "Learn more",
-					pageViewLinkSource = "learn_more",
-				),
+			clickHandler?.onMessageClick(
+				response,
+				onClick,
+				onApply,
+				onError,
 			)
-			showWebView(response)
 		}
 	}
 

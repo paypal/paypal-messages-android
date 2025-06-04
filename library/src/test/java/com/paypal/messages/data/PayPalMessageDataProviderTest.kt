@@ -1,6 +1,9 @@
 package com.paypal.messages.data
 
 import android.content.Context
+import androidx.appcompat.app.AppCompatActivity
+import com.paypal.messages.ModalFragment
+import com.paypal.messages.analytics.AnalyticsEvent
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
@@ -11,6 +14,7 @@ import com.paypal.messages.io.OnActionCompleted
 import com.paypal.messages.utils.PayPalErrors
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
@@ -137,5 +141,45 @@ class PayPalMessageDataProviderTest {
 		assertEquals(mockContext, contextSlot.captured)
 		assertEquals(config, configSlot.captured)
 		assertEquals(instanceId, instanceIdSlot.captured)
+	}
+
+	@Test
+	fun `createClickHandler returns a functioning click handler`() {
+		// Given
+		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
+		val mockOnClick = mockk<() -> Unit>(relaxed = true)
+		val mockOnApply = mockk<() -> Unit>(relaxed = true)
+		val mockOnError = mockk<(PayPalErrors.Base) -> Unit>(relaxed = true)
+		val logEventSlot = slot<AnalyticsEvent>()
+		val logEventCallback = mockk<(AnalyticsEvent) -> Unit> {
+			every { this@mockk.invoke(capture(logEventSlot)) } returns Unit
+		}
+
+		// Mock the AppCompatActivity cast
+		every { mockContext as? AppCompatActivity } returns mockk(relaxed = true)
+
+		// Mock ModalFragment constructor and methods
+		mockkConstructor(ModalFragment::class)
+		every { anyConstructed<ModalFragment>().init(any()) } returns Unit
+		every { anyConstructed<ModalFragment>().show(any(), any()) } returns Unit
+		every { anyConstructed<ModalFragment>().expand() } returns Unit
+
+		// When
+		val clickHandler = provider.createClickHandler(
+			mockContext,
+			config,
+			instanceId,
+			logEventCallback,
+		)
+		clickHandler.onMessageClick(mockResponse, mockOnClick, mockOnApply, mockOnError)
+
+		// Then
+		verify { mockOnClick.invoke() }
+		verify { logEventCallback.invoke(any()) }
+		verify { anyConstructed<ModalFragment>().show(any(), any()) }
+
+		// Test cleanup
+		clickHandler.onCleanup()
+		verify { anyConstructed<ModalFragment>().dismiss() }
 	}
 }
