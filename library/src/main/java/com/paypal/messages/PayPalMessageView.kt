@@ -267,6 +267,7 @@ class PayPalMessageView @JvmOverloads constructor(
 
 	// Modal Instance
 	private var modal: ModalFragment? = null
+	private var fragmentManager: androidx.fragment.app.FragmentManager
 
 	// Stats
 	private var requestDuration: Int? = null
@@ -281,6 +282,9 @@ class PayPalMessageView @JvmOverloads constructor(
 		}
 		if (config.data.clientID === "") LogCat.error(TAG, "ClientID is an empty string")
 		updateMessageContent()
+
+		fragmentManager = (context as? AppCompatActivity)?.supportFragmentManager
+			?: throw PayPalErrors.InvalidClientIdException("PayPalMessageView requires an AppCompatActivity context to function properly.")
 	}
 
 	private fun showWebView(response: ApiMessageData.Response) {
@@ -303,7 +307,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			)
 
 			modal.init(modalConfig)
-			modal.show((context as AppCompatActivity).supportFragmentManager, modal.tag)
+			modal.show(fragmentManager, modal.tag)
 
 			this.modal = modal
 
@@ -323,7 +327,9 @@ class PayPalMessageView @JvmOverloads constructor(
 		super.onDetachedFromWindow()
 		// The modal will not dismiss (destroy) itself, it will only hide/show when opening and closing
 		// so we need to cleanup the modal instance if the message is removed
-		this.modal?.dismiss()
+		if (this.modal?.isAdded == true && this.modal?.isDetached == false) {
+			this.modal?.dismiss()
+		}
 	}
 
 	/**
