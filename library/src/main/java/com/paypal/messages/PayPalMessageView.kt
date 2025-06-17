@@ -282,9 +282,6 @@ class PayPalMessageView @JvmOverloads constructor(
 		}
 		if (config.data.clientID === "") LogCat.error(TAG, "ClientID is an empty string")
 		updateMessageContent()
-
-		fragmentManager = (context as? AppCompatActivity)?.supportFragmentManager
-			?: throw PayPalErrors.InvalidClientIdException("PayPalMessageView requires an AppCompatActivity context to function properly.")
 	}
 
 	private fun showWebView(response: ApiMessageData.Response) {
@@ -307,7 +304,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			)
 
 			modal.init(modalConfig)
-			modal.show(fragmentManager, modal.tag)
+			modal.show((context as AppCompatActivity).supportFragmentManager, modal.tag)
 
 			this.modal = modal
 
