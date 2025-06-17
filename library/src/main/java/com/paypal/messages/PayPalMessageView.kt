@@ -267,7 +267,6 @@ class PayPalMessageView @JvmOverloads constructor(
 
 	// Modal Instance
 	private var modal: ModalFragment? = null
-	private var fragmentManager: androidx.fragment.app.FragmentManager
 
 	// Stats
 	private var requestDuration: Int? = null
