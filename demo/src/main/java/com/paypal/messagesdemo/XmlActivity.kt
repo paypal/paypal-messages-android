@@ -42,8 +42,7 @@ class XmlActivity : AppCompatActivity() {
 		val messagesModalText = binding.messagesModalText
 		val modalConfig = PayPalMessagesModalConfig(
 			clientID = getString(R.string.client_id),
-			amount = 300.0,
-			offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM,
+			environment = environment,
 		)
 		val modal = PayPalMessagesModalFragment(context = this, config = modalConfig)
 		messagesModalText.setOnClickListener {
@@ -183,6 +182,12 @@ class XmlActivity : AppCompatActivity() {
 			payPalMessage.color = color
 			payPalMessage.logoType = logoType
 			payPalMessage.textAlignment = textAlignment
+
+			modal.clientID = clientId
+			modal.amount = amount
+			modal.buyerCountry = buyerCountry
+			modal.offerType = offerType
+			modal.environment = environment
 		}
 
 		// Restore default options and reset UI

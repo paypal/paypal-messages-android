@@ -13,6 +13,7 @@ import androidx.core.content.res.use
 import com.paypal.messages.analytics.AnalyticsComponent
 import com.paypal.messages.analytics.AnalyticsEvent
 import com.paypal.messages.analytics.AnalyticsLogger
+import com.paypal.messages.analytics.ComponentType
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.PayPalMessagePageType
@@ -20,8 +21,6 @@ import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.config.modal.ModalConfig
 import com.paypal.messages.config.modal.ModalEvents
 import com.paypal.messages.io.Api
-import com.paypal.messages.io.ApiResult
-import com.paypal.messages.io.OnActionCompleted
 import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
 import kotlinx.coroutines.CoroutineScope
@@ -45,8 +44,8 @@ class PayPalMessagesModalFragment @JvmOverloads constructor(
 	attributeSet: AttributeSet? = null,
 	defStyleAttr: Int = 0,
 	config: MessagesModalConfig = MessagesModalConfig(clientID = ""),
-) : FrameLayout(context, attributeSet, defStyleAttr), OnActionCompleted {
-	private val TAG = "PayPalMessagesModalView"
+) : FrameLayout(context, attributeSet, defStyleAttr) {
+	private val TAG = "PayPalMessagesModalFragment"
 	private var instanceId = UUID.randomUUID()
 
 	fun getConfig(): MessagesModalConfig {
@@ -239,7 +238,7 @@ class PayPalMessagesModalFragment @JvmOverloads constructor(
 	private var modal: ModalFragment? = null
 
 	init {
-		context.obtainStyledAttributes(attributeSet, R.styleable.PayPalMessagesModalView).use { typedArray ->
+		context.obtainStyledAttributes(attributeSet, R.styleable.PayPalMessagesModalFragment).use { typedArray ->
 			updateFromAttributes(typedArray)
 		}
 		if (config.clientID === "") LogCat.error(TAG, "ClientID is an empty string")
@@ -296,13 +295,13 @@ class PayPalMessagesModalFragment @JvmOverloads constructor(
 	 * This function will update the local config related values based on what is provided from the [PayPalMessageView] xml custom view.
 	 */
 	private fun updateFromAttributes(typedArray: TypedArray) {
-		if (typedArray.hasValue(R.styleable.PayPalMessagesModalView_paypal_client_id)) {
-			clientID = typedArray.getString(R.styleable.PayPalMessagesModalView_paypal_client_id).toString()
+		if (typedArray.hasValue(R.styleable.PayPalMessagesModalFragment_paypal_client_id)) {
+			clientID = typedArray.getString(R.styleable.PayPalMessagesModalFragment_paypal_client_id).toString()
 		}
 
-		if (typedArray.hasValue(R.styleable.PayPalMessagesModalView_paypal_amount)) {
+		if (typedArray.hasValue(R.styleable.PayPalMessagesModalFragment_paypal_amount)) {
 			amount = try {
-				typedArray.getFloatOrThrow(R.styleable.PayPalMessagesModalView_paypal_amount).toDouble()
+				typedArray.getFloatOrThrow(R.styleable.PayPalMessagesModalFragment_paypal_amount).toDouble()
 			}
 			catch (ex: Exception) {
 				LogCat.error(TAG, "Error parsing amount attribute")
@@ -310,9 +309,9 @@ class PayPalMessagesModalFragment @JvmOverloads constructor(
 			}
 		}
 
-		if (typedArray.hasValue(R.styleable.PayPalMessagesModalView_paypal_offer_type)) {
+		if (typedArray.hasValue(R.styleable.PayPalMessagesModalFragment_paypal_offer_type)) {
 			offerType = try {
-				PayPalMessageOfferType(typedArray.getIntOrThrow(R.styleable.PayPalMessagesModalView_paypal_offer_type))
+				PayPalMessageOfferType(typedArray.getIntOrThrow(R.styleable.PayPalMessagesModalFragment_paypal_offer_type))
 			}
 			catch (ex: Exception) {
 				LogCat.error(TAG, "Error parsing offer_type attribute")
@@ -320,9 +319,9 @@ class PayPalMessagesModalFragment @JvmOverloads constructor(
 			}
 		}
 
-		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_page_type)) {
+		if (typedArray.hasValue(R.styleable.PayPalMessagesModalFragment_paypal_page_type)) {
 			pageType = try {
-				PayPalMessagePageType(typedArray.getIntOrThrow(R.styleable.PayPalMessageView_paypal_page_type))
+				PayPalMessagePageType(typedArray.getIntOrThrow(R.styleable.PayPalMessagesModalFragment_paypal_page_type))
 			}
 			catch (ex: Exception) {
 				LogCat.error(TAG, "Error parsing page_type attribute")
@@ -330,35 +329,20 @@ class PayPalMessagesModalFragment @JvmOverloads constructor(
 			}
 		}
 
-		if (typedArray.hasValue(R.styleable.PayPalMessageView_paypal_buyer_country)) {
-			buyerCountry = typedArray.getString(R.styleable.PayPalMessageView_paypal_buyer_country)
+		if (typedArray.hasValue(R.styleable.PayPalMessagesModalFragment_paypal_buyer_country)) {
+			buyerCountry = typedArray.getString(R.styleable.PayPalMessagesModalFragment_paypal_buyer_country)
 		}
 	}
 
-	override fun onActionCompleted(result: ApiResult) {
-		when (result) {
-			is ApiResult.Success<*> -> {
-				LogCat.debug(TAG, "onActionCompleted Success")
-			}
-
-			is ApiResult.Failure<*> -> {
-				LogCat.debug(TAG, "onActionCompleted Failure")
-				// If we encountered a failure, we expect an exception to be returned.
-				result.error?.let { this.onError(it) }
-			}
-		}
-	}
-
-	@Suppress("unused")
 	private fun logEvent(event: AnalyticsEvent) {
 		val component = AnalyticsComponent(
 			offerType = this.offerType,
 			amount = this.amount.toString(),
+			pageType = this.pageType,
 			buyerCountryCode = this.buyerCountry,
 			instanceId = this.instanceId.toString(),
 			originatingInstanceId = Api.originatingInstanceId.toString(),
-			// TODO: what type to use
-// 			type = ComponentType.MESSAGE.toString(),
+			type = ComponentType.MODAL.toString(),
 			componentEvents = mutableListOf(event),
 		)
 
