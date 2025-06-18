@@ -323,7 +323,9 @@ class PayPalMessageView @JvmOverloads constructor(
 		super.onDetachedFromWindow()
 		// The modal will not dismiss (destroy) itself, it will only hide/show when opening and closing
 		// so we need to cleanup the modal instance if the message is removed
-		this.modal?.dismiss()
+		if (this.modal?.isAdded == true && this.modal?.isDetached == false) {
+			this.modal?.dismiss()
+		}
 	}
 
 	/**
