@@ -3,8 +3,8 @@ package com.paypal.messagesdemo
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,6 +37,7 @@ import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
+import com.paypal.messages.config.message.PayPalMessageEventsCallbacks
 import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
 import com.paypal.messages.config.message.style.PayPalMessageAlignment
 import com.paypal.messages.config.message.style.PayPalMessageColor
@@ -49,7 +50,7 @@ fun toSentenceCase(input: String): String {
 	return input.lowercase().replaceFirstChar { it.titlecase() }
 }
 
-class JetpackActivity : ComponentActivity() {
+class JetpackActivity : AppCompatActivity() {
 	private val TAG = "PPM:JetpackActivity"
 	private val environment = PayPalEnvironment.SANDBOX
 
@@ -99,43 +100,80 @@ class JetpackActivity : ComponentActivity() {
 				var offerType: String? by remember { mutableStateOf(null) }
 
 				var amount: String by remember { mutableStateOf("") }
-				var buyerCountry: String by remember { mutableStateOf("") }
+				var buyerCountry: String? by remember { mutableStateOf(null) }
 				var stageTag: String by remember { mutableStateOf("") }
 				var ignoreCache: Boolean by remember { mutableStateOf(false) }
 				var devTouchpoint: Boolean by remember { mutableStateOf(false) }
 				var buttonEnabled: Boolean by remember { mutableStateOf(true) }
 
+				// State for the PayPal message
 				var progressBar by remember { mutableStateOf(false) }
 
-				val messageView = PayPalMessageView(
-					context,
-					config = PayPalMessageConfig(
-						data = PayPalMessageData(clientID = clientId, environment = environment),
-						viewStateCallbacks = PayPalMessageViewStateCallbacks(
-							onLoading = {
-								progressBar = true
-								buttonEnabled = false
-								Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
-							},
-							onError = {
-								Log.d(TAG, "onError $it")
-								progressBar = false
-								runOnUiThread {
+				// Create and configure the PayPal message view
+				val messageView = remember {
+					PayPalMessageView(
+						context,
+						config = PayPalMessageConfig(
+							data = PayPalMessageData(clientID = clientId, environment = environment),
+							viewStateCallbacks = PayPalMessageViewStateCallbacks(
+								onLoading = {
+									progressBar = true
+									buttonEnabled = false
+									Toast.makeText(context, "Loading Content...", Toast.LENGTH_SHORT).show()
+								},
+								onError = {
+									Log.d(TAG, "onError $it")
+									progressBar = false
 									buttonEnabled = true
-									Toast.makeText(this, it.javaClass.toString() + ":" + it.message, Toast.LENGTH_LONG).show()
-								}
-							},
-							onSuccess = {
-								Log.d(TAG, "onSuccess")
-								progressBar = false
-								runOnUiThread {
+									Toast.makeText(context, it.javaClass.toString() + ":" + it.message, Toast.LENGTH_LONG).show()
+								},
+								onSuccess = {
+									Log.d(TAG, "onSuccess")
+									progressBar = false
 									buttonEnabled = true
-									Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
-								}
-							},
+									Toast.makeText(context, "Success Getting Content", Toast.LENGTH_SHORT).show()
+								},
+							),
+							eventsCallbacks = PayPalMessageEventsCallbacks(
+								onClick = {
+									Log.d(TAG, "Message clicked, showing modal")
+									Toast.makeText(context, "Opening PayPal modal", Toast.LENGTH_SHORT).show()
+									
+									// Use our direct helper to show the modal
+									JetpackModalHelper.showModal(
+										context = context,
+										clientId = clientId,
+										amount = amount.takeIf { it.isNotBlank() }?.toDouble(),
+										buyerCountry = buyerCountry,
+										offerType = when (offerType) {
+											offerGroupOptions[0] -> PayPalMessageOfferType.PAY_LATER_SHORT_TERM
+											offerGroupOptions[1] -> PayPalMessageOfferType.PAY_LATER_LONG_TERM
+											offerGroupOptions[2] -> PayPalMessageOfferType.PAY_LATER_PAY_IN_1
+											offerGroupOptions[3] -> PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
+											else -> null
+										},
+										instanceId = java.util.UUID.randomUUID(),
+										onClick = {
+											Log.d(TAG, "Modal click callback")
+										},
+										onApply = {
+											Log.d(TAG, "Apply clicked in modal")
+											Toast.makeText(context, "Apply clicked in modal", Toast.LENGTH_SHORT).show()
+										},
+										onError = { error ->
+											Log.e(TAG, "Error showing modal: ${error.message}")
+											Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_LONG).show()
+										},
+									)
+								},
+								onApply = {
+									Log.d(TAG, "Apply clicked in modal")
+									Toast.makeText(context, "Apply clicked in modal", Toast.LENGTH_SHORT).show()
+								},
+							),
 						),
-					),
-				)
+					)
+				}
 
 				fun updateMessageData() {
 					messageView.clientID = clientId
@@ -155,7 +193,7 @@ class JetpackActivity : ComponentActivity() {
 
 					messageView.amount = amount.takeIf { it.isNotBlank() }?.toDouble()
 
-					messageView.buyerCountry = buyerCountry.takeIf { it.isNotBlank() }?.toString()
+					messageView.buyerCountry = buyerCountry?.takeIf { it.isNotBlank() }
 
 					Api.stageTag = stageTag
 					Api.ignoreCache = ignoreCache
@@ -269,7 +307,7 @@ class JetpackActivity : ComponentActivity() {
 
 						InputField(
 							text = "Buyer Country",
-							value = buyerCountry,
+							value = buyerCountry ?: "",
 							onChange = { buyerCountry = it },
 						)
 
@@ -307,6 +345,55 @@ class JetpackActivity : ComponentActivity() {
 								.fillMaxWidth(),
 							factory = {
 								messageView
+							},
+							update = { view ->
+								// Set PayPal message to be clickable with obvious visual feedback
+								view.isClickable = true
+								view.isFocusable = true
+								
+								// Log view details for debugging
+								Log.d(TAG, "Setting up PayPal message view: ${view.javaClass.name}")
+								Log.d(TAG, "View context: ${view.context.javaClass.name}")
+								
+								// Add visual feedback when touched - bold ripple effect
+								view.foreground = android.graphics.drawable.RippleDrawable(
+									android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#30000000")),
+									null,
+									android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE),
+								)
+								
+								// Set an explicit click listener that will use our helper
+								view.setOnClickListener {
+									Log.d(TAG, "Direct click on PayPal message view")
+									Toast.makeText(context, "Opening PayPal modal", Toast.LENGTH_SHORT).show()
+									
+									// Use our direct helper to show the modal
+									JetpackModalHelper.showModal(
+										context = context,
+										clientId = clientId,
+										amount = amount.takeIf { it.isNotBlank() }?.toDouble(),
+										buyerCountry = buyerCountry,
+										offerType = when (offerType) {
+											offerGroupOptions[0] -> PayPalMessageOfferType.PAY_LATER_SHORT_TERM
+											offerGroupOptions[1] -> PayPalMessageOfferType.PAY_LATER_LONG_TERM
+											offerGroupOptions[2] -> PayPalMessageOfferType.PAY_LATER_PAY_IN_1
+											offerGroupOptions[3] -> PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
+											else -> null
+										},
+										instanceId = java.util.UUID.randomUUID(),
+										onClick = {
+											Log.d(TAG, "Modal click callback")
+										},
+										onApply = {
+											Log.d(TAG, "Apply clicked in modal")
+											Toast.makeText(context, "Apply clicked in modal", Toast.LENGTH_SHORT).show()
+										},
+										onError = { error ->
+											Log.e(TAG, "Error showing modal: ${error.message}")
+											Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_LONG).show()
+										},
+									)
+								}
 							},
 						)
 

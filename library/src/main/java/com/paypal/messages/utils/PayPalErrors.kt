@@ -21,4 +21,7 @@ object PayPalErrors {
 
 	class ModalFailedToLoad(message: String, debugId: String? = null) :
 		Base("Modal failed to open: $message", debugId)
+		
+	class UnsupportedContextException(message: String = "Context is not supported for showing modals") :
+		Base("Unsupported context: $message")
 }

@@ -1,10 +1,12 @@
 package com.paypal.messages.data
 
 import android.content.Context
+import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import com.paypal.messages.ModalFragment
+import com.paypal.messages.PayPalModalActivity
 import com.paypal.messages.analytics.AnalyticsEvent
 import com.paypal.messages.analytics.EventType
 import com.paypal.messages.config.message.PayPalMessageConfig
@@ -209,47 +211,150 @@ class PayPalMessageDataProvider {
 		onClick: () -> Unit,
 		onError: (PayPalErrors.Base) -> Unit,
 	) {
-		// Cast context to AppCompatActivity
-		val activity = context as? AppCompatActivity
-		if (activity == null) {
-			LogCat.error(TAG, "Context is not an AppCompatActivity, cannot show modal")
-			return
-		}
+		LogCat.debug(TAG, "Showing modal with context: ${context.javaClass.simpleName}")
+		// Try to find a usable AppCompatActivity from the context
+		val appCompatContext = com.paypal.messages.utils.ContextCompatWrapper.findAppCompatActivity(context)
+		LogCat.debug(TAG, "Found AppCompatActivity: $appCompatContext")
+		
+		when {
+			// For JetpackActivity or other ComponentActivity, use PayPalModalActivity
+			context.javaClass.simpleName == "JetpackActivity" ||
+				(context is androidx.activity.ComponentActivity && context !is androidx.appcompat.app.AppCompatActivity) -> {
+				LogCat.debug(TAG, "Using PayPalModalActivity approach for ${context.javaClass.simpleName}")
+				
+				try {
+					// Launch the PayPalModalActivity directly
+					val intent = Intent(context, PayPalModalActivity::class.java).apply {
+						putExtra("CLIENT_ID", config.data.clientID)
+						putExtra("AMOUNT", config.data.amount)
+						putExtra("BUYER_COUNTRY", config.data.buyerCountry)
+						putExtra("OFFER_TYPE", response.meta?.offerType?.toString())
+						putExtra("INSTANCE_ID", instanceId.toString())
+						
+						// Make sure it appears correctly
+						addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+						addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+					}
+					
+					// Start the activity
+					context.startActivity(intent)
+					
+					// Register the callbacks
+					PayPalModalActivity.registerCallbacks(
+						instanceId = instanceId,
+						onApply = onApply,
+						onClick = onClick,
+						onError = onError,
+					)
+					
+					// Call the onClick callback
+					onClick.invoke()
+					
+					LogCat.debug(TAG, "Successfully launched modal activity")
+				} catch (e: Exception) {
+					LogCat.error(TAG, "Failed to show modal: ${e.message}")
+					onError.invoke(PayPalErrors.ModalFailedToLoad("Failed to show modal: ${e.message}", null))
+				}
+			}
+			// For AppCompatActivity contexts, use ModalFragment
+			appCompatContext != null -> {
+				val modal = modalInstances[instanceId] ?: run {
+					val newModal = ModalFragment(config.data.clientID)
 
-		val modal = modalInstances[instanceId] ?: run {
-			val newModal = ModalFragment(config.data.clientID)
+					// Build modal config
+					val modalConfig = ModalConfig(
+						amount = config.data.amount,
+						buyerCountry = config.data.buyerCountry,
+						offer = response.meta?.offerType,
+						ignoreCache = false,
+						devTouchpoint = false,
+						stageTag = null,
+						events = ModalEvents(
+							onApply = onApply,
+							onClick = onClick,
+							onError = onError,
+						),
+						modalCloseButton = response.meta?.modalCloseButton!!,
+					)
 
-			// Build modal config
-			val modalConfig = ModalConfig(
-				amount = config.data.amount,
-				buyerCountry = config.data.buyerCountry,
-				offer = response.meta?.offerType,
-				ignoreCache = false,
-				devTouchpoint = false,
-				stageTag = null,
-				events = ModalEvents(
+					newModal.init(modalConfig)
+					newModal.show(appCompatContext.supportFragmentManager, newModal.tag)
+
+					// Store the modal instance
+					modalInstances[instanceId] = newModal
+
+					newModal
+				}
+
+				// modal.show() above will display the modal on initial view, but if the user closes the modal
+				// it will become visually hidden and this method will re-display the modal without
+				// attempting to reattach it
+				// the delay prevents noticeable shift when the offer type is changed
+				handler.postDelayed({
+					modal.expand()
+				}, 250)
+			}
+			
+			// For other ComponentActivity contexts (redundant now with the case above, but keeping for safety)
+			context is androidx.activity.ComponentActivity &&
+				context !is androidx.fragment.app.FragmentActivity &&
+				context !is androidx.appcompat.app.AppCompatActivity &&
+				context.javaClass.simpleName != "JetpackActivity" -> {
+				// For ComponentActivity, we'll need to delegate to an Activity-level function
+				// that can show a Compose-based modal
+				val intent = Intent(context, PayPalModalActivity::class.java).apply {
+					putExtra("CLIENT_ID", config.data.clientID)
+					putExtra("AMOUNT", config.data.amount)
+					putExtra("BUYER_COUNTRY", config.data.buyerCountry)
+					putExtra("OFFER_TYPE", response.meta?.offerType)
+					// We can't easily serialize the ModalCloseButton as a parcelable
+					// so we'll use the default in PayPalModalActivity
+					putExtra("INSTANCE_ID", instanceId.toString())
+					// Set flags to ensure it appears as a transparent overlay
+					addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+					addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+					addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+				}
+				context.startActivity(intent)
+				
+				// Register the callbacks for the activity to use
+				PayPalModalActivity.registerCallbacks(
+					instanceId = instanceId,
 					onApply = onApply,
 					onClick = onClick,
 					onError = onError,
-				),
-				modalCloseButton = response.meta?.modalCloseButton!!,
-			)
-
-			newModal.init(modalConfig)
-			newModal.show(activity.supportFragmentManager, newModal.tag)
-
-			// Store the modal instance
-			modalInstances[instanceId] = newModal
-
-			newModal
+				)
+			}
+			
+			else -> {
+				// Fall back to using the PayPalModalActivity approach with any context
+				// This ensures we can always show a modal
+				try {
+					val intent = Intent(context, PayPalModalActivity::class.java).apply {
+						putExtra("CLIENT_ID", config.data.clientID)
+						putExtra("AMOUNT", config.data.amount)
+						putExtra("BUYER_COUNTRY", config.data.buyerCountry)
+						putExtra("OFFER_TYPE", response.meta?.offerType)
+						putExtra("INSTANCE_ID", instanceId.toString())
+						// Set flags to ensure it appears as a transparent overlay
+						addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+						addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+						addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+					}
+					context.startActivity(intent)
+					
+					// Register the callbacks for the activity to use
+					PayPalModalActivity.registerCallbacks(
+						instanceId = instanceId,
+						onApply = onApply,
+						onClick = onClick,
+						onError = onError,
+					)
+				} catch (e: Exception) {
+					LogCat.error(TAG, "Failed to show modal with context: ${context.javaClass.simpleName}: ${e.message}")
+					onError.invoke(PayPalErrors.UnsupportedContextException("Cannot show modal: ${e.message}"))
+				}
+			}
 		}
-
-		// modal.show() above will display the modal on initial view, but if the user closes the modal
-		// it will become visually hidden and this method will re-display the modal without
-		// attempting to reattach it
-		// the delay prevents noticeable shift when the offer type is changed
-		handler.postDelayed({
-			modal.expand()
-		}, 250)
 	}
 }
