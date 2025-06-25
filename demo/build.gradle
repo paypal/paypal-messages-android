@@ -25,13 +25,10 @@ android {
     buildConfigField("String", "LOCAL_CLIENT_ID", "\"${System.env.LOCAL_CLIENT_ID}\"")
   }
 
-	viewBinding {
-		enabled = true
-	}
-
 	buildFeatures {
 		buildConfig = true
 		viewBinding = true
+		compose = true
 	}
   buildTypes {
     release {
@@ -46,9 +43,6 @@ android {
   kotlinOptions {
     jvmTarget = '1.8'
   }
-  buildFeatures {
-    compose true
-  }
   composeOptions {
     kotlinCompilerExtensionVersion '1.4.8'
   }
@@ -61,7 +55,7 @@ android {
 
 dependencies {
   implementation 'androidx.core:core-ktx:1.9.0'
-  implementation platform('androidx.compose:compose-bom:2023.01.00')
+  implementation platform('androidx.compose:compose-bom:2023.05.01')
   implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
   implementation 'androidx.activity:activity-compose:1.5.1'
   
@@ -98,12 +92,10 @@ dependencies {
   testImplementation 'junit:junit:4.13.2'
   androidTestImplementation 'androidx.test.ext:junit:1.1.5'
   androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-  androidTestImplementation platform('androidx.compose:compose-bom:2023.01.00')
+  androidTestImplementation platform('androidx.compose:compose-bom:2023.05.01')
   androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
   
   // Debug implementations for Compose tooling
-  debugImplementation 'androidx.compose.ui:ui-tooling'
-  debugImplementation 'androidx.compose.ui:ui-test-manifest'
   debugImplementation 'androidx.compose.ui:ui-tooling'
   debugImplementation 'androidx.compose.ui:ui-test-manifest'
 }

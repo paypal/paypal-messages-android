@@ -33,10 +33,5 @@
 			</intent-filter>
 		</activity>
 
-		<activity
-			android:name="com.paypal.messages.PayPalModalActivity"
-			android:theme="@style/Theme.PayPalModal"
-			android:exported="false" 
-			android:windowSoftInputMode="adjustResize" />
 	</application>
 </manifest>
