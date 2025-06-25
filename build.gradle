@@ -6,16 +6,8 @@ buildscript {
 	ext.modules = [
 		"sdkVersionName"      : "1.0.3",
 		"androidMinSdkVersion": 23,
-		"androidTargetVersion": 33  // Roll back to 33 for better compatibility
+		"androidTargetVersion": 34
 	]
-	ext.compose_version = '1.4.0'  // Compatible with AGP 8.0.2
-	ext.kotlin_version = '1.8.22'  // Use 1.8.22 for Compose compatibility and plugin availability
-	ext.compose_compiler_version = '1.4.0'  // Compatible with Kotlin 1.8.22
-	ext.compose_bom_version = '2023.01.00'  // Compatible and tested with this Kotlin version
-
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10"
-    }
 }
 
 plugins {
