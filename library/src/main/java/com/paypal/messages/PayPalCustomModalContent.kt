@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +52,7 @@ fun PayPalCustomModalContent(
 	onDismiss: () -> Unit,
 	onApply: () -> Unit,
 	onError: (PayPalErrors.Base) -> Unit,
+	modifier: Modifier = Modifier,
 ) {
 	val context = LocalContext.current
 	var isLoading by remember { mutableStateOf(true) }
@@ -101,7 +103,7 @@ fun PayPalCustomModalContent(
 
 	// Full screen container with rounded corners
 	Box(
-		modifier = Modifier
+		modifier = modifier
 			.fillMaxWidth()
 			.fillMaxHeight() // Fill the entire height
 			.background(
@@ -209,7 +211,8 @@ fun PayPalCustomModalContent(
 				},
 				modifier = Modifier
 					.align(Alignment.TopEnd)
-					.size(40.dp),
+					.size(40.dp)
+					.testTag("closeButton"),
 			) {
 				Icon(
 					painter = painterResource(id = R.drawable.ic_close),
@@ -233,7 +236,8 @@ fun PayPalCustomModalContent(
 			CircularProgressIndicator(
 				modifier = Modifier
 					.size(30.dp)
-					.align(Alignment.Center),
+					.align(Alignment.Center)
+					.testTag("progressIndicator"),
 				color = Color(0xFF0070BA), // PayPal blue color
 				strokeWidth = 2.dp,
 			)
@@ -250,6 +254,7 @@ fun PayPalCustomModalContent(
 				Text(
 					text = errorMessage.ifEmpty { "Error fetching PayPal content." },
 					color = Color.Red,
+					modifier = Modifier.testTag("errorText"),
 					textAlign = TextAlign.Center,
 					fontSize = 16.sp,
 					fontWeight = FontWeight.Medium,
