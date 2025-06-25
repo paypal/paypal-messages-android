@@ -67,6 +67,7 @@ class PayPalMessageView @JvmOverloads constructor(
 	private var instanceId = UUID.randomUUID()
 	private val dataProvider = PayPalMessageDataProvider()
 	private var clickHandler: com.paypal.messages.data.PayPalMessageClickHandler? = null
+	private var isClickListenerSet = false
 
 	// Message Content
 	private var logo = Logo()
@@ -440,24 +441,55 @@ class PayPalMessageView @JvmOverloads constructor(
 		messageLogoTag = response.meta?.variables?.logoPlaceholder
 		messageDisclaimer = response.content?.default?.disclaimer
 		logo = Logo(logoType, response.meta?.creditProductGroup)
-		
-		// Create click handler if it doesn't exist
-		if (clickHandler == null) {
-			clickHandler = dataProvider.createClickHandler(
-				context,
-				getConfig(),
-				instanceId,
-			) { event -> logEvent(event) }
-		}
-		
-		// Set click listener
-		messageTextView.setOnClickListener {
-			clickHandler?.onMessageClick(
-				response,
-				onClick,
-				onApply,
-				onError,
-			)
+
+		// Always recreate the click handler to ensure freshness
+		clickHandler?.onCleanup()
+		clickHandler = dataProvider.createClickHandler(
+			context,
+			getConfig(),
+			instanceId,
+		) { event -> logEvent(event) }
+
+		// Set click listener only once
+		if (!isClickListenerSet) {
+			messageTextView.setOnClickListener {
+				android.util.Log.d("PayPalMessage", "Message text view clicked, forwarding to click handler")
+				try {
+					val clickId = UUID.randomUUID().toString().substring(0, 8)
+					android.util.Log.d("PayPalMessage", "[$clickId] Processing click...")
+					if (clickHandler == null) {
+						android.util.Log.d("PayPalMessage", "[$clickId] Recreating click handler...")
+						clickHandler = dataProvider.createClickHandler(
+							context,
+							getConfig(),
+							instanceId,
+						) { event -> logEvent(event) }
+					}
+					android.util.Log.d("PayPalMessage", "[$clickId] Calling onMessageClick with response data available: ${response != null}")
+					val handler = clickHandler
+					if (handler != null) {
+						handler.onMessageClick(
+							response,
+							onClick,
+							onApply,
+							onError,
+						)
+					} else {
+						android.util.Log.e("PayPalMessage", "[$clickId] Click handler is null - creating emergency handler")
+						val emergencyHandler = dataProvider.createClickHandler(
+							context,
+							getConfig(),
+							instanceId,
+						) { event -> logEvent(event) }
+						emergencyHandler.onMessageClick(response, onClick, onApply, onError)
+					}
+					android.util.Log.d("PayPalMessage", "[$clickId] Click processed successfully")
+				} catch (e: Exception) {
+					android.util.Log.e("PayPalMessage", "Error in click handler: ${e.message}", e)
+					onError.invoke(com.paypal.messages.utils.PayPalErrors.ModalFailedToLoad("Failed to show modal: ${e.message}", null))
+				}
+			}
+			isClickListenerSet = true
 		}
 	}
 

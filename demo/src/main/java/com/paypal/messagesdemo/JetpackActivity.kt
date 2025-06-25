@@ -136,35 +136,9 @@ class JetpackActivity : AppCompatActivity() {
 							),
 							eventsCallbacks = PayPalMessageEventsCallbacks(
 								onClick = {
-									Log.d(TAG, "Message clicked, showing modal")
-									Toast.makeText(context, "Opening PayPal modal", Toast.LENGTH_SHORT).show()
-									
-									// Use our direct helper to show the modal
-									JetpackModalHelper.showModal(
-										context = context,
-										clientId = clientId,
-										amount = amount.takeIf { it.isNotBlank() }?.toDouble(),
-										buyerCountry = buyerCountry,
-										offerType = when (offerType) {
-											offerGroupOptions[0] -> PayPalMessageOfferType.PAY_LATER_SHORT_TERM
-											offerGroupOptions[1] -> PayPalMessageOfferType.PAY_LATER_LONG_TERM
-											offerGroupOptions[2] -> PayPalMessageOfferType.PAY_LATER_PAY_IN_1
-											offerGroupOptions[3] -> PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
-											else -> null
-										},
-										instanceId = java.util.UUID.randomUUID(),
-										onClick = {
-											Log.d(TAG, "Modal click callback")
-										},
-										onApply = {
-											Log.d(TAG, "Apply clicked in modal")
-											Toast.makeText(context, "Apply clicked in modal", Toast.LENGTH_SHORT).show()
-										},
-										onError = { error ->
-											Log.e(TAG, "Error showing modal: ${error.message}")
-											Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_LONG).show()
-										},
-									)
+									// When the PayPal message is clicked, this callback is invoked
+									// but we don't need to do anything here since the SDK will handle the modal
+									Log.d(TAG, "Message clicked callback invoked")
 								},
 								onApply = {
 									Log.d(TAG, "Apply clicked in modal")
@@ -362,38 +336,8 @@ class JetpackActivity : AppCompatActivity() {
 									android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE),
 								)
 								
-								// Set an explicit click listener that will use our helper
-								view.setOnClickListener {
-									Log.d(TAG, "Direct click on PayPal message view")
-									Toast.makeText(context, "Opening PayPal modal", Toast.LENGTH_SHORT).show()
-									
-									// Use our direct helper to show the modal
-									JetpackModalHelper.showModal(
-										context = context,
-										clientId = clientId,
-										amount = amount.takeIf { it.isNotBlank() }?.toDouble(),
-										buyerCountry = buyerCountry,
-										offerType = when (offerType) {
-											offerGroupOptions[0] -> PayPalMessageOfferType.PAY_LATER_SHORT_TERM
-											offerGroupOptions[1] -> PayPalMessageOfferType.PAY_LATER_LONG_TERM
-											offerGroupOptions[2] -> PayPalMessageOfferType.PAY_LATER_PAY_IN_1
-											offerGroupOptions[3] -> PayPalMessageOfferType.PAYPAL_CREDIT_NO_INTEREST
-											else -> null
-										},
-										instanceId = java.util.UUID.randomUUID(),
-										onClick = {
-											Log.d(TAG, "Modal click callback")
-										},
-										onApply = {
-											Log.d(TAG, "Apply clicked in modal")
-											Toast.makeText(context, "Apply clicked in modal", Toast.LENGTH_SHORT).show()
-										},
-										onError = { error ->
-											Log.e(TAG, "Error showing modal: ${error.message}")
-											Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_LONG).show()
-										},
-									)
-								}
+								// Log that we're not setting a click listener here (the SDK will handle it internally)
+								Log.d(TAG, "Using SDK's internal click handler - not adding a duplicate listener")
 							},
 						)
 

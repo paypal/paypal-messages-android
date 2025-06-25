@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentActivity
 import com.paypal.messages.ModalFragment
 import com.paypal.messages.PayPalModalActivity
 import com.paypal.messages.analytics.AnalyticsEvent
@@ -20,6 +21,7 @@ import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
 import java.util.UUID
 import java.util.WeakHashMap
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Callback interface for message data fetch results.
@@ -162,6 +164,9 @@ class PayPalMessageDataProvider {
 	 * @param logEventCallback Optional callback to log analytics events
 	 * @return PayPalMessageClickHandler implementation
 	 */
+	// Track active click handlers with timestamps to prevent duplicate modal displays
+	private val activeClickHandlers = ConcurrentHashMap<UUID, Long>()
+	
 	fun createClickHandler(
 		context: Context,
 		config: PayPalMessageConfig,
@@ -175,20 +180,69 @@ class PayPalMessageDataProvider {
 				onApply: () -> Unit,
 				onError: (PayPalErrors.Base) -> Unit,
 			) {
-				// Invoke onClick callback
-				onClick.invoke()
-
-				// Log click event if log callback is provided
-				logEventCallback?.invoke(
-					AnalyticsEvent(
-						eventType = EventType.MESSAGE_CLICKED,
-						pageViewLinkName = response.content?.default?.disclaimer ?: "Learn more",
-						pageViewLinkSource = "learn_more",
-					),
-				)
-
-				// Show modal
-				showWebView(context, response, config, instanceId, onApply, onClick, onError)
+				// Debugging call to verify handler is being invoked
+				LogCat.debug(TAG, "onMessageClick called for instance: $instanceId with response: ${response != null}")
+				
+				// Check if we've processed a click recently (within 1 second) to prevent double-modals
+				val currentTime = System.currentTimeMillis()
+				val lastClickTime = activeClickHandlers[instanceId]
+				
+				if (lastClickTime != null && currentTime - lastClickTime < 1000) {
+					LogCat.debug(TAG, "Ignoring click - too soon after previous click (${currentTime - lastClickTime}ms)")
+					return
+				}
+				
+				// Record this click time
+				activeClickHandlers[instanceId] = currentTime
+				
+				try {
+					// Generate a unique ID for tracing this click event
+					val clickTraceId = UUID.randomUUID().toString().substring(0, 8)
+					LogCat.debug(TAG, "[$clickTraceId] Processing message click for instanceId: $instanceId")
+					
+					// Invoke onClick callback once
+					onClick.invoke()
+	
+					// Log click event if log callback is provided
+					logEventCallback?.invoke(
+						AnalyticsEvent(
+							eventType = EventType.MESSAGE_CLICKED,
+							pageViewLinkName = response.content?.default?.disclaimer ?: "Learn more",
+							pageViewLinkSource = "learn_more",
+						),
+					)
+	
+					// Show modal - make sure this is called to display the bottom sheet
+					LogCat.debug(TAG, "[$clickTraceId] Showing modal for instanceId: $instanceId")
+					
+					// Before showing the modal, clear any existing PayPalModalActivity with the same instance ID
+					try {
+						// Tell PayPalModalActivity to reset modal state
+						try {
+							com.paypal.messages.PayPalModalActivity.resetAllModals()
+							LogCat.debug(TAG, "[$clickTraceId] Reset all modal state")
+						} catch (e: Exception) {
+							LogCat.debug(TAG, "[$clickTraceId] Error resetting modal state: ${e.message}")
+						}
+					} catch (e: Exception) {
+						LogCat.debug(TAG, "[$clickTraceId] Error cleaning up fragments: ${e.message}")
+					}
+					
+					showWebView(context, response, config, instanceId, onApply, onClick, onError)
+					LogCat.debug(TAG, "[$clickTraceId] Modal display request complete")
+				} catch (e: Exception) {
+					// Log any errors that occur
+					LogCat.error(TAG, "Error showing modal: ${e.message}")
+					onError.invoke(PayPalErrors.ModalFailedToLoad("Failed to show modal: ${e.message}", null))
+				} finally {
+					// Reset click handling state after a longer delay
+					handler.postDelayed({
+						// We don't remove the entry, just update it with the completion time
+						// This helps prevent double-modals while still allowing future clicks
+						activeClickHandlers[instanceId] = System.currentTimeMillis()
+						LogCat.debug(TAG, "Click handler state updated for instanceId: $instanceId")
+					}, 1000)
+				}
 			}
 
 			override fun onCleanup() {
@@ -230,25 +284,23 @@ class PayPalMessageDataProvider {
 						putExtra("BUYER_COUNTRY", config.data.buyerCountry)
 						putExtra("OFFER_TYPE", response.meta?.offerType?.toString())
 						putExtra("INSTANCE_ID", instanceId.toString())
-						
 						// Make sure it appears correctly
 						addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 						addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+						// Force a new modal instance if needed
+						putExtra("FORCE_NEW", true)
 					}
 					
 					// Start the activity
 					context.startActivity(intent)
 					
-					// Register the callbacks
+					// Register the callbacks - remove redundant onClick call to avoid double modal issue
 					PayPalModalActivity.registerCallbacks(
 						instanceId = instanceId,
 						onApply = onApply,
 						onClick = onClick,
 						onError = onError,
 					)
-					
-					// Call the onClick callback
-					onClick.invoke()
 					
 					LogCat.debug(TAG, "Successfully launched modal activity")
 				} catch (e: Exception) {
@@ -271,7 +323,8 @@ class PayPalMessageDataProvider {
 						stageTag = null,
 						events = ModalEvents(
 							onApply = onApply,
-							onClick = onClick,
+							// onClick is already called before this method is invoked - don't call it again
+							onClick = { /* onClick is handled earlier */ },
 							onError = onError,
 						),
 						modalCloseButton = response.meta?.modalCloseButton!!,

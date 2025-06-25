@@ -16,7 +16,7 @@
 		<activity
 			android:name=".JetpackActivity"
 			android:exported="true"
-			android:theme="@style/Theme.PayPalMessages">
+			android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
@@ -33,5 +33,10 @@
 			</intent-filter>
 		</activity>
 
+		<activity
+			android:name="com.paypal.messages.PayPalModalActivity"
+			android:theme="@style/Theme.PayPalModal"
+			android:exported="false" 
+			android:windowSoftInputMode="adjustResize" />
 	</application>
 </manifest>
