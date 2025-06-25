@@ -3,8 +3,8 @@ package com.paypal.messagesdemo
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -54,7 +54,7 @@ fun toSentenceCase(input: String): String {
 	return input.lowercase().replaceFirstChar { it.titlecase() }
 }
 
-class JetpackActivity : AppCompatActivity() {
+class JetpackActivity : ComponentActivity() {
 	private val TAG = "PPM:JetpackActivity"
 	private val environment = PayPalEnvironment.SANDBOX
 
@@ -341,7 +341,7 @@ class JetpackActivity : AppCompatActivity() {
 									null,
 									android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE),
 								)
-								
+
 								// Note: We don't need to set any click listeners here.
 								// The PayPalMessageView already handles clicks and shows the modal automatically.
 							},
