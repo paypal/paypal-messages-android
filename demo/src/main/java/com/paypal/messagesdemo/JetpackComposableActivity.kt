@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
-import com.paypal.messages.PayPalCustomModalContent
+import com.paypal.messages.PayPalComposableModal
 import com.paypal.messages.PayPalMessageView
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
@@ -84,7 +84,7 @@ class JetpackComposableActivity : ComponentActivity() {
 						)
 
 						Text(
-							text = "This demo shows how to use the PayPalCustomModalContent composable directly in your Compose UI.",
+							text = "This demo shows how to use the PayPalComposableModal composable directly in your Compose UI.",
 							modifier = Modifier.padding(bottom = 16.dp),
 						)
 
@@ -225,7 +225,7 @@ class JetpackComposableActivity : ComponentActivity() {
 						// Show the PayPal custom modal when requested
 						if (showModal) {
 							Dialog(onDismissRequest = { showModal = false }) {
-								PayPalCustomModalContent(
+								PayPalComposableModal(
 									clientId = clientId,
 									amount = amount.toDoubleOrNull(),
 									buyerCountry = buyerCountry,

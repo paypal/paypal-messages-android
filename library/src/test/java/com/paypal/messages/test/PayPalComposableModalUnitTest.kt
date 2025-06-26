@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * Simple unit test for PayPalCustomModalContent
+ * Simple unit test for PayPalComposableModal
  */
-class PayPalCustomModalContentUnitTest {
+class PayPalComposableModalUnitTest {
 	@Test
 	fun testSimplePass() {
 		// This is a placeholder test that always passes

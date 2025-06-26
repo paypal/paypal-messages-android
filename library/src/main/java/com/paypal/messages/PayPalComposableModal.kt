@@ -40,10 +40,9 @@ import com.paypal.messages.utils.PayPalErrors
 
 /**
  * Custom modal content composable for PayPal messages
- * This implementation matches the reference screenshot with a light blue background and a close button
  */
 @Composable
-fun PayPalCustomModalContent(
+fun PayPalComposableModal(
 	clientId: String,
 	amount: Double?,
 	buyerCountry: String?,

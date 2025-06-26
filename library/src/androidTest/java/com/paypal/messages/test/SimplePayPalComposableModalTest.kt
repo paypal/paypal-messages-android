@@ -3,17 +3,17 @@ package com.paypal.messages.test
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.paypal.messages.PayPalCustomModalContent
+import com.paypal.messages.PayPalComposableModal
 import com.paypal.messages.config.modal.ModalCloseButton
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Simple UI test for the PayPalCustomModalContent composable
+ * Simple UI test for the PayPalComposableModal composable
  */
 @RunWith(AndroidJUnit4::class)
-class SimplePayPalCustomModalContentTest {
+class SimplePayPalComposableModalTest {
 
 	@get:Rule
 	val composeRule = createComposeRule()
@@ -25,7 +25,7 @@ class SimplePayPalCustomModalContentTest {
 	fun customModalContent_displays() {
 		// Set up the composable
 		composeRule.setContent {
-			PayPalCustomModalContent(
+			PayPalComposableModal(
 				clientId = "test-client-id",
 				amount = 100.0,
 				buyerCountry = "US",
