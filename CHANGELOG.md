@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.4](https://github.com/paypal/paypal-messages-android/compare/1.0.3...1.0.4) (2025-06-24)
+
+
+### Bug Fixes
+
+* prevents modal dismissal when modal is already detached ([#59](https://github.com/paypal/paypal-messages-android/issues/59)) ([5dd5bf7](https://github.com/paypal/paypal-messages-android/commit/5dd5bf780f704c71284de2a048cca2aa547ef844))
+* prevents modal dismissal when modal is already detached from fragment manager ([#59](https://github.com/paypal/paypal-messages-android/issues/59)) ([d8f4e9a](https://github.com/paypal/paypal-messages-android/commit/d8f4e9a459588221b03690f6900ff124461406ea))
+
 ## [1.0.3](https://github.com/paypal/paypal-messages-android/compare/1.0.2...1.0.3) (2025-05-13)
 
 

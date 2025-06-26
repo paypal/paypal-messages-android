@@ -107,4 +107,27 @@ class PayPalMessageViewTest {
 			payPalMessageView.getConfig().eventsCallbacks?.onClick == emptyFunction,
 		)
 	}
+
+// 	@Test
+//  TODO: fix this test
+// 	fun dismissAfterFragmentDetached_shouldThrow() {
+// 		val scenario: ActivityScenario<TestActivity> = ActivityScenario.launch(TestActivity::class.java)
+// 		scenario.onActivity { activity: TestActivity ->
+// 			val fragment = ModalFragment("test_client_id")
+// 			fragment.show(activity.supportFragmentManager, "test")
+//
+// 			// Remove the fragment to simulate detachment
+// 			activity.supportFragmentManager.beginTransaction()
+// 				.remove(fragment)
+// 				.commitNow()
+//
+// 			// Try to dismiss and expect IllegalStateException
+// 			try {
+// 				fragment.dismiss()
+// 				fail("Expected IllegalStateException not thrown")
+// 			} catch (e: IllegalStateException) {
+// 				assertThat(e.message).contains("not associated with a fragment manager")
+// 			}
+// 		}
+// 	}
 }
