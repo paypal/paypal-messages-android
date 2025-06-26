@@ -45,6 +45,7 @@ import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
 import com.paypal.messages.config.message.PayPalMessageEventsCallbacks
 import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
+import com.paypal.messagesdemo.composables.CircularIndicator
 import com.paypal.messagesdemo.composables.InputField
 import com.paypal.messagesdemo.ui.BasicTheme
 import java.util.UUID
@@ -65,6 +66,9 @@ class JetpackComposableActivity : ComponentActivity() {
 				var amount: String by remember { mutableStateOf("100.00") }
 				var buyerCountry: String by remember { mutableStateOf("US") }
 				var offerType: String? by remember { mutableStateOf(PayPalMessageOfferType.PAY_LATER_SHORT_TERM.name) }
+				
+				// Loading state
+				var isLoading by remember { mutableStateOf(false) }
 
 				// No longer need a state for the modal since we use an Activity
 
@@ -167,13 +171,16 @@ class JetpackComposableActivity : ComponentActivity() {
 									viewStateCallbacks = PayPalMessageViewStateCallbacks(
 										onLoading = {
 											Log.d(TAG, "Loading message content...")
+											isLoading = true
 										},
 										onError = {
 											Log.d(TAG, "Error loading message: $it")
+											isLoading = false
 											Toast.makeText(context, "Error: $it", Toast.LENGTH_SHORT).show()
 										},
 										onSuccess = {
 											Log.d(TAG, "Message loaded successfully")
+											isLoading = false
 										},
 									),
 									// Optional: Add callbacks for click events
@@ -213,6 +220,9 @@ class JetpackComposableActivity : ComponentActivity() {
 							},
 						)
 						
+						// Show loading indicator when messages are loading
+						CircularIndicator(progressBar = isLoading)
+						
 						Divider(modifier = Modifier.padding(vertical = 16.dp))
 						
 						// Composable Implementation
@@ -233,13 +243,16 @@ class JetpackComposableActivity : ComponentActivity() {
 							environment = environment,
 							onLoading = {
 								Log.d(TAG, "Composable message loading...")
+								isLoading = true
 							},
 							onError = { error ->
 								Log.d(TAG, "Composable message error: $error")
+								isLoading = false
 								Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
 							},
 							onSuccess = {
 								Log.d(TAG, "Composable message loaded successfully")
+								isLoading = false
 							},
 							onClick = {
 								Log.d(TAG, "Composable message clicked")

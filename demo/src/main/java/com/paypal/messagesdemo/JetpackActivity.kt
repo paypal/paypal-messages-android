@@ -43,6 +43,7 @@ import com.paypal.messages.config.message.style.PayPalMessageAlignment
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.io.Api
+import com.paypal.messagesdemo.composables.CircularIndicator
 import com.paypal.messagesdemo.composables.InputField
 import com.paypal.messagesdemo.ui.BasicTheme
 
@@ -319,6 +320,7 @@ class JetpackActivity : ComponentActivity() {
 							)
 						}
 
+						// Show loading indicator when messages are loading
 						CircularIndicator(progressBar = progressBar)
 
 						// This is the recommended way to use PayPal Messages in Jetpack Compose
