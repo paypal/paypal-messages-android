@@ -1,5 +1,7 @@
 package com.paypal.messagesdemo
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -33,18 +36,18 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.Dialog
-import com.paypal.messages.PayPalComposableModal
+import com.paypal.messages.PayPalComposableMessage
 import com.paypal.messages.PayPalMessageView
+import com.paypal.messages.PayPalModalActivity
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
 import com.paypal.messages.config.message.PayPalMessageEventsCallbacks
 import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
-import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messagesdemo.composables.InputField
 import com.paypal.messagesdemo.ui.BasicTheme
+import java.util.UUID
 
 class JetpackComposableActivity : ComponentActivity() {
 	private val TAG = "PPM:JetpackComposableActivity"
@@ -63,8 +66,7 @@ class JetpackComposableActivity : ComponentActivity() {
 				var buyerCountry: String by remember { mutableStateOf("US") }
 				var offerType: String? by remember { mutableStateOf(PayPalMessageOfferType.PAY_LATER_SHORT_TERM.name) }
 
-				// State for showing the modal
-				var showModal by remember { mutableStateOf(false) }
+				// No longer need a state for the modal since we use an Activity
 
 				// Surface container
 				Surface(
@@ -141,9 +143,16 @@ class JetpackComposableActivity : ComponentActivity() {
 
 						// PayPal Message View - shows a clickable message
 						Text(
-							text = "PayPal Message:",
+							text = "PayPal Message Implementations:",
 							fontWeight = FontWeight.Bold,
 							modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
+						)
+						
+						// Legacy Implementation
+						Text(
+							text = "1. Legacy Implementation (AndroidView):",
+							fontWeight = FontWeight.Medium,
+							modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
 						)
 
 						// Using the actual PayPalMessageView that can be clicked to show the modal
@@ -189,7 +198,7 @@ class JetpackComposableActivity : ComponentActivity() {
 						// Render the PayPal message view in the Compose UI
 						AndroidView(
 							modifier = Modifier
-								.padding(vertical = 16.dp)
+								.padding(vertical = 8.dp)
 								.background(color = backgroundColor)
 								.height(40.dp)
 								.fillMaxWidth(),
@@ -203,6 +212,49 @@ class JetpackComposableActivity : ComponentActivity() {
 								)
 							},
 						)
+						
+						Divider(modifier = Modifier.padding(vertical = 16.dp))
+						
+						// Composable Implementation
+						Text(
+							text = "2. Composable Implementation:",
+							fontWeight = FontWeight.Medium,
+							modifier = Modifier.padding(bottom = 4.dp),
+						)
+						
+						// Use our new composable for a cleaner integration
+						// Note: This composable implementation might not display properly due to compatibility issues
+						// The fallback text will be shown to indicate this
+						PayPalComposableMessage(
+							clientId = clientId,
+							amount = amount.toDoubleOrNull(),
+							buyerCountry = buyerCountry,
+							offerType = offerType,
+							environment = environment,
+							onLoading = {
+								Log.d(TAG, "Composable message loading...")
+							},
+							onError = { error ->
+								Log.d(TAG, "Composable message error: $error")
+								Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+							},
+							onSuccess = {
+								Log.d(TAG, "Composable message loaded successfully")
+							},
+							onClick = {
+								Log.d(TAG, "Composable message clicked")
+							},
+							onApply = {
+								Log.d(TAG, "Apply clicked in composable message modal")
+								Toast.makeText(context, "Apply clicked in modal", Toast.LENGTH_SHORT).show()
+							},
+							modifier = Modifier
+								.padding(vertical = 8.dp)
+								.background(Color.White)
+								.height(40.dp)
+								.fillMaxWidth(),
+							showFallbackIndicator = true,
+						)
 
 						// Direct modal button (alternative to clicking the message)
 						Box(
@@ -214,38 +266,29 @@ class JetpackComposableActivity : ComponentActivity() {
 							Button(
 								onClick = {
 									Log.d(TAG, "Showing custom modal with amount: $amount, country: $buyerCountry, offer: $offerType")
-									showModal = true
+									
+									// Create intent for the PayPalModalActivity
+									val intent = Intent(context, PayPalModalActivity::class.java).apply {
+										putExtra("CLIENT_ID", clientId)
+										putExtra("INSTANCE_ID", UUID.randomUUID().toString())
+										amount.toDoubleOrNull()?.let { amountValue ->
+											putExtra("AMOUNT", amountValue)
+										}
+										putExtra("BUYER_COUNTRY", buyerCountry)
+										putExtra("OFFER_TYPE", offerType)
+									}
+									
+									// Start the activity to show the modal
+									context.startActivity(intent)
+									
+									// Add animation override if using an Activity context
+									if (context is Activity) {
+										context.overridePendingTransition(android.R.anim.fade_in, 0)
+									}
 								},
 								modifier = Modifier.fillMaxWidth(0.8f),
 							) {
 								Text("Show Custom Modal Directly", fontSize = 16.sp)
-							}
-						}
-
-						// Show the PayPal custom modal when requested
-						if (showModal) {
-							Dialog(onDismissRequest = { showModal = false }) {
-								PayPalComposableModal(
-									clientId = clientId,
-									amount = amount.toDoubleOrNull(),
-									buyerCountry = buyerCountry,
-									offerType = offerType,
-									modalCloseButtonType = ModalCloseButton(),
-									onDismiss = {
-										Log.d(TAG, "Modal dismissed")
-										showModal = false
-									},
-									onApply = {
-										Log.d(TAG, "Apply button clicked in modal")
-										Toast.makeText(context, "Apply clicked in modal", Toast.LENGTH_SHORT).show()
-										showModal = false
-									},
-									onError = { error ->
-										Log.e(TAG, "Error in modal: ${error.message}")
-										Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_LONG).show()
-										showModal = false
-									},
-								)
 							}
 						}
 					}
