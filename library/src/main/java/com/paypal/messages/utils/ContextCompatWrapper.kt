@@ -17,9 +17,17 @@ object ContextCompatWrapper {
 	 */
 	fun findAppCompatActivity(context: Context): AppCompatActivity? {
 		var currentContext = context
-		while (currentContext !is AppCompatActivity && currentContext is ContextWrapper) {
+		var previousContext: Context? = null
+		
+		// Loop until we find AppCompatActivity or reach end of chain
+		// Also protect against cyclic references by checking if context changes
+		while (currentContext !is AppCompatActivity && currentContext is ContextWrapper &&
+			currentContext != previousContext
+		) {
+			previousContext = currentContext
 			currentContext = currentContext.baseContext
 		}
+		
 		return if (currentContext is AppCompatActivity) {
 			currentContext
 		} else {
