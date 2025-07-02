@@ -83,8 +83,6 @@ dependencies {
 	implementation project(':library')
   implementation 'com.google.android.material:material:1.10.0'
   
-  // TODO: Add kotlin-reflect when network issues are resolved
-  // implementation "org.jetbrains.kotlin:kotlin-reflect"
 
   testImplementation 'junit:junit:4.13.2'
   androidTestImplementation 'androidx.test.ext:junit:1.1.5'

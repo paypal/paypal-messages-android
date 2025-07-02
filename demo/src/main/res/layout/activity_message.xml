@@ -307,24 +307,5 @@
 
 		</LinearLayout>
 
-		<!-- Test Reflection Crash Button -->
-		<Button
-			android:id="@+id/testReflectionButton"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:text="🧪 Test Kotlin Reflection (Crash Test)"
-			android:layout_marginTop="16dp"
-			android:backgroundTint="#FF6B6B"/>
-
-		<TextView
-			android:id="@+id/reflectionTestResult"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:text="Click button to test reflection..."
-			android:layout_marginTop="8dp"
-			android:padding="8dp"
-			android:background="#f0f0f0"
-			android:textSize="12sp"/>
-
 	</LinearLayout>
 </ScrollView>

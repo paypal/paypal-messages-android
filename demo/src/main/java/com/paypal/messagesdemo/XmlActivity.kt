@@ -181,19 +181,6 @@ class XmlActivity : AppCompatActivity() {
 
 		// Request message based on options
 		submitButton.setOnClickListener { updateMessageData() }
-		
-		// Test reflection crash
-		binding.testReflectionButton.setOnClickListener {
-			val result = ReflectionCrashTest().testKotlinReflection()
-			binding.reflectionTestResult.text = result
-			
-			// Show description on first click
-			if (result.contains("✅")) {
-				Toast.makeText(this, "Reflection test passed! Try building releaseWithCrash variant to see the crash.", Toast.LENGTH_LONG).show()
-			} else {
-				Toast.makeText(this, "Reflection crashed! This demonstrates the merchant issue.", Toast.LENGTH_LONG).show()
-			}
-		}
 	}
 
 	/**
