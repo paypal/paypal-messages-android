@@ -46,6 +46,7 @@ android {
     releaseWithMinifyEnabled {
       minifyEnabled true  // Tests consumer ProGuard rules protection
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+      matchingFallbacks = ['release']
     }
   }
   compileOptions {
