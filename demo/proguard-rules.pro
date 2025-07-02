@@ -59,3 +59,9 @@
 -keepattributes *Annotation*, InnerClasses
 -keepattributes SourceFile, LineNumberTable
 -keepattributes Signature, Exceptions
+
+# OkHttp Platform used when running on Java 8 or below
+-dontwarn okhttp3.internal.platform.**
+-dontwarn org.conscrypt.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.openjsse.**
