@@ -42,9 +42,9 @@ android {
       minifyEnabled false
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
-    // Test build to reproduce reflection crash
-    releaseWithCrash {
-      minifyEnabled true  // This will cause the crash
+    // Test build with minification enabled to verify consumer ProGuard rules work
+    releaseWithMinifyEnabled {
+      minifyEnabled true  // Tests consumer ProGuard rules protection
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
   }
