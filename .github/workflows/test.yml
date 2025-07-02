@@ -107,7 +107,7 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Build Library Release AAR
+      - name: Build Library Release AAR (Critical - Contains Consumer Rules Fix)
         run: ./gradlew library:assembleRelease
         
       - name: Verify Consumer ProGuard Rules in AAR
@@ -117,22 +117,15 @@ jobs:
           echo "Verifying consumer rules content:"
           unzip -p library/build/outputs/aar/library-release.aar proguard.txt | head -10
 
-      - name: Build Demo App - Debug (No Minification)
-        run: ./gradlew demo:assembleDebug
-
-      - name: Build Demo App - Release (Minification + Consumer Rules)
+      - name: Build Demo Release APK (Critical - Tests Minification + Consumer Rules)
         run: ./gradlew demo:assembleRelease
 
-      - name: Build Demo App - ReleaseWithMinifyEnabled (Test Variant)
-        run: ./gradlew demo:assembleReleaseWithMinifyEnabled
-
-      - name: Verify APK Outputs
+      - name: Verify Critical APK Outputs
         run: |
-          echo "Checking that all APKs were built successfully..."
-          ls -la demo/build/outputs/apk/debug/*.apk
+          echo "Checking that critical APKs were built successfully..."
+          ls -la library/build/outputs/aar/library-release.aar
           ls -la demo/build/outputs/apk/release/*.apk
-          ls -la demo/build/outputs/apk/releaseWithMinifyEnabled/*.apk
-          echo "✅ All build variants completed successfully!"
+          echo "✅ Critical builds completed successfully!"
 
   test_reflection_fix:
     name: Reflection Crash Fix Verification

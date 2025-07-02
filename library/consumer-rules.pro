@@ -1,6 +1,7 @@
 # PayPal Messages SDK ProGuard Rules
 # Keep all PayPal Messages SDK classes
 -keep class com.paypal.messages.** { *; }
+-keepnames class com.paypal.messages.** { *; }
 
 # Keep Kotlin reflection support
 -keep class kotlin.reflect.** { *; }
@@ -29,3 +30,8 @@
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
+
+# Keep attributes needed for Kotlin reflection
+-keepattributes *Annotation*, InnerClasses
+-keepattributes SourceFile, LineNumberTable
+-keepattributes Signature, Exceptions
