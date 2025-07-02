@@ -34,8 +34,17 @@ android {
 		viewBinding = true
 	}
   buildTypes {
+    debug {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
     release {
       minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
+    // Test build to reproduce reflection crash
+    releaseWithCrash {
+      minifyEnabled true  // This will cause the crash
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
   }
@@ -73,6 +82,9 @@ dependencies {
 	implementation 'androidx.appcompat:appcompat:1.6.1'
 	implementation project(':library')
   implementation 'com.google.android.material:material:1.10.0'
+  
+  // TODO: Add kotlin-reflect when network issues are resolved
+  // implementation "org.jetbrains.kotlin:kotlin-reflect"
 
   testImplementation 'junit:junit:4.13.2'
   androidTestImplementation 'androidx.test.ext:junit:1.1.5'
