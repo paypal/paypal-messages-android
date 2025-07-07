@@ -26,8 +26,8 @@ runs:
   steps:
     - run: |
         if [[ $USE_SNAPSHOT == "true" ]]; then
-          # For snapshots, just publish to Sonatype snapshots repository
-          ./gradlew --stacktrace clean publish
+          # For snapshots, use our dedicated snapshot publishing task
+          ./gradlew --stacktrace clean publishSnapshotToMavenCentral
         else
           # For releases, publish to Sonatype staging and release
           ./gradlew --stacktrace clean publishToSonatype closeAndReleaseSonatypeStagingRepository

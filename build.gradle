@@ -15,7 +15,7 @@ plugins {
 	id 'com.android.library' version '8.0.2' apply false
 	id 'org.jetbrains.kotlin.android' version '1.8.22' apply false
 	id 'org.jmailen.kotlinter' version '3.16.0'
-	id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
+	id 'io.github.gradle-nexus.publish-plugin' version '1.1.0' apply false
 	id 'signing'
 }
 
@@ -35,19 +35,24 @@ tasks.register('ktFormat', FormatTask) {
 
 version modules.sdkVersionName
 
-nexusPublishing {
-	repositories {
-		sonatype {
-			username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
-			password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
-			repositoryDescription = 'Paypal Messages'
-			packageGroup = 'com.paypal'
-		}
-	}
-	transitionCheckOptions {
-		// give nexus sonatype more time to close the staging repository
-		delayBetween.set(Duration.ofSeconds(20))
-	}
+// Only apply nexus publishing plugin for release builds
+if (!System.getenv('USE_SNAPSHOT')) {
+    apply plugin: 'io.github.gradle-nexus.publish-plugin'
+    
+    nexusPublishing {
+        repositories {
+            sonatype {
+                username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
+                password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
+                repositoryDescription = 'Paypal Messages'
+                packageGroup = 'com.paypal'
+            }
+        }
+        transitionCheckOptions {
+            // give nexus sonatype more time to close the staging repository
+            delayBetween.set(Duration.ofSeconds(20))
+        }
+    }
 }
 
 subprojects {
@@ -91,6 +96,26 @@ class ReplaceStringTask extends DefaultTask {
 
         // Write the modified content back to locals.xml
         file.text = modifiedContent
+    }
+}
 
+// Add a specific task for publishing snapshots
+task publishSnapshotToMavenCentral {
+    group = 'publishing'
+    description = 'Publishes all modules as SNAPSHOT versions to Maven Central'
+    
+    doFirst {
+        println "Preparing to publish snapshot version: ${version}"
+        
+        // Set the USE_SNAPSHOT environment variable if not already set
+        if (System.getenv('USE_SNAPSHOT') == null) {
+            println "Setting USE_SNAPSHOT=true for this build"
+            ant.setProperty(name: "env.USE_SNAPSHOT", value: "true")
+        }
+    }
+    
+    // Make this task depend on the publish task of each subproject
+    gradle.projectsEvaluated {
+        dependsOn subprojects.collect { it.tasks.matching { task -> task.name == 'publish' } }
     }
 }
