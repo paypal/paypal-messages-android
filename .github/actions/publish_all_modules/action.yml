@@ -25,13 +25,8 @@ runs:
   using: "composite"
   steps:
     - run: |
-        if [[ $USE_SNAPSHOT == "true" ]]; then
-          # For snapshots, use our dedicated snapshot publishing task
-          ./gradlew --stacktrace clean publishSnapshotToMavenCentral
-        else
-          # For releases, publish to Sonatype staging and release
-          ./gradlew --stacktrace clean publishToSonatype closeAndReleaseSonatypeStagingRepository
-        fi
+        # Using direct publishing to Central Portal for both snapshots and releases
+        ./gradlew --stacktrace clean publish
       shell: bash
       env:
         SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_user }}

@@ -43,17 +43,10 @@ afterEvaluate {
 		}
 		repositories {
 			maven {
-				name = "sonatypeRelease"
-				url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-			}
-			maven {
-				name = "sonatypeSnapshot"
-				url = uri("https://central.sonatype.com/repository/maven-snapshots/")
-				
-				// Apply this repository URL for snapshot versions only
-				content {
-					includeVersionByRegex('com\\.paypal\\..*', '.*', '.*-SNAPSHOT')
-				}
+				name = "centralPortal"
+				url = version.endsWith('-SNAPSHOT') 
+					? uri("https://central.sonatype.com/repository/maven-snapshots/") 
+					: uri("https://central.sonatype.com/repository/maven-releases/")
 			}
 		}
 	}
