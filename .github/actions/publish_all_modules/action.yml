@@ -25,7 +25,13 @@ runs:
   using: "composite"
   steps:
     - run: |
-        ./gradlew --stacktrace clean publishToSonatype closeAndReleaseSonatypeStagingRepository
+        if [[ $USE_SNAPSHOT == "true" ]]; then
+          # For snapshots, just publish to Sonatype snapshots repository
+          ./gradlew --stacktrace clean publish
+        else
+          # For releases, publish to Sonatype staging and release
+          ./gradlew --stacktrace clean publishToSonatype closeAndReleaseSonatypeStagingRepository
+        fi
       shell: bash
       env:
         SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_user }}
@@ -33,3 +39,4 @@ runs:
         SIGNING_KEY_ID: ${{ inputs.signing_key_id }}
         SIGNING_KEY_PASSWORD: ${{ inputs.signing_key_password }}
         SIGNING_KEY_FILE: ${{ inputs.signing_key_file }}
+        USE_SNAPSHOT: ${{ env.USE_SNAPSHOT }}
