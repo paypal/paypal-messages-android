@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.0.4](https://github.com/paypal/paypal-messages-android/compare/1.0.3...1.0.4) (2025-06-24)
+
+
+### Bug Fixes
+
+* prevents modal dismissal when modal is already detached ([#59](https://github.com/paypal/paypal-messages-android/issues/59)) ([5dd5bf7](https://github.com/paypal/paypal-messages-android/commit/5dd5bf780f704c71284de2a048cca2aa547ef844))
+* prevents modal dismissal when modal is already detached from fragment manager ([#59](https://github.com/paypal/paypal-messages-android/issues/59)) ([d8f4e9a](https://github.com/paypal/paypal-messages-android/commit/d8f4e9a459588221b03690f6900ff124461406ea))
+
+## [1.0.3](https://github.com/paypal/paypal-messages-android/compare/1.0.2...1.0.3) (2025-05-13)
+
+
+### Bug Fixes
+
+* handle unavailable logger api request ([#55](https://github.com/paypal/paypal-messages-android/issues/55)) ([34b76f5](https://github.com/paypal/paypal-messages-android/commit/34b76f51dde40ab470357ca5057a0049346da7d9))
+
+## [1.0.2](https://github.com/paypal/paypal-messages-android/compare/1.0.1...1.0.2) (2025-05-08)
+
+
+### Bug Fixes
+
+* add integration type to requests ([#50](https://github.com/paypal/paypal-messages-android/issues/50)) ([e6e9f09](https://github.com/paypal/paypal-messages-android/commit/e6e9f094b85c2d6b079aa526afdda04fab3e6507))
+* add offer type to modal analytics ([#47](https://github.com/paypal/paypal-messages-android/issues/47)) ([7ad763b](https://github.com/paypal/paypal-messages-android/commit/7ad763bcf9a8eb007668ad96a732df624ecb082f))
+* does not proceed on SSL error in prod ([#54](https://github.com/paypal/paypal-messages-android/issues/54)) ([a584911](https://github.com/paypal/paypal-messages-android/commit/a58491123cff85b3c74957124ca92ef28266a7ef))
+
+
+### Code Refactoring
+
+* update PayPalEnvironment to use sealed class ([#46](https://github.com/paypal/paypal-messages-android/issues/46)) ([9701971](https://github.com/paypal/paypal-messages-android/commit/9701971239bbbb8bd2fdb590a65ebbe6dcbf60bb))
+
 ## [1.0.1](https://github.com/paypal/paypal-messages-android/compare/1.0.0...1.0.1) (2024-05-22)
 
 

@@ -41,7 +41,8 @@ class ApiTest {
 	)
 
 	@Suppress("ktlint:standard:max-line-length")
-	private val merchantProfileHashData = """{"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567891"},"ttl_hard":0,"ttl_soft":0}"""
+	private val merchantProfileHashData =
+		"""{"cache_flow_disabled":false,"merchant_profile":{"hash":"1234567891"},"ttl_hard":0,"ttl_soft":0}"""
 	private val messageData = """{"meta": {}, "content": {}}"""
 
 	@OptIn(ExperimentalCoroutinesApi::class)
@@ -404,6 +405,36 @@ class ApiTest {
 		)
 		notExpectedParts.forEach {
 			assertFalse("updatedPayload contains $it", updatedPayload.contains(it))
+		}
+	}
+
+	@OptIn(ExperimentalCoroutinesApi::class)
+	@Test
+	fun testCallMessageDataEndpointWith502() = runTest(standardTestDispatcher) {
+		val mockServerPort = mockWebServer.url("").port
+		Api.env = PayPalEnvironment.DEVELOP(mockServerPort)
+
+		val mockMessageDataResponse = MockResponse()
+			.setResponseCode(502)
+			.setBody(messageData)
+			.addHeader("Content-Type", "application/json")
+		mockWebServer.enqueue(mockMessageDataResponse)
+
+		launch {
+			val result = Api.callMessageDataEndpoint(messageConfig, null, instanceId)
+			assertTrue(
+				"result is not ApiResult.Failure",
+				result is ApiResult.Failure<*>,
+			)
+			val error = (result as ApiResult.Failure<*>).error
+			assertTrue(
+				"error is not FailedToFetchDataException",
+				error is PayPalErrors.FailedToFetchDataException,
+			)
+			assertTrue(
+				"""error message does not contain "Code was 502"""",
+				error?.message?.contains("Code was 502") ?: false,
+			)
 		}
 	}
 }
