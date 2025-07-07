@@ -68,6 +68,7 @@ task androidSourcesJar(type: Jar) {
 	archiveClassifier.set('sources')
 	from android.sourceSets.main.java.srcDirs
 	from android.sourceSets.main.kotlin.srcDirs
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 artifacts {
