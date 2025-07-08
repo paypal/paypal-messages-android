@@ -42,8 +42,27 @@ afterEvaluate {
 			}
 		}
 		repositories {
-			maven {
-				url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+			// Continue to use standard OSSRH repositories as Central Portal doesn't have official Gradle support yet
+			// Use standard username/password authentication 
+			if (version.endsWith('-SNAPSHOT')) {
+				maven {
+					name = "sonatypeSnapshots"
+					url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+					credentials {
+						username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
+						password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
+					}
+				}
+			} else {
+				// For regular releases
+				maven {
+					name = "sonatypeReleases"
+					url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+					credentials {
+						username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
+						password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
+					}
+				}
 			}
 		}
 	}
@@ -58,6 +77,7 @@ task androidSourcesJar(type: Jar) {
 	archiveClassifier.set('sources')
 	from android.sourceSets.main.java.srcDirs
 	from android.sourceSets.main.kotlin.srcDirs
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 artifacts {

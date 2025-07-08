@@ -4,7 +4,7 @@ import org.jmailen.gradle.kotlinter.tasks.FormatTask
 
 buildscript {
 	ext.modules = [
-		"sdkVersionName"      : "1.0.4",
+		"sdkVersionName"      : "1.0.4-SNAPSHOT",
 		"androidMinSdkVersion": 23,
 		"androidTargetVersion": 34
 	]
@@ -15,7 +15,6 @@ plugins {
 	id 'com.android.library' version '8.0.2' apply false
 	id 'org.jetbrains.kotlin.android' version '1.8.22' apply false
 	id 'org.jmailen.kotlinter' version '3.16.0'
-	id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
 	id 'signing'
 }
 
@@ -35,20 +34,8 @@ tasks.register('ktFormat', FormatTask) {
 
 version modules.sdkVersionName
 
-nexusPublishing {
-	repositories {
-		sonatype {
-			username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
-			password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
-			repositoryDescription = 'Paypal Messages'
-			packageGroup = 'com.paypal'
-		}
-	}
-	transitionCheckOptions {
-		// give nexus sonatype more time to close the staging repository
-		delayBetween.set(Duration.ofSeconds(20))
-	}
-}
+// Completely disable nexus-publish-plugin for all builds 
+// We'll handle publishing differently for snapshots vs releases
 
 subprojects {
   group = "com.paypal.messages"
@@ -61,9 +48,56 @@ tasks.register('changeReleaseVersion') {
 		def topLevelGradleFileText = topLevelGradleFile.getText('UTF-8')
 		def useSnapshot = System.getenv('USE_SNAPSHOT')
 		def snapshotParam = useSnapshot == "true" || useSnapshot == true ? "-SNAPSHOT" : ""
-		
+
 		def updatedScript =
 			topLevelGradleFileText.replaceFirst(/("sdkVersionName"\s*: )".*",/, '$1"' + versionParam + snapshotParam + '",')
 		topLevelGradleFile.write(updatedScript, 'UTF-8')
 	}
+}
+
+
+
+task updateLocalsXmlFile(type: ReplaceStringTask) {
+    replacementString = System.getenv('CLIENT_ID') ?: "REPLACE_WITH_CLIENT_ID_IN_LOCALS_XML"
+}
+
+class ReplaceStringTask extends DefaultTask {
+    @Input
+    String replacementString
+
+    @TaskAction
+    void updateLocalsXml() {
+        def filePath = "demo/src/main/res/values/locals.xml"
+        def file = project.file(filePath)  // Use project's file method
+
+        // Read the current contents of locals.xml
+        def currentContent = file.text
+
+        // Perform replacement
+        def modifiedContent = currentContent.replaceAll("REPLACE_WITH_CLIENT_ID_IN_LOCALS_XML", replacementString)
+
+        // Write the modified content back to locals.xml
+        file.text = modifiedContent
+    }
+}
+
+// Add a specific task for publishing snapshots
+task publishSnapshotToMavenCentral {
+    group = 'publishing'
+    description = 'Publishes all modules as SNAPSHOT versions to Maven Central'
+    
+    doFirst {
+        println "Preparing to publish snapshot version: ${version}"
+        
+        // Set the USE_SNAPSHOT environment variable if not already set
+        if (System.getenv('USE_SNAPSHOT') == null) {
+            println "Setting USE_SNAPSHOT=true for this build"
+            ant.setProperty(name: "env.USE_SNAPSHOT", value: "true")
+        }
+    }
+    
+    // Make this task depend on the publish task of each subproject
+    gradle.projectsEvaluated {
+        dependsOn subprojects.collect { it.tasks.matching { task -> task.name == 'publish' } }
+    }
 }
