@@ -26,11 +26,12 @@ runs:
   steps:
     - run: |
         if [[ $USE_SNAPSHOT == "true" ]]; then
-          # For snapshots, use direct publish
-          ./gradlew --stacktrace clean publish
+          # For snapshots, only publish to the sonatypeSnapshots repository
+          ./gradlew --stacktrace clean publishAllPublicationsToSonatypeSnapshotsRepository
         else
-          # For releases, use Nexus staging
-          ./gradlew --stacktrace clean publishToSonatype closeAndReleaseSonatypeStagingRepository
+          # For releases, currently use manual publish until we fix staging
+          echo "Manual release is required. Please configure a proper release workflow."
+          exit 1
         fi
       shell: bash
       env:
