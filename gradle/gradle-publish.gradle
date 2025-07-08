@@ -42,15 +42,33 @@ afterEvaluate {
 			}
 		}
 		repositories {
-			// Only configure the snapshot repository
-			// We'll handle releases separately with the Nexus Staging plugin
+			// Configure repository based on whether we're publishing a snapshot or release
 			if (version.endsWith('-SNAPSHOT')) {
 				maven {
 					name = "sonatypeSnapshots"
 					url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
 					credentials {
-						username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
-						password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
+						// Use token-based authentication approach
+						// For token auth, username is typically 'token' and password is the actual token
+						username = 'token'
+						password = System.getenv('SONATYPE_AUTH_TOKEN') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
+					}
+					authentication {
+						create("basic", BasicAuthentication)
+					}
+				}
+			} else {
+				// For regular releases
+				maven {
+					name = "sonatypeReleases"
+					url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+					credentials {
+						// Use token-based authentication approach
+						username = 'token'
+						password = System.getenv('SONATYPE_AUTH_TOKEN') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
+					}
+					authentication {
+						create("basic", BasicAuthentication)
 					}
 				}
 			}

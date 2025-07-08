@@ -29,14 +29,12 @@ runs:
           # For snapshots, only publish to the sonatypeSnapshots repository
           ./gradlew --stacktrace clean publishAllPublicationsToSonatypeSnapshotsRepository
         else
-          # For releases, currently use manual publish until we fix staging
-          echo "Manual release is required. Please configure a proper release workflow."
-          exit 1
+          # For releases, publish to the sonatypeReleases repository
+          ./gradlew --stacktrace clean publishAllPublicationsToSonatypeReleasesRepository
         fi
       shell: bash
       env:
-        SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_user }}
-        SONATYPE_NEXUS_PASSWORD: ${{ inputs.sonatype_password }}
+        SONATYPE_AUTH_TOKEN: ${{ inputs.sonatype_password }}
         SIGNING_KEY_ID: ${{ inputs.signing_key_id }}
         SIGNING_KEY_PASSWORD: ${{ inputs.signing_key_password }}
         SIGNING_KEY_FILE: ${{ inputs.signing_key_file }}
