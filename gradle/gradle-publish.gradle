@@ -43,10 +43,14 @@ afterEvaluate {
 		}
 		repositories {
 			maven {
-				name = "centralPortal"
+				name = "sonatypeOss"
 				url = version.endsWith('-SNAPSHOT') 
-					? uri("https://central.sonatype.com/repository/maven-snapshots/") 
-					: uri("https://central.sonatype.com/repository/maven-releases/")
+					? uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") 
+					: uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+				credentials {
+					username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
+					password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
+				}
 			}
 		}
 	}
