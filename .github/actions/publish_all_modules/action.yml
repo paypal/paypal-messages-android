@@ -34,7 +34,8 @@ runs:
         fi
       shell: bash
       env:
-        SONATYPE_AUTH_TOKEN: ${{ inputs.sonatype_password }}
+        SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_user }}
+        SONATYPE_NEXUS_PASSWORD: ${{ inputs.sonatype_password }}
         SIGNING_KEY_ID: ${{ inputs.signing_key_id }}
         SIGNING_KEY_PASSWORD: ${{ inputs.signing_key_password }}
         SIGNING_KEY_FILE: ${{ inputs.signing_key_file }}

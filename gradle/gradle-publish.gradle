@@ -42,19 +42,15 @@ afterEvaluate {
 			}
 		}
 		repositories {
-			// Configure repository based on whether we're publishing a snapshot or release
+			// Continue to use standard OSSRH repositories as Central Portal doesn't have official Gradle support yet
+			// Use standard username/password authentication 
 			if (version.endsWith('-SNAPSHOT')) {
 				maven {
 					name = "sonatypeSnapshots"
 					url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
 					credentials {
-						// Use token-based authentication approach
-						// For token auth, username is typically 'token' and password is the actual token
-						username = 'token'
-						password = System.getenv('SONATYPE_AUTH_TOKEN') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
-					}
-					authentication {
-						create("basic", BasicAuthentication)
+						username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
+						password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
 					}
 				}
 			} else {
@@ -63,12 +59,8 @@ afterEvaluate {
 					name = "sonatypeReleases"
 					url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
 					credentials {
-						// Use token-based authentication approach
-						username = 'token'
-						password = System.getenv('SONATYPE_AUTH_TOKEN') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
-					}
-					authentication {
-						create("basic", BasicAuthentication)
+						username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
+						password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
 					}
 				}
 			}
