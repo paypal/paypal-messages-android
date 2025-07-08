@@ -4,7 +4,7 @@ import org.jmailen.gradle.kotlinter.tasks.FormatTask
 
 buildscript {
 	ext.modules = [
-		"sdkVersionName"      : "1.0.4",
+		"sdkVersionName"      : "1.0.4-SNAPSHOT",
 		"androidMinSdkVersion": 23,
 		"androidTargetVersion": 34
 	]
@@ -15,6 +15,7 @@ plugins {
 	id 'com.android.library' version '8.0.2' apply false
 	id 'org.jetbrains.kotlin.android' version '1.8.22' apply false
 	id 'org.jmailen.kotlinter' version '3.16.0'
+	id 'io.github.gradle-nexus.publish-plugin' version '1.1.0' apply false
 	id 'signing'
 }
 
@@ -34,8 +35,27 @@ tasks.register('ktFormat', FormatTask) {
 
 version modules.sdkVersionName
 
-// No longer using nexus-publish-plugin with the new Central Portal
-// All publishing is done directly through the repositories in gradle-publish.gradle
+// Only use nexus-publish-plugin for release (non-snapshot) versions
+def isSnapshot = version.endsWith('-SNAPSHOT')
+if (!isSnapshot) {
+    apply plugin: 'io.github.gradle-nexus.publish-plugin'
+    
+    nexusPublishing {
+        repositories {
+            sonatype {
+                nexusUrl = uri("https://s01.oss.sonatype.org/service/local/")
+                snapshotRepositoryUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") 
+                username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
+                password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
+                stagingProfileId = System.getenv('SONATYPE_STAGING_PROFILE_ID') ?: ''
+            }
+        }
+        transitionCheckOptions {
+            // give nexus sonatype more time to close the staging repository
+            delayBetween.set(Duration.ofSeconds(20))
+        }
+    }
+}
 
 subprojects {
   group = "com.paypal.messages"

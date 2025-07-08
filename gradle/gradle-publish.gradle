@@ -42,14 +42,16 @@ afterEvaluate {
 			}
 		}
 		repositories {
-			maven {
-				name = "sonatypeOss"
-				url = version.endsWith('-SNAPSHOT') 
-					? uri("https://s01.oss.sonatype.org/content/repositories/snapshots/") 
-					: uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-				credentials {
-					username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
-					password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
+			// Only configure the snapshot repository
+			// We'll handle releases separately with the Nexus Staging plugin
+			if (version.endsWith('-SNAPSHOT')) {
+				maven {
+					name = "sonatypeSnapshots"
+					url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+					credentials {
+						username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
+						password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
+					}
 				}
 			}
 		}
