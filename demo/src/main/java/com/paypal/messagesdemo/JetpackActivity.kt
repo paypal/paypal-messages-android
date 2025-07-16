@@ -37,13 +37,19 @@ import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
+import com.paypal.messages.config.message.PayPalMessageEventsCallbacks
 import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
 import com.paypal.messages.config.message.style.PayPalMessageAlignment
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.io.Api
+import com.paypal.messagesdemo.composables.CircularIndicator
 import com.paypal.messagesdemo.composables.InputField
 import com.paypal.messagesdemo.ui.BasicTheme
+
+/**
+ * Converts a string to sentence case (first letter capitalized, rest lowercase)
+ */
 
 fun toSentenceCase(input: String): String {
 	return input.lowercase().replaceFirstChar { it.titlecase() }
@@ -99,43 +105,60 @@ class JetpackActivity : ComponentActivity() {
 				var offerType: String? by remember { mutableStateOf(null) }
 
 				var amount: String by remember { mutableStateOf("") }
-				var buyerCountry: String by remember { mutableStateOf("") }
+				var buyerCountry: String? by remember { mutableStateOf(null) }
 				var stageTag: String by remember { mutableStateOf("") }
 				var ignoreCache: Boolean by remember { mutableStateOf(false) }
 				var devTouchpoint: Boolean by remember { mutableStateOf(false) }
 				var buttonEnabled: Boolean by remember { mutableStateOf(true) }
 
+				// State for the PayPal message
 				var progressBar by remember { mutableStateOf(false) }
 
-				val messageView = PayPalMessageView(
-					context,
-					config = PayPalMessageConfig(
-						data = PayPalMessageData(clientID = clientId, environment = environment),
-						viewStateCallbacks = PayPalMessageViewStateCallbacks(
-							onLoading = {
-								progressBar = true
-								buttonEnabled = false
-								Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
-							},
-							onError = {
-								Log.d(TAG, "onError $it")
-								progressBar = false
-								runOnUiThread {
+				// Create and configure the PayPal message view
+				// This is the standard, recommended way to use PayPal Messages
+				// The library will automatically handle clicks and show modals without any additional code
+				val messageView = remember {
+					PayPalMessageView(
+						context,
+						config = PayPalMessageConfig(
+							// Configure the message data
+							data = PayPalMessageData(clientID = clientId, environment = environment),
+							// Optional: Add callbacks to receive state updates
+							viewStateCallbacks = PayPalMessageViewStateCallbacks(
+								onLoading = {
+									progressBar = true
+									buttonEnabled = false
+									Toast.makeText(context, "Loading Content...", Toast.LENGTH_SHORT).show()
+								},
+								onError = {
+									Log.d(TAG, "onError $it")
+									progressBar = false
 									buttonEnabled = true
-									Toast.makeText(this, it.javaClass.toString() + ":" + it.message, Toast.LENGTH_LONG).show()
-								}
-							},
-							onSuccess = {
-								Log.d(TAG, "onSuccess")
-								progressBar = false
-								runOnUiThread {
+									Toast.makeText(context, it.javaClass.toString() + ":" + it.message, Toast.LENGTH_LONG).show()
+								},
+								onSuccess = {
+									Log.d(TAG, "onSuccess")
+									progressBar = false
 									buttonEnabled = true
-									Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
-								}
-							},
+									Toast.makeText(context, "Success Getting Content", Toast.LENGTH_SHORT).show()
+								},
+							),
+							// Optional: Add callbacks for click events
+							// Note: You don't need to show the modal manually - the library handles it automatically!
+							eventsCallbacks = PayPalMessageEventsCallbacks(
+								onClick = {
+									// This is called when the message is clicked
+									// No need to manually show any modals - the library does this for you
+									Log.d(TAG, "Message clicked callback invoked")
+								},
+								onApply = {
+									Log.d(TAG, "Apply clicked in modal")
+									Toast.makeText(context, "Apply clicked in modal", Toast.LENGTH_SHORT).show()
+								},
+							),
 						),
-					),
-				)
+					)
+				}
 
 				fun updateMessageData() {
 					messageView.clientID = clientId
@@ -155,7 +178,7 @@ class JetpackActivity : ComponentActivity() {
 
 					messageView.amount = amount.takeIf { it.isNotBlank() }?.toDouble()
 
-					messageView.buyerCountry = buyerCountry.takeIf { it.isNotBlank() }?.toString()
+					messageView.buyerCountry = buyerCountry?.takeIf { it.isNotBlank() }
 
 					Api.stageTag = stageTag
 					Api.ignoreCache = ignoreCache
@@ -168,8 +191,6 @@ class JetpackActivity : ComponentActivity() {
 					messageAlignment = alignmentGroupOptions[0]
 
 					offerType = null
-					messageView.offerType = null
-
 					amount = ""
 					buyerCountry = ""
 					stageTag = ""
@@ -271,7 +292,7 @@ class JetpackActivity : ComponentActivity() {
 
 						InputField(
 							text = "Buyer Country",
-							value = buyerCountry,
+							value = buyerCountry ?: "",
 							onChange = { buyerCountry = it },
 						)
 
@@ -299,15 +320,32 @@ class JetpackActivity : ComponentActivity() {
 							)
 						}
 
+						// Show loading indicator when messages are loading
 						CircularIndicator(progressBar = progressBar)
 
+						// This is the recommended way to use PayPal Messages in Jetpack Compose
+						// Simply create a PayPalMessageView and place it in your Compose UI using AndroidView
+						// The library handles all click events and modal display automatically!
 						AndroidView(
 							modifier = Modifier
 								.padding(top = 16.dp, bottom = 32.dp, start = 8.dp, end = 8.dp)
 								.background(color = backgroundColor)
+								.height(40.dp)
 								.fillMaxWidth(),
 							factory = {
+								// The messageView is created and configured earlier in this file
 								messageView
+							},
+							update = { view ->
+								// Add visual feedback when touched - ripple effect
+								view.foreground = android.graphics.drawable.RippleDrawable(
+									android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#30000000")),
+									null,
+									android.graphics.drawable.ColorDrawable(android.graphics.Color.WHITE),
+								)
+
+								// Note: We don't need to set any click listeners here.
+								// The PayPalMessageView already handles clicks and shows the modal automatically.
 							},
 						)
 

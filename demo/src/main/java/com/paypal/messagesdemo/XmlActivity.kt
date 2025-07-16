@@ -50,16 +50,18 @@ class XmlActivity : AppCompatActivity() {
 				viewStateCallbacks = PayPalMessageViewStateCallbacks(
 					onLoading = {
 						Log.d(TAG, "onLoading")
-						progressBar.visibility = View.VISIBLE
-						resetButton.isEnabled = false
-						submitButton.isEnabled = false
-						Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
+						runOnUiThread {
+							progressBar.visibility = View.VISIBLE
+							resetButton.isEnabled = false
+							submitButton.isEnabled = false
+							Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
+						}
 					},
 					onError = {
 						val error = "${it.javaClass}:\n  ${it.message}\n  ${it.debugId}"
 						Log.d(TAG, "onError $error")
-						progressBar.visibility = View.INVISIBLE
 						runOnUiThread {
+							progressBar.visibility = View.INVISIBLE
 							resetButton.isEnabled = true
 							submitButton.isEnabled = true
 							Toast.makeText(this, error, Toast.LENGTH_LONG).show()
@@ -67,8 +69,8 @@ class XmlActivity : AppCompatActivity() {
 					},
 					onSuccess = {
 						Log.d(TAG, "onSuccess")
-						progressBar.visibility = View.INVISIBLE
 						runOnUiThread {
+							progressBar.visibility = View.INVISIBLE
 							resetButton.isEnabled = true
 							submitButton.isEnabled = true
 							Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()

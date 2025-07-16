@@ -9,7 +9,6 @@ import com.paypal.messages.config.message.PayPalMessageEventsCallbacks
 import com.paypal.messages.config.message.PayPalMessageViewStateCallbacks
 import com.paypal.messages.config.modal.ModalCloseButton
 import com.paypal.messages.io.ApiMessageData
-import com.paypal.messages.io.ApiResult
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -65,7 +64,7 @@ class PayPalMessageViewTest {
 			config = MessageConfig(MessageData(clientID = "test_client_id")),
 		)
 
-		payPalMessageView.onActionCompleted(ApiResult.Success(response))
+		payPalMessageView.onSuccess(response, 0)
 
 		val messageTextView = payPalMessageView.findViewById<TextView>(R.id.content)
 		assertTrue(
@@ -87,7 +86,7 @@ class PayPalMessageViewTest {
 			config = config,
 		)
 
-		payPalMessageView.onActionCompleted(ApiResult.Success(response))
+		payPalMessageView.onSuccess(response, 0)
 
 		val emptyFunction = fun () {}
 

@@ -14,7 +14,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.getFloatOrThrow
 import androidx.core.content.res.getIntOrThrow
@@ -26,12 +25,10 @@ import com.paypal.messages.analytics.ComponentType
 import com.paypal.messages.analytics.EventType
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.ProductGroup
-import com.paypal.messages.config.modal.ModalConfig
-import com.paypal.messages.config.modal.ModalEvents
+import com.paypal.messages.data.PayPalMessageDataCallback
+import com.paypal.messages.data.PayPalMessageDataProvider
 import com.paypal.messages.io.Api
 import com.paypal.messages.io.ApiMessageData
-import com.paypal.messages.io.ApiResult
-import com.paypal.messages.io.OnActionCompleted
 import com.paypal.messages.utils.LogCat
 import com.paypal.messages.utils.PayPalErrors
 import kotlinx.coroutines.CoroutineScope
@@ -64,10 +61,21 @@ class PayPalMessageView @JvmOverloads constructor(
 	attributeSet: AttributeSet? = null,
 	defStyleAttr: Int = 0,
 	config: MessageConfig = MessageConfig(MessageData(clientID = "")),
-) : FrameLayout(context, attributeSet, defStyleAttr), OnActionCompleted {
+) : FrameLayout(context, attributeSet, defStyleAttr), PayPalMessageDataCallback {
 	private val TAG = "PayPalMessage"
 	private var messageTextView: TextView
 	private var instanceId = UUID.randomUUID()
+	private val dataProvider = PayPalMessageDataProvider()
+	private var clickHandler: com.paypal.messages.data.PayPalMessageClickHandler? = null
+	private var isClickListenerSet = false
+
+	// Message Content
+	private var logo = Logo()
+	private var messageContent: String? = null
+	private var messageDisclaimer: String? = null
+	private var messageLogoTag: String? = null
+	private var messageDataResponse: ApiMessageData.Response? = null
+	private var requestDuration: Int? = null
 
 	fun getConfig(): MessageConfig {
 		return MessageConfig(
@@ -154,7 +162,6 @@ class PayPalMessageView @JvmOverloads constructor(
 		set(arg) {
 			if (field != arg) {
 				field = arg
-				if (modal != null) modal?.amount = field
 				debounceUpdateContent(Unit)
 			}
 		}
@@ -162,7 +169,6 @@ class PayPalMessageView @JvmOverloads constructor(
 		set(arg) {
 			if (field != arg) {
 				field = arg
-				if (modal != null) modal?.buyerCountry = field
 				debounceUpdateContent(Unit)
 			}
 		}
@@ -170,7 +176,6 @@ class PayPalMessageView @JvmOverloads constructor(
 		set(arg) {
 			if (field != arg) {
 				field = arg
-				if (modal != null) modal?.offerType = field
 				debounceUpdateContent(Unit)
 			}
 		}
@@ -256,21 +261,6 @@ class PayPalMessageView @JvmOverloads constructor(
 			}
 		}
 
-	// Full Message Data
-	private var messageDataResponse: ApiMessageData.Response? = null
-
-	// Message Content
-	private var logo = Logo()
-	private var messageContent: String? = null
-	private var messageDisclaimer: String? = null
-	private var messageLogoTag: String? = null
-
-	// Modal Instance
-	private var modal: ModalFragment? = null
-
-	// Stats
-	private var requestDuration: Int? = null
-
 	init {
 		LayoutInflater.from(context).inflate(R.layout.paypal_message_view, this, true)
 
@@ -283,49 +273,11 @@ class PayPalMessageView @JvmOverloads constructor(
 		updateMessageContent()
 	}
 
-	private fun showWebView(response: ApiMessageData.Response) {
-		val modal = modal ?: run {
-			val modal = ModalFragment(clientID)
-			// Build modal config
-			val modalConfig = ModalConfig(
-				amount = this.amount,
-				buyerCountry = this.buyerCountry,
-				offer = response.meta?.offerType,
-				ignoreCache = false,
-				devTouchpoint = false,
-				stageTag = null,
-				events = ModalEvents(
-					onApply = this.onApply,
-					onClick = this.onClick,
-					onError = this.onError,
-				),
-				modalCloseButton = response.meta?.modalCloseButton!!,
-			)
-
-			modal.init(modalConfig)
-			modal.show((context as AppCompatActivity).supportFragmentManager, modal.tag)
-
-			this.modal = modal
-
-			modal
-		}
-
-		// modal.show() above will display the modal on initial view, but if the user closes the modal
-		// it will become visually hidden and this method will re-display the modal without
-		// attempting to reattach it
-		// the delay prevents noticeable shift when the offer type is changed
-		handler.postDelayed({
-			modal.expand()
-		}, 250)
-	}
-
 	override fun onDetachedFromWindow() {
 		super.onDetachedFromWindow()
-		// The modal will not dismiss (destroy) itself, it will only hide/show when opening and closing
-		// so we need to cleanup the modal instance if the message is removed
-		if (this.modal?.isAdded == true && this.modal?.isDetached == false) {
-			this.modal?.dismiss()
-		}
+		// Clean up click handler which will dismiss any modals
+		clickHandler?.onCleanup()
+		clickHandler = null
 	}
 
 	/**
@@ -440,50 +392,44 @@ class PayPalMessageView @JvmOverloads constructor(
 	}
 
 	/**
-	 * This function updates message content uses [Api.getMessageWithHash] to fetch the data.
+	 * This function updates message content using the PayPalMessageDataProvider.
 	 */
 	private fun updateMessageContent() {
-		// Call OnLoading callback and prepare view for the process
-		onLoading.invoke()
 		LogCat.debug(TAG, "Firing request to get message with config: ${getConfig()}")
-
-		requestDuration = measureTimeMillis {
-			Api.getMessageWithHash(
-				context,
-				getConfig(),
-				this.instanceId,
-				this,
-			)
-		}.toInt()
+		dataProvider.fetchMessageData(
+			context,
+			getConfig(),
+			this.instanceId,
+			this,
+		)
 	}
 
-	override fun onActionCompleted(result: ApiResult) {
-		when (result) {
-			is ApiResult.Success<*> -> {
-				LogCat.debug(TAG, "onActionCompleted Success")
-				val renderDuration = measureTimeMillis {
-					this.onSuccess.invoke()
-					this.messageDataResponse = result.response as ApiMessageData.Response
-					updateContentValues(result.response)
-					updateMessageUi()
-				}.toInt()
+	override fun onLoading() {
+		onLoading.invoke()
+	}
 
-				// Log that we successfully rendered the message
-				logEvent(
-					AnalyticsEvent(
-						eventType = EventType.MESSAGE_RENDERED,
-						renderDuration = renderDuration.toString(),
-						requestDuration = requestDuration.toString(),
-					),
-				)
-			}
+	override fun onSuccess(response: ApiMessageData.Response, duration: Int) {
+		LogCat.debug(TAG, "onSuccess")
+		val renderDuration = measureTimeMillis {
+			this.onSuccess.invoke()
+			this.messageDataResponse = response
+			this.requestDuration = duration
+			updateContentValues(response)
+			updateMessageUi()
+		}.toInt()
 
-			is ApiResult.Failure<*> -> {
-				LogCat.debug(TAG, "onActionCompleted Failure")
-				// If we encountered a failure, we expect an exception to be returned.
-				result.error?.let { this.onError(it) }
-			}
-		}
+		// Log that we successfully rendered the message
+		logEvent(
+			AnalyticsEvent(
+				eventType = EventType.MESSAGE_RENDERED,
+				renderDuration = renderDuration.toString(),
+				requestDuration = duration.toString(),
+			),
+		)
+	}
+
+	override fun onError(error: PayPalErrors.Base) {
+		LogCat.debug(TAG, "onError")
 	}
 
 	/**
@@ -491,22 +437,59 @@ class PayPalMessageView @JvmOverloads constructor(
 	 * @param response the response obtained from the message content fetch process
 	 */
 	private fun updateContentValues(response: ApiMessageData.Response) {
-		modal?.offerType = response.meta?.offerType
 		messageContent = formatMessageContent(response, logoType)
 		messageLogoTag = response.meta?.variables?.logoPlaceholder
 		messageDisclaimer = response.content?.default?.disclaimer
 		logo = Logo(logoType, response.meta?.creditProductGroup)
-		messageTextView.setOnClickListener {
-			onClick.invoke()
-			// Log Message Click
-			logEvent(
-				AnalyticsEvent(
-					eventType = EventType.MESSAGE_CLICKED,
-					pageViewLinkName = if (messageDisclaimer != "") messageDisclaimer else "Learn more",
-					pageViewLinkSource = "learn_more",
-				),
-			)
-			showWebView(response)
+
+		// Always recreate the click handler to ensure freshness
+		clickHandler?.onCleanup()
+		clickHandler = dataProvider.createClickHandler(
+			context,
+			getConfig(),
+			instanceId,
+		) { event -> logEvent(event) }
+
+		// Set click listener only once
+		if (!isClickListenerSet) {
+			messageTextView.setOnClickListener {
+				android.util.Log.d("PayPalMessage", "Message text view clicked, forwarding to click handler")
+				try {
+					val clickId = UUID.randomUUID().toString().substring(0, 8)
+					android.util.Log.d("PayPalMessage", "[$clickId] Processing click...")
+					if (clickHandler == null) {
+						android.util.Log.d("PayPalMessage", "[$clickId] Recreating click handler...")
+						clickHandler = dataProvider.createClickHandler(
+							context,
+							getConfig(),
+							instanceId,
+						) { event -> logEvent(event) }
+					}
+					android.util.Log.d("PayPalMessage", "[$clickId] Calling onMessageClick with response data available: ${response != null}")
+					val handler = clickHandler
+					if (handler != null) {
+						handler.onMessageClick(
+							response,
+							onClick,
+							onApply,
+							onError,
+						)
+					} else {
+						android.util.Log.e("PayPalMessage", "[$clickId] Click handler is null - creating emergency handler")
+						val emergencyHandler = dataProvider.createClickHandler(
+							context,
+							getConfig(),
+							instanceId,
+						) { event -> logEvent(event) }
+						emergencyHandler.onMessageClick(response, onClick, onApply, onError)
+					}
+					android.util.Log.d("PayPalMessage", "[$clickId] Click processed successfully")
+				} catch (e: Exception) {
+					android.util.Log.e("PayPalMessage", "Error in click handler: ${e.message}", e)
+					onError.invoke(com.paypal.messages.utils.PayPalErrors.ModalFailedToLoad("Failed to show modal: ${e.message}", null))
+				}
+			}
+			isClickListenerSet = true
 		}
 	}
 
