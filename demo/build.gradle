@@ -31,9 +31,19 @@ android {
 		compose = true
 	}
   buildTypes {
+    debug {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
     release {
       minifyEnabled false
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
+    // Test build with minification enabled to verify consumer ProGuard rules work
+    releaseWithMinifyEnabled {
+      minifyEnabled true  // Tests consumer ProGuard rules protection
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+      matchingFallbacks = ['release']
     }
   }
   compileOptions {
@@ -88,6 +98,7 @@ dependencies {
 	implementation 'androidx.appcompat:appcompat:1.6.1'
 	implementation project(':library')
   implementation 'com.google.android.material:material:1.10.0'
+  
 
   testImplementation 'junit:junit:4.13.2'
   androidTestImplementation 'androidx.test.ext:junit:1.1.5'
