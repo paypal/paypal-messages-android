@@ -40,8 +40,8 @@ nexusPublishing {
 		sonatype {
 			nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
 			snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-			username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
-			password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
+			username = findProperty('sonatypeUsername') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
+			password = findProperty('sonatypePassword') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
 			repositoryDescription = 'Paypal Messages'
 			packageGroup = 'com.paypal'
 		}
