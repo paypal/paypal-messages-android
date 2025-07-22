@@ -38,8 +38,8 @@ version modules.sdkVersionName
 nexusPublishing {
 	repositories {
 		sonatype {
-            nexusUrl.set(uri("https://central.sonatype.com/api/v1/publisher/upload/"))
-            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/api/v1/publisher/upload/"))
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
 			username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
 			password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
 			repositoryDescription = 'Paypal Messages'
