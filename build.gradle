@@ -70,7 +70,8 @@ tasks.register('publishToCentralPortal') {
     description = 'Publishes artifacts to Sonatype Central Portal'
     
     dependsOn 'assemble'
-    dependsOn 'signArchives'
+    // We don't depend on specific signing tasks here
+    // as they'll be handled by the publishing task
     
     doLast {
         def token = System.getenv('SONATYPE_NEXUS_PASSWORD')

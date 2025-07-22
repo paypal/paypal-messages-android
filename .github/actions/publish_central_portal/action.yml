@@ -29,10 +29,15 @@ runs:
   using: "composite"
   steps:
     - run: |
+        # First publish library module which will handle signing
+        ./gradlew --stacktrace :library:assemble
+        ./gradlew --stacktrace :library:signArchives
+        
+        # Then run the central portal publishing
         if [ "${{ inputs.auto_publish }}" = "true" ]; then
-          ./gradlew --stacktrace clean publishToCentralPortal -PautoPublish
+          ./gradlew --stacktrace publishToCentralPortal -PautoPublish
         else
-          ./gradlew --stacktrace clean publishToCentralPortal
+          ./gradlew --stacktrace publishToCentralPortal
         fi
         ./gradlew --stacktrace checkCentralPortalDeployment
       shell: bash
