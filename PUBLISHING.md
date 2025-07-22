@@ -56,10 +56,9 @@ To publish a snapshot version:
 
 The library is configured to use the Sonatype Central Portal API:
 
-- Release URL: https://central.sonatype.com/api/v1/publisher/upload?name=PaypalMessages
-- Snapshot URL: https://central.sonatype.com/api/v1/publisher/upload?name=PaypalMessages&publishingType=AUTOMATIC
+- API Upload Endpoint: https://central.sonatype.com/api/v1/publisher/upload/
 
-Regular releases require manual approval in the Sonatype Central Portal UI, while snapshot releases use the AUTOMATIC publishing type to publish immediately after validation.
+The upload endpoint is accessed through the Gradle Nexus Publish Plugin, which manages the publishing process. The plugin requires the URL to end with a trailing slash, so we add one after "upload".
 
 ## Troubleshooting
 

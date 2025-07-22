@@ -43,10 +43,7 @@ afterEvaluate {
 		}
 		repositories {
 			// Maven Central publishing is handled by the nexus-publish-plugin
-			// This repository configuration is not needed anymore
-			maven {
-				url = uri("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
-			}
+			// This repository configuration is not needed anymore and should be removed
 		}
 	}
 
