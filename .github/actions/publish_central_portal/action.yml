@@ -1,0 +1,44 @@
+name: 'Publish to Central Portal'
+description: 'Publishes all modules using the Sonatype Central Portal API'
+inputs:
+  sonatype_user:
+    description: 'Sonatype user'
+    required: true
+    default: ''
+  sonatype_token:
+    description: 'Sonatype user token'
+    required: true
+    default: ''
+  signing_key_id:
+    description: 'Signing key id'
+    required: true
+    default: ''
+  signing_key_password:
+    description: 'Signing key password'
+    required: true
+    default: ''
+  signing_key_file:
+    description: 'Signing key file'
+    required: true
+    default: ''
+  auto_publish:
+    description: 'Whether to publish automatically'
+    required: false
+    default: 'false'
+runs:
+  using: "composite"
+  steps:
+    - run: |
+        if [ "${{ inputs.auto_publish }}" = "true" ]; then
+          ./gradlew --stacktrace clean publishToCentralPortal -PautoPublish
+        else
+          ./gradlew --stacktrace clean publishToCentralPortal
+        fi
+        ./gradlew --stacktrace checkCentralPortalDeployment
+      shell: bash
+      env:
+        SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_user }}
+        SONATYPE_NEXUS_PASSWORD: ${{ inputs.sonatype_token }}
+        SIGNING_KEY_ID: ${{ inputs.signing_key_id }}
+        SIGNING_KEY_PASSWORD: ${{ inputs.signing_key_password }}
+        SIGNING_KEY_FILE: ${{ inputs.signing_key_file }}

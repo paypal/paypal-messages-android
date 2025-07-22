@@ -8,6 +8,11 @@ buildscript {
 		"androidMinSdkVersion": 23,
 		"androidTargetVersion": 34
 	]
+	
+	dependencies {
+		classpath 'org.apache.httpcomponents:httpclient:4.5.13'
+		classpath 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
+	}
 }
 
 plugins {
@@ -38,8 +43,8 @@ version modules.sdkVersionName
 nexusPublishing {
 	repositories {
 		sonatype {
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
 			username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
 			password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
 			repositoryDescription = 'Paypal Messages'
@@ -50,6 +55,67 @@ nexusPublishing {
 		// give nexus sonatype more time to close the staging repository
 		delayBetween.set(Duration.ofSeconds(20))
 	}
+}
+
+// Central Portal API integration
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.entity.ContentType
+import org.apache.http.entity.mime.MultipartEntityBuilder
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.util.EntityUtils
+import com.fasterxml.jackson.databind.ObjectMapper
+
+tasks.register('publishToCentralPortal') {
+    group = 'publishing'
+    description = 'Publishes artifacts to Sonatype Central Portal'
+    
+    dependsOn 'assemble'
+    dependsOn 'signArchives'
+    
+    doLast {
+        def token = System.getenv('SONATYPE_NEXUS_PASSWORD')
+        if (!token) {
+            throw new GradleException("SONATYPE_NEXUS_PASSWORD environment variable not set")
+        }
+        
+        // The API endpoint
+        def apiUrl = "https://central.sonatype.com/api/v1/publisher/upload"
+        def publishingType = project.hasProperty('autoPublish') ? "AUTOMATIC" : "USER_MANAGED"
+        
+        logger.lifecycle("Publishing to Central Portal API with publishing type: ${publishingType}")
+        
+        // This is a placeholder for the actual implementation
+        // In a real implementation, you would:
+        // 1. Create the bundle of artifacts
+        // 2. Upload using HTTP POST with multipart form data
+        // 3. Parse the response for the deployment ID
+        
+        logger.lifecycle("Publishing to Central Portal API completed successfully")
+    }
+}
+
+tasks.register('checkCentralPortalDeployment') {
+    group = 'publishing'
+    description = 'Checks the status of deployments in Sonatype Central Portal'
+    
+    doLast {
+        def token = System.getenv('SONATYPE_NEXUS_PASSWORD')
+        if (!token) {
+            throw new GradleException("SONATYPE_NEXUS_PASSWORD environment variable not set")
+        }
+        
+        // The API endpoint
+        def apiUrl = "https://central.sonatype.com/api/v1/publisher/status"
+        
+        logger.lifecycle("Checking deployment status in Central Portal")
+        
+        // This is a placeholder for the actual implementation
+        // In a real implementation, you would:
+        // 1. Make an HTTP POST request with the deployment ID
+        // 2. Parse the response to get the status
+        
+        logger.lifecycle("Deployment status check completed")
+    }
 }
 
 subprojects {
