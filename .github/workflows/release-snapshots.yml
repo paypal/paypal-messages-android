@@ -84,6 +84,22 @@ jobs:
             echo "SONATYPE_SDKS_NEXUS_PASSWORD is empty or not set"
           fi
           
+      # Set credentials as environment variables for direct use
+      - name: Set Sonatype Credentials
+        env:
+          SONATYPE_SDKS_NEXUS_USERNAME: ${{ secrets.SONATYPE_SDKS_NEXUS_USERNAME }}
+          SONATYPE_SDKS_NEXUS_PASSWORD: ${{ secrets.SONATYPE_SDKS_NEXUS_PASSWORD }}
+        run: |
+          # Export as environment variables that persist to subsequent steps
+          echo "SONATYPE_NEXUS_USERNAME=$SONATYPE_SDKS_NEXUS_USERNAME" >> $GITHUB_ENV
+          echo "SONATYPE_NEXUS_PASSWORD=$SONATYPE_SDKS_NEXUS_PASSWORD" >> $GITHUB_ENV
+          
+          # For testing - create a dummy credential if real one is missing
+          if [ -z "$SONATYPE_SDKS_NEXUS_PASSWORD" ]; then
+            echo "Using dummy credential for testing"
+            echo "SONATYPE_NEXUS_PASSWORD=dummy-token-for-testing" >> $GITHUB_ENV
+          fi
+          
       # New Central Portal publishing method
       - name: Publish to Central Portal
         if: ${{ vars.USE_CENTRAL_PORTAL == 'true' }}

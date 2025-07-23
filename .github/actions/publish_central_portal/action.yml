@@ -40,10 +40,18 @@ runs:
         echo "Environment variables available:"
         env | cut -d= -f1 | grep -i sonatype || echo "No Sonatype env vars found"
         
-        # Export inputs explicitly to ensure they're available in the shell
-        export SONATYPE_NEXUS_USERNAME="${{ inputs.sonatype_user }}"
-        export SONATYPE_NEXUS_PASSWORD="${{ inputs.sonatype_token }}"
-        echo "Exported credentials from inputs"
+        # Use directly from GitHub environment variables if available
+        echo "Using environment variables from parent workflow"
+        
+        # Check for credentials already in environment
+        if [ -n "$SONATYPE_NEXUS_PASSWORD" ]; then
+          echo "Found SONATYPE_NEXUS_PASSWORD in environment, using it"
+        else
+          # Fall back to inputs if needed
+          export SONATYPE_NEXUS_USERNAME="${{ inputs.sonatype_user }}"
+          export SONATYPE_NEXUS_PASSWORD="${{ inputs.sonatype_token }}"
+          echo "Exported credentials from inputs as fallback"
+        fi
         
         # First publish library module which will handle signing
         ./gradlew --stacktrace :library:assemble
