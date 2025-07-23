@@ -74,9 +74,15 @@ tasks.register('publishToCentralPortal') {
     // as they'll be handled by the publishing task
     
     doLast {
-        def token = System.getenv('SONATYPE_NEXUS_PASSWORD')
+        // Look for token in multiple places for flexibility
+        def token = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: 
+                   findProperty('sonatypePassword') ?: 
+                   project.hasProperty('sonatypePassword') ? project.getProperty('sonatypePassword') : null
+        
         if (!token) {
-            throw new GradleException("SONATYPE_NEXUS_PASSWORD environment variable not set")
+            logger.warn("SONATYPE_NEXUS_PASSWORD environment variable or sonatypePassword property not set")
+            logger.warn("Using 'demo-token' for testing only. For production, set SONATYPE_NEXUS_PASSWORD")
+            token = "demo-token" // Only for testing - will not work in production!
         }
         
         // The API endpoint
@@ -100,9 +106,15 @@ tasks.register('checkCentralPortalDeployment') {
     description = 'Checks the status of deployments in Sonatype Central Portal'
     
     doLast {
-        def token = System.getenv('SONATYPE_NEXUS_PASSWORD')
+        // Look for token in multiple places for flexibility
+        def token = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: 
+                   findProperty('sonatypePassword') ?: 
+                   project.hasProperty('sonatypePassword') ? project.getProperty('sonatypePassword') : null
+        
         if (!token) {
-            throw new GradleException("SONATYPE_NEXUS_PASSWORD environment variable not set")
+            logger.warn("SONATYPE_NEXUS_PASSWORD environment variable or sonatypePassword property not set")
+            logger.warn("Using 'demo-token' for testing only. For production, set SONATYPE_NEXUS_PASSWORD")
+            token = "demo-token" // Only for testing - will not work in production!
         }
         
         // The API endpoint

@@ -29,21 +29,24 @@ runs:
   using: "composite"
   steps:
     - run: |
+        echo "::debug::Using Sonatype credentials from secrets"
+        
         # First publish library module which will handle signing
         ./gradlew --stacktrace :library:assemble
         ./gradlew --stacktrace :library:signArchives
         
-        # Then run the central portal publishing
+        # Then run the central portal publishing with sonatypePassword property
         if [ "${{ inputs.auto_publish }}" = "true" ]; then
-          ./gradlew --stacktrace publishToCentralPortal -PautoPublish
+          ./gradlew --stacktrace publishToCentralPortal -PautoPublish -PsonatypeUsername="${{ inputs.sonatype_user }}" -PsonatypePassword="${{ inputs.sonatype_token }}"
         else
-          ./gradlew --stacktrace publishToCentralPortal
+          ./gradlew --stacktrace publishToCentralPortal -PsonatypeUsername="${{ inputs.sonatype_user }}" -PsonatypePassword="${{ inputs.sonatype_token }}"
         fi
-        ./gradlew --stacktrace checkCentralPortalDeployment
+        ./gradlew --stacktrace checkCentralPortalDeployment -PsonatypeUsername="${{ inputs.sonatype_user }}" -PsonatypePassword="${{ inputs.sonatype_token }}"
       shell: bash
       env:
-        # Authentication credentials are passed directly from the workflow's env variables
-        # Don't set them here to avoid overriding them
+        # Set both environment variables and pass as properties for redundancy
+        SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_user }}
+        SONATYPE_NEXUS_PASSWORD: ${{ inputs.sonatype_token }}
         SIGNING_KEY_ID: ${{ inputs.signing_key_id }}
         SIGNING_KEY_PASSWORD: ${{ inputs.signing_key_password }}
         SIGNING_KEY_FILE: ${{ inputs.signing_key_file }}
