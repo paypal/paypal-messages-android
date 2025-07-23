@@ -1,6 +1,6 @@
 # Publishing to Maven Central
 
-This project is configured to publish to Maven Central via both the legacy Sonatype OSSRH system and the new Sonatype Central Portal API.
+This project is configured to publish to Maven Central via the Sonatype Central Portal API.
 
 ## Prerequisites
 
@@ -24,28 +24,11 @@ export SIGNING_KEY_PASSWORD=your_gpg_key_password
 export SIGNING_KEY_FILE=/path/to/secring.gpg
 ```
 
-**Important**: For the Central Portal API, `SONATYPE_NEXUS_PASSWORD` should be a user token generated from the Sonatype Central Portal. You can generate this token from your account page at https://central.sonatype.com/account.
+**Important**: `SONATYPE_NEXUS_PASSWORD` should be a user token generated from the Sonatype Central Portal. You can generate this token from your account page at https://central.sonatype.com/account.
 
-## Publishing Methods
+## Publishing Method
 
-### Method 1: Legacy OSSRH Publishing (Default)
-
-To publish a release version using the legacy system:
-
-```bash
-./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepositories
-```
-
-To publish a snapshot version:
-
-1. Make sure your version in `build.gradle` ends with `-SNAPSHOT`
-2. Run:
-
-```bash
-./gradlew publishToSonatype
-```
-
-### Method 2: Central Portal API Publishing (New)
+### Central Portal API Publishing
 
 To publish using the new Central Portal API:
 
@@ -69,17 +52,9 @@ To check the status of your deployment:
 
 The GitHub Actions workflows have been updated to support both publishing methods.
 
-### Activating Central Portal Publishing
+### GitHub Actions Publishing
 
-To use the Central Portal API for publishing in GitHub Actions:
-
-1. Go to your GitHub repository → Settings → Secrets and variables → Actions
-2. Select the "Variables" tab (not "Secrets")
-3. Create a new repository variable:
-   - Name: `USE_CENTRAL_PORTAL` 
-   - Value: `true`
-
-When this variable is not set or set to any other value, the legacy OSSRH publishing method will be used.
+The repository is configured to use the Central Portal API for publishing in GitHub Actions. Make sure you've set up the required secrets as described in the "Setting Up GitHub Repository Secrets" section below.
 
 ### How It Works
 
@@ -106,17 +81,12 @@ Both methods use the same secrets for authentication:
 
 ## Repository URLs
 
-### Legacy OSSRH URLs
-- Release/Staging API: https://ossrh-staging-api.central.sonatype.com/service/local/
-- Snapshots: https://central.sonatype.com/repository/maven-snapshots/
-
 ### Central Portal API URLs
 - Upload Endpoint: https://central.sonatype.com/api/v1/publisher/upload
 - Status Endpoint: https://central.sonatype.com/api/v1/publisher/status
 
 ## Authentication
 
-- Legacy OSSRH: Uses basic authentication with username and password
 - Central Portal API: Uses bearer token authentication with a user token
 
 ### Setting Up GitHub Repository Secrets
@@ -133,12 +103,6 @@ To publish from GitHub Actions, you need to set up these repository secrets:
 
 ## Troubleshooting
 
-### Legacy OSSRH Issues
-If you encounter 401 Unauthorized errors:
-1. Check that your Sonatype credentials are correct
-2. Make sure your account has permission to publish to the `com.paypal` groupId
-3. Verify that your credentials are properly set in environment variables
-
 ### Central Portal API Issues
 If you encounter issues with the Central Portal API:
 1. Verify that your user token is correct and not expired
@@ -146,7 +110,6 @@ If you encounter issues with the Central Portal API:
 3. Ensure your artifacts are properly signed
 4. Verify that the package metadata (groupId, artifactId, version) is correct
 5. Check the GitHub Actions logs for any credential or authentication issues
-6. Ensure the `USE_CENTRAL_PORTAL` variable is set correctly if using the new API
 
 ### Testing Locally
 When testing publishing locally, you may see warning messages about missing credentials. The build system will use dummy values for testing, which won't actually publish anything. This is expected behavior and helps with local testing without requiring real credentials.

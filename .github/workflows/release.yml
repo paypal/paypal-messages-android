@@ -68,20 +68,8 @@ jobs:
           target_branch: develop
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Legacy OSSRH publishing method
-      - name: Publish to Maven (Legacy)
-        if: ${{ !vars.USE_CENTRAL_PORTAL || vars.USE_CENTRAL_PORTAL != 'true' }}
-        uses: ./.github/actions/publish_all_modules
-        with:
-          sonatype_user: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          sonatype_password: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
-          signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
-          signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
-          
-      # New Central Portal publishing method
+      # Central Portal publishing method
       - name: Publish to Central Portal
-        if: ${{ vars.USE_CENTRAL_PORTAL == 'true' }}
         uses: ./.github/actions/publish_central_portal
         with:
           # Pass credentials directly as input parameters
