@@ -71,11 +71,13 @@ The GitHub Actions workflows have been updated to support both publishing method
 
 ### Activating Central Portal Publishing
 
-To use the Central Portal API for publishing in GitHub Actions, set the repository variable:
+To use the Central Portal API for publishing in GitHub Actions:
 
-```
-USE_CENTRAL_PORTAL = true
-```
+1. Go to your GitHub repository → Settings → Secrets and variables → Actions
+2. Select the "Variables" tab (not "Secrets")
+3. Create a new repository variable:
+   - Name: `USE_CENTRAL_PORTAL` 
+   - Value: `true`
 
 When this variable is not set or set to any other value, the legacy OSSRH publishing method will be used.
 
@@ -84,9 +86,23 @@ When this variable is not set or set to any other value, the legacy OSSRH publis
 1. For snapshots (on `develop` branch), automatic publishing is enabled with the Central Portal API.
 2. For releases (on `release` branch), user-managed publishing is used, requiring manual approval in the portal.
 
+### Publishing Workflows
+
+The repository includes two main publishing workflows:
+
+1. **release.yml** - Used for official releases
+   - Triggered manually via workflow_dispatch
+   - Creates a GitHub release
+   - Publishes to Maven Central
+
+2. **release-snapshots.yml** - Used for snapshot releases
+   - Triggered manually via workflow_dispatch
+   - Sets version with -SNAPSHOT suffix
+   - Publishes to snapshot repository
+
 Both methods use the same secrets for authentication:
-- `SONATYPE_NEXUS_USERNAME` / `SONATYPE_SDKS_NEXUS_USERNAME`
-- `SONATYPE_NEXUS_PASSWORD` / `SONATYPE_SDKS_NEXUS_PASSWORD` (should be a user token)
+- `SONATYPE_NEXUS_USERNAME` - Your Sonatype username
+- `SONATYPE_NEXUS_PASSWORD` - Your Sonatype user token
 
 ## Repository URLs
 
@@ -103,6 +119,18 @@ Both methods use the same secrets for authentication:
 - Legacy OSSRH: Uses basic authentication with username and password
 - Central Portal API: Uses bearer token authentication with a user token
 
+### Setting Up GitHub Repository Secrets
+
+To publish from GitHub Actions, you need to set up these repository secrets:
+
+1. Go to your GitHub repository → Settings → Secrets and variables → Actions
+2. Add the following repository secrets:
+   - `SONATYPE_NEXUS_USERNAME`: Your Sonatype username
+   - `SONATYPE_NEXUS_PASSWORD`: Your Sonatype user token (from Central Portal)
+   - `SIGNING_KEY_ID`: Your GPG key ID
+   - `SIGNING_KEY_PASSWORD`: Your GPG key password
+   - `SIGNING_KEY_FILE`: Your GPG private key (base64 encoded)
+
 ## Troubleshooting
 
 ### Legacy OSSRH Issues
@@ -117,3 +145,10 @@ If you encounter issues with the Central Portal API:
 2. Check the response from the API for detailed error messages
 3. Ensure your artifacts are properly signed
 4. Verify that the package metadata (groupId, artifactId, version) is correct
+5. Check the GitHub Actions logs for any credential or authentication issues
+6. Ensure the `USE_CENTRAL_PORTAL` variable is set correctly if using the new API
+
+### Testing Locally
+When testing publishing locally, you may see warning messages about missing credentials. The build system will use dummy values for testing, which won't actually publish anything. This is expected behavior and helps with local testing without requiring real credentials.
+
+To test with real credentials locally, set the environment variables as described in the Configuration section.

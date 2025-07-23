@@ -84,19 +84,24 @@ jobs:
             echo "SONATYPE_NEXUS_PASSWORD is empty or not set"
           fi
           
-      # Set credentials as environment variables for direct use
-      - name: Set Sonatype Credentials
-        env:
-          SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+      # Add fallbacks for local testing only - in GitHub Actions, secrets are passed directly
+      - name: Check Credentials Availability
         run: |
-          # Export as environment variables that persist to subsequent steps
-          echo "SONATYPE_NEXUS_USERNAME=$SONATYPE_NEXUS_USERNAME" >> $GITHUB_ENV
-          echo "SONATYPE_NEXUS_PASSWORD=$SONATYPE_NEXUS_PASSWORD" >> $GITHUB_ENV
+          echo "Checking credentials availability for Sonatype publishing"
           
-          # For testing - create a dummy credential if real one is missing
-          if [ -z "$SONATYPE_NEXUS_PASSWORD" ]; then
-            echo "Using dummy credential for testing"
+          # Check username availability (without printing value)
+          if [ -n "${{ secrets.SONATYPE_NEXUS_USERNAME }}" ]; then
+            echo "Username is available from repository secrets"
+          else
+            echo "Username is not available - using dummy value for testing"
+            echo "SONATYPE_NEXUS_USERNAME=dummy-user" >> $GITHUB_ENV
+          fi
+          
+          # Check password/token availability (without printing value)
+          if [ -n "${{ secrets.SONATYPE_NEXUS_PASSWORD }}" ]; then
+            echo "Password/token is available from repository secrets"
+          else
+            echo "Password/token is not available - using dummy value for testing"
             echo "SONATYPE_NEXUS_PASSWORD=dummy-token-for-testing" >> $GITHUB_ENV
           fi
           
@@ -105,10 +110,11 @@ jobs:
         if: ${{ vars.USE_CENTRAL_PORTAL == 'true' }}
         uses: ./.github/actions/publish_central_portal
         with:
-          sonatype_user: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          sonatype_token: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
           signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
           signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
           signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
           auto_publish: 'true'
-        # Environment variables are passed from the parent workflow using GITHUB_ENV
+        env:
+          # Pass secrets directly to the composite action
+          SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}

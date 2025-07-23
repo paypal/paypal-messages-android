@@ -25,14 +25,20 @@ runs:
   using: "composite"
   steps:
     - run: |
-        # Debug step to verify credentials are available
-        if [ -n "${{ inputs.sonatype_user }}" ] && [ -n "${{ inputs.sonatype_password }}" ]; then
-          echo "Credentials are provided, proceeding with publishing"
+        # Safely check if credentials are available (without exposing values)
+        if [ -n "${{ inputs.sonatype_user }}" ]; then
+          echo "Username is provided"
         else
-          echo "Warning: One or more credentials are missing"
+          echo "Warning: Username is missing"
         fi
         
-        # Export credentials to environment variables
+        if [ -n "${{ inputs.sonatype_password }}" ]; then
+          echo "Password/token is provided"
+        else
+          echo "Warning: Password/token is missing"
+        fi
+        
+        # Export credentials to environment variables (no echo)
         export SONATYPE_NEXUS_USERNAME="${{ inputs.sonatype_user }}"
         export SONATYPE_NEXUS_PASSWORD="${{ inputs.sonatype_password }}"
         

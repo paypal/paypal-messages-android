@@ -2,12 +2,12 @@ name: 'Publish to Central Portal'
 description: 'Publishes all modules using the Sonatype Central Portal API'
 inputs:
   sonatype_user:
-    description: 'Sonatype user'
-    required: true
+    description: 'Sonatype user (deprecated - use env vars instead)'
+    required: false
     default: ''
   sonatype_token:
-    description: 'Sonatype user token'
-    required: true
+    description: 'Sonatype user token (deprecated - use env vars instead)'
+    required: false
     default: ''
   signing_key_id:
     description: 'Signing key id'
@@ -29,28 +29,34 @@ runs:
   using: "composite"
   steps:
     - run: |
-        # Debug environment variables (safely)
-        echo "::debug::Debugging environment variables"
-        echo "sonatype_user input is empty: ${{ inputs.sonatype_user == '' }}"
-        echo "sonatype_token input is empty: ${{ inputs.sonatype_token == '' }}"
-        echo "SONATYPE_NEXUS_USERNAME is set: ${{ env.SONATYPE_NEXUS_USERNAME != '' }}"
-        echo "SONATYPE_NEXUS_PASSWORD is set: ${{ env.SONATYPE_NEXUS_PASSWORD != '' }}"
+        # Safely check for required environment variables
+        echo "::debug::Checking for required environment variables"
         
-        # List all env vars (without values)
-        echo "Environment variables available:"
-        env | cut -d= -f1 | grep -i sonatype || echo "No Sonatype env vars found"
+        # Only check if variables exist, never print their values
+        if [ -n "$SONATYPE_NEXUS_USERNAME" ]; then
+          echo "SONATYPE_NEXUS_USERNAME is available"
+        else
+          echo "Warning: SONATYPE_NEXUS_USERNAME is not set"
+        fi
         
-        # Use directly from GitHub environment variables if available
+        if [ -n "$SONATYPE_NEXUS_PASSWORD" ]; then
+          echo "SONATYPE_NEXUS_PASSWORD is available"
+        else
+          echo "Warning: SONATYPE_NEXUS_PASSWORD is not set"
+        fi
+        
+        # Verify credentials are available in environment variables
         echo "Using environment variables from parent workflow"
         
-        # Check for credentials already in environment
-        if [ -n "$SONATYPE_NEXUS_PASSWORD" ]; then
-          echo "Found SONATYPE_NEXUS_PASSWORD in environment, using it"
+        # Check for credentials in environment (without exposing values)
+        if [ -n "$SONATYPE_NEXUS_USERNAME" ] && [ -n "$SONATYPE_NEXUS_PASSWORD" ]; then
+          echo "Found Sonatype credentials in environment"
         else
-          # Fall back to inputs if needed
-          export SONATYPE_NEXUS_USERNAME="${{ inputs.sonatype_user }}"
-          export SONATYPE_NEXUS_PASSWORD="${{ inputs.sonatype_token }}"
-          echo "Exported credentials from inputs as fallback"
+          echo "Warning: One or more Sonatype credentials missing in environment"
+          
+          # Log a more helpful message about how to set up credentials
+          echo "Make sure SONATYPE_NEXUS_USERNAME and SONATYPE_NEXUS_PASSWORD are set in your GitHub repository secrets"
+          echo "and passed to this action using the 'env:' section in the workflow."
         fi
         
         # First publish library module which will handle signing
