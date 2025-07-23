@@ -79,6 +79,19 @@ jobs:
           signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
           signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
           
+      # Debug step to check for secrets
+      - name: Debug Secrets Availability
+        run: |
+          echo "Checking secrets availability (values will not be shown)"
+          echo "SONATYPE_NEXUS_USERNAME exists: ${{ secrets.SONATYPE_NEXUS_USERNAME != '' }}"
+          echo "SONATYPE_NEXUS_PASSWORD exists: ${{ secrets.SONATYPE_NEXUS_PASSWORD != '' }}"
+          echo "SIGNING_KEY_ID exists: ${{ secrets.SIGNING_KEY_ID != '' }}"
+          if [ -n "${{ secrets.SONATYPE_NEXUS_PASSWORD }}" ]; then
+            echo "SONATYPE_NEXUS_PASSWORD is set and not empty"
+          else
+            echo "SONATYPE_NEXUS_PASSWORD is empty or not set"
+          fi
+          
       # New Central Portal publishing method
       - name: Publish to Central Portal
         if: ${{ vars.USE_CENTRAL_PORTAL == 'true' }}
@@ -93,3 +106,4 @@ jobs:
         env:
           SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }} # Try alternative name

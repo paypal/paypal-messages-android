@@ -29,19 +29,45 @@ runs:
   using: "composite"
   steps:
     - run: |
-        echo "::debug::Using Sonatype credentials from secrets"
+        # Debug environment variables (safely)
+        echo "::debug::Debugging environment variables"
+        echo "sonatype_user input is empty: ${{ inputs.sonatype_user == '' }}"
+        echo "sonatype_token input is empty: ${{ inputs.sonatype_token == '' }}"
+        echo "SONATYPE_NEXUS_USERNAME is set: ${{ env.SONATYPE_NEXUS_USERNAME != '' }}"
+        echo "SONATYPE_NEXUS_PASSWORD is set: ${{ env.SONATYPE_NEXUS_PASSWORD != '' }}"
+        
+        # List all env vars (without values)
+        echo "Environment variables available:"
+        env | cut -d= -f1 | grep -i sonatype || echo "No Sonatype env vars found"
+        
+        # Export inputs explicitly to ensure they're available in the shell
+        export SONATYPE_NEXUS_USERNAME="${{ inputs.sonatype_user }}"
+        export SONATYPE_NEXUS_PASSWORD="${{ inputs.sonatype_token }}"
+        echo "Exported credentials from inputs"
         
         # First publish library module which will handle signing
         ./gradlew --stacktrace :library:assemble
         ./gradlew --stacktrace :library:signArchives
         
-        # Then run the central portal publishing with sonatypePassword property
+        # Then run the central portal publishing with ALL possible property names
         if [ "${{ inputs.auto_publish }}" = "true" ]; then
-          ./gradlew --stacktrace publishToCentralPortal -PautoPublish -PsonatypeUsername="${{ inputs.sonatype_user }}" -PsonatypePassword="${{ inputs.sonatype_token }}"
+          ./gradlew --stacktrace publishToCentralPortal -PautoPublish \
+            -PsonatypeUsername="${{ inputs.sonatype_user }}" \
+            -PsonatypePassword="${{ inputs.sonatype_token }}" \
+            -PnexusUsername="${{ inputs.sonatype_user }}" \
+            -PnexusPassword="${{ inputs.sonatype_token }}"
         else
-          ./gradlew --stacktrace publishToCentralPortal -PsonatypeUsername="${{ inputs.sonatype_user }}" -PsonatypePassword="${{ inputs.sonatype_token }}"
+          ./gradlew --stacktrace publishToCentralPortal \
+            -PsonatypeUsername="${{ inputs.sonatype_user }}" \
+            -PsonatypePassword="${{ inputs.sonatype_token }}" \
+            -PnexusUsername="${{ inputs.sonatype_user }}" \
+            -PnexusPassword="${{ inputs.sonatype_token }}"
         fi
-        ./gradlew --stacktrace checkCentralPortalDeployment -PsonatypeUsername="${{ inputs.sonatype_user }}" -PsonatypePassword="${{ inputs.sonatype_token }}"
+        ./gradlew --stacktrace checkCentralPortalDeployment \
+          -PsonatypeUsername="${{ inputs.sonatype_user }}" \
+          -PsonatypePassword="${{ inputs.sonatype_token }}" \
+          -PnexusUsername="${{ inputs.sonatype_user }}" \
+          -PnexusPassword="${{ inputs.sonatype_token }}"
       shell: bash
       env:
         # Set both environment variables and pass as properties for redundancy
