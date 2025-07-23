@@ -84,14 +84,16 @@ jobs:
             echo "SONATYPE_NEXUS_PASSWORD is empty or not set"
           fi
           
-      # Add fallbacks for local testing only - in GitHub Actions, secrets are passed directly
-      - name: Check Credentials Availability
+      # Set environment variables with GitHub secrets for all subsequent steps
+      - name: Setup Sonatype Credentials
         run: |
           echo "Checking credentials availability for Sonatype publishing"
           
           # Check username availability (without printing value)
           if [ -n "${{ secrets.SONATYPE_NEXUS_USERNAME }}" ]; then
             echo "Username is available from repository secrets"
+            # Set environment variable explicitly for subsequent steps and composite actions
+            echo "SONATYPE_NEXUS_USERNAME=${{ secrets.SONATYPE_NEXUS_USERNAME }}" >> $GITHUB_ENV
           else
             echo "Username is not available - using dummy value for testing"
             echo "SONATYPE_NEXUS_USERNAME=dummy-user" >> $GITHUB_ENV
@@ -100,6 +102,8 @@ jobs:
           # Check password/token availability (without printing value)
           if [ -n "${{ secrets.SONATYPE_NEXUS_PASSWORD }}" ]; then
             echo "Password/token is available from repository secrets"
+            # Set environment variable explicitly for subsequent steps and composite actions
+            echo "SONATYPE_NEXUS_PASSWORD=${{ secrets.SONATYPE_NEXUS_PASSWORD }}" >> $GITHUB_ENV
           else
             echo "Password/token is not available - using dummy value for testing"
             echo "SONATYPE_NEXUS_PASSWORD=dummy-token-for-testing" >> $GITHUB_ENV
@@ -114,7 +118,4 @@ jobs:
           signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
           signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
           auto_publish: 'true'
-        env:
-          # Pass secrets directly to the composite action
-          SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+        # No env block needed here - we're using GITHUB_ENV to pass variables
