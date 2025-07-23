@@ -71,44 +71,6 @@ jobs:
           signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
           signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
           
-      # Debug step to check for secrets
-      - name: Debug Secrets Availability
-        run: |
-          echo "Checking secrets availability (values will not be shown)"
-          echo "SONATYPE_NEXUS_USERNAME exists: ${{ secrets.SONATYPE_NEXUS_USERNAME != '' }}"
-          echo "SONATYPE_NEXUS_PASSWORD exists: ${{ secrets.SONATYPE_NEXUS_PASSWORD != '' }}"
-          echo "SIGNING_KEY_ID exists: ${{ secrets.SIGNING_KEY_ID != '' }}"
-          if [ -n "${{ secrets.SONATYPE_NEXUS_PASSWORD }}" ]; then
-            echo "SONATYPE_NEXUS_PASSWORD is set and not empty"
-          else
-            echo "SONATYPE_NEXUS_PASSWORD is empty or not set"
-          fi
-          
-      # Set environment variables with GitHub secrets for all subsequent steps
-      - name: Setup Sonatype Credentials
-        run: |
-          echo "Checking credentials availability for Sonatype publishing"
-          
-          # Check username availability (without printing value)
-          if [ -n "${{ secrets.SONATYPE_NEXUS_USERNAME }}" ]; then
-            echo "Username is available from repository secrets"
-            # Set environment variable explicitly for subsequent steps and composite actions
-            echo "SONATYPE_NEXUS_USERNAME=${{ secrets.SONATYPE_NEXUS_USERNAME }}" >> $GITHUB_ENV
-          else
-            echo "Username is not available - using dummy value for testing"
-            echo "SONATYPE_NEXUS_USERNAME=dummy-user" >> $GITHUB_ENV
-          fi
-          
-          # Check password/token availability (without printing value)
-          if [ -n "${{ secrets.SONATYPE_NEXUS_PASSWORD }}" ]; then
-            echo "Password/token is available from repository secrets"
-            # Set environment variable explicitly for subsequent steps and composite actions
-            echo "SONATYPE_NEXUS_PASSWORD=${{ secrets.SONATYPE_NEXUS_PASSWORD }}" >> $GITHUB_ENV
-          else
-            echo "Password/token is not available - using dummy value for testing"
-            echo "SONATYPE_NEXUS_PASSWORD=dummy-token-for-testing" >> $GITHUB_ENV
-          fi
-          
       # New Central Portal publishing method
       - name: Publish to Central Portal
         if: ${{ vars.USE_CENTRAL_PORTAL == 'true' }}
