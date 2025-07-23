@@ -122,8 +122,10 @@ jobs:
         if: ${{ vars.USE_CENTRAL_PORTAL == 'true' }}
         uses: ./.github/actions/publish_central_portal
         with:
+          # Pass credentials directly as input parameters
+          sonatype_user: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          sonatype_token: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
           signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
           signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
           signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
           auto_publish: 'false'
-        # No env block needed here - we're using GITHUB_ENV to pass variables
