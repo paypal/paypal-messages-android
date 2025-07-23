@@ -119,7 +119,4 @@ jobs:
           signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
           signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
           auto_publish: 'false'
-        env:
-          SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }} # Try alternative name
+        # Environment variables are passed from the parent workflow using GITHUB_ENV

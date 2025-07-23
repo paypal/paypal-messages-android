@@ -25,6 +25,18 @@ runs:
   using: "composite"
   steps:
     - run: |
+        # Debug step to verify credentials are available
+        if [ -n "${{ inputs.sonatype_user }}" ] && [ -n "${{ inputs.sonatype_password }}" ]; then
+          echo "Credentials are provided, proceeding with publishing"
+        else
+          echo "Warning: One or more credentials are missing"
+        fi
+        
+        # Export credentials to environment variables
+        export SONATYPE_NEXUS_USERNAME="${{ inputs.sonatype_user }}"
+        export SONATYPE_NEXUS_PASSWORD="${{ inputs.sonatype_password }}"
+        
+        # Run the publishing tasks
         ./gradlew --stacktrace clean publishToSonatype closeAndReleaseSonatypeStagingRepository
       shell: bash
       env:
