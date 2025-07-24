@@ -24,7 +24,7 @@ inputs:
   auto_publish:
     description: 'Whether to publish automatically'
     required: false
-    default: 'false'
+    default: 'true'
 runs:
   using: "composite"
   steps:
