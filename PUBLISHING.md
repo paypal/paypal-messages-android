@@ -30,13 +30,15 @@ export SIGNING_KEY_FILE=/path/to/secring.gpg
 
 ### Central Portal API Publishing
 
-To publish using the new Central Portal API:
+To publish using the Central Portal API:
 
 ```bash
 ./gradlew publishToCentralPortal
 ```
 
-By default, this will use the `USER_MANAGED` publishing type, which requires manual approval in the portal after validation. To use automatic publishing:
+By default, this will use the `USER_MANAGED` publishing type, which requires manual approval in the portal after validation. This is the recommended approach for official releases. 
+
+To use automatic publishing (recommended for snapshots):
 
 ```bash
 ./gradlew publishToCentralPortal -PautoPublish
@@ -58,8 +60,16 @@ The repository is configured to use the Central Portal API for publishing in Git
 
 ### How It Works
 
-1. For snapshots (on `develop` branch), automatic publishing is enabled with the Central Portal API.
-2. For releases (on `release` branch), user-managed publishing is used, requiring manual approval in the portal.
+The repository has two distinct workflows:
+
+1. **For snapshots:** Uses the `auto_publish: 'true'` setting to enable automatic publishing via the Central Portal API.
+   - No manual approval is needed - artifacts go straight to Maven Central after validation
+   - Used for development builds and quick testing
+
+2. **For releases:** Uses the `auto_publish: 'false'` setting (default) for user-managed publishing.
+   - Requires manual approval in the Sonatype Central Portal after validation
+   - Provides an opportunity to verify artifacts before they are published to Maven Central
+   - Recommended for official releases
 
 ### Publishing Workflows
 
@@ -68,12 +78,14 @@ The repository includes two main publishing workflows:
 1. **release.yml** - Used for official releases
    - Triggered manually via workflow_dispatch
    - Creates a GitHub release
-   - Publishes to Maven Central
+   - Publishes to Maven Central using USER_MANAGED mode (auto_publish: 'false')
+   - Requires manual approval in the Sonatype Central Portal
 
 2. **release-snapshots.yml** - Used for snapshot releases
    - Triggered manually via workflow_dispatch
    - Sets version with -SNAPSHOT suffix
-   - Publishes to snapshot repository
+   - Publishes to Maven Central using AUTOMATIC mode (auto_publish: 'true')
+   - No manual approval needed
 
 Both methods use the same secrets for authentication:
 - `SONATYPE_NEXUS_USERNAME` - Your Sonatype username
