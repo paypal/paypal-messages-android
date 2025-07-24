@@ -7,4 +7,34 @@
 	<style name="BottomSheetModal" parent="Widget.Design.BottomSheet.Modal">
 		<item name="android:background">@android:color/transparent</item>
 	</style>
+	
+	<style name="PayPalModalOverlay" parent="Theme.AppCompat.NoActionBar">
+		<item name="android:windowIsTranslucent">true</item>
+		<item name="android:windowBackground">@android:color/transparent</item>
+		<item name="android:windowContentOverlay">@null</item>
+		<item name="android:windowNoTitle">true</item>
+		<item name="android:backgroundDimEnabled">true</item>
+		<item name="android:backgroundDimAmount">0.5</item>
+		<item name="android:windowAnimationStyle">@style/PayPalModalAnimation</item>
+		<item name="android:windowIsFloating">false</item>
+		<item name="android:windowFullscreen">true</item>
+		<item name="android:windowDisablePreview">true</item>
+		<item name="android:windowActivityTransitions">true</item>
+		<item name="android:windowSoftInputMode">adjustResize</item>
+		<item name="android:fitsSystemWindows">false</item>
+		<item name="android:windowTranslucentNavigation">true</item>
+		<item name="android:windowTranslucentStatus">true</item>
+		<item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+		<item name="android:windowDrawsSystemBarBackgrounds">true</item>
+		<item name="android:navigationBarColor">@android:color/transparent</item>
+	</style>
+	
+	<style name="PayPalModalAnimation">
+		<item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+		<item name="android:windowExitAnimation">@android:anim/fade_out</item>
+		<item name="android:activityOpenEnterAnimation">@android:anim/fade_in</item>
+		<item name="android:activityOpenExitAnimation">@android:anim/fade_out</item>
+		<item name="android:activityCloseEnterAnimation">@android:anim/fade_in</item>
+		<item name="android:activityCloseExitAnimation">@android:anim/fade_out</item>
+	</style>
 </resources>
