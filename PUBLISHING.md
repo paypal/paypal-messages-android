@@ -66,7 +66,7 @@ The repository has two distinct workflows:
    - No manual approval is needed - artifacts go straight to Maven Central after validation
    - Used for development builds and quick testing
 
-2. **For releases:** Uses the `auto_publish: 'false'` setting (default) for user-managed publishing.
+2. **For releases:** Uses the `auto_publish: 'true'` setting (default) for user-managed publishing.
    - Requires manual approval in the Sonatype Central Portal after validation
    - Provides an opportunity to verify artifacts before they are published to Maven Central
    - Recommended for official releases
