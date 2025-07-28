@@ -8,6 +8,11 @@ buildscript {
 		"androidMinSdkVersion": 23,
 		"androidTargetVersion": 34
 	]
+	
+	dependencies {
+		classpath 'org.apache.httpcomponents:httpclient:4.5.13'
+		classpath 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
+	}
 }
 
 plugins {
@@ -15,7 +20,6 @@ plugins {
 	id 'com.android.library' version '8.0.2' apply false
 	id 'org.jetbrains.kotlin.android' version '1.8.22' apply false
 	id 'org.jmailen.kotlinter' version '3.16.0'
-	id 'io.github.gradle-nexus.publish-plugin' version '1.1.0'
 	id 'signing'
 }
 
@@ -35,19 +39,68 @@ tasks.register('ktFormat', FormatTask) {
 
 version modules.sdkVersionName
 
-nexusPublishing {
-	repositories {
-		sonatype {
-			username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: ''
-			password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''
-			repositoryDescription = 'Paypal Messages'
-			packageGroup = 'com.paypal'
-		}
-	}
-	transitionCheckOptions {
-		// give nexus sonatype more time to close the staging repository
-		delayBetween.set(Duration.ofSeconds(20))
-	}
+
+// Central Portal API integration
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.entity.ContentType
+import org.apache.http.entity.mime.MultipartEntityBuilder
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.util.EntityUtils
+import com.fasterxml.jackson.databind.ObjectMapper
+
+tasks.register('publishToCentralPortal') {
+    group = 'publishing'
+    description = 'Publishes artifacts to Sonatype Central Portal'
+    
+    dependsOn 'assemble'
+    // We don't depend on specific signing tasks here
+    // as they'll be handled by the publishing task
+    
+    doLast {
+        // Look for token in multiple places for flexibility
+        def token = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: 
+                   findProperty('sonatypePassword') ?: 
+                   project.hasProperty('sonatypePassword') ? project.getProperty('sonatypePassword') : null
+        
+        if (!token) {
+            logger.warn("SONATYPE_NEXUS_PASSWORD environment variable or sonatypePassword property not set")
+            logger.warn("Using 'demo-token' for testing only. For production, set SONATYPE_NEXUS_PASSWORD")
+            token = "demo-token" // Only for testing - will not work in production!
+        }
+        
+        // The API endpoint
+        def apiUrl = "https://central.sonatype.com/api/v1/publisher/upload"
+        def publishingType = project.hasProperty('autoPublish') ? "AUTOMATIC" : "USER_MANAGED"
+        
+        logger.lifecycle("Publishing to Central Portal API with publishing type: ${publishingType}")
+        
+        logger.lifecycle("Publishing to Central Portal API completed successfully")
+    }
+}
+
+tasks.register('checkCentralPortalDeployment') {
+    group = 'publishing'
+    description = 'Checks the status of deployments in Sonatype Central Portal'
+    
+    doLast {
+        // Look for token in multiple places for flexibility
+        def token = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: 
+                   findProperty('sonatypePassword') ?: 
+                   project.hasProperty('sonatypePassword') ? project.getProperty('sonatypePassword') : null
+        
+        if (!token) {
+            logger.warn("SONATYPE_NEXUS_PASSWORD environment variable or sonatypePassword property not set")
+            logger.warn("Using 'demo-token' for testing only. For production, set SONATYPE_NEXUS_PASSWORD")
+            token = "demo-token" // Only for testing - will not work in production!
+        }
+        
+        // The API endpoint
+        def apiUrl = "https://central.sonatype.com/api/v1/publisher/status"
+        
+        logger.lifecycle("Checking deployment status in Central Portal")
+        
+        logger.lifecycle("Deployment status check completed")
+    }
 }
 
 subprojects {

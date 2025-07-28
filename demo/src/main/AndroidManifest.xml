@@ -16,7 +16,7 @@
 		<activity
 			android:name=".JetpackActivity"
 			android:exported="true"
-			android:theme="@style/Theme.PayPalMessages">
+			android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
@@ -27,6 +27,16 @@
 			android:name=".XmlActivity"
 			android:exported="true"
 			android:theme="@style/Theme.AppCompat.Light">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
+
+		<activity
+			android:name=".JetpackComposableActivity"
+			android:exported="true"
+			android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />

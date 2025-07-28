@@ -91,61 +91,39 @@ internal class ModalFragment(
 	private var dialog: BottomSheetDialog? = null
 	private var closeButtonData: ModalCloseButton? = null
 	private var instanceId = UUID.randomUUID()
-
-	private fun <T> setJsValue(name: String, value: T) {
-		LogCat.debug(TAG, "$name changed. Calling actions.updateProps({'$name':'$value'})")
-		this.webView?.evaluateJavascript("javascript:actions.updateProps({'$name':'$value'});", null)
-	}
-
+	
+	/**
+	 * Sets up an external WebView with the modal content.
+	 * This method can be used by Compose UI to initialize a WebView.
+	 *
+	 * @param webView The WebView to configure
+	 */
 	@SuppressLint("SetJavaScriptEnabled")
-	override fun onCreateView(
-		inflator: LayoutInflater,
-		container: ViewGroup?,
-		savedInstanceState: Bundle?,
-	): View? {
-		val rootView =
-			inflator.inflate(R.layout.paypal_message_modal_sheet_layout, container, false)
-		val closeButton = rootView.findViewById<ImageButton>(R.id.ModalCloseButton)
-		closeButton.contentDescription = closeButtonData?.alternativeText
-
-		closeButton.layoutParams.height = TypedValue.applyDimension(
-			TypedValue.COMPLEX_UNIT_DIP,
-			this.closeButtonData?.height!!.toFloat(), resources.displayMetrics,
-		).toInt()
-		closeButton.layoutParams.width = TypedValue.applyDimension(
-			TypedValue.COMPLEX_UNIT_DIP,
-			this.closeButtonData?.width!!.toFloat(), resources.displayMetrics,
-		).toInt()
-
-		val colorInt = Color.parseColor(this.closeButtonData?.color)
-		closeButton.background.colorFilter = PorterDuffColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP)
-
-		closeButton?.setOnClickListener { dialog?.hide() }
-
-		// If we already have a WebView, don't reset it
-		LogCat.debug(TAG, "Configuring WebView Settings and Handlers")
-		val modalFragment = this
-		val webView = rootView.findViewById<RoundedWebView>(R.id.ModalWebView)
-		webView.apply {
-			// Set the bottom margin here instead of in XML so it is controlled in one single location.
-			// The offset shifts the modal down, so a bottom margin keeps the scrollable space on screen.
-			(layoutParams as RelativeLayout.LayoutParams).apply { bottomMargin = offsetTop }
-
-			settings.javaScriptEnabled = true
-			settings.domStorageEnabled = true
-			settings.allowContentAccess = true
-			addJavascriptInterface(modalFragment, "Android")
+	fun setupWebView(webView: WebView) {
+		this.webView = webView
+		webView.settings.apply {
+			javaScriptEnabled = true
+			domStorageEnabled = true
+			setSupportMultipleWindows(true)
+			allowContentAccess = true
 		}
-
-		webView.webChromeClient = object : WebChromeClient() {
-			override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
-				val source = "${consoleMessage.sourceId()}:${consoleMessage.lineNumber()}"
-				LogCat.debug(TAG, "\n$source:\n  ${consoleMessage.message()}\n")
-				return super.onConsoleMessage(consoleMessage)
-			}
-		}
-
-		webView.webViewClient = object : WebViewClient() {
+		
+		// Configure WebView client
+		webView.webViewClient = createWebViewClient()
+		webView.webChromeClient = createWebChromeClient()
+		
+		// Add JavaScript interface for communication
+		webView.addJavascriptInterface(this, "Android")
+		
+		// Load the modal URL
+		reloadUrl()
+	}
+	
+	/**
+	 * Creates a WebViewClient for handling page loading and error states
+	 */
+	private fun createWebViewClient(): WebViewClient {
+		return object : WebViewClient() {
 			// TODO remove for production
 			@SuppressLint("WebViewClientOnReceivedSslError")
 			override fun onReceivedSslError(v: WebView, handler: SslErrorHandler, e: SslError) {
@@ -170,10 +148,13 @@ internal class ModalFragment(
 
 				return if (requestHost == currentHost && requestPath == currentPath) {
 					false
-				}
-				else {
-					val intent = Intent(Intent.ACTION_VIEW, requestUri)
-					requireActivity().startActivity(intent)
+				} else {
+					try {
+						val intent = Intent(Intent.ACTION_VIEW, requestUri)
+						view?.context?.startActivity(intent)
+					} catch (e: Exception) {
+						LogCat.error(TAG, "Failed to open URL: $requestUri")
+					}
 					true
 				}
 			}
@@ -207,7 +188,7 @@ internal class ModalFragment(
 				request: WebResourceRequest?,
 				errorResponse: WebResourceResponse?,
 			) {
-				// Can be  a 404 of any asset, so double check error is not on main content?
+				// Can be a 404 of any asset, so double check error is not on main content?
 				super.onReceivedHttpError(view, request, errorResponse)
 				errorResponse?.let { e ->
 					LogCat.debug(TAG, "HTTP Error Code ${e.statusCode}: ${e.reasonPhrase}\nData: ${e.data}")
@@ -222,9 +203,76 @@ internal class ModalFragment(
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Creates a WebChromeClient for debugging and console logging
+	 */
+	private fun createWebChromeClient(): WebChromeClient {
+		return object : WebChromeClient() {
+			override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
+				val source = "${consoleMessage.sourceId()}:${consoleMessage.lineNumber()}"
+				LogCat.debug(TAG, "\n$source:\n  ${consoleMessage.message()}\n")
+				return super.onConsoleMessage(consoleMessage)
+			}
+		}
+	}
+	
+	/**
+	 * Loads or reloads the URL for the modal
+	 */
+	private fun reloadUrl() {
+		val url = Api.createModalUrl(clientId, amount, buyerCountry, offerType)
+		LogCat.debug(TAG, "Loading modal URL: $url")
+		modalUrl = url
+		webView?.loadUrl(url)
+		onLoading()
+		onShow()
+	}
 
-		// After configuring the WebView, set it as a global var
-		this.webView = webView
+	private fun <T> setJsValue(name: String, value: T) {
+		LogCat.debug(TAG, "$name changed. Calling actions.updateProps({'$name':'$value'})")
+		this.webView?.evaluateJavascript("javascript:actions.updateProps({'$name':'$value'});", null)
+	}
+
+	@SuppressLint("SetJavaScriptEnabled")
+	override fun onCreateView(
+		inflator: LayoutInflater,
+		container: ViewGroup?,
+		savedInstanceState: Bundle?,
+	): View? {
+		val rootView =
+			inflator.inflate(R.layout.paypal_message_modal_sheet_layout, container, false)
+		val closeButton = rootView.findViewById<ImageButton>(R.id.ModalCloseButton)
+		closeButton.contentDescription = closeButtonData?.alternativeText
+
+		closeButton.layoutParams.height = TypedValue.applyDimension(
+			TypedValue.COMPLEX_UNIT_DIP,
+			this.closeButtonData?.height!!.toFloat(), resources.displayMetrics,
+		).toInt()
+		closeButton.layoutParams.width = TypedValue.applyDimension(
+			TypedValue.COMPLEX_UNIT_DIP,
+			this.closeButtonData?.width!!.toFloat(), resources.displayMetrics,
+		).toInt()
+
+		val colorInt = Color.parseColor(this.closeButtonData?.color)
+		closeButton.background.colorFilter = PorterDuffColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP)
+
+		closeButton?.setOnClickListener { dialog?.hide() }
+
+		// If we already have a WebView, don't reset it
+		LogCat.debug(TAG, "Configuring WebView Settings and Handlers")
+		val webView = rootView.findViewById<RoundedWebView>(R.id.ModalWebView)
+		webView.apply {
+			// Set the bottom margin here instead of in XML so it is controlled in one single location.
+			// The offset shifts the modal down, so a bottom margin keeps the scrollable space on screen.
+			(layoutParams as RelativeLayout.LayoutParams).apply { bottomMargin = offsetTop }
+		}
+		
+		// Set up the WebView using our helper method
+		setupWebView(webView)
+
+		// After configuring the WebView, set the root view
 		this.rootView = rootView
 		return rootView
 	}

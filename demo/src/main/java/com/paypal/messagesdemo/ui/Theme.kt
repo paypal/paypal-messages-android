@@ -57,14 +57,33 @@ fun BasicTheme(
 	if (!view.isInEditMode) {
 		SideEffect {
 			val window = (view.context as Activity).window
+			// Use the AppCompat compatible color
 			window.statusBarColor = colorScheme.primary.toArgb()
 			WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
 		}
 	}
 
-	MaterialTheme(
-		colorScheme = colorScheme,
-		typography = Typography,
-		content = content,
+	// Ensure we're using the AppCompat compatible theme
+	androidx.compose.material.MaterialTheme(
+		colors = androidx.compose.material.lightColors(
+			primary = colorScheme.primary,
+			primaryVariant = colorScheme.primary,
+			secondary = colorScheme.secondary,
+			background = colorScheme.background,
+			surface = colorScheme.surface,
+			onPrimary = colorScheme.onPrimary,
+			onSecondary = colorScheme.onSecondary,
+			onBackground = colorScheme.onBackground,
+			onSurface = colorScheme.onSurface,
+		),
+		typography = androidx.compose.material.Typography(),
+		content = {
+			// Wrap in Material3 theme for components that need it
+			MaterialTheme(
+				colorScheme = colorScheme,
+				typography = Typography,
+				content = content,
+			)
+		},
 	)
 }
