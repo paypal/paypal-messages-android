@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.0](https://github.com/paypal/paypal-messages-android/compare/1.0.4...1.1.0) (2025-07-28)
+
+
+### Features
+
+* add Central Portal API snapshot publishing workflow ([#66](https://github.com/paypal/paypal-messages-android/issues/66)) ([5438be9](https://github.com/paypal/paypal-messages-android/commit/5438be94211d28c65b8e2b42b8325377803a05c8))
+* add ProGuard rules for PayPal Messages SDK ([#65](https://github.com/paypal/paypal-messages-android/issues/65)) ([dd6adbb](https://github.com/paypal/paypal-messages-android/commit/dd6adbbca608b19057b970796c55cafcd7fa5416))
+* extract data provider to work better with different view types ([#58](https://github.com/paypal/paypal-messages-android/issues/58)) ([d3ff1de](https://github.com/paypal/paypal-messages-android/commit/d3ff1dea2887374d0c30b7e1c3452fc268619919))
+
 ## [1.0.4](https://github.com/paypal/paypal-messages-android/compare/1.0.3...1.0.4) (2025-06-24)
 
 
