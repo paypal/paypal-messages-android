@@ -43,7 +43,16 @@ jobs:
           cache: gradle
 
       - name: Run Unit Tests Coverage
-        run: ./gradlew koverXmlReportDebug
+        run: ./gradlew koverXmlReportDebug -Dkover.path.normalization=relative
+
+      - name: Normalize paths in coverage report
+        run: |
+          # Create a backup of the original report
+          cp library/build/reports/kover/reportDebug.xml library/build/reports/kover/reportDebug.xml.bak
+          
+          # Replace absolute paths with relative ones
+          # This matches any paths starting with /Users/ and replaces them with relative paths
+          sed -i 's|/Users/[^/]*/Code/paypal-messages-android/|./|g' library/build/reports/kover/reportDebug.xml
 
       - name: Show Coverage Report XML
         run: cat library/build/reports/kover/reportDebug.xml

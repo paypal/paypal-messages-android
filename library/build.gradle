@@ -3,7 +3,7 @@ plugins {
 	id 'kotlin-android'
 	id 'org.jetbrains.kotlin.android'
 	id 'de.mannodermaus.android-junit5' version "1.9.3.0"
-	id 'org.jetbrains.kotlinx.kover' version '0.7.6'
+	id 'org.jetbrains.kotlinx.kover' version '0.9.1'
 }
 
 android {
@@ -113,6 +113,11 @@ tasks.withType(Test).configureEach {
 	// Example filter: excludeTestsMatching "com.paypal.messages.PayPalModalActivityTest"
 }
 
+// Configure all Kover tasks to use relative paths
+tasks.withType(org.jetbrains.kotlinx.kover.gradle.plugin.tasks.KoverXmlReportTask).configureEach {
+	systemProperty 'kover.path.normalization', 'relative'
+}
+
 // Optimized approach for handling problematic tests
 android {
 	testOptions {
@@ -170,6 +175,44 @@ tasks.register('testMemoryIntensiveClasses') {
 	description = "Runs memory-intensive tests in isolated JVM processes"
 }
 
+// Add a task to test the coverage report paths
+tasks.register('testKoverPaths') {
+	dependsOn 'koverXmlReportDebug'
+	
+	doLast {
+		println "\n\n===== Testing Kover paths in coverage report =====\n"
+		
+		def reportFile = file("${buildDir}/reports/kover/reportDebug.xml")
+		if (!reportFile.exists()) {
+			throw new GradleException("Coverage report file not found at: ${reportFile.absolutePath}")
+		}
+		
+		println "Checking coverage report for absolute paths..."
+		
+		def reportContent = reportFile.text
+		def absolutePathPattern = "/Users/"
+		def hasAbsolutePaths = reportContent.contains(absolutePathPattern)
+		
+		if (hasAbsolutePaths) {
+			println "WARNING: Found absolute paths in the coverage report!"
+			println "Creating normalized version..."
+			
+			// Create a backup of the original report
+			def backupFile = file("${buildDir}/reports/kover/reportDebug.xml.bak")
+			backupFile.text = reportContent
+			
+			// Replace absolute paths with relative ones
+			def normalizedContent = reportContent.replaceAll("/Users/[^/]*/Code/paypal-messages-android/", "./")
+			reportFile.text = normalizedContent
+			
+			println "Normalized coverage report saved to: ${reportFile.absolutePath}"
+		} else {
+			println "SUCCESS: No absolute paths found in the coverage report."
+		}
+	}
+	description = "Tests and fixes paths in Kover coverage reports"
+}
+
 koverReport {
 	androidReports('debug') {
 		filters {
@@ -205,6 +248,20 @@ koverReport {
 					'*.BuildConfig'
 				)
 			}
+		}
+		
+		// Add explicit XML report configuration with relative paths
+		xml {
+			// Set report file to a location relative to the project
+			reportFile.set(layout.buildDirectory.file("reports/kover/reportDebug.xml"))
+		}
+		
+		// Define sources using project-relative paths
+		sources {
+			sourceDirectories.from(
+				file("src/main/kotlin"),
+				file("src/main/java")
+			)
 		}
 	}
 }
