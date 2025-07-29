@@ -41,12 +41,14 @@ version modules.sdkVersionName
 
 
 // Central Portal API integration
+import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.ContentType
 import org.apache.http.entity.mime.MultipartEntityBuilder
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import com.fasterxml.jackson.databind.ObjectMapper
+import java.net.URLEncoder
 
 tasks.register('publishToCentralPortal') {
     group = 'publishing'
@@ -73,8 +75,61 @@ tasks.register('publishToCentralPortal') {
         def publishingType = project.hasProperty('autoPublish') ? "AUTOMATIC" : "USER_MANAGED"
         
         logger.lifecycle("Publishing to Central Portal API with publishing type: ${publishingType}")
+
+        // Find the library .aar file and pom
+        def libDir = new File("${project.rootDir}/library/build/outputs/aar/")
+        def aarFile = libDir.listFiles().find { it.name.endsWith('.aar') }
+        if (!aarFile) {
+            throw new GradleException("Could not find library .aar file in ${libDir}")
+        }
         
-        logger.lifecycle("Publishing to Central Portal API completed successfully")
+        // Find the signed POM file
+        def pomFile = new File("${project.rootDir}/library/build/publications/release/pom-default.xml")
+        if (!pomFile.exists()) {
+            throw new GradleException("Could not find POM file at ${pomFile}")
+        }
+        
+        // Find signature files
+        def aarSigFile = new File(aarFile.absolutePath + '.asc')
+        def pomSigFile = new File(pomFile.absolutePath + '.asc')
+        
+        if (!aarSigFile.exists() || !pomSigFile.exists()) {
+            throw new GradleException("Missing signature files. Make sure signing has been performed.")
+        }
+        
+        // Create and execute the HTTP request
+        def httpClient = HttpClients.createDefault()
+        def httpPost = new HttpPost(apiUrl)
+        
+        // Set the authorization header with the token
+        httpPost.setHeader("Authorization", "Bearer ${token}")
+        
+        // Create multipart request with files
+        def builder = MultipartEntityBuilder.create()
+        builder.addTextBody("publishingType", publishingType, ContentType.TEXT_PLAIN)
+        builder.addBinaryBody("content", aarFile, ContentType.APPLICATION_OCTET_STREAM, aarFile.name)
+        builder.addBinaryBody("pom", pomFile, ContentType.APPLICATION_XML, pomFile.name)
+        builder.addBinaryBody("contentSignature", aarSigFile, ContentType.APPLICATION_OCTET_STREAM, aarSigFile.name)
+        builder.addBinaryBody("pomSignature", pomSigFile, ContentType.APPLICATION_OCTET_STREAM, pomSigFile.name)
+        
+        httpPost.setEntity(builder.build())
+        
+        try {
+            def response = httpClient.execute(httpPost)
+            def statusCode = response.getStatusLine().getStatusCode()
+            def responseBody = EntityUtils.toString(response.getEntity())
+            
+            if (statusCode >= 200 && statusCode < 300) {
+                logger.lifecycle("Publishing to Central Portal API completed successfully")
+                logger.lifecycle("Response: ${responseBody}")
+            } else {
+                throw new GradleException("Failed to publish to Central Portal API. Status code: ${statusCode}, Response: ${responseBody}")
+            }
+        } catch (Exception e) {
+            throw new GradleException("Failed to publish to Central Portal API", e)
+        } finally {
+            httpClient.close()
+        }
     }
 }
 
@@ -98,6 +153,56 @@ tasks.register('checkCentralPortalDeployment') {
         def apiUrl = "https://central.sonatype.com/api/v1/publisher/status"
         
         logger.lifecycle("Checking deployment status in Central Portal")
+        
+        // Get group and artifact information from the library project
+        def libraryProject = project.findProject(':library')
+        def groupId = libraryProject.group
+        def artifactId = libraryProject.name
+        def version = libraryProject.version
+        
+        // Create and execute the HTTP request
+        def httpClient = HttpClients.createDefault()
+        def httpGet = new HttpGet("${apiUrl}?groupId=${groupId}&artifactId=${artifactId}&version=${version}")
+        
+        // Set the authorization header with the token
+        httpGet.setHeader("Authorization", "Bearer ${token}")
+        
+        try {
+            def response = httpClient.execute(httpGet)
+            def statusCode = response.getStatusLine().getStatusCode()
+            def responseBody = EntityUtils.toString(response.getEntity())
+            
+            if (statusCode >= 200 && statusCode < 300) {
+                logger.lifecycle("Deployment status check completed successfully")
+                
+                // Parse the JSON response
+                def mapper = new ObjectMapper()
+                def result = mapper.readTree(responseBody)
+                
+                // Display the status information
+                logger.lifecycle("Deployment Status:")
+                logger.lifecycle("Status: ${result.get('status').asText()}")
+                
+                if (result.has('message')) {
+                    logger.lifecycle("Message: ${result.get('message').asText()}")
+                }
+                
+                if (result.has('expectedCompletionTime')) {
+                    logger.lifecycle("Expected Completion: ${result.get('expectedCompletionTime').asText()}")
+                }
+                
+                // Add note about Maven Central sync delay
+                logger.lifecycle("\nNOTE: After successful publishing to Central Portal, it typically takes several hours")
+                logger.lifecycle("for artifacts to appear on Maven Central (https://repo.maven.apache.org/maven2) and")
+                logger.lifecycle("search indexes like mvnrepository.com or search.maven.org.")
+            } else {
+                logger.warn("Failed to check deployment status. Status code: ${statusCode}, Response: ${responseBody}")
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to check deployment status: ${e.message}")
+        } finally {
+            httpClient.close()
+        }
         
         logger.lifecycle("Deployment status check completed")
     }
