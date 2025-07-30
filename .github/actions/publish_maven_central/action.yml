@@ -88,7 +88,18 @@ runs:
         
         # Get version from build.gradle
         VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
-        echo "Publishing version: $VERSION"
+        
+        # Check if this is a snapshot release
+        USE_SNAPSHOT=$(env | grep USE_SNAPSHOT | cut -d= -f2)
+        if [ "$USE_SNAPSHOT" = "true" ]; then
+          # Add -SNAPSHOT suffix if it's not already there
+          if [[ "$VERSION" != *-SNAPSHOT ]]; then
+            VERSION="${VERSION}-SNAPSHOT"
+          fi
+          echo "Publishing SNAPSHOT version: $VERSION"
+        else
+          echo "Publishing release version: $VERSION"
+        fi
         
         # Get proper artifactId from library's build.gradle
         ARTIFACT_ID=$(grep -o 'project.ext.name = "[^"]*"' ${{ github.workspace }}/library/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
