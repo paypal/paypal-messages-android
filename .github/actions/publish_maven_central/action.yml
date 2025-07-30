@@ -191,6 +191,11 @@ runs:
         unzip -j ${{ github.workspace }}/library/build/outputs/aar/library-release.aar classes.jar -d ${{ github.workspace }}/library/target
         mv ${{ github.workspace }}/library/target/classes.jar ${{ github.workspace }}/library/target/${ARTIFACT_ID}-${VERSION}.jar
         
+        # Generate sources JAR
+        echo "Generating sources JAR"
+        ./gradlew androidSourcesJar
+        cp ${{ github.workspace }}/library/build/libs/library-sources.jar ${{ github.workspace }}/library/target/${ARTIFACT_ID}-${VERSION}-sources.jar
+        
         # Set auto-publish flag based on input
         if [ "${{ inputs.auto_publish }}" = "true" ]; then
           export AUTO_PUBLISH="true"
