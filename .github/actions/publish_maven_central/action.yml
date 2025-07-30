@@ -53,6 +53,19 @@ runs:
                     <password>${env.SONATYPE_NEXUS_PASSWORD}</password>
                 </server>
             </servers>
+            <profiles>
+                <profile>
+                    <id>gpg</id>
+                    <properties>
+                        <gpg.executable>gpg</gpg.executable>
+                        <gpg.keyname>${env.SIGNING_KEY_ID}</gpg.keyname>
+                        <gpg.passphrase>${env.SIGNING_KEY_PASSWORD}</gpg.passphrase>
+                    </properties>
+                </profile>
+            </profiles>
+            <activeProfiles>
+                <activeProfile>gpg</activeProfile>
+            </activeProfiles>
         </settings>
         EOF
 
@@ -124,6 +137,20 @@ runs:
                             <waitUntil>validated</waitUntil>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </project>
@@ -132,6 +159,10 @@ runs:
         
         # Build the library
         ./gradlew --stacktrace :library:assemble
+        
+        # Import GPG key
+        echo "Importing GPG key for signing"
+        gpg --batch --import ${{ inputs.signing_key_file }}
         
         # Prepare artifacts for Maven publishing
         mkdir -p ${{ github.workspace }}/library/target
@@ -156,6 +187,7 @@ runs:
         mvn deploy \
           -s ${{ github.workspace }}/.mvn/maven-settings.xml \
           -Dmaven.test.skip=true \
+          -Dgpg.passphrase="${SIGNING_KEY_PASSWORD}" \
           --batch-mode
         
         # Check deployment status
