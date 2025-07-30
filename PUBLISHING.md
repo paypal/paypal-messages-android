@@ -91,11 +91,25 @@ Both methods use the same secrets for authentication:
 - `SONATYPE_NEXUS_USERNAME` - Your Sonatype username
 - `SONATYPE_NEXUS_PASSWORD` - Your Sonatype user token
 
+## Manual Publishing Approval
+
+When using the `USER_MANAGED` publishing mode (default for releases), you need to manually approve the deployment after validation:
+
+1. After the GitHub Action completes the upload, it will show a success message with a link to the Sonatype Central Portal
+2. Go to the Sonatype Central Portal deployments page: https://central.sonatype.com/publishing/deployments
+3. Find your deployment in the list (it will show as "PUBLISHING" status)
+4. Click on the deployment to view details
+5. After reviewing the artifacts, click the "Publish" button to finalize the publishing process
+6. Your artifacts will then be published to Maven Central (this may take a few hours to appear in all indices)
+
+![Publish Button Location](https://central.sonatype.com/publishing/deployments)
+
 ## Repository URLs
 
 ### Central Portal API URLs
 - Upload Endpoint: https://central.sonatype.com/api/v1/publisher/upload
 - Status Endpoint: https://central.sonatype.com/api/v1/publisher/status
+- Deployments Page: https://central.sonatype.com/publishing/deployments
 
 ## Authentication
 
@@ -122,6 +136,10 @@ If you encounter issues with the Central Portal API:
 3. Ensure your artifacts are properly signed
 4. Verify that the package metadata (groupId, artifactId, version) is correct
 5. Check the GitHub Actions logs for any credential or authentication issues
+
+### Common Issues
+- **"Component already exists" error**: This means you're trying to publish a version that already exists. Maven Central doesn't allow overwriting published artifacts. Use a new version number.
+- **Missing manual approval**: For releases, you must manually approve the deployment by clicking the "Publish" button on the Central Portal deployments page: https://central.sonatype.com/publishing/deployments
 
 ### Testing Locally
 When testing publishing locally, you may see warning messages about missing credentials. The build system will use dummy values for testing, which won't actually publish anything. This is expected behavior and helps with local testing without requiring real credentials.
