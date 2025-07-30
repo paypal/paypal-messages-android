@@ -77,66 +77,69 @@ runs:
         VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
         echo "Publishing version: $VERSION"
         
-        # Create POM file if it doesn't exist
-        if [ ! -f "${{ github.workspace }}/library/pom.xml" ]; then
-          echo "Creating POM file for Maven Central publishing"
-          cat > ${{ github.workspace }}/library/pom.xml << 'EOF'
-        <?xml version="1.0" encoding="UTF-8"?>
-        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-            <modelVersion>4.0.0</modelVersion>
-            <groupId>com.paypal.messages</groupId>
-            <artifactId>library</artifactId>
-            <version>${VERSION}</version>
-            <packaging>aar</packaging>
-            <name>PayPal Messages</name>
-            <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
-            <url>https://github.com/paypal/paypal-messages-android</url>
-            <licenses>
-                <license>
-                    <name>The Apache License, Version 2.0</name>
-                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-                </license>
-            </licenses>
-            <developers>
-                <developer>
-                    <id>paypal-messages-android</id>
-                    <name>PayPalMessages Android</name>
-                    <email>sdks-messages@paypal.com</email>
-                </developer>
-            </developers>
-            <scm>
-                <connection>scm:git:git://github.com/paypal/paypal-messages-android.git</connection>
-                <developerConnection>scm:git:ssh://github.com:paypal/paypal-messages-android.git</developerConnection>
-                <url>https://github.com/paypal/paypal-messages-android</url>
-            </scm>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.central</groupId>
-                        <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.8.0</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <publishingServerId>central</publishingServerId>
-                            <tokenAuth>true</tokenAuth>
-                            <autoPublish>${AUTO_PUBLISH}</autoPublish>
-                            <waitUntil>validated</waitUntil>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </project>
-        EOF
-          echo "POM file created at ${{ github.workspace }}/library/pom.xml"
-        fi
+        # Always update the POM file with correct version
+        echo "Creating/updating POM file for Maven Central publishing with version $VERSION"
+        
+        cat > ${{ github.workspace }}/library/pom.xml << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.paypal.messages</groupId>
+    <artifactId>library</artifactId>
+    <version>$VERSION</version>
+    <packaging>jar</packaging>
+    <name>PayPal Messages</name>
+    <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
+    <url>https://github.com/paypal/paypal-messages-android</url>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>paypal-messages-android</id>
+            <name>PayPalMessages Android</name>
+            <email>sdks-messages@paypal.com</email>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:git://github.com/paypal/paypal-messages-android.git</connection>
+        <developerConnection>scm:git:ssh://github.com:paypal/paypal-messages-android.git</developerConnection>
+        <url>https://github.com/paypal/paypal-messages-android</url>
+    </scm>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.8.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <tokenAuth>true</tokenAuth>
+                    <autoPublish>\${AUTO_PUBLISH}</autoPublish>
+                    <waitUntil>validated</waitUntil>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+EOF
+        echo "POM file created at ${{ github.workspace }}/library/pom.xml"
         
         # Build the library
         ./gradlew --stacktrace :library:assemble
         
         # Prepare artifacts for Maven publishing
         mkdir -p ${{ github.workspace }}/library/target
-        cp ${{ github.workspace }}/library/build/outputs/aar/library-release.aar ${{ github.workspace }}/library/target/library-${VERSION}.aar
+        # Copy AAR file and rename to JAR for Maven Central
+        mkdir -p ${{ github.workspace }}/library/target/classes
+        # Extract classes.jar from AAR and use it as the main artifact
+        unzip -j ${{ github.workspace }}/library/build/outputs/aar/library-release.aar classes.jar -d ${{ github.workspace }}/library/target
+        mv ${{ github.workspace }}/library/target/classes.jar ${{ github.workspace }}/library/target/library-${VERSION}.jar
         
         # Set auto-publish flag based on input
         if [ "${{ inputs.auto_publish }}" = "true" ]; then
@@ -149,7 +152,6 @@ runs:
         cd ${{ github.workspace }}/library
         mvn deploy \
           -s ${{ github.workspace }}/.mvn/maven-settings.xml \
-          -Dproject.version=${VERSION} \
           -Dmaven.test.skip=true \
           --batch-mode
         

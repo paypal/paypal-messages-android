@@ -5,8 +5,8 @@
 
     <groupId>com.paypal.messages</groupId>
     <artifactId>library</artifactId>
-    <version>${project.version}</version>
-    <packaging>aar</packaging>
+    <version>1.1.0</version>
+    <packaging>jar</packaging>
 
     <name>PayPal Messages</name>
     <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
