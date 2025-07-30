@@ -105,8 +105,8 @@ runs:
         ARTIFACT_ID=$(grep -o 'project.ext.name = "[^"]*"' ${{ github.workspace }}/library/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
         echo "Using artifactId: $ARTIFACT_ID"
 
-        # Get proper project name from library's build.gradle 
-        PROJECT_NAME=$(grep -o 'project.ext.pom_name = "[^"]*"' ${{ github.workspace }}/library/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
+        # We want to display "Messages" in the Maven Central Portal UI
+        PROJECT_NAME="Messages"
         echo "Using project name: $PROJECT_NAME"
         
         # Always update the POM file with correct version
