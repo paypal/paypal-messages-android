@@ -93,6 +93,10 @@ runs:
         # Get proper artifactId from library's build.gradle
         ARTIFACT_ID=$(grep -o 'project.ext.name = "[^"]*"' ${{ github.workspace }}/library/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
         echo "Using artifactId: $ARTIFACT_ID"
+
+        # Get proper project name from library's build.gradle 
+        PROJECT_NAME=$(grep -o 'project.ext.pom_name = "[^"]*"' ${{ github.workspace }}/library/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
+        echo "Using project name: $PROJECT_NAME"
         
         # Always update the POM file with correct version
         echo "Creating/updating POM file for Maven Central publishing with version $VERSION"
@@ -106,7 +110,7 @@ runs:
             <artifactId>$ARTIFACT_ID</artifactId>
             <version>$VERSION</version>
             <packaging>jar</packaging>
-            <name>PayPal Messages</name>
+            <name>$PROJECT_NAME</name>
             <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
             <url>https://github.com/paypal/paypal-messages-android</url>
             <licenses>
@@ -199,6 +203,7 @@ runs:
         echo "Deployment to Maven Central completed successfully."
         echo "Your artifacts are now being published to Maven Central as:"
         echo "com.paypal.messages:${ARTIFACT_ID}:${VERSION}"
+        echo "Project Name: $PROJECT_NAME"
         echo ""
         echo "Users can include this dependency with:"
         echo "implementation(\"com.paypal.messages:${ARTIFACT_ID}:${VERSION}\")"
