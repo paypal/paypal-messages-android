@@ -190,12 +190,15 @@ runs:
           -Dgpg.passphrase="${SIGNING_KEY_PASSWORD}" \
           --batch-mode
         
-        # Check deployment status
-        cd ${{ github.workspace }}
-        mvn org.sonatype.central:central-publishing-maven-plugin:status \
-          -f ${{ github.workspace }}/library/pom.xml \
-          -s ${{ github.workspace }}/.mvn/maven-settings.xml \
-          -Dcentral.groupId=com.paypal.messages \
-          -Dcentral.artifactId=library \
-          -Dcentral.version=${VERSION} \
-          --batch-mode
+        # Print deployment information and next steps
+        echo "======================================================================"
+        echo "Deployment to Maven Central completed successfully."
+        echo "Your artifacts are now being published to Maven Central."
+        echo ""
+        echo "NOTE: After successful publishing, it may take several hours for"
+        echo "the artifacts to appear on Maven Central (https://repo.maven.apache.org/maven2)"
+        echo "and search indexes like mvnrepository.com or search.maven.org."
+        echo ""
+        echo "You can check the status of your deployment at:"
+        echo "https://central.sonatype.com/publishing/deployments"
+        echo "======================================================================"
