@@ -68,9 +68,9 @@ jobs:
           target_branch: develop
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Central Portal publishing method
-      - name: Publish to Central Portal
-        uses: ./.github/actions/publish_central_portal
+      # Maven Central publishing method using official plugin
+      - name: Publish to Maven Central
+        uses: ./.github/actions/publish_maven_central
         with:
           # Pass credentials directly as input parameters
           sonatype_user: ${{ secrets.SONATYPE_NEXUS_USERNAME }}

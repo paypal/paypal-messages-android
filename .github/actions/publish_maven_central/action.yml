@@ -1,0 +1,164 @@
+name: 'Publish to Maven Central'
+description: 'Publishes all modules using the Maven Central Portal Plugin'
+inputs:
+  sonatype_user:
+    description: 'Sonatype user'
+    required: true
+    default: ''
+  sonatype_token:
+    description: 'Sonatype user token'
+    required: true
+    default: ''
+  signing_key_id:
+    description: 'Signing key id'
+    required: true
+    default: ''
+  signing_key_password:
+    description: 'Signing key password'
+    required: true
+    default: ''
+  signing_key_file:
+    description: 'Signing key file'
+    required: true
+    default: ''
+  auto_publish:
+    description: 'Whether to publish automatically'
+    required: false
+    default: 'true'
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.5
+      with:
+        maven-version: 3.9.5
+
+    - name: Create Maven settings directory
+      shell: bash
+      run: |
+        mkdir -p ${{ github.workspace }}/.mvn
+
+    - name: Create Maven settings file
+      shell: bash
+      run: |
+        cat > ${{ github.workspace }}/.mvn/maven-settings.xml << 'EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+            <servers>
+                <server>
+                    <id>central</id>
+                    <username>${env.SONATYPE_NEXUS_USERNAME}</username>
+                    <password>${env.SONATYPE_NEXUS_PASSWORD}</password>
+                </server>
+            </servers>
+        </settings>
+        EOF
+
+    - name: Prepare and publish
+      shell: bash
+      env:
+        SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_user }}
+        SONATYPE_NEXUS_PASSWORD: ${{ inputs.sonatype_token }}
+        SIGNING_KEY_ID: ${{ inputs.signing_key_id }}
+        SIGNING_KEY_PASSWORD: ${{ inputs.signing_key_password }}
+        SIGNING_KEY_FILE: ${{ inputs.signing_key_file }}
+      run: |
+        echo "Using Maven Central Portal publishing method"
+        
+        # Verify we have the library module
+        if [ ! -d "${{ github.workspace }}/library" ]; then
+          echo "Error: library directory not found"
+          exit 1
+        fi
+        
+        # Get version from build.gradle
+        VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
+        echo "Publishing version: $VERSION"
+        
+        # Create POM file if it doesn't exist
+        if [ ! -f "${{ github.workspace }}/library/pom.xml" ]; then
+          echo "Creating POM file for Maven Central publishing"
+          cat > ${{ github.workspace }}/library/pom.xml << 'EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>com.paypal.messages</groupId>
+            <artifactId>library</artifactId>
+            <version>${VERSION}</version>
+            <packaging>aar</packaging>
+            <name>PayPal Messages</name>
+            <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
+            <url>https://github.com/paypal/paypal-messages-android</url>
+            <licenses>
+                <license>
+                    <name>The Apache License, Version 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                </license>
+            </licenses>
+            <developers>
+                <developer>
+                    <id>paypal-messages-android</id>
+                    <name>PayPalMessages Android</name>
+                    <email>sdks-messages@paypal.com</email>
+                </developer>
+            </developers>
+            <scm>
+                <connection>scm:git:git://github.com/paypal/paypal-messages-android.git</connection>
+                <developerConnection>scm:git:ssh://github.com:paypal/paypal-messages-android.git</developerConnection>
+                <url>https://github.com/paypal/paypal-messages-android</url>
+            </scm>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.8.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <tokenAuth>true</tokenAuth>
+                            <autoPublish>${AUTO_PUBLISH}</autoPublish>
+                            <waitUntil>validated</waitUntil>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </project>
+        EOF
+          echo "POM file created at ${{ github.workspace }}/library/pom.xml"
+        fi
+        
+        # Build the library
+        ./gradlew --stacktrace :library:assemble
+        
+        # Prepare artifacts for Maven publishing
+        mkdir -p ${{ github.workspace }}/library/target
+        cp ${{ github.workspace }}/library/build/outputs/aar/library-release.aar ${{ github.workspace }}/library/target/library-${VERSION}.aar
+        
+        # Set auto-publish flag based on input
+        if [ "${{ inputs.auto_publish }}" = "true" ]; then
+          export AUTO_PUBLISH="true"
+        else
+          export AUTO_PUBLISH="false"
+        fi
+        
+        # Run Maven deployment with the Central Plugin
+        cd ${{ github.workspace }}/library
+        mvn deploy \
+          -s ${{ github.workspace }}/.mvn/maven-settings.xml \
+          -Dproject.version=${VERSION} \
+          -Dmaven.test.skip=true \
+          --batch-mode
+        
+        # Check deployment status
+        cd ${{ github.workspace }}
+        mvn org.sonatype.central:central-publishing-maven-plugin:status \
+          -f ${{ github.workspace }}/library/pom.xml \
+          -s ${{ github.workspace }}/.mvn/maven-settings.xml \
+          -Dcentral.groupId=com.paypal.messages \
+          -Dcentral.artifactId=library \
+          -Dcentral.version=${VERSION} \
+          --batch-mode
