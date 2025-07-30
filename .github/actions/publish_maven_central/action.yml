@@ -90,6 +90,10 @@ runs:
         VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
         echo "Publishing version: $VERSION"
         
+        # Get proper artifactId from library's build.gradle
+        ARTIFACT_ID=$(grep -o 'project.ext.name = "[^"]*"' ${{ github.workspace }}/library/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
+        echo "Using artifactId: $ARTIFACT_ID"
+        
         # Always update the POM file with correct version
         echo "Creating/updating POM file for Maven Central publishing with version $VERSION"
         
@@ -99,7 +103,7 @@ runs:
                  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
             <modelVersion>4.0.0</modelVersion>
             <groupId>com.paypal.messages</groupId>
-            <artifactId>library</artifactId>
+            <artifactId>$ARTIFACT_ID</artifactId>
             <version>$VERSION</version>
             <packaging>jar</packaging>
             <name>PayPal Messages</name>
@@ -170,7 +174,7 @@ runs:
         mkdir -p ${{ github.workspace }}/library/target/classes
         # Extract classes.jar from AAR and use it as the main artifact
         unzip -j ${{ github.workspace }}/library/build/outputs/aar/library-release.aar classes.jar -d ${{ github.workspace }}/library/target
-        mv ${{ github.workspace }}/library/target/classes.jar ${{ github.workspace }}/library/target/library-${VERSION}.jar
+        mv ${{ github.workspace }}/library/target/classes.jar ${{ github.workspace }}/library/target/${ARTIFACT_ID}-${VERSION}.jar
         
         # Set auto-publish flag based on input
         if [ "${{ inputs.auto_publish }}" = "true" ]; then
@@ -193,7 +197,11 @@ runs:
         # Print deployment information and next steps
         echo "======================================================================"
         echo "Deployment to Maven Central completed successfully."
-        echo "Your artifacts are now being published to Maven Central."
+        echo "Your artifacts are now being published to Maven Central as:"
+        echo "com.paypal.messages:${ARTIFACT_ID}:${VERSION}"
+        echo ""
+        echo "Users can include this dependency with:"
+        echo "implementation(\"com.paypal.messages:${ARTIFACT_ID}:${VERSION}\")"
         echo ""
         echo "NOTE: After successful publishing, it may take several hours for"
         echo "the artifacts to appear on Maven Central (https://repo.maven.apache.org/maven2)"
