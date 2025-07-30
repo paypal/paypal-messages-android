@@ -193,8 +193,25 @@ runs:
         
         # Generate sources JAR
         echo "Generating sources JAR"
-        ./gradlew androidSourcesJar
-        cp ${{ github.workspace }}/library/build/libs/library-sources.jar ${{ github.workspace }}/library/target/${ARTIFACT_ID}-${VERSION}-sources.jar
+        cd ${{ github.workspace }}
+        ./gradlew :library:androidSourcesJar --stacktrace
+        
+        # Check if sources JAR was created
+        if [ -f "${{ github.workspace }}/library/build/libs/library-sources.jar" ]; then
+          echo "Sources JAR found at ${{ github.workspace }}/library/build/libs/library-sources.jar"
+          cp ${{ github.workspace }}/library/build/libs/library-sources.jar ${{ github.workspace }}/library/target/${ARTIFACT_ID}-${VERSION}-sources.jar
+        else
+          echo "Sources JAR not found at expected location. Creating it manually."
+          
+          # Create sources JAR manually
+          echo "Creating sources JAR manually"
+          mkdir -p ${{ github.workspace }}/library/target/sources
+          # Copy all Java and Kotlin source files
+          find ${{ github.workspace }}/library/src/main -name "*.java" -o -name "*.kt" | xargs -I{} cp --parents {} ${{ github.workspace }}/library/target/sources/
+          cd ${{ github.workspace }}/library/target/sources
+          jar -cf ${{ github.workspace }}/library/target/${ARTIFACT_ID}-${VERSION}-sources.jar .
+          cd ${{ github.workspace }}
+        fi
         
         # Set auto-publish flag based on input
         if [ "${{ inputs.auto_publish }}" = "true" ]; then
