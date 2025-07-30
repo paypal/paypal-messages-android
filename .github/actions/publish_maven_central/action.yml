@@ -81,53 +81,53 @@ runs:
         echo "Creating/updating POM file for Maven Central publishing with version $VERSION"
         
         cat > ${{ github.workspace }}/library/pom.xml << EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>com.paypal.messages</groupId>
-    <artifactId>library</artifactId>
-    <version>$VERSION</version>
-    <packaging>jar</packaging>
-    <name>PayPal Messages</name>
-    <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
-    <url>https://github.com/paypal/paypal-messages-android</url>
-    <licenses>
-        <license>
-            <name>The Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-        </license>
-    </licenses>
-    <developers>
-        <developer>
-            <id>paypal-messages-android</id>
-            <name>PayPalMessages Android</name>
-            <email>sdks-messages@paypal.com</email>
-        </developer>
-    </developers>
-    <scm>
-        <connection>scm:git:git://github.com/paypal/paypal-messages-android.git</connection>
-        <developerConnection>scm:git:ssh://github.com:paypal/paypal-messages-android.git</developerConnection>
-        <url>https://github.com/paypal/paypal-messages-android</url>
-    </scm>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.8.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <publishingServerId>central</publishingServerId>
-                    <tokenAuth>true</tokenAuth>
-                    <autoPublish>\${AUTO_PUBLISH}</autoPublish>
-                    <waitUntil>validated</waitUntil>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-</project>
-EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>com.paypal.messages</groupId>
+            <artifactId>library</artifactId>
+            <version>$VERSION</version>
+            <packaging>jar</packaging>
+            <name>PayPal Messages</name>
+            <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
+            <url>https://github.com/paypal/paypal-messages-android</url>
+            <licenses>
+                <license>
+                    <name>The Apache License, Version 2.0</name>
+                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                </license>
+            </licenses>
+            <developers>
+                <developer>
+                    <id>paypal-messages-android</id>
+                    <name>PayPalMessages Android</name>
+                    <email>sdks-messages@paypal.com</email>
+                </developer>
+            </developers>
+            <scm>
+                <connection>scm:git:git://github.com/paypal/paypal-messages-android.git</connection>
+                <developerConnection>scm:git:ssh://github.com:paypal/paypal-messages-android.git</developerConnection>
+                <url>https://github.com/paypal/paypal-messages-android</url>
+            </scm>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.8.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <tokenAuth>true</tokenAuth>
+                            <autoPublish>\${AUTO_PUBLISH}</autoPublish>
+                            <waitUntil>validated</waitUntil>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </project>
+        EOF
         echo "POM file created at ${{ github.workspace }}/library/pom.xml"
         
         # Build the library
@@ -147,6 +147,9 @@ EOF
         else
           export AUTO_PUBLISH="false"
         fi
+        
+        # Replace the auto-publish variable in the POM
+        sed -i "s/\\\${AUTO_PUBLISH}/$AUTO_PUBLISH/g" ${{ github.workspace }}/library/pom.xml
         
         # Run Maven deployment with the Central Plugin
         cd ${{ github.workspace }}/library
