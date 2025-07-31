@@ -135,7 +135,7 @@ nmcpAggregation {
         username = System.getenv("SONATYPE_NEXUS_USERNAME") ?: ""
         password = System.getenv("SONATYPE_NEXUS_PASSWORD") ?: ""
         publishingType = "AUTOMATIC"
-        publicationName = "PayPal Messages Android ${version}"
+        publicationName = "PayPal Messages Android " + version
     }
     // Publish the library project
     publishAllProjectsProbablyBreakingProjectIsolation()
