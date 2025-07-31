@@ -78,7 +78,7 @@ runs:
         SIGNING_KEY_PASSWORD: ${{ inputs.signing_key_password }}
         SIGNING_KEY_FILE: ${{ inputs.signing_key_file }}
       run: |
-        echo "Using Maven Central Portal publishing method"
+        echo "Using Gradle publishing with Maven Central Portal"
         
         # Verify we have the library module
         if [ ! -d "${{ github.workspace }}/library" ]; then
@@ -104,139 +104,115 @@ runs:
         # Get proper artifactId from library's build.gradle
         ARTIFACT_ID=$(grep -o 'project.ext.name = "[^"]*"' ${{ github.workspace }}/library/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
         echo "Using artifactId: $ARTIFACT_ID"
-
-        # We want to display "Messages" in the Maven Central Portal UI
-        PROJECT_NAME="Messages"
-        echo "Using project name: $PROJECT_NAME"
-        
-        # Always update the POM file with correct version
-        echo "Creating/updating POM file for Maven Central publishing with version $VERSION"
-        
-        cat > ${{ github.workspace }}/library/pom.xml << EOF
-        <?xml version="1.0" encoding="UTF-8"?>
-        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-            <modelVersion>4.0.0</modelVersion>
-            <groupId>com.paypal.messages</groupId>
-            <artifactId>$ARTIFACT_ID</artifactId>
-            <version>$VERSION</version>
-            <packaging>jar</packaging>
-            <name>$PROJECT_NAME</name>
-            <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
-            <url>https://github.com/paypal/paypal-messages-android</url>
-            <licenses>
-                <license>
-                    <name>The Apache License, Version 2.0</name>
-                    <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-                </license>
-            </licenses>
-            <developers>
-                <developer>
-                    <id>paypal-messages-android</id>
-                    <name>PayPalMessages Android</name>
-                    <email>sdks-messages@paypal.com</email>
-                </developer>
-            </developers>
-            <scm>
-                <connection>scm:git:git://github.com/paypal/paypal-messages-android.git</connection>
-                <developerConnection>scm:git:ssh://github.com:paypal/paypal-messages-android.git</developerConnection>
-                <url>https://github.com/paypal/paypal-messages-android</url>
-            </scm>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.central</groupId>
-                        <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.8.0</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <publishingServerId>central</publishingServerId>
-                            <tokenAuth>true</tokenAuth>
-                            <autoPublish>\${AUTO_PUBLISH}</autoPublish>
-                            <waitUntil>validated</waitUntil>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.1.0</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </project>
-        EOF
-        echo "POM file created at ${{ github.workspace }}/library/pom.xml"
-        
-        # Build the library
-        ./gradlew --stacktrace :library:assemble
+        echo "Publishing version: $VERSION"
         
         # Import GPG key
         echo "Importing GPG key for signing"
         gpg --batch --import ${{ inputs.signing_key_file }}
         
-        # Prepare artifacts for Maven publishing
-        mkdir -p ${{ github.workspace }}/library/target
-        # Copy AAR file and rename to JAR for Maven Central
-        mkdir -p ${{ github.workspace }}/library/target/classes
-        # Extract classes.jar from AAR and use it as the main artifact
-        unzip -j ${{ github.workspace }}/library/build/outputs/aar/library-release.aar classes.jar -d ${{ github.workspace }}/library/target
-        mv ${{ github.workspace }}/library/target/classes.jar ${{ github.workspace }}/library/target/${ARTIFACT_ID}-${VERSION}.jar
+        # Temporarily modify the existing Gradle publishing to point to Maven Central Portal
+        echo "Configuring Gradle publishing for Maven Central Portal"
+        cp ${{ github.workspace }}/gradle/gradle-publish.gradle ${{ github.workspace }}/gradle/gradle-publish.gradle.backup
         
-        # Generate sources JAR
-        echo "Generating sources JAR"
-        cd ${{ github.workspace }}
-        ./gradlew :library:androidSourcesJar --stacktrace
+        cat > ${{ github.workspace }}/gradle/gradle-publish.gradle << 'EOF'
+        apply plugin: 'maven-publish'
+        apply plugin: 'signing'
+
+        ext["signing.keyId"] = System.getenv('SIGNING_KEY_ID') ?: ''
+        ext["signing.password"] = System.getenv('SIGNING_KEY_PASSWORD') ?: ''
+        ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_KEY_FILE') ?: ''
+
+        afterEvaluate {
+            publishing {
+                publications {
+                    release(MavenPublication) {
+                        groupId group
+                        version project.ext.version
+                        artifactId project.ext.name
+                        from components.release
+
+                        pom {
+                            name = project.ext.pom_name ?: ''
+                            packaging = POM_PACKAGING
+                            description = project.ext.pom_desc ?: ''
+                            url = 'https://github.com/paypal/paypal-messages-android'
+                            licenses {
+                                license {
+                                    name = 'The Apache License, Version 2.0'
+                                    url = 'http://www.apache.org/licenses/LICENSE-2.0'
+                                }
+                            }
+                            developers {
+                                developer {
+                                    id = 'paypal-messages-android'
+                                    name = 'PayPalMessages Android'
+                                    email = 'sdks-messages@paypal.com'
+                                }
+                            }
+                            scm {
+                                connection = 'scm:git:git://github.com/paypal/paypal-messages-android.git'
+                                developerConnection = 'scm:git:ssh://github.com:paypal/paypal-messages-android.git'
+                                url = 'https://github.com/paypal/paypal-messages-android'
+                            }
+                        }
+                    }
+                }
+                repositories {
+                    maven {
+                        name = "centralPortal"
+                        url = uri("https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC")
+                        credentials(HttpHeaderCredentials) {
+                            name = "Authorization"
+                            value = "Bearer ${System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''}"
+                        }
+                        authentication {
+                            header(HttpHeaderAuthentication)
+                        }
+                    }
+                }
+            }
+
+            signing {
+                sign publishing.publications
+                sign configurations.archives
+            }
+        }
+
+        task androidSourcesJar(type: Jar) {
+            archiveClassifier.set('sources')
+            from android.sourceSets.main.java.srcDirs
+            from android.sourceSets.main.kotlin.srcDirs
+        }
+
+        artifacts {
+            archives androidSourcesJar
+        }
+        EOF
         
-        # Check if sources JAR was created
-        if [ -f "${{ github.workspace }}/library/build/libs/library-sources.jar" ]; then
-          echo "Sources JAR found at ${{ github.workspace }}/library/build/libs/library-sources.jar"
-          cp ${{ github.workspace }}/library/build/libs/library-sources.jar ${{ github.workspace }}/library/target/${ARTIFACT_ID}-${VERSION}-sources.jar
-        else
-          echo "Sources JAR not found at expected location. Creating it manually."
-          
-          # Create sources JAR manually
-          echo "Creating sources JAR manually"
-          mkdir -p ${{ github.workspace }}/library/target/sources
-          # Copy all Java and Kotlin source files
-          find ${{ github.workspace }}/library/src/main -name "*.java" -o -name "*.kt" | xargs -I{} cp --parents {} ${{ github.workspace }}/library/target/sources/
-          cd ${{ github.workspace }}/library/target/sources
-          jar -cf ${{ github.workspace }}/library/target/${ARTIFACT_ID}-${VERSION}-sources.jar .
-          cd ${{ github.workspace }}
-        fi
+        # Use Gradle to publish directly to Maven Central Portal
+        echo "Building and publishing with Gradle..."
+        ./gradlew --stacktrace \
+          :library:build \
+          :library:publishReleasePublicationToCentralPortalRepository \
+          -Psigning.keyId="${SIGNING_KEY_ID}" \
+          -Psigning.password="${SIGNING_KEY_PASSWORD}" \
+          -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}"
         
-        # Set auto-publish flag based on input
-        if [ "${{ inputs.auto_publish }}" = "true" ]; then
-          export AUTO_PUBLISH="true"
-        else
-          export AUTO_PUBLISH="false"
-        fi
-        
-        # Replace the auto-publish variable in the POM
-        sed -i "s/\\\${AUTO_PUBLISH}/$AUTO_PUBLISH/g" ${{ github.workspace }}/library/pom.xml
-        
-        # Run Maven deployment with the Central Plugin
-        cd ${{ github.workspace }}/library
-        mvn deploy \
-          -s ${{ github.workspace }}/.mvn/maven-settings.xml \
-          -Dmaven.test.skip=true \
-          -Dgpg.passphrase="${SIGNING_KEY_PASSWORD}" \
-          --batch-mode
+        # Restore the original publishing configuration
+        mv ${{ github.workspace }}/gradle/gradle-publish.gradle.backup ${{ github.workspace }}/gradle/gradle-publish.gradle
         
         # Print deployment information and next steps
         echo "======================================================================"
         echo "Deployment to Maven Central completed successfully."
         echo "Your artifacts are now being published to Maven Central as:"
         echo "com.paypal.messages:${ARTIFACT_ID}:${VERSION}"
-        echo "Project Name: $PROJECT_NAME"
+        echo ""
+        echo "The following artifacts were published:"
+        echo "- ${ARTIFACT_ID}-${VERSION}.aar (Android AAR)"
+        echo "- ${ARTIFACT_ID}-${VERSION}-sources.jar (Sources JAR)"
+        echo "- ${ARTIFACT_ID}-${VERSION}.module (Gradle Module Metadata)"
+        echo "- ${ARTIFACT_ID}-${VERSION}.pom (POM file)"
+        echo "- All signature (.asc) and checksum files"
         echo ""
         echo "Users can include this dependency with:"
         echo "implementation(\"com.paypal.messages:${ARTIFACT_ID}:${VERSION}\")"
