@@ -137,8 +137,10 @@ runs:
                         artifactId project.ext.name
                         from components.release
                         
-                        // Add sources jar to publication
-                        artifact androidSourcesJar
+                        // Add sources jar to publication with proper dependency
+                        artifact(androidSourcesJar) {
+                            classifier = 'sources'
+                        }
 
                         pom {
                             name = project.ext.pom_name ?: ''
@@ -179,6 +181,11 @@ runs:
                         }
                     }
                 }
+            }
+
+            // Ensure proper task dependencies
+            tasks.withType(GenerateModuleMetadata) {
+                dependsOn androidSourcesJar
             }
 
             signing {
