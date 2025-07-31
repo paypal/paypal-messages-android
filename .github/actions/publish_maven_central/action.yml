@@ -110,97 +110,48 @@ runs:
         echo "Importing GPG key for signing"
         gpg --batch --import ${{ inputs.signing_key_file }}
         
-        # Temporarily modify the existing Gradle publishing to point to Maven Central Portal
-        echo "Configuring Gradle publishing for Maven Central Portal"
-        cp ${{ github.workspace }}/gradle/gradle-publish.gradle ${{ github.workspace }}/gradle/gradle-publish.gradle.backup
+        # Apply NMCP plugin to root build.gradle for aggregation
+        echo "Configuring root build.gradle with NMCP plugin for Maven Central Portal"
         
-        cat > ${{ github.workspace }}/gradle/gradle-publish.gradle << 'EOF'
-        apply plugin: 'maven-publish'
-        apply plugin: 'signing'
-
-        ext["signing.keyId"] = System.getenv('SIGNING_KEY_ID') ?: ''
-        ext["signing.password"] = System.getenv('SIGNING_KEY_PASSWORD') ?: ''
-        ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_KEY_FILE') ?: ''
-
-        // Use the Android plugin's built-in sources jar task
-
-        afterEvaluate {
-            publishing {
-                publications {
-                    release(MavenPublication) {
-                        groupId group
-                        version project.ext.version
-                        artifactId project.ext.name
-                        from components.release
-
-                        pom {
-                            name = project.ext.pom_name ?: ''
-                            packaging = POM_PACKAGING
-                            description = project.ext.pom_desc ?: ''
-                            url = 'https://github.com/paypal/paypal-messages-android'
-                            licenses {
-                                license {
-                                    name = 'The Apache License, Version 2.0'
-                                    url = 'http://www.apache.org/licenses/LICENSE-2.0'
-                                }
-                            }
-                            developers {
-                                developer {
-                                    id = 'paypal-messages-android'
-                                    name = 'PayPalMessages Android'
-                                    email = 'sdks-messages@paypal.com'
-                                }
-                            }
-                            scm {
-                                connection = 'scm:git:git://github.com/paypal/paypal-messages-android.git'
-                                developerConnection = 'scm:git:ssh://github.com:paypal/paypal-messages-android.git'
-                                url = 'https://github.com/paypal/paypal-messages-android'
-                            }
-                        }
-                    }
-                }
-                repositories {
-                    maven {
-                        name = "centralPortal"
-                        url = uri("https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC")
-                        credentials(HttpHeaderCredentials) {
-                            name = "Authorization"
-                            value = "Bearer ${System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''}"
-                        }
-                        authentication {
-                            header(HttpHeaderAuthentication)
-                        }
-                    }
-                }
-            }
-
-            // Ensure proper task dependencies with Android's sources jar
-            tasks.withType(GenerateModuleMetadata) {
-                dependsOn releaseSourcesJar
-            }
-
-            signing {
-                sign publishing.publications.release
-            }
-
-            // Add sources to archives for signing compatibility using Android's sources jar
-            artifacts {
-                archives releaseSourcesJar
-            }
-        }
-        EOF
+        # Backup the root build.gradle
+        cp ${{ github.workspace }}/build.gradle ${{ github.workspace }}/build.gradle.backup
         
-        # Use Gradle to publish directly to Maven Central Portal
-        echo "Building and publishing with Gradle..."
+        # Add NMCP plugin to root build.gradle
+        sed -i '' '/plugins {/a\
+	id "com.gradleup.nmcp.aggregation" version "1.0.2"
+' ${{ github.workspace }}/build.gradle
+        
+        # Add NMCP configuration to the end of root build.gradle
+        cat >> ${{ github.workspace }}/build.gradle << 'EOF'
+
+nmcpAggregation {
+    centralPortal {
+        username = System.getenv("SONATYPE_NEXUS_USERNAME") ?: ""
+        password = System.getenv("SONATYPE_NEXUS_PASSWORD") ?: ""
+        publishingType = "AUTOMATIC"
+        publicationName = "PayPal Messages Android ${version}"
+    }
+    // Publish the library project
+    publishAllProjectsProbablyBreakingProjectIsolation()
+}
+EOF
+        
+        # Use NMCP aggregation to publish to Maven Central Portal
+        echo "Building and publishing with NMCP aggregation..."
         ./gradlew --stacktrace \
           :library:build \
-          :library:publishReleasePublicationToCentralPortalRepository \
+          publishAggregationToCentralPortal \
           -Psigning.keyId="${SIGNING_KEY_ID}" \
           -Psigning.password="${SIGNING_KEY_PASSWORD}" \
           -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}"
         
-        # Restore the original publishing configuration
-        mv ${{ github.workspace }}/gradle/gradle-publish.gradle.backup ${{ github.workspace }}/gradle/gradle-publish.gradle
+        # Restore the original configurations
+        if [ -f "${{ github.workspace }}/gradle/gradle-publish.gradle.backup" ]; then
+          mv ${{ github.workspace }}/gradle/gradle-publish.gradle.backup ${{ github.workspace }}/gradle/gradle-publish.gradle
+        fi
+        if [ -f "${{ github.workspace }}/build.gradle.backup" ]; then
+          mv ${{ github.workspace }}/build.gradle.backup ${{ github.workspace }}/build.gradle
+        fi
         
         # Print deployment information and next steps
         echo "======================================================================"
