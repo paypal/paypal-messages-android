@@ -116,10 +116,16 @@ runs:
         # Backup the root build.gradle
         cp ${{ github.workspace }}/build.gradle ${{ github.workspace }}/build.gradle.backup
         
-        # Add NMCP plugin to root build.gradle
-        sed -i '' '/plugins {/a\
-	id "com.gradleup.nmcp.aggregation" version "1.0.2"
-' ${{ github.workspace }}/build.gradle
+        # Create a temporary file with the plugin addition
+        awk '
+        /^plugins \{/ {
+            print $0
+            print "    id \"com.gradleup.nmcp.aggregation\" version \"1.0.2\""
+            next
+        }
+        { print }
+        ' ${{ github.workspace }}/build.gradle.backup > ${{ github.workspace }}/build.gradle.tmp
+        mv ${{ github.workspace }}/build.gradle.tmp ${{ github.workspace }}/build.gradle
         
         # Add NMCP configuration to the end of root build.gradle
         cat >> ${{ github.workspace }}/build.gradle << 'EOF'
