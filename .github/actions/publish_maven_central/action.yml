@@ -118,27 +118,26 @@ runs:
         
         # Create a temporary file with the plugin addition
         awk '
-        /^plugins \{/ {
-            print $0
-            print "    id \"com.gradleup.nmcp.aggregation\" version \"1.0.2\""
-            next
-        }
-        { print }
+/^plugins \{/ {
+    print $0
+    print "    id \"com.gradleup.nmcp.aggregation\" version \"1.0.2\""
+    next
+}
+{ print }
         ' ${{ github.workspace }}/build.gradle.backup > ${{ github.workspace }}/build.gradle.tmp
         mv ${{ github.workspace }}/build.gradle.tmp ${{ github.workspace }}/build.gradle
         
         # Add NMCP configuration to the end of root build.gradle
         cat >> ${{ github.workspace }}/build.gradle << 'EOF'
-
 nmcpAggregation {
     centralPortal {
-        username: ${{ env.SONATYPE_NEXUS_USERNAME }}
-        password: ${{ env.SONATYPE_NEXUS_PASSWORD }}
-        publishingType: "AUTOMATIC"
-        publicationName: "PayPal Messages Android"
+        username = System.getenv("SONATYPE_NEXUS_USERNAME") ?: ""
+        password = System.getenv("SONATYPE_NEXUS_PASSWORD") ?: ""
+        publishingType = "AUTOMATIC"
+        publicationName = "PayPal Messages Android"
     }
-    # Publish the library project
-    publishAllProjects: true
+    // Publish the library project
+    publishAllProjectsProbablyBreakingProjectIsolation()
 }
 EOF
         
