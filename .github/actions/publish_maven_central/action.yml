@@ -122,6 +122,12 @@ runs:
         ext["signing.password"] = System.getenv('SIGNING_KEY_PASSWORD') ?: ''
         ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_KEY_FILE') ?: ''
 
+        task androidSourcesJar(type: Jar) {
+            archiveClassifier.set('sources')
+            from android.sourceSets.main.java.srcDirs
+            from android.sourceSets.main.kotlin.srcDirs
+        }
+
         afterEvaluate {
             publishing {
                 publications {
@@ -130,6 +136,9 @@ runs:
                         version project.ext.version
                         artifactId project.ext.name
                         from components.release
+                        
+                        // Add sources jar to publication
+                        artifact androidSourcesJar
 
                         pom {
                             name = project.ext.pom_name ?: ''
@@ -173,19 +182,8 @@ runs:
             }
 
             signing {
-                sign publishing.publications
-                sign configurations.archives
+                sign publishing.publications.release
             }
-        }
-
-        task androidSourcesJar(type: Jar) {
-            archiveClassifier.set('sources')
-            from android.sourceSets.main.java.srcDirs
-            from android.sourceSets.main.kotlin.srcDirs
-        }
-
-        artifacts {
-            archives androidSourcesJar
         }
         EOF
         
