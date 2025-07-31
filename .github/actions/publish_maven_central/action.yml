@@ -132,13 +132,13 @@ runs:
 
 nmcpAggregation {
     centralPortal {
-        username = System.getenv("SONATYPE_NEXUS_USERNAME") ?: ""
-        password = System.getenv("SONATYPE_NEXUS_PASSWORD") ?: ""
-        publishingType = "AUTOMATIC"
-        publicationName = "PayPal Messages Android " + version
+        username: ${{ env.SONATYPE_NEXUS_USERNAME }}
+        password: ${{ env.SONATYPE_NEXUS_PASSWORD }}
+        publishingType: "AUTOMATIC"
+        publicationName: "PayPal Messages Android"
     }
-    // Publish the library project
-    publishAllProjectsProbablyBreakingProjectIsolation()
+    # Publish the library project
+    publishAllProjects: true
 }
 EOF
         
