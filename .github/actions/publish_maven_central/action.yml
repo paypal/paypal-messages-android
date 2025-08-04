@@ -154,6 +154,10 @@ runs:
                 publishingType = "AUTOMATIC"
                 publicationName = "PayPal Messages Android"
             }
+            
+            // Always allow overwriting of released components during snapshot publishing
+            allowReleaseOverwrite = true
+            
             // Publish the library project
             publishAllProjectsProbablyBreakingProjectIsolation()
         }
@@ -191,10 +195,20 @@ runs:
                 }
             }
         }
+
+        // Configure signing for all tasks
+        signing {
+            required { true }
+            sign publishing.publications.release
+        }
         EOF
         
         # Add NMCP configuration to the end of root build.gradle
         cat ${{ github.workspace }}/nmcp-config.gradle >> ${{ github.workspace }}/build.gradle
+        
+        # Clean before building to ensure fresh state
+        echo "Cleaning project..."
+        ./gradlew clean
         
         # Use NMCP aggregation to publish to Maven Central Portal
         echo "Building and publishing with NMCP aggregation..."
@@ -202,8 +216,7 @@ runs:
           publishAggregationToCentralPortal \
           -Psigning.keyId="${SIGNING_KEY_ID}" \
           -Psigning.password="${SIGNING_KEY_PASSWORD}" \
-          -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}" \
-          --debug
+          -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}"
         
         # Restore the original configurations
         if [ -f "${{ github.workspace }}/gradle/gradle-publish.gradle.backup" ]; then
