@@ -229,6 +229,20 @@ subprojects {
   group = "com.paypal.messages"
 }
 
+
+// Override the version for the publication
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId = "com.paypal.messages"
+                version = modules.sdkVersionName
+                artifactId = "paypal-messages"
+            }
+        }
+    }
+}
+
 //./gradlew -PversionParam=0.0.1 changeReleaseVersion
 tasks.register('changeReleaseVersion') {
 	doLast {
