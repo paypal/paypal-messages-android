@@ -118,13 +118,13 @@ runs:
         
         # Create script file for awk
         cat > ${{ github.workspace }}/awk-script.txt << 'EOF'
-/^plugins \{/ {
-    print $0
-    print "    id \"com.gradleup.nmcp.aggregation\" version \"1.0.2\""
-    next
-}
-{ print }
-EOF
+        /^plugins \{/ {
+            print $0
+            print "    id \"com.gradleup.nmcp.aggregation\" version \"1.0.2\""
+            next
+        }
+        { print }
+        EOF
         
         # Apply the awk script
         awk -f ${{ github.workspace }}/awk-script.txt ${{ github.workspace }}/build.gradle.backup > ${{ github.workspace }}/build.gradle.tmp
@@ -132,17 +132,17 @@ EOF
         
         # Create a file with NMCP configuration
         cat > ${{ github.workspace }}/nmcp-config.gradle << 'EOF'
-nmcpAggregation {
-    centralPortal {
-        username = System.getenv("SONATYPE_NEXUS_USERNAME")
-        password = System.getenv("SONATYPE_NEXUS_PASSWORD")
-        publishingType = "AUTOMATIC"
-        publicationName = "PayPal Messages Android"
-    }
-    // Publish the library project
-    publishAllProjectsProbablyBreakingProjectIsolation()
-}
-EOF
+        nmcpAggregation {
+            centralPortal {
+                username = System.getenv("SONATYPE_NEXUS_USERNAME")
+                password = System.getenv("SONATYPE_NEXUS_PASSWORD")
+                publishingType = "AUTOMATIC"
+                publicationName = "PayPal Messages Android"
+            }
+            // Publish the library project
+            publishAllProjectsProbablyBreakingProjectIsolation()
+        }
+        EOF
         
         # Add NMCP configuration to the end of root build.gradle
         cat ${{ github.workspace }}/nmcp-config.gradle >> ${{ github.workspace }}/build.gradle
