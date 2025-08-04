@@ -116,23 +116,26 @@ runs:
         # Backup the root build.gradle
         cp ${{ github.workspace }}/build.gradle ${{ github.workspace }}/build.gradle.backup
         
-        # Create a temporary file with the plugin addition
-        awk '
+        # Create script file for awk
+        cat > ${{ github.workspace }}/awk-script.txt << 'EOF'
 /^plugins \{/ {
     print $0
     print "    id \"com.gradleup.nmcp.aggregation\" version \"1.0.2\""
     next
 }
 { print }
-        ' ${{ github.workspace }}/build.gradle.backup > ${{ github.workspace }}/build.gradle.tmp
+EOF
+        
+        # Apply the awk script
+        awk -f ${{ github.workspace }}/awk-script.txt ${{ github.workspace }}/build.gradle.backup > ${{ github.workspace }}/build.gradle.tmp
         mv ${{ github.workspace }}/build.gradle.tmp ${{ github.workspace }}/build.gradle
         
-        # Add NMCP configuration to the end of root build.gradle
-        cat >> ${{ github.workspace }}/build.gradle << 'EOF'
+        # Create a file with NMCP configuration
+        cat > ${{ github.workspace }}/nmcp-config.gradle << 'EOF'
 nmcpAggregation {
     centralPortal {
-        username = System.getenv("SONATYPE_NEXUS_USERNAME") ?: ""
-        password = System.getenv("SONATYPE_NEXUS_PASSWORD") ?: ""
+        username = System.getenv("SONATYPE_NEXUS_USERNAME")
+        password = System.getenv("SONATYPE_NEXUS_PASSWORD")
         publishingType = "AUTOMATIC"
         publicationName = "PayPal Messages Android"
     }
@@ -140,6 +143,9 @@ nmcpAggregation {
     publishAllProjectsProbablyBreakingProjectIsolation()
 }
 EOF
+        
+        # Add NMCP configuration to the end of root build.gradle
+        cat ${{ github.workspace }}/nmcp-config.gradle >> ${{ github.workspace }}/build.gradle
         
         # Use NMCP aggregation to publish to Maven Central Portal
         echo "Building and publishing with NMCP aggregation..."
