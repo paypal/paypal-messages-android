@@ -73,3 +73,8 @@ task androidSourcesJar(type: Jar) {
 artifacts {
 	archives androidSourcesJar
 }
+
+// Fix the task dependency issue mentioned in the error
+tasks.matching { it.name == 'signArchives' }.configureEach {
+	dependsOn 'releaseSourcesJar'
+}
