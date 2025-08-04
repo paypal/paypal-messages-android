@@ -6,6 +6,14 @@ ext["signing.keyId"] = System.getenv('SIGNING_KEY_ID') ?: ''
 ext["signing.password"] = System.getenv('SIGNING_KEY_PASSWORD') ?: ''
 ext["signing.secretKeyRingFile"] = System.getenv('SIGNING_KEY_FILE') ?: ''
 
+// Check if signing is properly configured
+def isSigningConfigured = project.hasProperty("signing.keyId") && 
+                         project.hasProperty("signing.password") && 
+                         project.hasProperty("signing.secretKeyRingFile") &&
+                         !project.property("signing.keyId").toString().isEmpty() &&
+                         !project.property("signing.password").toString().isEmpty() &&
+                         !project.property("signing.secretKeyRingFile").toString().isEmpty()
+
 afterEvaluate {
 	publishing {
 		publications {
@@ -59,8 +67,10 @@ afterEvaluate {
 	}
 
 	signing {
-		sign publishing.publications
-		sign configurations.archives
+		if (isSigningConfigured) {
+			sign publishing.publications
+			sign configurations.archives
+		}
 	}
 }
 
@@ -75,6 +85,8 @@ artifacts {
 }
 
 // Fix the task dependency issue mentioned in the error
-tasks.matching { it.name == 'signArchives' }.configureEach {
-	dependsOn 'releaseSourcesJar'
+if (isSigningConfigured) {
+	tasks.matching { it.name == 'signArchives' }.configureEach {
+		dependsOn 'releaseSourcesJar'
+	}
 }

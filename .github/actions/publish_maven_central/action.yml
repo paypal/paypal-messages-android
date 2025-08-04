@@ -150,7 +150,6 @@ runs:
         # Use NMCP aggregation to publish to Maven Central Portal
         echo "Building and publishing with NMCP aggregation..."
         ./gradlew --stacktrace \
-          :library:build \
           publishAggregationToCentralPortal \
           -Psigning.keyId="${SIGNING_KEY_ID}" \
           -Psigning.password="${SIGNING_KEY_PASSWORD}" \
