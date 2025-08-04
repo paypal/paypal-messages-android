@@ -158,12 +158,35 @@ runs:
             publishAllProjectsProbablyBreakingProjectIsolation()
         }
         
-        // Override the version for the publication
+        // Override the version for the publication and ensure POM metadata is included
         afterEvaluate {
             publishing {
                 publications {
                     release(MavenPublication) {
                         version = "${VERSION}"
+                        pom {
+                            name = "PayPal Messages"
+                            description = "The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit."
+                            url = "https://github.com/paypal/paypal-messages-android"
+                            licenses {
+                                license {
+                                    name = "The Apache License, Version 2.0"
+                                    url = "http://www.apache.org/licenses/LICENSE-2.0"
+                                }
+                            }
+                            developers {
+                                developer {
+                                    id = "paypal-messages-android"
+                                    name = "PayPalMessages Android"
+                                    email = "sdks-messages@paypal.com"
+                                }
+                            }
+                            scm {
+                                connection = "scm:git:git://github.com/paypal/paypal-messages-android.git"
+                                developerConnection = "scm:git:ssh://github.com:paypal/paypal-messages-android.git"
+                                url = "https://github.com/paypal/paypal-messages-android"
+                            }
+                        }
                     }
                 }
             }
@@ -179,7 +202,8 @@ runs:
           publishAggregationToCentralPortal \
           -Psigning.keyId="${SIGNING_KEY_ID}" \
           -Psigning.password="${SIGNING_KEY_PASSWORD}" \
-          -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}"
+          -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}" \
+          --debug
         
         # Restore the original configurations
         if [ -f "${{ github.workspace }}/gradle/gradle-publish.gradle.backup" ]; then

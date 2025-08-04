@@ -250,14 +250,32 @@ tasks.withType(Zip) {
 
 //./gradlew -PversionParam=0.0.1 changeReleaseVersion
 tasks.register('changeReleaseVersion') {
-	doLast {
-		def topLevelGradleFile = file('./build.gradle')
-		def topLevelGradleFileText = topLevelGradleFile.getText('UTF-8')
-		def useSnapshot = System.getenv('USE_SNAPSHOT')
-		def snapshotParam = useSnapshot == "true" || useSnapshot == true ? "-SNAPSHOT" : ""
-		
-		def updatedScript =
-			topLevelGradleFileText.replaceFirst(/("sdkVersionName"\s*: )".*",/, '$1"' + versionParam + snapshotParam + '",')
-		topLevelGradleFile.write(updatedScript, 'UTF-8')
-	}
+    doLast {
+        def newVersion = versionParam + (System.getenv('USE_SNAPSHOT') == "true" ? "-SNAPSHOT" : "")
+        
+        // Update build.gradle
+        def topLevelGradleFile = file('./build.gradle')
+        def topLevelGradleFileText = topLevelGradleFile.getText('UTF-8')
+        def updatedGradleScript = topLevelGradleFileText.replaceFirst(
+            /("sdkVersionName"\s*: )".*",/, 
+            '$1"' + newVersion + '",'
+        )
+        topLevelGradleFile.write(updatedGradleScript, 'UTF-8')
+        
+        // Update library/pom.xml
+        def pomFile = file('./library/pom.xml')
+        if (pomFile.exists()) {
+            def pomText = pomFile.getText('UTF-8')
+            def updatedPomText = pomText.replaceFirst(
+                /<version>.*?<\/version>/, 
+                "<version>" + newVersion + "</version>"
+            )
+            pomFile.write(updatedPomText, 'UTF-8')
+            println("Updated version in library/pom.xml to " + newVersion)
+        } else {
+            println("Warning: library/pom.xml not found")
+        }
+        
+        println("Version updated to " + newVersion)
+    }
 }
