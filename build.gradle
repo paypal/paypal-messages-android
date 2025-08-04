@@ -22,6 +22,7 @@ plugins {
 	id 'org.jmailen.kotlinter' version '3.16.0'
 	id 'signing'
 	id 'maven-publish'
+	id "com.gradleup.nmcp.aggregation" version "1.0.2"
 }
 
 tasks.register('ktLint', LintTask) {
@@ -241,6 +242,22 @@ afterEvaluate {
             }
         }
     }
+}
+
+// Configure duplicate handling for NMCP zip task
+tasks.withType(Zip) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+nmcpAggregation {
+    centralPortal {
+        username = System.getenv("SONATYPE_NEXUS_USERNAME") ?: ""
+        password = System.getenv("SONATYPE_NEXUS_PASSWORD") ?: ""
+        publishingType = "AUTOMATIC"
+        publicationName = "PayPal Messages Android"
+    }
+    // Publish the library project
+    publishAllProjectsProbablyBreakingProjectIsolation()
 }
 
 //./gradlew -PversionParam=0.0.1 changeReleaseVersion
