@@ -25,6 +25,10 @@ inputs:
     description: 'Whether to publish automatically'
     required: false
     default: 'true'
+  use_snapshot:
+    description: 'Whether to publish as a SNAPSHOT version'
+    required: false
+    default: 'false'
 runs:
   using: "composite"
   steps:
@@ -77,6 +81,7 @@ runs:
         SIGNING_KEY_ID: ${{ inputs.signing_key_id }}
         SIGNING_KEY_PASSWORD: ${{ inputs.signing_key_password }}
         SIGNING_KEY_FILE: ${{ inputs.signing_key_file }}
+        USE_SNAPSHOT: ${{ inputs.use_snapshot }}
       run: |
         echo "Using Gradle publishing with Maven Central Portal"
         
@@ -90,7 +95,6 @@ runs:
         VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
         
         # Check if this is a snapshot release
-        USE_SNAPSHOT=$(env | grep USE_SNAPSHOT | cut -d= -f2)
         if [ "$USE_SNAPSHOT" = "true" ]; then
           # Add -SNAPSHOT suffix if it's not already there
           if [[ "$VERSION" != *-SNAPSHOT ]]; then
@@ -98,6 +102,10 @@ runs:
           fi
           echo "Publishing SNAPSHOT version: $VERSION"
         else
+          # Remove -SNAPSHOT suffix if it exists for release versions
+          if [[ "$VERSION" == *-SNAPSHOT ]]; then
+            VERSION="${VERSION%-SNAPSHOT}"
+          fi
           echo "Publishing release version: $VERSION"
         fi
         
@@ -105,6 +113,13 @@ runs:
         ARTIFACT_ID=$(grep -o 'project.ext.name = "[^"]*"' ${{ github.workspace }}/library/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
         echo "Using artifactId: $ARTIFACT_ID"
         echo "Publishing version: $VERSION"
+        
+        # Check if this version might already exist
+        if [ "$USE_SNAPSHOT" != "true" ]; then
+          echo "⚠️  WARNING: Publishing release version $VERSION"
+          echo "   If this version already exists on Maven Central, the publish will fail."
+          echo "   Consider using use_snapshot: true for testing or increment the version number."
+        fi
         
         # Import GPG key
         echo "Importing GPG key for signing"
@@ -131,7 +146,7 @@ runs:
         mv ${{ github.workspace }}/build.gradle.tmp ${{ github.workspace }}/build.gradle
         
         # Create a file with NMCP configuration
-        cat > ${{ github.workspace }}/nmcp-config.gradle << 'EOF'
+        cat > ${{ github.workspace }}/nmcp-config.gradle << EOF
         nmcpAggregation {
             centralPortal {
                 username = System.getenv("SONATYPE_NEXUS_USERNAME")
@@ -141,6 +156,17 @@ runs:
             }
             // Publish the library project
             publishAllProjectsProbablyBreakingProjectIsolation()
+        }
+        
+        // Override the version for the publication
+        afterEvaluate {
+            publishing {
+                publications {
+                    release(MavenPublication) {
+                        version = "${VERSION}"
+                    }
+                }
+            }
         }
         EOF
         
