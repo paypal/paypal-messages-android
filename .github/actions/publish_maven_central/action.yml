@@ -196,7 +196,7 @@ runs:
         // Configure signing for all tasks
         signing {
             required { true }
-            sign publishing.publications.release
+            sign publishing.publications
         }
         EOF
         
