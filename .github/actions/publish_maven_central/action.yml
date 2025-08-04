@@ -155,9 +155,6 @@ runs:
                 publicationName = "PayPal Messages Android"
             }
             
-            // Always allow overwriting of released components during snapshot publishing
-            allowReleaseOverwrite = true
-            
             // Publish the library project
             publishAllProjectsProbablyBreakingProjectIsolation()
         }
