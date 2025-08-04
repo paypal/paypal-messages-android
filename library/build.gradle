@@ -32,6 +32,13 @@ android {
 		viewBinding = true
 		compose = true
 	}
+	
+	// Explicitly configure publishing for the library
+	publishing {
+		singleVariant("release") {
+			withSourcesJar()
+		}
+	}
 
 
 	buildTypes {

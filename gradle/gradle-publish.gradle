@@ -25,7 +25,7 @@ afterEvaluate {
 
 				pom {
 					name = project.ext.pom_name ?: ''
-					packaging = POM_PACKAGING
+					packaging = "aar"  // Force AAR packaging type for Android libraries
 					description = project.ext.pom_desc ?: ''
 					url = POM_URL
 					licenses {
@@ -45,6 +45,43 @@ afterEvaluate {
 						connection = POM_SCM_CONNECTION
 						developerConnection = POM_SCM_DEV_CONNECTION
 						url = POM_SCM_URL
+					}
+					
+					// Add dependencies section to the POM
+					withXml {
+						def dependenciesNode = asNode().appendNode('dependencies')
+						
+						// Add all implementation dependencies
+						try {
+							configurations.implementation.allDependencies.each {
+								if (it.group != null && it.name != null && it.version != null) {
+									def dependencyNode = dependenciesNode.appendNode('dependency')
+									dependencyNode.appendNode('groupId', it.group)
+									dependencyNode.appendNode('artifactId', it.name)
+									dependencyNode.appendNode('version', it.version)
+									dependencyNode.appendNode('scope', 'compile')
+								}
+							}
+						} catch (Exception e) {
+							// Skip if configuration not found
+							logger.warn("Could not add implementation dependencies to POM: ${e.message}")
+						}
+						
+						// Add all api dependencies (if configuration exists)
+						try {
+							configurations.api.allDependencies.each {
+								if (it.group != null && it.name != null && it.version != null) {
+									def dependencyNode = dependenciesNode.appendNode('dependency')
+									dependencyNode.appendNode('groupId', it.group)
+									dependencyNode.appendNode('artifactId', it.name)
+									dependencyNode.appendNode('version', it.version)
+									dependencyNode.appendNode('scope', 'compile')
+								}
+							}
+						} catch (Exception e) {
+							// Skip if configuration not found
+							logger.warn("Could not add api dependencies to POM: ${e.message}")
+						}
 					}
 				}
 			}
