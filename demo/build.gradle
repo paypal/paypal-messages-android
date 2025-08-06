@@ -107,6 +107,7 @@ dependencies {
 	implementation 'androidx.appcompat:appcompat:1.6.1'
 	implementation project(':library')
 	// implementation files('../library/build/outputs/aar/library-release.aar')
+	// implementation 'com.paypal.messages:paypal-messages:1.0.4'
   implementation 'com.google.android.material:material:1.10.0'
 
 
