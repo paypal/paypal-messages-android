@@ -24,9 +24,5 @@
 			</intent-filter>
 		</activity>
 
-		<activity
-			android:name=".proguard.ProGuardTestActivity"
-			android:exported="false"
-			android:theme="@style/Theme.AppCompat.Light" />
 	</application>
 </manifest>

@@ -12,7 +12,7 @@ import com.paypal.messagesdemo.XmlFragment
 private val TAB_TITLES = arrayOf(
 	R.string.tab_text_1,
 	R.string.tab_text_2,
-	R.string.tab_text_3
+	R.string.tab_text_3,
 )
 
 /**
@@ -22,20 +22,20 @@ private val TAB_TITLES = arrayOf(
 class SectionsPagerAdapter(private val context: Context, fm: FragmentManager) :
 	FragmentPagerAdapter(fm) {
 
-	override fun getItem(position: Int): Fragment {
-		return when (position) {
-			0 -> XmlFragment()
-			1 -> JetpackFragment()
-			2 -> JetpackComposableFragment()
-			else -> Fragment()
+		override fun getItem(position: Int): Fragment {
+			return when (position) {
+				0 -> XmlFragment()
+				1 -> JetpackFragment()
+				2 -> JetpackComposableFragment()
+				else -> Fragment()
+			}
+		}
+
+		override fun getPageTitle(position: Int): CharSequence? {
+			return context.resources.getString(TAB_TITLES[position])
+		}
+
+		override fun getCount(): Int {
+			return 3
 		}
 	}
-
-	override fun getPageTitle(position: Int): CharSequence? {
-		return context.resources.getString(TAB_TITLES[position])
-	}
-
-	override fun getCount(): Int {
-		return 3
-	}
-} 

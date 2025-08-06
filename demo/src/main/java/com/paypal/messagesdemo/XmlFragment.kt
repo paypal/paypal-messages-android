@@ -7,8 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.compose.ui.graphics.Color
+import androidx.fragment.app.Fragment
 import com.paypal.messages.PayPalMessageView
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
@@ -37,7 +37,7 @@ class XmlFragment : Fragment() {
 	override fun onCreateView(
 		inflater: LayoutInflater,
 		container: ViewGroup?,
-		savedInstanceState: Bundle?
+		savedInstanceState: Bundle?,
 	): View {
 		_binding = FragmentXmlBinding.inflate(inflater, container, false)
 		val root = binding.root
@@ -197,4 +197,4 @@ class XmlFragment : Fragment() {
 		super.onDestroyView()
 		_binding = null
 	}
-} 
+}
