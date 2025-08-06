@@ -330,7 +330,10 @@ internal class ModalFragment(
 
 		this.webView?.loadUrl("about:blank")
 		openModalInBrowser()
-		this.dismiss()
+		
+		// Use safe dismissal to prevent IllegalStateException
+		safeDismiss()
+		
 		inErrorState = true
 		this.onError(PayPalErrors.ModalFailedToLoad(errorDescription))
 		logEvent(
@@ -350,7 +353,10 @@ internal class ModalFragment(
 
 		this.webView?.loadUrl("about:blank")
 		openModalInBrowser()
-		this.dismiss()
+		
+		// Use safe dismissal to prevent IllegalStateException
+		safeDismiss()
+		
 		inErrorState = true
 		this.onError(PayPalErrors.ModalFailedToLoad(errorDescription))
 		logEvent(
@@ -361,10 +367,37 @@ internal class ModalFragment(
 			),
 		)
 	}
+	
+	/**
+	 * Safely dismisses this fragment, checking if it's attached to a fragment manager.
+	 */
+	private fun safeDismiss() {
+		try {
+			if (isAdded && !isDetached && activity != null && !requireActivity().isFinishing) {
+				dismiss()
+			} else {
+				LogCat.debug(TAG, "Fragment not properly attached, skipping dismiss")
+			}
+		} catch (e: Exception) {
+			// Log but don't crash
+			LogCat.error(TAG, "Error dismissing fragment: ${e.message}")
+		}
+	}
 
 	private fun openModalInBrowser() {
-		val intent = Intent(Intent.ACTION_VIEW, Uri.parse(modalUrl))
-		requireActivity().startActivity(intent)
+		try {
+			val intent = Intent(Intent.ACTION_VIEW, Uri.parse(modalUrl))
+			
+			// Check if activity is valid before using requireActivity()
+			val activity = activity
+			if (activity != null && !activity.isFinishing) {
+				activity.startActivity(intent)
+			} else {
+				LogCat.error(TAG, "Cannot open browser - activity is null or finishing")
+			}
+		} catch (e: Exception) {
+			LogCat.error(TAG, "Error opening browser: ${e.message}")
+		}
 	}
 
 	fun handlePageFinished(url: String?) {

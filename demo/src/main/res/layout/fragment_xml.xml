@@ -4,7 +4,7 @@
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	tools:context="com.paypal.messagesdemo.XmlActivity"
+	tools:context=".XmlFragment"
 	tools:ignore="HardcodedText"
 	android:layout_weight="1">
 	<LinearLayout
@@ -276,12 +276,6 @@
 				app:layout_constraintTop_toTopOf="parent" />
 		</androidx.constraintlayout.widget.ConstraintLayout>
 
-<!--		<com.paypal.messages.PayPalMessageView-->
-<!--			android:layout_width="match_parent"-->
-<!--			android:layout_height="80dp"-->
-<!--			app:paypal_client_id="@string/client_id"-->
-<!--			/>-->
-
 		<LinearLayout
 			android:orientation="horizontal"
 			android:layout_width="match_parent"
@@ -308,4 +302,4 @@
 		</LinearLayout>
 
 	</LinearLayout>
-</ScrollView>
+</ScrollView> 

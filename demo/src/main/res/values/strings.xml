@@ -2,4 +2,7 @@
 	<string name="app_name">Message Configuration</string>
 	<string name="header_kotlin">Kotlin PayPal Message</string>
 	<string name="reload_label">Reset</string>
+	<string name="tab_text_1">XML</string>
+	<string name="tab_text_2">Jetpack</string>
+	<string name="tab_text_3">Composable</string>
 </resources>

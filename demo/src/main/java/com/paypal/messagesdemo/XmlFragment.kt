@@ -2,11 +2,12 @@ package com.paypal.messagesdemo
 
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup.LayoutParams
+import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.compose.ui.graphics.Color
 import com.paypal.messages.PayPalMessageView
 import com.paypal.messages.config.PayPalEnvironment
@@ -19,28 +20,34 @@ import com.paypal.messages.config.message.style.PayPalMessageAlignment
 import com.paypal.messages.config.message.style.PayPalMessageColor
 import com.paypal.messages.config.message.style.PayPalMessageLogoType
 import com.paypal.messages.io.Api
-import com.paypal.messagesdemo.databinding.ActivityMessageBinding
+import com.paypal.messagesdemo.databinding.FragmentXmlBinding
+import com.paypal.messagesdemo.utils.FoolproofToastHelper
 
-class XmlActivity : AppCompatActivity() {
-	private lateinit var binding: ActivityMessageBinding
-	private val TAG = "PPM:XmlActivity"
+class XmlFragment : Fragment() {
+	private var _binding: FragmentXmlBinding? = null
+	private val binding get() = _binding!!
+
+	private val TAG = "PPM:XmlFragment"
 	private var color: PayPalMessageColor = PayPalMessageColor.BLACK
 	private var logoType: PayPalMessageLogoType = PayPalMessageLogoType.PRIMARY
 	private var textAlignment: PayPalMessageAlignment = PayPalMessageAlignment.LEFT
 	private var offerType: PayPalMessageOfferType? = null
 	private val environment = PayPalEnvironment.SANDBOX
 
-	override fun onCreate(savedInstanceState: Bundle?) {
-		super.onCreate(savedInstanceState)
-		binding = ActivityMessageBinding.inflate(layoutInflater)
-		setContentView(binding.root)
+	override fun onCreateView(
+		inflater: LayoutInflater,
+		container: ViewGroup?,
+		savedInstanceState: Bundle?
+	): View {
+		_binding = FragmentXmlBinding.inflate(inflater, container, false)
+		val root = binding.root
 
 		val messageWrapper = binding.messageWrapper
 		val progressBar = binding.progressBar
 		val resetButton = binding.reset
 		val submitButton = binding.submit
 		val payPalMessage = PayPalMessageView(
-			context = this,
+			context = requireActivity(),
 			config = PayPalMessageConfig(
 				data = PayPalMessageData(
 					clientID = getString(R.string.client_id),
@@ -50,36 +57,36 @@ class XmlActivity : AppCompatActivity() {
 				viewStateCallbacks = PayPalMessageViewStateCallbacks(
 					onLoading = {
 						Log.d(TAG, "onLoading")
-						runOnUiThread {
+						requireActivity().runOnUiThread {
 							progressBar.visibility = View.VISIBLE
 							resetButton.isEnabled = false
 							submitButton.isEnabled = false
-							Toast.makeText(this, "Loading Content...", Toast.LENGTH_SHORT).show()
+							FoolproofToastHelper.showToast(requireActivity(), "Loading Content...")
 						}
 					},
 					onError = {
-						val error = "${it.javaClass}:\n  ${it.message}\n  ${it.debugId}"
+						val error = "${it.javaClass}:\\n  ${it.message}\\n  ${it.debugId}"
 						Log.d(TAG, "onError $error")
-						runOnUiThread {
+						requireActivity().runOnUiThread {
 							progressBar.visibility = View.INVISIBLE
 							resetButton.isEnabled = true
 							submitButton.isEnabled = true
-							Toast.makeText(this, error, Toast.LENGTH_LONG).show()
+							FoolproofToastHelper.showToast(requireActivity(), error, Toast.LENGTH_LONG)
 						}
 					},
 					onSuccess = {
 						Log.d(TAG, "onSuccess")
-						runOnUiThread {
+						requireActivity().runOnUiThread {
 							progressBar.visibility = View.INVISIBLE
 							resetButton.isEnabled = true
 							submitButton.isEnabled = true
-							Toast.makeText(this, "Success Getting Content", Toast.LENGTH_SHORT).show()
+							FoolproofToastHelper.showToast(requireActivity(), "Success Getting Content")
 						}
 					},
 				),
 			),
 		)
-		payPalMessage.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+		payPalMessage.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 		messageWrapper.addView(payPalMessage)
 
 		val clientIdEdit: EditText = binding.clientId
@@ -154,7 +161,6 @@ class XmlActivity : AppCompatActivity() {
 			val backgroundColor = if (color === PayPalMessageColor.WHITE) Color.Black else Color.White
 			payPalMessage.setBackgroundColor(backgroundColor.hashCode())
 
-			// TODO: verify/fix offer type not working as expected
 			payPalMessage.clientID = clientId
 			payPalMessage.amount = amount
 			payPalMessage.buyerCountry = buyerCountry
@@ -183,29 +189,12 @@ class XmlActivity : AppCompatActivity() {
 
 		// Request message based on options
 		submitButton.setOnClickListener { updateMessageData() }
+
+		return root
 	}
 
-	/**
-	 * Prevents unused warnings inside of PayPalMessageView and PayPalMessageConfig
-	 */
-	@Suppress("unused")
-	fun useUnusedFunctions() {
-		binding = ActivityMessageBinding.inflate(layoutInflater)
-		setContentView(binding.root)
-
-		PayPalMessageConfig.setGlobalAnalytics("", "")
-		val config = PayPalMessageConfig(data = PayPalMessageData(clientID = "someClientID"))
-		val message = PayPalMessageView(context = this, config = config)
-		message.getConfig()
-		message.setConfig(config)
-		message.clientID = ""
-		message.merchantID = ""
-		message.partnerAttributionID = ""
-		message.pageType = PayPalMessagePageType.CART
-		message.onClick = {}
-		message.onApply = {}
-		message.onLoading = {}
-		message.onSuccess = {}
-		message.onError = {}
+	override fun onDestroyView() {
+		super.onDestroyView()
+		_binding = null
 	}
-}
+} 

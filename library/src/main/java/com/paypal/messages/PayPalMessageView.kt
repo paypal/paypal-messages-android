@@ -275,9 +275,16 @@ class PayPalMessageView @JvmOverloads constructor(
 
 	override fun onDetachedFromWindow() {
 		super.onDetachedFromWindow()
-		// Clean up click handler which will dismiss any modals
-		clickHandler?.onCleanup()
-		clickHandler = null
+		
+		try {
+			// Clean up click handler which will dismiss any modals, but catch any exceptions
+			// that could occur when fragments aren't properly attached to a FragmentManager
+			clickHandler?.onCleanup()
+			clickHandler = null
+		} catch (e: Exception) {
+			// Log the error but don't crash
+			LogCat.error(TAG, "Error during detach cleanup: ${e.message}")
+		}
 	}
 
 	/**
