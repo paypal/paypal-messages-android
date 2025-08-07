@@ -1,0 +1,135 @@
+// Task to publish to Maven Central using direct Central Portal API
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.entity.ContentType
+import org.apache.http.entity.mime.MultipartEntityBuilder
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.util.EntityUtils
+import com.fasterxml.jackson.databind.ObjectMapper
+
+task publishToMavenCentralDirect {
+    group = 'publishing'
+    description = 'Publishes library to Maven Central using direct API upload'
+    
+    dependsOn ':library:assembleRelease', ':library:generatePomFileForReleasePublication', ':library:androidSourcesJar'
+    
+    doLast {
+        def username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: project.findProperty('sonatypeUsername')
+        def token = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: project.findProperty('sonatypePassword')
+        
+        if (!username || !token) {
+            throw new GradleException("SONATYPE_NEXUS_USERNAME and SONATYPE_NEXUS_PASSWORD are required")
+        }
+        
+        def libraryProject = project.findProject(':library')
+        def version = libraryProject.version
+        def artifactId = libraryProject.ext.name
+        def groupId = libraryProject.group
+        
+        logger.lifecycle("Publishing ${groupId}:${artifactId}:${version} to Maven Central")
+        
+        // Prepare files
+        def aarFile = file("${libraryProject.buildDir}/outputs/aar/library-release.aar")
+        def pomFile = file("${libraryProject.buildDir}/publications/release/pom-default.xml")
+        def sourcesJar = file("${libraryProject.buildDir}/libs/library-${version}-sources.jar")
+        
+        // Ensure all files exist
+        if (!aarFile.exists()) {
+            throw new GradleException("AAR file not found: ${aarFile.absolutePath}")
+        }
+        if (!pomFile.exists()) {
+            throw new GradleException("POM file not found: ${pomFile.absolutePath}")
+        }
+        if (!sourcesJar.exists()) {
+            throw new GradleException("Sources JAR not found: ${sourcesJar.absolutePath}")
+        }
+        
+        // Create a bundle directory
+        def bundleDir = file("${libraryProject.buildDir}/central-bundle")
+        bundleDir.deleteDir()
+        bundleDir.mkdirs()
+        
+        // Copy and rename files to the bundle directory
+        copy {
+            from aarFile
+            into bundleDir
+            rename { "${artifactId}-${version}.aar" }
+        }
+        
+        copy {
+            from pomFile
+            into bundleDir
+            rename { "${artifactId}-${version}.pom" }
+        }
+        
+        copy {
+            from sourcesJar
+            into bundleDir
+            rename { "${artifactId}-${version}-sources.jar" }
+        }
+        
+        // Sign files if signing is configured
+        def keyId = System.getenv('SIGNING_KEY_ID') ?: project.findProperty('signing.keyId')
+        def password = System.getenv('SIGNING_KEY_PASSWORD') ?: project.findProperty('signing.password')
+        def secretKeyRingFile = System.getenv('SIGNING_KEY_FILE') ?: project.findProperty('signing.secretKeyRingFile')
+        
+        if (keyId && password && secretKeyRingFile) {
+            logger.lifecycle("Signing artifacts...")
+            bundleDir.listFiles().each { file ->
+                if (file.name.endsWith('.aar') || file.name.endsWith('.pom') || file.name.endsWith('.jar')) {
+                    exec {
+                        commandLine 'gpg', '--batch', '--yes', '--armor', '--detach-sign',
+                            '--default-key', keyId,
+                            '--passphrase', password,
+                            '--pinentry-mode', 'loopback',
+                            file.absolutePath
+                    }
+                }
+            }
+        }
+        
+        // Create bundle ZIP
+        def bundleZip = file("${libraryProject.buildDir}/${artifactId}-${version}-bundle.zip")
+        ant.zip(destfile: bundleZip) {
+            fileset(dir: bundleDir)
+        }
+        
+        logger.lifecycle("Bundle created at: ${bundleZip.absolutePath}")
+        logger.lifecycle("Bundle contents:")
+        bundleDir.listFiles().each { logger.lifecycle("  - ${it.name}") }
+        
+        // Upload to Central Portal
+        def client = HttpClients.createDefault()
+        def uploadUrl = "https://central.sonatype.com/api/v1/publisher/upload"
+        
+        def post = new HttpPost(uploadUrl)
+        post.setHeader("Authorization", "Bearer ${token}")
+        
+        def entity = MultipartEntityBuilder.create()
+            .addBinaryBody("bundle", bundleZip, ContentType.APPLICATION_OCTET_STREAM, bundleZip.name)
+            .build()
+        
+        post.setEntity(entity)
+        
+        logger.lifecycle("Uploading bundle to Central Portal...")
+        
+        def response = client.execute(post)
+        def statusCode = response.getStatusLine().getStatusCode()
+        def responseBody = EntityUtils.toString(response.getEntity())
+        
+        if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
+            logger.lifecycle("Successfully uploaded to Maven Central!")
+            logger.lifecycle("Response: ${responseBody}")
+            
+            def objectMapper = new ObjectMapper()
+            def responseJson = objectMapper.readValue(responseBody, Map)
+            if (responseJson.deploymentId) {
+                logger.lifecycle("Deployment ID: ${responseJson.deploymentId}")
+                logger.lifecycle("Check status at: https://central.sonatype.com/publishing/deployments")
+            }
+        } else {
+            throw new GradleException("Failed to upload to Maven Central. Status: ${statusCode}, Response: ${responseBody}")
+        }
+        
+        client.close()
+    }
+}

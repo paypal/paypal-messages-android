@@ -28,6 +28,13 @@ The PayPalMessages Library uses a client ID for authentication. This can be foun
 ## Release Process
 This library follows [Semantic Versioning](https://semver.org/). This library is published to Maven Central. The release process is automated via GitHub Actions.
 
+### Manual Publishing (Development)
+For development and testing purposes, you can manually prepare artifacts for Maven Central publishing:
+
+1. **Prepare artifacts**: Run `./prepare-nmcp-bundle.sh` to build the library and prepare all required artifacts (AAR, POM, sources JAR) in the correct structure for Maven Central Portal publishing.
+
+2. **Publishing**: The prepared artifacts can then be published using the configured GitHub Actions or manually using Maven Central Portal tools.
+
 ## Testing
 
 This repository includes unit tests, integration tests, and end-to-end tests.

@@ -2,6 +2,7 @@
 
 - [Setup](#setup)
 - [Running the Demo](#running-the-demo)
+- [Maven Central Publishing](#maven-central-publishing)
 - [Troubleshooting](#troubleshooting)
 - [Sample Modal URL](#sample-modal-url)
 
@@ -63,6 +64,38 @@ To run the activity:
 		- com.paypal.messages demo.XmlActivity
 
 ![Run General Settings Screenshot](readme-images/run-settings_general.png)
+
+## Maven Central Publishing
+
+### Preparing Artifacts for Publishing
+
+The project includes scripts to prepare artifacts for Maven Central publishing:
+
+- **`prepare-nmcp-bundle.sh`**: Builds the library and prepares all required artifacts (AAR, POM, sources JAR) in the correct structure for Maven Central Portal publishing.
+
+To prepare artifacts for publishing:
+
+```bash
+./prepare-nmcp-bundle.sh
+```
+
+This script will:
+1. Clean and build the library
+2. Generate the POM file
+3. Create sources JAR
+4. Copy all artifacts to the correct locations with proper naming
+
+### Required Environment Variables for Publishing
+
+For actual publishing (used by GitHub Actions), these environment variables are required:
+
+```bash
+export SONATYPE_NEXUS_USERNAME="your-sonatype-username"
+export SONATYPE_NEXUS_PASSWORD="your-sonatype-token"
+export SIGNING_KEY_ID="your-gpg-key-id"
+export SIGNING_KEY_PASSWORD="your-gpg-key-password"
+export SIGNING_KEY_FILE="path-to-your-gpg-key-file"
+```
 
 ## Troubleshooting
 

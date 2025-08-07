@@ -1,11 +1,42 @@
+#!/bin/bash
+
+# Script to deploy artifacts to Maven Central using the Central Portal Maven Plugin
+set -e
+
+echo "Deploying to Maven Central Portal..."
+
+# Check for required environment variables
+if [ -z "$SONATYPE_NEXUS_USERNAME" ] || [ -z "$SONATYPE_NEXUS_PASSWORD" ]; then
+    echo "Error: SONATYPE_NEXUS_USERNAME and SONATYPE_NEXUS_PASSWORD must be set"
+    exit 1
+fi
+
+# Prepare artifacts first
+echo "Preparing artifacts..."
+./prepare-maven-artifacts.sh
+
+# Get version info
+VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' build.gradle | grep -o '"[^"]*"$' | tr -d '"')
+ARTIFACT_ID="paypal-messages"
+
+echo "Deploying version: $VERSION"
+
+# Change to the maven-deploy directory
+cd library/build/maven-deploy
+
+# The pom.xml already has the central-publishing-maven-plugin configured
+# We just need to attach the artifacts and deploy
+
+# Create a temporary pom with file references
+cat > deploy-pom.xml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.paypal.messages</groupId>
-    <artifactId>paypal-messages</artifactId>
-    <version>1.1.4-SNAPSHOT</version>
+    <artifactId>${ARTIFACT_ID}</artifactId>
+    <version>${VERSION}</version>
     <packaging>aar</packaging>
 
     <name>PayPal Messages</name>
@@ -34,7 +65,6 @@
     </scm>
 
     <build>
-        <directory>${project.basedir}/build</directory>
         <plugins>
             <plugin>
                 <groupId>org.sonatype.central</groupId>
@@ -46,35 +76,10 @@
                     <tokenAuth>true</tokenAuth>
                     <autoPublish>true</autoPublish>
                     <waitUntil>validated</waitUntil>
-                    <deploymentName>PayPal Messages Android ${project.version}</deploymentName>
+                    <deploymentName>PayPal Messages Android \${project.version}</deploymentName>
+                    <artifact>\${project.basedir}/${ARTIFACT_ID}-${VERSION}.aar</artifact>
+                    <sources>\${project.basedir}/${ARTIFACT_ID}-${VERSION}-sources.jar</sources>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>publish-to-central</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>publish</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                        <configuration>
-                            <keyname>${env.SIGNING_KEY_ID}</keyname>
-                            <passphrase>${env.SIGNING_KEY_PASSWORD}</passphrase>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
@@ -113,35 +118,19 @@
             <version>1.9.0</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>androidx.compose.foundation</groupId>
-            <artifactId>foundation</artifactId>
-            <version>1.0.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>androidx.compose.runtime</groupId>
-            <artifactId>runtime</artifactId>
-            <version>1.0.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>androidx.compose.ui</groupId>
-            <artifactId>ui</artifactId>
-            <version>1.0.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>androidx.compose.material3</groupId>
-            <artifactId>material3</artifactId>
-            <version>1.0.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>androidx.activity</groupId>
-            <artifactId>activity-compose</artifactId>
-            <version>1.7.2</version>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 </project>
+EOF
+
+# Use Maven to deploy with the Central Portal plugin
+echo "Running Maven deploy..."
+mvn deploy \
+  -f deploy-pom.xml \
+  -s ../../../.mvn/maven-settings.xml \
+  -Dfile=${ARTIFACT_ID}-${VERSION}.aar \
+  -Dsources=${ARTIFACT_ID}-${VERSION}-sources.jar \
+  -DgeneratePom=false \
+  -DpomFile=${ARTIFACT_ID}-${VERSION}.pom
+
+echo "Deployment initiated successfully!"
+echo "Check the status at: https://central.sonatype.com/publishing/deployments"

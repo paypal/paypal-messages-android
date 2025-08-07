@@ -270,3 +270,25 @@ project.ext.pom_name = "PayPal Messages"
 project.ext.pom_desc = "The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit."
 
 apply from: rootProject.file("gradle/gradle-publish.gradle")
+
+// Ensure version is set for the library
+version = modules.sdkVersionName
+
+// Ensure the release publication generates a valid POM
+afterEvaluate {
+    tasks.named('generatePomFileForReleasePublication') {
+        doLast {
+            def pomFile = file("$buildDir/publications/release/pom-default.xml")
+            if (pomFile.exists()) {
+                // Also copy to the root of build directory for NMCP
+                copy {
+                    from pomFile
+                    into buildDir
+                    rename { "pom.xml" }
+                }
+                println "POM file generated at: ${pomFile.absolutePath}"
+                println "Also copied to: ${buildDir}/pom.xml"
+            }
+        }
+    }
+}
