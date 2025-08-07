@@ -64,15 +64,11 @@ tasks.register('publishToCentralPortal') {
                              !System.getenv('SIGNING_KEY_PASSWORD').isEmpty() &&
                              !System.getenv('SIGNING_KEY_FILE').isEmpty()
     
-    if (isSigningConfigured) {
-        dependsOn ':library:assemble', ':library:signArchives'
-    } else {
-        dependsOn ':library:assemble'
-    }
+    dependsOn ':library:assembleRelease', ':library:generatePomFileForReleasePublication', ':library:androidSourcesJar'
     
     doLast {
         logger.lifecycle("====================================================================")
-        logger.lifecycle("Publishing to Maven Central using Central Portal Maven Plugin")
+        logger.lifecycle("Publishing to Maven Central via Central Portal REST API")
         logger.lifecycle("====================================================================")
         
         // Make sure we have credentials
@@ -87,62 +83,114 @@ tasks.register('publishToCentralPortal') {
         if (!username || !token) {
             throw new GradleException("SONATYPE_NEXUS_USERNAME and SONATYPE_NEXUS_PASSWORD environment variables or properties are required")
         }
-        
-        // Ensure we have Maven available
-        def mvnExecutable = Os.isFamily(Os.FAMILY_WINDOWS) ? "mvn.cmd" : "mvn"
-        
-        // Set the project.version property in the pom.xml
+
+        // Resolve library project details
         def libraryProject = project.findProject(':library')
         def version = libraryProject.version
-        
-        // Create the command with proper arguments
-        def cmd = [
-            mvnExecutable,
-            "deploy",
-            "-f", "${project.rootDir}/library/pom.xml", 
-            "-s", "${project.rootDir}/.mvn/maven-settings.xml",
-            "-Dproject.version=${version}",
-            "--batch-mode"
-        ].collect { it.toString() }
-        
-        // Execute the Maven command
-        def processBuilder = new ProcessBuilder(cmd)
-        // Pass the environment variables to the process
-        def env = processBuilder.environment()
-        env.put("SONATYPE_NEXUS_USERNAME", username)
-        env.put("SONATYPE_NEXUS_PASSWORD", token)
-        
-        // For signing
+        def artifactId = libraryProject.ext.name
+        def groupId = libraryProject.group
+
+        logger.lifecycle("Preparing bundle for ${groupId}:${artifactId}:${version}")
+
+        // Locate artifacts
+        def aarFile = file("${libraryProject.buildDir}/outputs/aar/library-release.aar")
+        def pomFile = file("${libraryProject.buildDir}/publications/release/pom-default.xml")
+        def sourcesJar = file("${libraryProject.buildDir}/libs/library-${version}-sources.jar")
+
+        if (!aarFile.exists()) {
+            throw new GradleException("AAR file not found: ${aarFile.absolutePath}")
+        }
+        if (!pomFile.exists()) {
+            throw new GradleException("POM file not found: ${pomFile.absolutePath}")
+        }
+        if (!sourcesJar.exists()) {
+            throw new GradleException("Sources JAR not found: ${sourcesJar.absolutePath}")
+        }
+
+        // Prepare bundle directory
+        def bundleDir = file("${libraryProject.buildDir}/central-bundle")
+        bundleDir.deleteDir()
+        bundleDir.mkdirs()
+
+        // Copy artifacts with correct names
+        copy {
+            from aarFile
+            into bundleDir
+            rename { "${artifactId}-${version}.aar" }
+        }
+        copy {
+            from pomFile
+            into bundleDir
+            rename { "${artifactId}-${version}.pom" }
+        }
+        copy {
+            from sourcesJar
+            into bundleDir
+            rename { "${artifactId}-${version}-sources.jar" }
+        }
+
+        // Optionally sign artifacts
         def keyId = System.getenv('SIGNING_KEY_ID') ?: project.findProperty('signing.keyId')
         def password = System.getenv('SIGNING_KEY_PASSWORD') ?: project.findProperty('signing.password')
         def secretKeyRingFile = System.getenv('SIGNING_KEY_FILE') ?: project.findProperty('signing.secretKeyRingFile')
-        
+
         if (keyId && password && secretKeyRingFile) {
-            env.put("SIGNING_KEY_ID", keyId)
-            env.put("SIGNING_KEY_PASSWORD", password)
-            env.put("SIGNING_KEY_FILE", secretKeyRingFile)
+            logger.lifecycle("Signing artifacts...")
+            bundleDir.listFiles().each { f ->
+                if (f.name.endsWith('.aar') || f.name.endsWith('.pom') || f.name.endsWith('.jar')) {
+                    exec {
+                        commandLine 'gpg', '--batch', '--yes', '--armor', '--detach-sign',
+                            '--default-key', keyId,
+                            '--passphrase', password,
+                            '--pinentry-mode', 'loopback',
+                            f.absolutePath
+                    }
+                }
+            }
+        } else {
+            logger.lifecycle("Signing not configured; proceeding without signatures")
         }
-        
-        // Redirect output to the Gradle logger
-        processBuilder.redirectErrorStream(true)
-        def process = processBuilder.start()
-        
-        // Read the output
-        def reader = new BufferedReader(new InputStreamReader(process.getInputStream()))
-        String line
-        while ((line = reader.readLine()) != null) {
-            logger.lifecycle(line)
+
+        // Create bundle ZIP
+        def bundleZip = file("${libraryProject.buildDir}/${artifactId}-${version}-bundle.zip")
+        ant.zip(destfile: bundleZip) {
+            fileset(dir: bundleDir)
         }
-        
-        // Wait for the process to complete
-        def exitCode = process.waitFor()
-        
-        if (exitCode != 0) {
-            throw new GradleException("Maven publish failed with exit code: ${exitCode}")
+
+        logger.lifecycle("Bundle created at: ${bundleZip.absolutePath}")
+        logger.lifecycle("Bundle contents:")
+        bundleDir.listFiles().each { logger.lifecycle("  - ${it.name}") }
+
+        // Upload to Central Portal
+        def client = HttpClients.createDefault()
+        def auto = project.hasProperty('autoPublish')
+        def publishingType = auto ? 'AUTOMATIC' : 'USER_MANAGED'
+        def uploadUrl = "https://central.sonatype.com/api/v1/publisher/upload?publishingType=${publishingType}"
+
+        def post = new HttpPost(uploadUrl)
+        post.setHeader("Authorization", "Bearer ${token}")
+
+        def entity = MultipartEntityBuilder.create()
+            .addBinaryBody("bundle", bundleZip, ContentType.APPLICATION_OCTET_STREAM, bundleZip.name)
+            .build()
+
+        post.setEntity(entity)
+        logger.lifecycle("Uploading bundle to Central Portal (${publishingType})...")
+
+        def response = client.execute(post)
+        def statusCode = response.getStatusLine().getStatusCode()
+        def responseBody = EntityUtils.toString(response.getEntity())
+
+        if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
+            logger.lifecycle("Successfully uploaded to Central Portal")
+            logger.lifecycle("Response: ${responseBody}")
+        } else {
+            throw new GradleException("Failed to upload to Central Portal. Status: ${statusCode}, Response: ${responseBody}")
         }
-        
+        client.close()
+         
         logger.lifecycle("====================================================================")
-        logger.lifecycle("Publishing to Maven Central completed successfully")
+        logger.lifecycle("Publishing to Maven Central completed (upload).")
         logger.lifecycle("NOTE: After successful publishing, it may take several hours for")
         logger.lifecycle("the artifacts to appear on Maven Central and search indexes.")
         logger.lifecycle("====================================================================")
