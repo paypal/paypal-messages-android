@@ -43,6 +43,86 @@ jobs:
       - name: Run Unit Tests Coverage
         run: ./gradlew koverXmlReportDebug
 
+  test_publishing_tasks:
+    name: Publishing Tasks Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'microsoft'
+          cache: gradle
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Verify Publishing Tasks Are Available
+        run: |
+          echo "🔍 Checking for available publishing tasks..."
+          
+          # Get all publishing tasks
+          PUBLISH_TASKS=$(./gradlew tasks --all | grep -i publish || true)
+          
+          if [ -z "$PUBLISH_TASKS" ]; then
+            echo "❌ ERROR: No publishing tasks found!"
+            echo "This indicates a configuration issue with the publishing setup."
+            exit 1
+          fi
+          
+          echo "✅ Found publishing tasks:"
+          echo "$PUBLISH_TASKS"
+          echo ""
+          
+          # Check for specific required tasks
+          echo "🔍 Checking for required publishing tasks..."
+          
+          # Check for maven-publish plugin tasks
+          if echo "$PUBLISH_TASKS" | grep -q "publish.*"; then
+            echo "✅ Maven publish tasks found"
+          else
+            echo "❌ WARNING: No maven publish tasks found"
+          fi
+          
+          # Check for library-specific publishing tasks
+          if echo "$PUBLISH_TASKS" | grep -q "library.*publish"; then
+            echo "✅ Library publishing tasks found"
+          else
+            echo "❌ WARNING: No library-specific publishing tasks found"
+          fi
+          
+          echo ""
+          echo "📋 Publishing task verification completed"
+
+      - name: Verify Library Publication Configuration
+        run: |
+          echo "🔍 Verifying library publication is properly configured..."
+          
+          # Check if library project has maven-publish applied
+          if ./gradlew :library:tasks --all | grep -q "publish"; then
+            echo "✅ Library project has publishing tasks configured"
+          else
+            echo "❌ ERROR: Library project missing publishing configuration"
+            exit 1
+          fi
+          
+          # Try to generate POM to verify publication setup
+          echo "🔍 Testing POM generation..."
+          ./gradlew :library:generatePomFileForReleasePublication --dry-run
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ POM generation task is available"
+          else
+            echo "❌ ERROR: POM generation failed - publication may not be properly configured"
+            exit 1
+          fi
+          
+          echo "✅ Library publication configuration verified"
+
   # test_instrumentation:
   #   name: Instrumentation Tests
   #   runs-on: ubuntu-latest
