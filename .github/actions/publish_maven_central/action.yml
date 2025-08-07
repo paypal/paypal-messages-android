@@ -82,137 +82,55 @@ runs:
         SIGNING_KEY_PASSWORD: ${{ inputs.signing_key_password }}
         SIGNING_KEY_FILE: ${{ inputs.signing_key_file }}
         USE_SNAPSHOT: ${{ inputs.use_snapshot }}
+        AUTO_PUBLISH: ${{ inputs.auto_publish }}
       run: |
-        echo "Using Gradle publishing with Maven Central Portal"
-        
+        echo "Using Gradle publishing with Sonatype Central Portal Maven Plugin"
+
         # Verify we have the library module
         if [ ! -d "${{ github.workspace }}/library" ]; then
           echo "Error: library directory not found"
           exit 1
         fi
-        
+
         # Get version from build.gradle
         VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
-        
-        # Check if this is a snapshot release
+
+        # Apply snapshot toggle if requested
         if [ "$USE_SNAPSHOT" = "true" ]; then
-          # Add -SNAPSHOT suffix if it's not already there
           if [[ "$VERSION" != *-SNAPSHOT ]]; then
             VERSION="${VERSION}-SNAPSHOT"
           fi
           echo "Publishing SNAPSHOT version: $VERSION"
         else
-          # Remove -SNAPSHOT suffix if it exists for release versions
           if [[ "$VERSION" == *-SNAPSHOT ]]; then
             VERSION="${VERSION%-SNAPSHOT}"
           fi
           echo "Publishing release version: $VERSION"
         fi
-        
-        # Get proper artifactId from library's build.gradle
-        ARTIFACT_ID=$(grep -o 'project.ext.name = "[^"]*"' ${{ github.workspace }}/library/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
-        echo "Using artifactId: $ARTIFACT_ID"
-        echo "Publishing version: $VERSION"
-        
-        # Check if this version might already exist
-        if [ "$USE_SNAPSHOT" != "true" ]; then
-          echo "⚠️  WARNING: Publishing release version $VERSION"
-          echo "   If this version already exists on Maven Central, the publish will fail."
-          echo "   Consider using use_snapshot: true for testing or increment the version number."
-        fi
-        
-        # Import GPG key
+
+        # Import GPG key for signing
         echo "Importing GPG key for signing"
         gpg --batch --import ${{ inputs.signing_key_file }}
-        
-        # Apply NMCP plugin to root build.gradle for aggregation
-        echo "Configuring root build.gradle with NMCP plugin for Maven Central Portal"
-        
-        # Backup the root build.gradle
-        cp ${{ github.workspace }}/build.gradle ${{ github.workspace }}/build.gradle.backup
-        
-        # Create script file for awk
-        cat > ${{ github.workspace }}/awk-script.txt << 'EOF'
-        /^plugins \{/ {
-            print $0
-            print "    id \"com.gradleup.nmcp.aggregation\" version \"1.0.2\""
-            next
-        }
-        { print }
-        EOF
-        
-        # Apply the awk script
-        awk -f ${{ github.workspace }}/awk-script.txt ${{ github.workspace }}/build.gradle.backup > ${{ github.workspace }}/build.gradle.tmp
-        mv ${{ github.workspace }}/build.gradle.tmp ${{ github.workspace }}/build.gradle
-        
-        # Create a file with NMCP configuration
-        cat > ${{ github.workspace }}/nmcp-config.gradle << EOF
-        nmcpAggregation {
-          centralPortal {
-            username = System.getenv("SONATYPE_NEXUS_USERNAME")
-            password = System.getenv("SONATYPE_NEXUS_PASSWORD")
-            publishingType = "AUTOMATIC"
-            publicationName = "PayPal Messages Android"
-          }
-        }
 
-        dependencies {
-          nmcpAggregation(project(":library"))
-        }
-        
-        // Ensure the library project has the correct version
-        project(":library") {
-          version = "${VERSION}"
-        }
-        EOF
-        
-        # Add NMCP configuration to the end of root build.gradle
-        cat ${{ github.workspace }}/nmcp-config.gradle >> ${{ github.workspace }}/build.gradle
-        
-        # Clean before building to ensure fresh state
-        echo "Cleaning project..."
-        ./gradlew clean
-        
-        # Build the library project and generate publications
-        echo "Building library project and generating publications..."
-        ./gradlew :library:assemble :library:generateMetadataFileForReleasePublication :library:generatePomFileForReleasePublication
-        
-        # Use NMCP aggregation to publish to Maven Central Portal
-        echo "Building and publishing with NMCP aggregation..."
-        ./gradlew --stacktrace \
-          nmcpPublishAggregationToCentralPortal \
-          -Psigning.keyId="${SIGNING_KEY_ID}" \
-          -Psigning.password="${SIGNING_KEY_PASSWORD}" \
-          -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}"
-        
-        # Restore the original configurations
-        if [ -f "${{ github.workspace }}/gradle/gradle-publish.gradle.backup" ]; then
-          mv ${{ github.workspace }}/gradle/gradle-publish.gradle.backup ${{ github.workspace }}/gradle/gradle-publish.gradle
+        # Persist the computed version to gradle and pom.xml via existing task
+        echo "Setting project version to ${VERSION}"
+        ./gradlew -PversionParam="$VERSION" changeReleaseVersion --no-daemon --stacktrace
+
+        # Clean and build artifacts
+        echo "Cleaning and building artifacts..."
+        ./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication :library:androidSourcesJar --no-daemon --stacktrace
+
+        # Toggle autoPublish property if requested
+        PUBLISH_ARGS=""
+        if [ "$AUTO_PUBLISH" = "true" ]; then
+          PUBLISH_ARGS="-PautoPublish"
         fi
-        if [ -f "${{ github.workspace }}/build.gradle.backup" ]; then
-          mv ${{ github.workspace }}/build.gradle.backup ${{ github.workspace }}/build.gradle
-        fi
-        
-        # Print deployment information and next steps
+
+        # Publish via custom Gradle task that invokes Maven Central Portal plugin
+        echo "Publishing to Maven Central via publishToCentralPortal..."
+        ./gradlew publishToCentralPortal $PUBLISH_ARGS --no-daemon --stacktrace -Dorg.gradle.jvmargs="-Xmx2g"
+
         echo "======================================================================"
-        echo "Deployment to Maven Central completed successfully."
-        echo "Your artifacts are now being published to Maven Central as:"
-        echo "com.paypal.messages:${ARTIFACT_ID}:${VERSION}"
-        echo ""
-        echo "The following artifacts were published:"
-        echo "- ${ARTIFACT_ID}-${VERSION}.aar (Android AAR)"
-        echo "- ${ARTIFACT_ID}-${VERSION}-sources.jar (Sources JAR)"
-        echo "- ${ARTIFACT_ID}-${VERSION}.module (Gradle Module Metadata)"
-        echo "- ${ARTIFACT_ID}-${VERSION}.pom (POM file)"
-        echo "- All signature (.asc) and checksum files"
-        echo ""
-        echo "Users can include this dependency with:"
-        echo "implementation(\"com.paypal.messages:${ARTIFACT_ID}:${VERSION}\")"
-        echo ""
-        echo "NOTE: After successful publishing, it may take several hours for"
-        echo "the artifacts to appear on Maven Central (https://repo.maven.apache.org/maven2)"
-        echo "and search indexes like mvnrepository.com or search.maven.org."
-        echo ""
-        echo "You can check the status of your deployment at:"
+        echo "Publish command completed. Check Sonatype Central Portal for status:"
         echo "https://central.sonatype.com/publishing/deployments"
         echo "======================================================================"

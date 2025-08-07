@@ -29,11 +29,14 @@ The PayPalMessages Library uses a client ID for authentication. This can be foun
 This library follows [Semantic Versioning](https://semver.org/). This library is published to Maven Central. The release process is automated via GitHub Actions.
 
 ### Manual Publishing (Development)
-For development and testing purposes, you can manually prepare artifacts for Maven Central publishing:
+For development and testing purposes, you can manually publish to Maven Central via the Sonatype Central Portal Maven plugin:
 
-1. **Prepare artifacts**: Run `./prepare-nmcp-bundle.sh` to build the library and prepare all required artifacts (AAR, POM, sources JAR) in the correct structure for Maven Central Portal publishing.
-
-2. **Publishing**: The prepared artifacts can then be published using the configured GitHub Actions or manually using Maven Central Portal tools.
+1. Set env vars: `SONATYPE_NEXUS_USERNAME`, `SONATYPE_NEXUS_PASSWORD`, `SIGNING_KEY_ID`, `SIGNING_KEY_PASSWORD`, `SIGNING_KEY_FILE`.
+2. Optionally set a version (use `-SNAPSHOT` for snapshots):
+   - `./gradlew -PversionParam=1.2.3-SNAPSHOT changeReleaseVersion`
+3. Build and publish:
+   - `./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication :library:androidSourcesJar`
+   - `./gradlew publishToCentralPortal`
 
 ## Testing
 
