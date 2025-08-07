@@ -148,15 +148,16 @@ runs:
         # Create a file with NMCP configuration
         cat > ${{ github.workspace }}/nmcp-config.gradle << EOF
         nmcpAggregation {
-            centralPortal {
-                username = System.getenv("SONATYPE_NEXUS_USERNAME")
-                password = System.getenv("SONATYPE_NEXUS_PASSWORD")
-                publishingType = "AUTOMATIC"
-                publicationName = "PayPal Messages Android"
-            }
-            
-            // Publish the library project
-            publishAllProjectsProbablyBreakingProjectIsolation()
+          centralPortal {
+            username = System.getenv("SONATYPE_NEXUS_USERNAME")
+            password = System.getenv("SONATYPE_NEXUS_PASSWORD")
+            publishingType = "AUTOMATIC"
+            publicationName = "PayPal Messages Android"
+          }
+        }
+
+        dependencies {
+          nmcpAggregation(project(":library"))
         }
         
         // Override the version for the publication and ensure POM metadata is included
