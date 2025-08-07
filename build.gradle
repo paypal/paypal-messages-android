@@ -4,7 +4,7 @@ import org.jmailen.gradle.kotlinter.tasks.FormatTask
 
 buildscript {
 	ext.modules = [
-		"sdkVersionName"      : "1.1.4-SNAPSHOT",
+		"sdkVersionName"      : "1.1.4",
 		"androidMinSdkVersion": 23,
 		"androidTargetVersion": 34
 	]
@@ -103,7 +103,7 @@ tasks.register('publishToCentralPortal') {
             "-s", "${project.rootDir}/.mvn/maven-settings.xml",
             "-Dproject.version=${version}",
             "--batch-mode"
-        ]
+        ].collect { it.toString() }
         
         // Execute the Maven command
         def processBuilder = new ProcessBuilder(cmd)
@@ -190,7 +190,7 @@ tasks.register('checkCentralPortalDeployment') {
             "-Dcentral.artifactId=${artifactId}",
             "-Dcentral.version=${version}",
             "--batch-mode"
-        ]
+        ].collect { it.toString() }
         
         // Execute the Maven command
         def processBuilder = new ProcessBuilder(cmd)
