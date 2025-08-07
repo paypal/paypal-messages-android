@@ -73,7 +73,7 @@ runs:
         </settings>
         EOF
 
-    - name: Prepare and publish
+    - name: Prepare and publish (NMCP aggregation)
       shell: bash
       env:
         SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_user }}
@@ -84,53 +84,83 @@ runs:
         USE_SNAPSHOT: ${{ inputs.use_snapshot }}
         AUTO_PUBLISH: ${{ inputs.auto_publish }}
       run: |
-        echo "Using Gradle publishing with Sonatype Central Portal Maven Plugin"
+        echo "Using NMCP aggregation for Central Portal publishing (limited to :library)"
 
-        # Verify we have the library module
+        # Verify module exists
         if [ ! -d "${{ github.workspace }}/library" ]; then
           echo "Error: library directory not found"
           exit 1
         fi
 
-        # Get version from build.gradle
+        # Current version in gradle
         VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
 
-        # Apply snapshot toggle if requested
+        # Toggle snapshot if requested
         if [ "$USE_SNAPSHOT" = "true" ]; then
-          if [[ "$VERSION" != *-SNAPSHOT ]]; then
-            VERSION="${VERSION}-SNAPSHOT"
-          fi
+          [[ "$VERSION" != *-SNAPSHOT ]] && VERSION="${VERSION}-SNAPSHOT"
           echo "Publishing SNAPSHOT version: $VERSION"
         else
-          if [[ "$VERSION" == *-SNAPSHOT ]]; then
-            VERSION="${VERSION%-SNAPSHOT}"
-          fi
+          [[ "$VERSION" == *-SNAPSHOT ]] && VERSION="${VERSION%-SNAPSHOT}"
           echo "Publishing release version: $VERSION"
         fi
 
-        # Import GPG key for signing
+        # Import GPG key
         echo "Importing GPG key for signing"
         gpg --batch --import ${{ inputs.signing_key_file }}
 
-        # Persist the computed version to gradle and pom.xml via existing task
+        # Persist version to Gradle and pom.xml
         echo "Setting project version to ${VERSION}"
         ./gradlew -PversionParam="$VERSION" changeReleaseVersion --no-daemon --stacktrace
 
-        # Clean and build artifacts
-        echo "Cleaning and building artifacts..."
-        ./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication :library:androidSourcesJar --no-daemon --stacktrace
+        # Inject NMCP aggregation plugin into root build.gradle
+        echo "Configuring root build.gradle with NMCP aggregation plugin"
+        cp ${{ github.workspace }}/build.gradle ${{ github.workspace }}/build.gradle.backup
+        cat > ${{ github.workspace }}/awk-script.txt << 'EOF'
+        /^plugins \{/ {
+            print $0
+            print "    id \"com.gradleup.nmcp.aggregation\" version \"1.0.2\""
+            next
+        }
+        { print }
+        EOF
+        awk -f ${{ github.workspace }}/awk-script.txt ${{ github.workspace }}/build.gradle.backup > ${{ github.workspace }}/build.gradle
 
-        # Toggle autoPublish property if requested
-        PUBLISH_ARGS=""
-        if [ "$AUTO_PUBLISH" = "true" ]; then
-          PUBLISH_ARGS="-PautoPublish"
+        # Append NMCP config restricted to :library
+        cat > ${{ github.workspace }}/nmcp-config.gradle << EOF
+        nmcpAggregation {
+          centralPortal {
+            username = System.getenv("SONATYPE_NEXUS_USERNAME")
+            password = System.getenv("SONATYPE_NEXUS_PASSWORD")
+            publishingType = "${AUTO_PUBLISH}" == "true" ? "AUTOMATIC" : "USER_MANAGED"
+            publicationName = "PayPal Messages Android"
+          }
+        }
+
+        dependencies {
+          nmcpAggregation(project(":library"))
+        }
+
+        project(":library") {
+          version = "${VERSION}"
+        }
+        EOF
+        cat ${{ github.workspace }}/nmcp-config.gradle >> ${{ github.workspace }}/build.gradle
+
+        # Build artifacts required by NMCP and generate POM
+        ./gradlew clean :library:assemble :library:generateMetadataFileForReleasePublication :library:generatePomFileForReleasePublication --no-daemon --stacktrace
+
+        # Publish using NMCP aggregation (library only)
+        ./gradlew --stacktrace nmcpPublishAggregationToCentralPortal \
+          -Psigning.keyId="${SIGNING_KEY_ID}" \
+          -Psigning.password="${SIGNING_KEY_PASSWORD}" \
+          -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}"
+
+        # Restore root build.gradle
+        if [ -f "${{ github.workspace }}/build.gradle.backup" ]; then
+          mv ${{ github.workspace }}/build.gradle.backup ${{ github.workspace }}/build.gradle
         fi
 
-        # Publish via custom Gradle task that invokes Maven Central Portal plugin
-        echo "Publishing to Maven Central via publishToCentralPortal..."
-        ./gradlew publishToCentralPortal $PUBLISH_ARGS --no-daemon --stacktrace -Dorg.gradle.jvmargs="-Xmx2g"
-
         echo "======================================================================"
-        echo "Publish command completed. Check Sonatype Central Portal for status:"
+        echo "NMCP publish finished. Check Sonatype Central Portal for status:"
         echo "https://central.sonatype.com/publishing/deployments"
         echo "======================================================================"
