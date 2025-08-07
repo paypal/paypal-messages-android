@@ -73,7 +73,7 @@ runs:
         </settings>
         EOF
 
-    - name: Prepare and publish (NMCP aggregation)
+    - name: Prepare and publish via NMCP (library only)
       shell: bash
       env:
         SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_user }}
@@ -84,18 +84,15 @@ runs:
         USE_SNAPSHOT: ${{ inputs.use_snapshot }}
         AUTO_PUBLISH: ${{ inputs.auto_publish }}
       run: |
-        echo "Using NMCP aggregation for Central Portal publishing (limited to :library)"
+        echo "Publishing via NMCP aggregation (restricted to :library)"
 
-        # Verify module exists
         if [ ! -d "${{ github.workspace }}/library" ]; then
           echo "Error: library directory not found"
           exit 1
         fi
 
-        # Current version in gradle
         VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
 
-        # Toggle snapshot if requested
         if [ "$USE_SNAPSHOT" = "true" ]; then
           [[ "$VERSION" != *-SNAPSHOT ]] && VERSION="${VERSION}-SNAPSHOT"
           echo "Publishing SNAPSHOT version: $VERSION"
@@ -104,15 +101,13 @@ runs:
           echo "Publishing release version: $VERSION"
         fi
 
-        # Import GPG key
         echo "Importing GPG key for signing"
         gpg --batch --import ${{ inputs.signing_key_file }}
 
-        # Persist version to Gradle and pom.xml
         echo "Setting project version to ${VERSION}"
         ./gradlew -PversionParam="$VERSION" changeReleaseVersion --no-daemon --stacktrace
 
-        # Inject NMCP aggregation plugin into root build.gradle
+        # Inject NMCP aggregation plugin at root
         echo "Configuring root build.gradle with NMCP aggregation plugin"
         cp ${{ github.workspace }}/build.gradle ${{ github.workspace }}/build.gradle.backup
         cat > ${{ github.workspace }}/awk-script.txt << 'EOF'
@@ -125,7 +120,7 @@ runs:
         EOF
         awk -f ${{ github.workspace }}/awk-script.txt ${{ github.workspace }}/build.gradle.backup > ${{ github.workspace }}/build.gradle
 
-        # Append NMCP config restricted to :library
+        # NMCP config (restrict to :library) and disable module metadata generation
         cat > ${{ github.workspace }}/nmcp-config.gradle << EOF
         nmcpAggregation {
           centralPortal {
@@ -140,14 +135,22 @@ runs:
           nmcpAggregation(project(":library"))
         }
 
+        // Disable Gradle module metadata to avoid stray .module in NMCP bundle
+        allprojects {
+          tasks.matching { it.name == "generateMetadataFileForReleasePublication" }.configureEach { enabled = false }
+          tasks.matching { it.name == "generateMetadataFileForMavenPublication" }.configureEach { enabled = false }
+          tasks.matching { it.name == "generateMetadataFileForPublication" }.configureEach { enabled = false }
+        }
+
+        // Ensure the library project has the correct version
         project(":library") {
           version = "${VERSION}"
         }
         EOF
         cat ${{ github.workspace }}/nmcp-config.gradle >> ${{ github.workspace }}/build.gradle
 
-        # Build artifacts required by NMCP and generate POM
-        ./gradlew clean :library:assemble :library:generateMetadataFileForReleasePublication :library:generatePomFileForReleasePublication --no-daemon --stacktrace
+        # Build artifacts and generate POM
+        ./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication --no-daemon --stacktrace
 
         # Publish using NMCP aggregation (library only)
         ./gradlew --stacktrace nmcpPublishAggregationToCentralPortal \
