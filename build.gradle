@@ -22,6 +22,7 @@ plugins {
 	id 'org.jmailen.kotlinter' version '3.16.0'
 	id 'signing'
 	id 'maven-publish'
+
 }
 
 tasks.register('ktLint', LintTask) {
@@ -230,18 +231,7 @@ subprojects {
 }
 
 
-// Override the version for the publication
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                groupId = "com.paypal.messages"
-                version = modules.sdkVersionName
-                artifactId = "paypal-messages"
-            }
-        }
-    }
-}
+
 
 // Configure duplicate handling for ZIP tasks
 tasks.withType(Zip) {
@@ -279,3 +269,27 @@ tasks.register('changeReleaseVersion') {
         println("Version updated to " + newVersion)
     }
 }
+
+// NMCP Configuration for Maven Central Portal - only applies when plugin is available (during CI/CD)
+project.plugins.withId('com.gradleup.nmcp.aggregation') {
+    nmcpAggregation {
+        centralPortal {
+            username = System.getenv("SONATYPE_NEXUS_USERNAME") ?: findProperty("sonatypeUsername") ?: ""
+            password = System.getenv("SONATYPE_NEXUS_PASSWORD") ?: findProperty("sonatypePassword") ?: ""
+            publishingType = "USER_MANAGED"  // Use USER_MANAGED for manual approval, or "AUTOMATIC" for auto-publish
+            publicationName = "PayPal Messages Android"
+            
+            // Increase timeout if needed
+            validationTimeout = java.time.Duration.ofMinutes(30)
+            publishingTimeout = java.time.Duration.ofMinutes(30)
+        }
+        
+        // Only include the library project which has the proper publication
+        // Don't use publishAllProjectsProbablyBreakingProjectIsolation() as it includes root project
+    }
+
+    dependencies {
+        nmcpAggregation(project(":library"))
+    }
+}
+
