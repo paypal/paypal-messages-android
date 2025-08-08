@@ -4,7 +4,6 @@ plugins {
 	id 'org.jetbrains.kotlin.android'
 	id 'de.mannodermaus.android-junit5' version "1.9.3.0"
 	id 'org.jetbrains.kotlinx.kover' version '0.7.6'
-	id 'com.gradleup.nmcp' version '1.0.2'
 }
 
 group = "com.paypal.messages"
@@ -270,22 +269,16 @@ project.ext.version = modules.sdkVersionName
 project.ext.pom_name = "PayPal Messages"
 project.ext.pom_desc = "The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit."
 
+// Optionally disable Kover locally to avoid agent download issues
+if (System.getenv('SKIP_KOVER') == 'true' || project.hasProperty('skipKover')) {
+    tasks.matching { it.name.toLowerCase().startsWith('kover') }.configureEach { enabled = false }
+}
+
 apply from: rootProject.file("gradle/gradle-publish.gradle")
 
 // Ensure version is set for the library
 version = modules.sdkVersionName
 
-// Configure NMCP to publish this module only
-nmcp {
-  centralPortal {
-    username = System.getenv("SONATYPE_NEXUS_USERNAME") ?: (project.findProperty('sonatypeUsername') ?: "")
-    password = System.getenv("SONATYPE_NEXUS_PASSWORD") ?: (project.findProperty('sonatypePassword') ?: "")
-    publishingType = (project.hasProperty('autoPublish') ? 'AUTOMATIC' : 'USER_MANAGED')
-    publicationName = "PayPal Messages Android"
-  }
-}
-
-// Ensure the release publication generates a valid POM and is available for NMCP
 afterEvaluate {
     tasks.named('generatePomFileForReleasePublication') {
         doLast {
