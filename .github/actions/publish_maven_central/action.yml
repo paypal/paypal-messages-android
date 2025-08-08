@@ -130,18 +130,17 @@ runs:
         EOF
         cat ${{ github.workspace }}/library-nmcp-config.gradle >> ${{ github.workspace }}/library/build.gradle
 
-        echo "Detecting NMCP publish task in :library"
-        ./gradlew :library:tasks --all | cat
+        echo "Detecting nmcp publish task in :library"
+        ./gradlew -q :library:tasks --all | cat
         PUBLISH_TASK="publishToCentralPortal"
         if [ "$USE_SNAPSHOT" = "true" ]; then
           PUBLISH_TASK="publishToCentralPortalSnapshots"
         fi
-        # Fallback: verify the task exists; otherwise try to auto-detect any publish*CentralPortal task
-        if ! ./gradlew -q :library:tasks --all | grep -q "${PUBLISH_TASK}"; then
-          ALT=$(./gradlew -q :library:tasks --all | grep -Eo "publish[A-Za-z]*CentralPortal[A-Za-z]*" | head -1 || true)
-          if [ -n "$ALT" ]; then PUBLISH_TASK="$ALT"; fi
+        if ! ./gradlew -q :library:tasks --all | grep -q "^${PUBLISH_TASK}$\| ${PUBLISH_TASK} -"; then
+          echo "❌ ERROR: nmcp task ${PUBLISH_TASK} not found in :library. Available tasks:" && ./gradlew -q :library:tasks --all | cat
+          exit 1
         fi
-        echo "Using task: :library:${PUBLISH_TASK}"
+        echo "Using nmcp task: :library:${PUBLISH_TASK}"
 
         echo "Publishing with :library:${PUBLISH_TASK}"
         ./gradlew :library:${PUBLISH_TASK} \
