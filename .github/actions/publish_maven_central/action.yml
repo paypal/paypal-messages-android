@@ -124,17 +124,8 @@ runs:
         EOF
         awk -f ${{ github.workspace }}/inject-nmcp.awk ${{ github.workspace }}/library/build.gradle.backup > ${{ github.workspace }}/library/build.gradle
 
-        # Append NMCP config and disable module metadata
-        cat > ${{ github.workspace }}/library-nmcp-config.gradle << EOF
-        nmcp {
-          centralPortal {
-            username = System.getenv("SONATYPE_NEXUS_USERNAME")
-            password = System.getenv("SONATYPE_NEXUS_PASSWORD")
-            publishingType = "${AUTO_PUBLISH}" == "true" ? "AUTOMATIC" : "USER_MANAGED"
-            publicationName = "PayPal Messages Android"
-          }
-        }
-
+        # Append only task disables to avoid stray module metadata
+        cat > ${{ github.workspace }}/library-nmcp-config.gradle << 'EOF'
         tasks.matching { it.name == "generateMetadataFileForReleasePublication" || it.name == "generateMetadataFileForMavenPublication" || it.name == "generateMetadataFileForPublication" }.configureEach { enabled = false }
         EOF
         cat ${{ github.workspace }}/library-nmcp-config.gradle >> ${{ github.workspace }}/library/build.gradle
