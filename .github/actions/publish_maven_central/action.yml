@@ -84,7 +84,7 @@ runs:
         USE_SNAPSHOT: ${{ inputs.use_snapshot }}
         AUTO_PUBLISH: ${{ inputs.auto_publish }}
       run: |
-        echo "Publishing via NMCP aggregation (restricted to :library)"
+        echo "Publishing via NMCP module plugin (:library)"
 
         if [ ! -d "${{ github.workspace }}/library" ]; then
           echo "Error: library directory not found"
@@ -107,61 +107,44 @@ runs:
         echo "Setting project version to ${VERSION}"
         ./gradlew -PversionParam="$VERSION" changeReleaseVersion --no-daemon --stacktrace
 
-        # Inject NMCP aggregation plugin at root
-        echo "Configuring root build.gradle with NMCP aggregation plugin"
-        cp ${{ github.workspace }}/build.gradle ${{ github.workspace }}/build.gradle.backup
-        cat > ${{ github.workspace }}/awk-script.txt << 'EOF'
-        /^plugins \{/ {
-            print $0
-            print "    id \"com.gradleup.nmcp.aggregation\" version \"1.0.2\""
-            next
-        }
-        { print }
-        EOF
-        awk -f ${{ github.workspace }}/awk-script.txt ${{ github.workspace }}/build.gradle.backup > ${{ github.workspace }}/build.gradle
-
-        # NMCP config (restrict to :library) and disable module metadata generation
-        cat > ${{ github.workspace }}/nmcp-config.gradle << EOF
-        nmcpAggregation {
-          centralPortal {
-            username = System.getenv("SONATYPE_NEXUS_USERNAME")
-            password = System.getenv("SONATYPE_NEXUS_PASSWORD")
-            publishingType = "${AUTO_PUBLISH}" == "true" ? "AUTOMATIC" : "USER_MANAGED"
-            publicationName = "PayPal Messages Android"
-          }
-        }
-
-        dependencies {
-          nmcpAggregation(project(":library"))
-        }
-
-        // Disable Gradle module metadata to avoid stray .module in NMCP bundle
-        allprojects {
-          tasks.matching { it.name == "generateMetadataFileForReleasePublication" }.configureEach { enabled = false }
-          tasks.matching { it.name == "generateMetadataFileForMavenPublication" }.configureEach { enabled = false }
-          tasks.matching { it.name == "generateMetadataFileForPublication" }.configureEach { enabled = false }
-        }
-
-        // Ensure the library project has the correct version
-        project(":library") {
-          version = "${VERSION}"
-        }
-        EOF
-        cat ${{ github.workspace }}/nmcp-config.gradle >> ${{ github.workspace }}/build.gradle
-
-        # Build artifacts and generate POM
+        echo "Cleaning and building artifacts..."
         ./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication --no-daemon --stacktrace
 
-        # Publish using NMCP aggregation (library only)
-        ./gradlew --stacktrace nmcpPublishAggregationToCentralPortal \
+        # Create a temporary init script to apply NMCP to :library and configure it
+        cat > ${{ github.workspace }}/nmcp-init.gradle << 'EOF'
+        initscript {
+          repositories {
+            gradlePluginPortal()
+            mavenCentral()
+          }
+          dependencies {
+            classpath 'com.gradleup.nmcp:com.gradleup.nmcp.gradle.plugin:1.0.2'
+          }
+        }
+        allprojects {
+          // Disable Gradle module metadata generation to avoid stray .module artifacts
+          tasks.matching { it.name == "generateMetadataFileForReleasePublication" || it.name == "generateMetadataFileForMavenPublication" || it.name == "generateMetadataFileForPublication" }.configureEach { enabled = false }
+        }
+        gradle.beforeProject { p ->
+          if (p.path == ":library") {
+            p.plugins.apply("com.gradleup.nmcp")
+            p.extensions.configure(p.class.classLoader.loadClass("com.gradleup.nmcp.NmcpExtension")) { ext ->
+              def central = ext.metaClass.getProperty(ext, "centralPortal")
+              central.username = System.getenv("SONATYPE_NEXUS_USERNAME")
+              central.password = System.getenv("SONATYPE_NEXUS_PASSWORD")
+              central.publishingType = System.getenv("AUTO_PUBLISH") == "true" ? "AUTOMATIC" : "USER_MANAGED"
+              central.publicationName = "PayPal Messages Android"
+            }
+          }
+        }
+        EOF
+
+        echo "Publishing with :library:nmcpPublishToCentralPortal"
+        ./gradlew -I ${{ github.workspace }}/nmcp-init.gradle :library:nmcpPublishToCentralPortal \
           -Psigning.keyId="${SIGNING_KEY_ID}" \
           -Psigning.password="${SIGNING_KEY_PASSWORD}" \
-          -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}"
-
-        # Restore root build.gradle
-        if [ -f "${{ github.workspace }}/build.gradle.backup" ]; then
-          mv ${{ github.workspace }}/build.gradle.backup ${{ github.workspace }}/build.gradle
-        fi
+          -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}" \
+          --no-daemon --stacktrace
 
         echo "======================================================================"
         echo "NMCP publish finished. Check Sonatype Central Portal for status:"
