@@ -130,20 +130,25 @@ runs:
         EOF
         cat ${{ github.workspace }}/library-nmcp-config.gradle >> ${{ github.workspace }}/library/build.gradle
 
-        echo "Detecting nmcp publish task in :library"
+        echo "Detecting nmcp repository publish task in :library"
         ./gradlew -q :library:tasks --all | cat
-        PUBLISH_TASK="publishToCentralPortal"
-        if [ "$USE_SNAPSHOT" = "true" ]; then
-          PUBLISH_TASK="publishToCentralPortalSnapshots"
-        fi
-        if ! ./gradlew -q :library:tasks --all | grep -q "^${PUBLISH_TASK}$\| ${PUBLISH_TASK} -"; then
-          echo "❌ ERROR: nmcp task ${PUBLISH_TASK} not found in :library. Available tasks:" && ./gradlew -q :library:tasks --all | cat
-          exit 1
-        fi
-        echo "Using nmcp task: :library:${PUBLISH_TASK}"
 
-        echo "Publishing with :library:${PUBLISH_TASK}"
-        ./gradlew :library:${PUBLISH_TASK} \
+        # Prefer publishing just the 'release' publication to the 'nmcp' repository
+        PUBLISH_TASK=":library:publishReleasePublicationToNmcpRepository"
+        if ! ./gradlew -q :library:tasks --all | grep -q "publishReleasePublicationToNmcpRepository"; then
+          # Fallback: any publish task targeting the nmcp repo
+          ALT=$(./gradlew -q :library:tasks --all | grep -Eo "publish[A-Za-z]*PublicationToNmcpRepository" | head -1 || true)
+          if [ -n "$ALT" ]; then
+            PUBLISH_TASK=":library:${ALT}"
+          else
+            echo "❌ ERROR: No publish*PublicationToNmcpRepository task found in :library. Available tasks:" && ./gradlew -q :library:tasks --all | cat
+            exit 1
+          fi
+        fi
+        echo "Using nmcp publish task: ${PUBLISH_TASK}"
+
+        echo "Publishing with ${PUBLISH_TASK}"
+        ./gradlew ${PUBLISH_TASK} \
           -Psigning.keyId="${SIGNING_KEY_ID}" \
           -Psigning.password="${SIGNING_KEY_PASSWORD}" \
           -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}" \
