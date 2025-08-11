@@ -22,6 +22,7 @@ plugins {
 	id 'org.jmailen.kotlinter' version '3.16.0'
 	id 'signing'
 	id 'maven-publish'
+	id 'io.codearte.nexus-staging' version '0.30.0'
 }
 
 tasks.register('ktLint', LintTask) {
@@ -277,7 +278,13 @@ subprojects {
   group = "com.paypal.messages"
 }
 
-
+// Configure Nexus Staging to close and release automatically (OSSRH s01)
+nexusStaging {
+    serverUrl = "https://s01.oss.sonatype.org/service/local/"
+    packageGroup = "com.paypal"
+    username = (findProperty('sonatypeUsername') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: '') as String
+    password = (findProperty('sonatypePassword') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: '') as String
+}
 
 
 // Configure duplicate handling for ZIP tasks
@@ -316,6 +323,8 @@ tasks.register('changeReleaseVersion') {
         println("Version updated to " + newVersion)
     }
 }
+
+
 
 
 

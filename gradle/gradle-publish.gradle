@@ -53,17 +53,31 @@ afterEvaluate {
 			}
 		}
 		repositories {
-			// Maven Central publishing is handled by the nexus-publish-plugin
-			// This repository configuration is for the Central Portal API
-			maven {
-				name = "centralPortal"
-				url = uri("https://central.sonatype.com/api/v1/publisher/upload")
-				credentials(HttpHeaderCredentials) {
-					name = "Authorization"
-					value = "Bearer ${System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''}"
+			// Only enable the Central Portal API repository when explicitly requested
+			if (project.hasProperty('enableCentralPortalRepo') || System.getenv('CENTRAL_PORTAL') == 'true') {
+				maven {
+					name = "centralPortal"
+					url = uri("https://central.sonatype.com/api/v1/publisher/upload")
+					credentials(HttpHeaderCredentials) {
+						name = "Authorization"
+						value = "Bearer ${System.getenv('SONATYPE_NEXUS_PASSWORD') ?: ''}"
+					}
+					authentication {
+						header(HttpHeaderAuthentication)
+					}
 				}
-				authentication {
-					header(HttpHeaderAuthentication)
+			}
+
+			// Default path: deploy to OSSRH (s01) using basic auth. Use snapshots vs releases by version.
+			maven {
+				name = "sonatype"
+				def isSnapshot = project.ext.version?.toString()?.endsWith('-SNAPSHOT')
+				def releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+				def snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+				url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
+				credentials {
+					username = (findProperty('sonatypeUsername') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: '') as String
+					password = (findProperty('sonatypePassword') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: '') as String
 				}
 			}
 		}
