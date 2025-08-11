@@ -76,9 +76,9 @@ cat > deploy-pom.xml << EOF
                     <tokenAuth>true</tokenAuth>
                     <autoPublish>true</autoPublish>
                     <waitUntil>validated</waitUntil>
-                    <deploymentName>PayPal Messages Android ${project.version}</deploymentName>
-                    <artifact>${project.basedir}/${ARTIFACT_ID}-${VERSION}.aar</artifact>
-                    <sources>${project.basedir}/${ARTIFACT_ID}-${VERSION}-sources.jar</sources>
+                    <deploymentName>PayPal Messages Android \${project.version}</deploymentName>
+                    <artifact>\${project.basedir}/${ARTIFACT_ID}-${VERSION}.aar</artifact>
+                    <sources>\${project.basedir}/${ARTIFACT_ID}-${VERSION}-sources.jar</sources>
                 </configuration>
             </plugin>
         </plugins>
