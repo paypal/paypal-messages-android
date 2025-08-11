@@ -281,7 +281,7 @@ subprojects {
 // Configure Nexus Staging to close and release automatically (OSSRH s01)
 nexusStaging {
     serverUrl = "https://s01.oss.sonatype.org/service/local/"
-    packageGroup = "com.paypal"
+    packageGroup = "com.paypal.messages"
     username = (findProperty('sonatypeUsername') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: '') as String
     password = (findProperty('sonatypePassword') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: '') as String
 }

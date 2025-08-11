@@ -73,7 +73,7 @@ runs:
         </settings>
         EOF
 
-    - name: Prepare and publish via OSSRH (library only)
+    - name: Prepare and publish via Central Portal (library)
       shell: bash
       env:
         SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_user }}
@@ -84,9 +84,10 @@ runs:
         USE_SNAPSHOT: ${{ inputs.use_snapshot }}
         AUTO_PUBLISH: ${{ inputs.auto_publish }}
       run: |
-        echo "Publishing via OSSRH s01 (GPG-signed) - module :library"
+        set -euo pipefail
+        echo "Publishing via Central Portal Maven plugin (NMCP) - module :library"
         if [ ! -d "${{ github.workspace }}/library" ]; then
-          echo "Error: library directory not found"
+          echo "Error: library directory not found" >&2
           exit 1
         fi
 
@@ -105,26 +106,10 @@ runs:
         echo "Setting project version to ${VERSION}"
         ./gradlew -PversionParam="${VERSION}" changeReleaseVersion --no-daemon --stacktrace
 
-        if [ "${USE_SNAPSHOT}" = "true" ]; then
-          echo "Publishing snapshot to s01 snapshots repo"
-          ./gradlew --stacktrace --no-daemon \
-            -PsonatypeUsername="${SONATYPE_NEXUS_USERNAME}" \
-            -PsonatypePassword="${SONATYPE_NEXUS_PASSWORD}" \
-            -Psigning.keyId="${SIGNING_KEY_ID}" \
-            -Psigning.password="${SIGNING_KEY_PASSWORD}" \
-            -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}" \
-            clean :library:publishReleasePublicationToSonatypeRepository
-        else
-          echo "Publishing release to s01 staging then closing/releasing"
-          ./gradlew --stacktrace --no-daemon \
-            -PsonatypeUsername="${SONATYPE_NEXUS_USERNAME}" \
-            -PsonatypePassword="${SONATYPE_NEXUS_PASSWORD}" \
-            -Psigning.keyId="${SIGNING_KEY_ID}" \
-            -Psigning.password="${SIGNING_KEY_PASSWORD}" \
-            -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}" \
-            clean :library:publishReleasePublicationToSonatypeRepository closeAndReleaseRepository
-        fi
+        echo "Building library and preparing artifacts (AAR + sources + POM)"
+        ./prepare-maven-artifacts.sh
 
-        echo "======================================================================"
-        echo "OSSRH publish finished. For releases, propagation to Maven Central may take time."
-        echo "======================================================================"
+        echo "Deploying to Central Portal via Maven plugin"
+        ./deploy-to-central.sh
+
+        echo "NMCP publish finished. Check deployments at https://central.sonatype.com/publishing/deployments"
