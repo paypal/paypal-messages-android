@@ -86,6 +86,42 @@ cat > deploy-pom.xml << EOF
 </project>
 EOF
 
+# Sign artifacts and POM (Central requires GPG signatures)
+echo "Signing artifacts and POM with GPG"
+AAR_FILE="${ARTIFACT_ID}-${VERSION}.aar"
+SRC_FILE="${ARTIFACT_ID}-${VERSION}-sources.jar"
+POM_ASC_DIR="target"
+mkdir -p "$POM_ASC_DIR"
+
+# AAR signature
+if [ -f "$AAR_FILE" ]; then
+  gpg --batch --yes --armor --pinentry-mode loopback \
+      --passphrase "${SIGNING_KEY_PASSWORD}" \
+      --local-user "${SIGNING_KEY_ID}" \
+      --detach-sign "$AAR_FILE"
+else
+  echo "Error: Missing AAR file: $AAR_FILE" >&2
+  exit 1
+fi
+
+# Sources JAR signature
+if [ -f "$SRC_FILE" ]; then
+  gpg --batch --yes --armor --pinentry-mode loopback \
+      --passphrase "${SIGNING_KEY_PASSWORD}" \
+      --local-user "${SIGNING_KEY_ID}" \
+      --detach-sign "$SRC_FILE"
+else
+  echo "Error: Missing sources JAR file: $SRC_FILE" >&2
+  exit 1
+fi
+
+# POM signature (place where plugin expects to find it for staging)
+gpg --batch --yes --armor --pinentry-mode loopback \
+    --passphrase "${SIGNING_KEY_PASSWORD}" \
+    --local-user "${SIGNING_KEY_ID}" \
+    --output "${POM_ASC_DIR}/${ARTIFACT_ID}-${VERSION}.pom.asc" \
+    --detach-sign deploy-pom.xml
+
 # Use Maven to invoke the Central Portal publish goal directly (avoids dependency resolution)
 echo "Running Central Publishing plugin (publish goal)..."
 mvn --batch-mode \
