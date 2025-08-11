@@ -84,86 +84,47 @@ runs:
         USE_SNAPSHOT: ${{ inputs.use_snapshot }}
         AUTO_PUBLISH: ${{ inputs.auto_publish }}
       run: |
-         echo "Publishing via NMCP module plugin (:library)"
- 
-         if [ ! -d "${{ github.workspace }}/library" ]; then
-           echo "Error: library directory not found"
-           exit 1
-         fi
- 
-         VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
- 
-         if [ "$USE_SNAPSHOT" = "true" ]; then
-           [[ "$VERSION" != *-SNAPSHOT ]] && VERSION="${VERSION}-SNAPSHOT"
-           echo "Publishing SNAPSHOT version: $VERSION"
-         else
-           [[ "$VERSION" == *-SNAPSHOT ]] && VERSION="${VERSION%-SNAPSHOT}"
-           echo "Publishing release version: $VERSION"
-         fi
- 
-         echo "Importing GPG key for signing"
-         gpg --batch --import ${{ inputs.signing_key_file }}
- 
-         echo "Setting project version to ${VERSION}"
-         ./gradlew -PversionParam="$VERSION" changeReleaseVersion --no-daemon --stacktrace
- 
-         echo "Cleaning and building artifacts..."
-         ./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication --no-daemon --stacktrace
- 
-        echo "Injecting NMCP Aggregation plugin into root build.gradle"
-        cp ${{ github.workspace }}/build.gradle ${{ github.workspace }}/build.gradle.backup
-
-        # Insert aggregation plugin id into plugins block of root
-        cat > ${{ github.workspace }}/inject-nmcp-agg.awk << 'EOF'
-        /^plugins \{/ {
-          print $0
-          print "\tid 'com.gradleup.nmcp.aggregation' version '1.0.3'"
-          next
-        }
-        { print }
-        EOF
-        awk -f ${{ github.workspace }}/inject-nmcp-agg.awk ${{ github.workspace }}/build.gradle.backup > ${{ github.workspace }}/build.gradle
-
-        # Append nmcpAggregation configuration to root
-        cat > ${{ github.workspace }}/root-nmcp-agg-config.gradle << 'EOF'
-        nmcpAggregation {
-          centralPortal {
-            username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: (project.findProperty('sonatypeUsername') ?: '')
-            password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: (project.findProperty('sonatypePassword') ?: '')
-            publishingType = System.getenv('AUTO_PUBLISH') == 'true' ? 'AUTOMATIC' : 'USER_MANAGED'
-          }
-          // Publish the library module
-          publishAllProjectsProbablyBreakingProjectIsolation()
-        }
-        EOF
-        cat ${{ github.workspace }}/root-nmcp-agg-config.gradle >> ${{ github.workspace }}/build.gradle
-
-        echo "Detecting nmcp aggregation publish task in root"
-        ./gradlew -q tasks --all | cat
-
-        if [ "$USE_SNAPSHOT" = "true" ]; then
-          AGG_TASK="publishAggregationToCentralPortalSnapshots"
-        else
-          AGG_TASK="publishAggregationToCentralPortal"
-        fi
-
-        if ! ./gradlew -q tasks --all | grep -q "${AGG_TASK}"; then
-          echo "❌ ERROR: ${AGG_TASK} not found. Available tasks:" && ./gradlew -q tasks --all | cat
+        echo "Publishing via NMCP module plugin (:library)"
+        if [ ! -d "${{ github.workspace }}/library" ]; then
+          echo "Error: library directory not found"
           exit 1
         fi
-
-        echo "Publishing with ${AGG_TASK}"
-        ./gradlew ${AGG_TASK} \
+        VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
+        if [ "$USE_SNAPSHOT" = "true" ]; then
+          [[ "$VERSION" != *-SNAPSHOT ]] && VERSION="${VERSION}-SNAPSHOT"
+          echo "Publishing SNAPSHOT version: $VERSION"
+        else
+          [[ "$VERSION" == *-SNAPSHOT ]] && VERSION="${VERSION%-SNAPSHOT}"
+          echo "Publishing release version: $VERSION"
+        fi
+        echo "Importing GPG key for signing"
+        gpg --batch --import ${{ inputs.signing_key_file }}
+        echo "Setting project version to ${VERSION}"
+        ./gradlew -PversionParam="$VERSION" changeReleaseVersion --no-daemon --stacktrace
+        echo "Cleaning and building artifacts..."
+        ./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication --no-daemon --stacktrace
+        echo "Publishing via Central Portal REST tasks"
+        ./gradlew --stacktrace :library:assemble :library:signArchives \
           -Psigning.keyId="${SIGNING_KEY_ID}" \
           -Psigning.password="${SIGNING_KEY_PASSWORD}" \
           -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}" \
-          --no-daemon --stacktrace
-
-        echo "Restoring root build.gradle"
-        mv ${{ github.workspace }}/build.gradle.backup ${{ github.workspace }}/build.gradle
-        rm -f ${{ github.workspace }}/inject-nmcp-agg.awk ${{ github.workspace }}/root-nmcp-agg-config.gradle
- 
-         echo "======================================================================"
-         echo "NMCP publish finished. Check Sonatype Central Portal for status:"
-         echo "https://central.sonatype.com/publishing/deployments"
-         echo "======================================================================"
+          --no-daemon
+        if [ "${AUTO_PUBLISH}" = "true" ]; then
+          ./gradlew --stacktrace publishToCentralPortal -PautoPublish \
+            -PsonatypeUsername="${SONATYPE_NEXUS_USERNAME}" \
+            -PsonatypePassword="${SONATYPE_NEXUS_PASSWORD}" \
+            --no-daemon
+        else
+          ./gradlew --stacktrace publishToCentralPortal \
+            -PsonatypeUsername="${SONATYPE_NEXUS_USERNAME}" \
+            -PsonatypePassword="${SONATYPE_NEXUS_PASSWORD}" \
+            --no-daemon
+        fi
+        ./gradlew --stacktrace checkCentralPortalDeployment \
+          -PsonatypeUsername="${SONATYPE_NEXUS_USERNAME}" \
+          -PsonatypePassword="${SONATYPE_NEXUS_PASSWORD}" \
+          --no-daemon
+        echo "======================================================================"
+        echo "NMCP publish finished. Check Sonatype Central Portal for status:"
+        echo "https://central.sonatype.com/publishing/deployments"
+        echo "======================================================================"
