@@ -36,10 +36,10 @@ cat > deploy-pom.xml << EOF
 
     <groupId>com.paypal.messages</groupId>
     <artifactId>${ARTIFACT_ID}</artifactId>
-          <version>${VERSION}</version>
-      <packaging>jar</packaging>
+    <version>${VERSION}</version>
+    <packaging>pom</packaging>
 
-      <name>PayPal Messages</name>
+    <name>PayPal Messages</name>
     <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
     <url>https://github.com/paypal/paypal-messages-android</url>
 
@@ -76,61 +76,22 @@ cat > deploy-pom.xml << EOF
                     <tokenAuth>true</tokenAuth>
                     <autoPublish>true</autoPublish>
                     <waitUntil>validated</waitUntil>
-                    <deploymentName>PayPal Messages Android \${project.version}</deploymentName>
-                    <artifact>\${project.basedir}/${ARTIFACT_ID}-${VERSION}.aar</artifact>
-                    <sources>\${project.basedir}/${ARTIFACT_ID}-${VERSION}-sources.jar</sources>
+                    <deploymentName>PayPal Messages Android ${project.version}</deploymentName>
+                    <artifact>${project.basedir}/${ARTIFACT_ID}-${VERSION}.aar</artifact>
+                    <sources>${project.basedir}/${ARTIFACT_ID}-${VERSION}-sources.jar</sources>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-    
-    <dependencies>
-        <!-- Regular JAR dependencies (compile scope) -->
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.9.1</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>4.8.0</version>
-            <scope>compile</scope>
-        </dependency>
-        
-        <!-- Android dependencies (provided scope) -->
-        <dependency>
-            <groupId>androidx.core</groupId>
-            <artifactId>core-ktx</artifactId>
-            <version>1.10.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>androidx.appcompat</groupId>
-            <artifactId>appcompat</artifactId>
-            <version>1.6.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.android.material</groupId>
-            <artifactId>material</artifactId>
-            <version>1.9.0</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
 </project>
 EOF
 
-# Use Maven to deploy with the Central Portal plugin
-echo "Running Maven deploy..."
-mvn deploy \
+# Use Maven to invoke the Central Portal publish goal directly (avoids dependency resolution)
+echo "Running Central Publishing plugin (publish goal)..."
+mvn --batch-mode \
   -f deploy-pom.xml \
   -s ../../../.mvn/maven-settings.xml \
-  -Dfile=${ARTIFACT_ID}-${VERSION}.aar \
-  -Dsources=${ARTIFACT_ID}-${VERSION}-sources.jar \
-  -DgeneratePom=false \
-  -DpomFile=${ARTIFACT_ID}-${VERSION}.pom
+  org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"
 echo "Check the status at: https://central.sonatype.com/publishing/deployments"

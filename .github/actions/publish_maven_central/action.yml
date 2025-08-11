@@ -94,6 +94,18 @@ runs:
         echo "Importing GPG key for signing"
         gpg --batch --import "${SIGNING_KEY_FILE}"
 
+        echo "Warming up Gradle wrapper (with retries)"
+        attempts=0
+        until ./gradlew -v; do
+          attempts=$((attempts+1))
+          if [ $attempts -ge 5 ]; then
+            echo "Gradle wrapper download failed after ${attempts} attempts" >&2
+            exit 1
+          fi
+          echo "Gradle wrapper failed (attempt ${attempts}), retrying in 5s..."
+          sleep 5
+        done
+
         VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
         if [ "${USE_SNAPSHOT}" = "true" ]; then
           [[ "${VERSION}" != *-SNAPSHOT ]] && VERSION="${VERSION}-SNAPSHOT"
