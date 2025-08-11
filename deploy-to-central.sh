@@ -36,10 +36,10 @@ cat > deploy-pom.xml << EOF
 
     <groupId>com.paypal.messages</groupId>
     <artifactId>${ARTIFACT_ID}</artifactId>
-    <version>${VERSION}</version>
-    <packaging>aar</packaging>
+          <version>${VERSION}</version>
+      <packaging>jar</packaging>
 
-    <name>PayPal Messages</name>
+      <name>PayPal Messages</name>
     <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
     <url>https://github.com/paypal/paypal-messages-android</url>
 
