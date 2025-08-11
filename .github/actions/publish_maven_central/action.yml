@@ -73,7 +73,7 @@ runs:
         </settings>
         EOF
 
-    - name: Prepare and publish via NMCP (library only)
+    - name: Prepare and publish via OSSRH (library only)
       shell: bash
       env:
         SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_user }}
@@ -84,47 +84,47 @@ runs:
         USE_SNAPSHOT: ${{ inputs.use_snapshot }}
         AUTO_PUBLISH: ${{ inputs.auto_publish }}
       run: |
-        echo "Publishing via NMCP module plugin (:library)"
+        echo "Publishing via OSSRH s01 (GPG-signed) - module :library"
         if [ ! -d "${{ github.workspace }}/library" ]; then
           echo "Error: library directory not found"
           exit 1
         fi
-        VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
-        if [ "$USE_SNAPSHOT" = "true" ]; then
-          [[ "$VERSION" != *-SNAPSHOT ]] && VERSION="${VERSION}-SNAPSHOT"
-          echo "Publishing SNAPSHOT version: $VERSION"
-        else
-          [[ "$VERSION" == *-SNAPSHOT ]] && VERSION="${VERSION%-SNAPSHOT}"
-          echo "Publishing release version: $VERSION"
-        fi
+
         echo "Importing GPG key for signing"
-        gpg --batch --import ${{ inputs.signing_key_file }}
-        echo "Setting project version to ${VERSION}"
-        ./gradlew -PversionParam="$VERSION" changeReleaseVersion --no-daemon --stacktrace
-        echo "Cleaning and building artifacts..."
-        ./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication --no-daemon --stacktrace
-        echo "Publishing via Central Portal REST tasks"
-        ./gradlew --stacktrace :library:assemble :library:signArchives \
-          -Psigning.keyId="${SIGNING_KEY_ID}" \
-          -Psigning.password="${SIGNING_KEY_PASSWORD}" \
-          -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}" \
-          --no-daemon
-        if [ "${AUTO_PUBLISH}" = "true" ]; then
-          ./gradlew --stacktrace publishToCentralPortal -PautoPublish \
-            -PsonatypeUsername="${SONATYPE_NEXUS_USERNAME}" \
-            -PsonatypePassword="${SONATYPE_NEXUS_PASSWORD}" \
-            --no-daemon
+        gpg --batch --import "${SIGNING_KEY_FILE}"
+
+        VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
+        if [ "${USE_SNAPSHOT}" = "true" ]; then
+          [[ "${VERSION}" != *-SNAPSHOT ]] && VERSION="${VERSION}-SNAPSHOT"
+          echo "Publishing SNAPSHOT version: ${VERSION}"
         else
-          ./gradlew --stacktrace publishToCentralPortal \
+          [[ "${VERSION}" == *-SNAPSHOT ]] && VERSION="${VERSION%-SNAPSHOT}"
+          echo "Publishing release version: ${VERSION}"
+        fi
+
+        echo "Setting project version to ${VERSION}"
+        ./gradlew -PversionParam="${VERSION}" changeReleaseVersion --no-daemon --stacktrace
+
+        if [ "${USE_SNAPSHOT}" = "true" ]; then
+          echo "Publishing snapshot to s01 snapshots repo"
+          ./gradlew --stacktrace --no-daemon \
             -PsonatypeUsername="${SONATYPE_NEXUS_USERNAME}" \
             -PsonatypePassword="${SONATYPE_NEXUS_PASSWORD}" \
-            --no-daemon
+            -Psigning.keyId="${SIGNING_KEY_ID}" \
+            -Psigning.password="${SIGNING_KEY_PASSWORD}" \
+            -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}" \
+            clean :library:publishReleasePublicationToSonatypeRepository
+        else
+          echo "Publishing release to s01 staging then closing/releasing"
+          ./gradlew --stacktrace --no-daemon \
+            -PsonatypeUsername="${SONATYPE_NEXUS_USERNAME}" \
+            -PsonatypePassword="${SONATYPE_NEXUS_PASSWORD}" \
+            -Psigning.keyId="${SIGNING_KEY_ID}" \
+            -Psigning.password="${SIGNING_KEY_PASSWORD}" \
+            -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}" \
+            clean :library:publishReleasePublicationToSonatypeRepository closeAndReleaseRepository
         fi
-        ./gradlew --stacktrace checkCentralPortalDeployment \
-          -PsonatypeUsername="${SONATYPE_NEXUS_USERNAME}" \
-          -PsonatypePassword="${SONATYPE_NEXUS_PASSWORD}" \
-          --no-daemon
+
         echo "======================================================================"
-        echo "NMCP publish finished. Check Sonatype Central Portal for status:"
-        echo "https://central.sonatype.com/publishing/deployments"
+        echo "OSSRH publish finished. For releases, propagation to Maven Central may take time."
         echo "======================================================================"
