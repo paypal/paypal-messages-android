@@ -18,6 +18,7 @@ echo "Preparing artifacts..."
 # Get version info
 VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' build.gradle | grep -o '"[^"]*"$' | tr -d '"')
 ARTIFACT_ID="paypal-messages"
+GROUP_ID_PATH="com/paypal/messages"
 
 echo "Deploying version: $VERSION"
 
@@ -73,12 +74,8 @@ cat > deploy-pom.xml << EOF
                 <extensions>true</extensions>
                 <configuration>
                     <publishingServerId>central</publishingServerId>
-                    <tokenAuth>true</tokenAuth>
                     <autoPublish>true</autoPublish>
                     <waitUntil>validated</waitUntil>
-                    <deploymentName>PayPal Messages Android \${project.version}</deploymentName>
-                    <artifact>\${project.basedir}/${ARTIFACT_ID}-${VERSION}.aar</artifact>
-                    <sources>\${project.basedir}/${ARTIFACT_ID}-${VERSION}-sources.jar</sources>
                 </configuration>
             </plugin>
         </plugins>
@@ -90,8 +87,7 @@ EOF
 echo "Signing artifacts and POM with GPG"
 AAR_FILE="${ARTIFACT_ID}-${VERSION}.aar"
 SRC_FILE="${ARTIFACT_ID}-${VERSION}-sources.jar"
-POM_ASC_DIR="target"
-mkdir -p "$POM_ASC_DIR"
+POM_FILE="deploy-pom.xml"
 
 # AAR signature
 if [ -f "$AAR_FILE" ]; then
@@ -115,12 +111,29 @@ else
   exit 1
 fi
 
-# POM signature (place where plugin expects to find it for staging)
+# POM signature (filename must be <artifactId>-<version>.pom.asc)
+POM_ASC_DIR="target"
+POM_ASC_NAME="${ARTIFACT_ID}-${VERSION}.pom.asc"
+mkdir -p "$POM_ASC_DIR"
 gpg --batch --yes --armor --pinentry-mode loopback \
     --passphrase "${SIGNING_KEY_PASSWORD}" \
     --local-user "${SIGNING_KEY_ID}" \
-    --output "${POM_ASC_DIR}/${ARTIFACT_ID}-${VERSION}.pom.asc" \
-    --detach-sign deploy-pom.xml
+    --output "${POM_ASC_DIR}/${POM_ASC_NAME}" \
+    --detach-sign "$POM_FILE"
+
+# Pre-stage all components into the plugin's central-staging path so they are bundled
+STAGE_DIR="target/central-staging/${GROUP_ID_PATH}/${ARTIFACT_ID}/${VERSION}"
+mkdir -p "$STAGE_DIR"
+# POM (the plugin will also copy it, but we ensure presence before bundling)
+cp -f "$POM_FILE" "$STAGE_DIR/${ARTIFACT_ID}-${VERSION}.pom"
+# POM signature
+cp -f "${POM_ASC_DIR}/${POM_ASC_NAME}" "$STAGE_DIR/${POM_ASC_NAME}"
+# AAR and signature
+cp -f "$AAR_FILE" "$STAGE_DIR/${ARTIFACT_ID}-${VERSION}.aar"
+cp -f "$AAR_FILE.asc" "$STAGE_DIR/${ARTIFACT_ID}-${VERSION}.aar.asc"
+# Sources and signature
+cp -f "$SRC_FILE" "$STAGE_DIR/${ARTIFACT_ID}-${VERSION}-sources.jar"
+cp -f "$SRC_FILE.asc" "$STAGE_DIR/${ARTIFACT_ID}-${VERSION}-sources.jar.asc"
 
 # Use Maven to invoke the Central Portal publish goal directly (avoids dependency resolution)
 echo "Running Central Publishing plugin (publish goal)..."
