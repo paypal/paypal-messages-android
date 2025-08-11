@@ -82,8 +82,8 @@ jobs:
       #     github_token: ${{ secrets.GITHUB_TOKEN }}
 
       # Publish via Central Portal API (reliable, supports auto/manual modes)
-      - name: Publish to Maven Central (Central Portal API)
-        uses: ./.github/actions/publish_central_portal
+      - name: Publish to Maven Central (NMCP)
+        uses: ./.github/actions/publish_maven_central
         with:
           sonatype_user: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           sonatype_token: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}

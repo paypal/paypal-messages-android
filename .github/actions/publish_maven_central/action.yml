@@ -84,81 +84,95 @@ runs:
         USE_SNAPSHOT: ${{ inputs.use_snapshot }}
         AUTO_PUBLISH: ${{ inputs.auto_publish }}
       run: |
-        echo "Publishing via NMCP module plugin (:library)"
-
-        if [ ! -d "${{ github.workspace }}/library" ]; then
-          echo "Error: library directory not found"
-          exit 1
-        fi
-
-        VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
-
-        if [ "$USE_SNAPSHOT" = "true" ]; then
-          [[ "$VERSION" != *-SNAPSHOT ]] && VERSION="${VERSION}-SNAPSHOT"
-          echo "Publishing SNAPSHOT version: $VERSION"
-        else
-          [[ "$VERSION" == *-SNAPSHOT ]] && VERSION="${VERSION%-SNAPSHOT}"
-          echo "Publishing release version: $VERSION"
-        fi
-
-        echo "Importing GPG key for signing"
-        gpg --batch --import ${{ inputs.signing_key_file }}
-
-        echo "Setting project version to ${VERSION}"
-        ./gradlew -PversionParam="$VERSION" changeReleaseVersion --no-daemon --stacktrace
-
-        echo "Cleaning and building artifacts..."
-        ./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication --no-daemon --stacktrace
-
-        echo "Injecting NMCP plugin into :library"
-        cp ${{ github.workspace }}/library/build.gradle ${{ github.workspace }}/library/build.gradle.backup
-
-        # Insert plugin id into plugins block
-        cat > ${{ github.workspace }}/inject-nmcp.awk << 'EOF'
-        /^plugins \{/ {
-          print $0
-          print "\tid 'com.gradleup.nmcp' version '1.0.2'"
-          next
-        }
-        { print }
-        EOF
-        awk -f ${{ github.workspace }}/inject-nmcp.awk ${{ github.workspace }}/library/build.gradle.backup > ${{ github.workspace }}/library/build.gradle
-
-        # Append only task disables to avoid stray module metadata
-        cat > ${{ github.workspace }}/library-nmcp-config.gradle << 'EOF'
-        tasks.matching { it.name == "generateMetadataFileForReleasePublication" || it.name == "generateMetadataFileForMavenPublication" || it.name == "generateMetadataFileForPublication" }.configureEach { enabled = false }
-        EOF
-        cat ${{ github.workspace }}/library-nmcp-config.gradle >> ${{ github.workspace }}/library/build.gradle
-
-        echo "Detecting nmcp repository publish task in :library"
-        ./gradlew -q :library:tasks --all | cat
-
-        # Prefer publishing just the 'release' publication to the 'nmcp' repository
-        PUBLISH_TASK=":library:publishReleasePublicationToNmcpRepository"
-        if ! ./gradlew -q :library:tasks --all | grep -q "publishReleasePublicationToNmcpRepository"; then
-          # Fallback: any publish task targeting the nmcp repo
-          ALT=$(./gradlew -q :library:tasks --all | grep -Eo "publish[A-Za-z]*PublicationToNmcpRepository" | head -1 || true)
-          if [ -n "$ALT" ]; then
-            PUBLISH_TASK=":library:${ALT}"
-          else
-            echo "❌ ERROR: No publish*PublicationToNmcpRepository task found in :library. Available tasks:" && ./gradlew -q :library:tasks --all | cat
-            exit 1
-          fi
-        fi
-        echo "Using nmcp publish task: ${PUBLISH_TASK}"
-
-        echo "Publishing with ${PUBLISH_TASK}"
-        ./gradlew ${PUBLISH_TASK} \
-          -Psigning.keyId="${SIGNING_KEY_ID}" \
-          -Psigning.password="${SIGNING_KEY_PASSWORD}" \
-          -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}" \
-          --no-daemon --stacktrace
-
-        echo "Restoring :library build.gradle"
-        mv ${{ github.workspace }}/library/build.gradle.backup ${{ github.workspace }}/library/build.gradle
-        rm -f ${{ github.workspace }}/inject-nmcp.awk ${{ github.workspace }}/library-nmcp-config.gradle
-
-        echo "======================================================================"
-        echo "NMCP publish finished. Check Sonatype Central Portal for status:"
-        echo "https://central.sonatype.com/publishing/deployments"
-        echo "======================================================================"
+         echo "Publishing via NMCP module plugin (:library)"
+ 
+         if [ ! -d "${{ github.workspace }}/library" ]; then
+           echo "Error: library directory not found"
+           exit 1
+         fi
+ 
+         VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
+ 
+         if [ "$USE_SNAPSHOT" = "true" ]; then
+           [[ "$VERSION" != *-SNAPSHOT ]] && VERSION="${VERSION}-SNAPSHOT"
+           echo "Publishing SNAPSHOT version: $VERSION"
+         else
+           [[ "$VERSION" == *-SNAPSHOT ]] && VERSION="${VERSION%-SNAPSHOT}"
+           echo "Publishing release version: $VERSION"
+         fi
+ 
+         echo "Importing GPG key for signing"
+         gpg --batch --import ${{ inputs.signing_key_file }}
+ 
+         echo "Setting project version to ${VERSION}"
+         ./gradlew -PversionParam="$VERSION" changeReleaseVersion --no-daemon --stacktrace
+ 
+         echo "Cleaning and building artifacts..."
+         ./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication --no-daemon --stacktrace
+ 
+         echo "Injecting NMCP plugin into :library"
+         cp ${{ github.workspace }}/library/build.gradle ${{ github.workspace }}/library/build.gradle.backup
+ 
+         # Insert plugin id into plugins block
+         cat > ${{ github.workspace }}/inject-nmcp.awk << 'EOF'
+         /^plugins \{/ {
+           print $0
+           print "\tid 'com.gradleup.nmcp' version '1.0.2'"
+           next
+         }
+         { print }
+         EOF
+         awk -f ${{ github.workspace }}/inject-nmcp.awk ${{ github.workspace }}/library/build.gradle.backup > ${{ github.workspace }}/library/build.gradle
+ 
+         # Append nmcp configuration and only task disables to avoid stray module metadata
+         cat > ${{ github.workspace }}/library-nmcp-config.gradle << 'EOF'
+         tasks.matching { it.name == "generateMetadataFileForReleasePublication" || it.name == "generateMetadataFileForMavenPublication" || it.name == "generateMetadataFileForPublication" }.configureEach { enabled = false }
+ 
+         // Configure NMCP with credentials and auto-publish
+         nmcp {
+           centralPortal {
+             username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: (project.findProperty('sonatypeUsername') ?: '')
+             password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: (project.findProperty('sonatypePassword') ?: '')
+             publishingType = System.getenv('AUTO_PUBLISH') == 'true' ? 'AUTOMATIC' : 'USER_MANAGED'
+           }
+         }
+         EOF
+         cat ${{ github.workspace }}/library-nmcp-config.gradle >> ${{ github.workspace }}/library/build.gradle
+ 
+         echo "Detecting nmcp repository publish task in :library"
+         ./gradlew -q :library:tasks --all | cat
+ 
+         # Prefer publishing just the 'release' publication to the 'nmcp' repository (snapshots vs releases)
+         if [ "$USE_SNAPSHOT" = "true" ]; then
+           PUBLISH_TASK=":library:publishReleasePublicationToNmcpSnapshotsRepository"
+         else
+           PUBLISH_TASK=":library:publishReleasePublicationToNmcpRepository"
+         fi
+ 
+         if ! ./gradlew -q :library:tasks --all | grep -q "$(echo "$PUBLISH_TASK" | sed 's/^:library://')"; then
+           # Fallback: any publish task targeting the nmcp repo (including snapshots) matching context
+           ALT=$(./gradlew -q :library:tasks --all | grep -Eo "publish[A-Za-z]*PublicationToNmcp(Snapshots)?Repository" | head -1 || true)
+           if [ -n "$ALT" ]; then
+             PUBLISH_TASK=":library:${ALT}"
+           else
+             echo "❌ ERROR: No publish*PublicationToNmcp(Snapshots)?Repository task found in :library. Available tasks:" && ./gradlew -q :library:tasks --all | cat
+             exit 1
+           fi
+         fi
+         echo "Using nmcp publish task: ${PUBLISH_TASK}"
+ 
+         echo "Publishing with ${PUBLISH_TASK}"
+         ./gradlew ${PUBLISH_TASK} \
+           -Psigning.keyId="${SIGNING_KEY_ID}" \
+           -Psigning.password="${SIGNING_KEY_PASSWORD}" \
+           -Psigning.secretKeyRingFile="${SIGNING_KEY_FILE}" \
+           --no-daemon --stacktrace
+ 
+         echo "Restoring :library build.gradle"
+         mv ${{ github.workspace }}/library/build.gradle.backup ${{ github.workspace }}/library/build.gradle
+         rm -f ${{ github.workspace }}/inject-nmcp.awk ${{ github.workspace }}/library-nmcp-config.gradle
+ 
+         echo "======================================================================"
+         echo "NMCP publish finished. Check Sonatype Central Portal for status:"
+         echo "https://central.sonatype.com/publishing/deployments"
+         echo "======================================================================"

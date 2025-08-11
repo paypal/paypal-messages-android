@@ -61,8 +61,8 @@ jobs:
         run: npx semantic-release@21
 
       # Maven Central publishing method using official plugin
-      - name: Publish to Maven Central (Central Portal API)
-        uses: ./.github/actions/publish_central_portal
+      - name: Publish to Maven Central (NMCP Snapshots)
+        uses: ./.github/actions/publish_maven_central
         with:
           sonatype_user: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           sonatype_token: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
@@ -70,3 +70,4 @@ jobs:
           signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
           signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
           auto_publish: 'true'
+          use_snapshot: 'true'
