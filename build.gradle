@@ -3,12 +3,12 @@ import org.jmailen.gradle.kotlinter.tasks.LintTask
 import org.jmailen.gradle.kotlinter.tasks.FormatTask
 
 buildscript {
-	ext.modules = [
-		"sdkVersionName"      : "1.1.4",
-		"androidMinSdkVersion": 23,
-		"androidTargetVersion": 34
-	]
-	
+		ext.modules = [
+			"sdkVersionName"      : "1.1.5",
+			"androidMinSdkVersion": 23,
+			"androidTargetVersion": 34
+		]
+			
 	dependencies {
 		classpath 'org.apache.httpcomponents:httpclient:4.5.13'
 		classpath 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
