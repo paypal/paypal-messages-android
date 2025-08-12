@@ -19,50 +19,100 @@ echo "Preparing artifacts..."
 VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' build.gradle | grep -o '"[^"]*"$' | tr -d '"')
 ARTIFACT_ID="paypal-messages"
 GROUP_ID="com.paypal.messages"
-STAGING_DIR="library/build/maven-deploy"
 
 echo "Deploying version: $VERSION"
 
-echo "Signing artifacts (.pom, .aar, -sources.jar)..."
-# Sign artifacts so Central validation passes
-sign_file() {
-  local file_path="$1"
-  if [ -f "$file_path" ] && [ ! -f "$file_path.asc" ]; then
-    echo "  - $(basename "$file_path")"
-    local PASSPHRASE=${MAVEN_GPG_PASSPHRASE:-$SIGNING_KEY_PASSWORD}
-    local GPG_UID_ARGS=()
-    if [ -n "$SIGNING_KEY_ID" ]; then
-      GPG_UID_ARGS=(--local-user "$SIGNING_KEY_ID")
-    fi
-    if [ -n "$PASSPHRASE" ]; then
-      # Non-interactive (CI) mode
-      printf '%s' "$PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 "${GPG_UID_ARGS[@]}" --armor --detach-sign "$file_path"
-    else
-      # Interactive or agent-backed
-      gpg --batch --yes "${GPG_UID_ARGS[@]}" --armor --detach-sign "$file_path"
-    fi
-  fi
-}
+# Change to the staging directory containing the built artifacts
+cd library/build/maven-deploy
 
-sign_file "$STAGING_DIR/${ARTIFACT_ID}-${VERSION}.pom"
-sign_file "$STAGING_DIR/${ARTIFACT_ID}-${VERSION}.aar"
-sign_file "$STAGING_DIR/${ARTIFACT_ID}-${VERSION}-sources.jar"
-
-# Create a minimal wrapper POM (packaging=pom) that directs the Central plugin to our staging directory
-WRAPPER_DIR="$STAGING_DIR/central-publish"
-mkdir -p "$WRAPPER_DIR"
-cat > "$WRAPPER_DIR/deploy-pom.xml" << EOF
+# Create a deploy POM (packaging=pom), attach AAR and sources, sign in verify phase, then publish
+cat > deploy-pom.xml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>${GROUP_ID}</groupId>
-  <artifactId>${ARTIFACT_ID}-central-publish</artifactId>
+  <artifactId>${ARTIFACT_ID}</artifactId>
   <version>${VERSION}</version>
   <packaging>pom</packaging>
-  <name>Central Publish Wrapper</name>
+
+  <name>PayPal Messages</name>
+  <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
+  <url>https://github.com/paypal/paypal-messages-android</url>
+
+  <licenses>
+    <license>
+      <name>The Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>paypal-messages-android</id>
+      <name>PayPalMessages Android</name>
+      <email>sdks-messages@paypal.com</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/paypal/paypal-messages-android.git</connection>
+    <developerConnection>scm:git:ssh://github.com:paypal/paypal-messages-android.git</developerConnection>
+    <url>https://github.com/paypal/paypal-messages-android</url>
+  </scm>
+
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.4.0</version>
+        <executions>
+          <execution>
+            <id>attach-aar-and-sources</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>\${project.basedir}/${ARTIFACT_ID}-${VERSION}.aar</file>
+                  <type>aar</type>
+                </artifact>
+                <artifact>
+                  <file>\${project.basedir}/${ARTIFACT_ID}-${VERSION}-sources.jar</file>
+                  <type>jar</type>
+                  <classifier>sources</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>3.2.8</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            <configuration>
+              <gpgArguments>
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+              </gpgArguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.sonatype.central</groupId>
         <artifactId>central-publishing-maven-plugin</artifactId>
@@ -72,8 +122,7 @@ cat > "$WRAPPER_DIR/deploy-pom.xml" << EOF
           <publishingServerId>central</publishingServerId>
           <autoPublish>true</autoPublish>
           <waitUntil>validated</waitUntil>
-          <deploymentName>PayPal Messages Android ${VERSION}</deploymentName>
-          <stagingDirectory>${STAGING_DIR}</stagingDirectory>
+          <deploymentName>PayPal Messages Android \${project.version}</deploymentName>
         </configuration>
       </plugin>
     </plugins>
@@ -81,11 +130,12 @@ cat > "$WRAPPER_DIR/deploy-pom.xml" << EOF
 </project>
 EOF
 
-echo "Publishing via Maven Central Publishing plugin..."
+# Single Maven invocation: sign (verify) then publish, to ensure pom.asc is present
+echo "Signing via Maven (verify) and publishing in a single run..."
 mvn --batch-mode \
-  -f "$WRAPPER_DIR/deploy-pom.xml" \
-  -s .mvn/maven-settings.xml \
-  org.sonatype.central:central-publishing-maven-plugin:publish
+  -f deploy-pom.xml \
+  -s ../../../.mvn/maven-settings.xml \
+  -DskipTests verify org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"
 echo "Check the status at: https://central.sonatype.com/publishing/deployments"
