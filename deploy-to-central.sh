@@ -86,6 +86,11 @@ cat > deploy-pom.xml << EOF
                   <type>jar</type>
                   <classifier>sources</classifier>
                 </artifact>
+                <artifact>
+                  <file>\${project.basedir}/${ARTIFACT_ID}-${VERSION}-javadoc.jar</file>
+                  <type>jar</type>
+                  <classifier>javadoc</classifier>
+                </artifact>
               </artifacts>
             </configuration>
           </execution>

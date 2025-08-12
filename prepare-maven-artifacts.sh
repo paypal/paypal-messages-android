@@ -43,6 +43,17 @@ else
     fi
 fi
 
+# Create a minimal Javadoc JAR (placeholder) to satisfy Central requirements
+echo "Creating Javadoc JAR (placeholder)..."
+JAVADOC_DIR="library/build/tmp/javadoc-${VERSION}"
+rm -rf "$JAVADOC_DIR"
+mkdir -p "$JAVADOC_DIR/META-INF"
+cat > "$JAVADOC_DIR/README.md" << JDOC
+This is a placeholder Javadoc JAR for ${ARTIFACT_ID} ${VERSION}.
+For API documentation, please visit: https://github.com/paypal/paypal-messages-android
+JDOC
+jar cf "${TARGET_DIR}/${ARTIFACT_ID}-${VERSION}-javadoc.jar" -C "$JAVADOC_DIR" .
+
 # Copy POM file (use the one we have)
 echo "Copying POM file..."
 cp "library/pom.xml" "$TARGET_DIR/${ARTIFACT_ID}-${VERSION}.pom"
