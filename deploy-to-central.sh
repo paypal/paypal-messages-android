@@ -96,7 +96,7 @@ cat > deploy-pom.xml << EOF
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.2.8</version>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
@@ -133,16 +133,12 @@ cat > deploy-pom.xml << EOF
 EOF
 
 # Verify (to attach artifacts and generate .asc signatures), then publish via Central plugin
-echo "Signing via Maven (verify) and publishing..."
+# Important: run signing and publishing in the same Maven invocation so .asc files are included
+echo "Signing via Maven (verify) and publishing in a single run..."
 mvn --batch-mode \
   -f deploy-pom.xml \
   -s ../../../.mvn/maven-settings.xml \
-  -DskipTests verify
-
-mvn --batch-mode \
-  -f deploy-pom.xml \
-  -s ../../../.mvn/maven-settings.xml \
-  org.sonatype.central:central-publishing-maven-plugin:publish
+  -DskipTests verify org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"
 echo "Check the status at: https://central.sonatype.com/publishing/deployments"
