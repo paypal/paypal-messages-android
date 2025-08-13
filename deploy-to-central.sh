@@ -3,6 +3,9 @@
 # Script to deploy artifacts to Maven Central via OSSRH using Gradle maven-publish (no @aar needed)
 set -e
 
+# Set this to true to skip POM XML name tag fixes (for debugging)
+SKIP_POM_FIXES=${SKIP_POM_FIXES:-false}
+
 echo "Deploying to Maven Central via OSSRH..."
 
 # Resolve OSSRH credentials (prefer OSSRH_*, fallback to SONATYPE_NEXUS_* for backward compat)
@@ -17,6 +20,16 @@ fi
 # Prepare artifacts (ensures sources/javadoc jars exist for publication)
 echo "Preparing artifacts..."
 ./prepare-maven-artifacts.sh
+
+# Fix POM file name tags if needed
+if [ "$SKIP_POM_FIXES" != "true" ]; then
+    echo "Fixing POM XML name tags..."
+    if [ -f "./fix_name_tags_mac.sh" ]; then
+        ./fix_name_tags_mac.sh
+    else
+        echo "Warning: fix_name_tags_mac.sh not found, skipping POM fixes"
+    fi
+fi
 
 # Get version info
 VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' build.gradle | grep -o '"[^"]*"$' | tr -d '"')
