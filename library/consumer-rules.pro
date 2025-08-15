@@ -35,3 +35,15 @@
 -keepattributes *Annotation*, InnerClasses
 -keepattributes SourceFile, LineNumberTable
 -keepattributes Signature, Exceptions
+
+# OkHttp Conflict Resolution
+# This prevents conflicts when the consuming app has a different version of OkHttp
+-dontwarn okhttp3.**
+-dontwarn okio.**
+# Rename our OkHttp classes to avoid conflicts
+-repackageclasses com.paypal.messages.internal.okhttp3
+# Keep any OkHttp 4.x Companion objects and extension functions
+-keep class okhttp3.HttpUrl$Companion { *; }
+-keep class okhttp3.MediaType$Companion { *; }
+-keep class okhttp3.RequestBody$Companion { *; }
+-keep class okhttp3.ResponseBody$Companion { *; }

@@ -21,108 +21,12 @@ afterEvaluate {
 				groupId group
 				version project.ext.version
 				artifactId project.ext.name
-				
-				// The 'from components.release' is critical for proper AAR publishing
 				from components.release
-				
-				// Explicitly add javadoc and sources to the publication
-				artifact androidJavadocJar
-				artifact androidSourcesJar
 
 				pom {
-					name = project.ext.pom_name ?: 'PayPal Messages'  // Ensure there's always a name in the POM
+					name = project.ext.pom_name ?: ''
 					packaging = "aar"  // Force AAR packaging type for Android libraries
 					description = project.ext.pom_desc ?: ''
-					// Fix dependency scopes and XML tag names
-					withXml {
-						def root = asNode()
-						
-						// Fix any <n> tags to <name> tags (Maven requires <name> not <n>)
-						def nTags = []
-						
-						// Project name tag
-						def projectNameNode = root.children().find { it.name() == 'n' }
-						if (projectNameNode) {
-							def nameContent = projectNameNode.text()
-							root.appendNode('name', nameContent)
-							nTags << projectNameNode
-						}
-						
-						// License name tag
-						def licensesNode = root.licenses[0]
-						if (licensesNode) {
-							licensesNode.license.each { licenseNode ->
-								def licenseNameNode = licenseNode.children().find { it.name() == 'n' }
-								if (licenseNameNode) {
-									def nameContent = licenseNameNode.text()
-									licenseNode.appendNode('name', nameContent)
-									nTags << licenseNameNode
-								}
-							}
-						}
-						
-						// Developer name tag
-						def developersNode = root.developers[0]
-						if (developersNode) {
-							developersNode.developer.each { devNode ->
-								def devNameNode = devNode.children().find { it.name() == 'n' }
-								if (devNameNode) {
-									def nameContent = devNameNode.text()
-									devNode.appendNode('name', nameContent)
-									nTags << devNameNode
-								}
-							}
-						}
-						
-						// Remove all the old n tags after we've processed them
-						nTags.each { tag ->
-							tag.parent().remove(tag)
-						}
-						
-						// Find the dependencies node created by the android component
-						def dependenciesNodes = root.children().findAll { it.name().toString().contains('dependencies') }
-						
-						// Only process if we found exactly one dependencies node
-						if (dependenciesNodes.size() == 1) {
-							def dependenciesNode = dependenciesNodes[0]
-							
-							// Fix runtime scopes to be compile for direct dependencies
-							dependenciesNode.children().each { depNode ->
-								def scopeNode = depNode.children().find { it.name().toString().contains('scope') }
-								if (scopeNode && scopeNode.text() == 'runtime') {
-									// For runtime dependencies that should be compile
-									def groupId = depNode.children().find { it.name().toString().contains('groupId') }?.text()
-									def artifactId = depNode.children().find { it.name().toString().contains('artifactId') }?.text()
-									
-									// Only change scopes for actual compile dependencies
-									def shouldBeCompile = false
-									
-									// Check if it's in the implementation configuration
-									configurations.implementation.allDependencies.each { dep ->
-										if (dep.group == groupId && dep.name == artifactId) {
-											shouldBeCompile = true
-										}
-									}
-									
-									// Or in the api configuration
-									configurations.api?.allDependencies?.each { dep ->
-										if (dep.group == groupId && dep.name == artifactId) {
-											shouldBeCompile = true
-										}
-									}
-									
-									// Or it's a key library like OkHttp or GSON that should always be compile
-									if (groupId in ['com.google.code.gson', 'com.squareup.okhttp3']) {
-										shouldBeCompile = true
-									}
-									
-									if (shouldBeCompile) {
-										scopeNode.value = 'compile'
-									}
-								}
-							}
-						}
-					}
 					url = POM_URL
 					licenses {
 						license {
@@ -142,9 +46,7 @@ afterEvaluate {
 						developerConnection = POM_SCM_DEV_CONNECTION
 						url = POM_SCM_URL
 					}
-					
-					// Don't add dependencies section to the POM as it's already included in the default POM generation
-					// Gradle already includes dependencies from the component in the generated POM
+					// Dependencies are taken from the component
 				}
 			}
 		}
@@ -172,8 +74,8 @@ afterEvaluate {
 				def snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
 				url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
 				credentials {
-					username = (findProperty('sonatypeUsername') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: '') as String
-					password = (findProperty('sonatypePassword') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: '') as String
+					username = (findProperty('sonatypeUsername') ?: System.getenv('OSSRH_USERNAME') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: '') as String
+					password = (findProperty('sonatypePassword') ?: System.getenv('OSSRH_PASSWORD') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: '') as String
 				}
 			}
 		}
@@ -182,67 +84,8 @@ afterEvaluate {
 	signing {
 		if (isSigningConfigured) {
 			sign publishing.publications
-			sign configurations.archives
 		}
 	}
 }
 
-task androidSourcesJar(type: Jar) {
-	archiveClassifier.set('sources')
-	from android.sourceSets.main.java.srcDirs
-	from android.sourceSets.main.kotlin.srcDirs
-}
-
-// Create a Javadoc JAR (required for Maven Central)
-task androidJavadocJar(type: Jar) {
-	archiveClassifier.set('javadoc')
-	// Include at least a placeholder README file for javadoc
-	from file("${project.projectDir}/src/main")
-	include 'README.md'
-	// If README.md doesn't exist, create one
-	doFirst {
-		def readmeFile = file("${project.projectDir}/src/main/README.md")
-		if (!readmeFile.exists()) {
-			readmeFile.parentFile.mkdirs()
-			readmeFile.text = "# ${project.ext.pom_name ?: project.name}\n\nAPI Documentation\n\nFor full documentation, visit the project website: ${POM_URL ?: 'https://github.com/paypal/paypal-messages-android'}"
-		}
-	}
-}
-
-artifacts {
-	archives androidSourcesJar
-	archives androidJavadocJar
-}
-
-// Fix the task dependency issue mentioned in the error
-if (isSigningConfigured) {
-	tasks.matching { it.name == 'signArchives' }.configureEach {
-		dependsOn 'releaseSourcesJar'
-		dependsOn 'androidJavadocJar'
-	}
-}
-
-// Add a task to generate a test POM file
-task generateTestPom {
-	group = 'verification'
-	description = 'Generates a test POM file to verify publishing configuration'
-	
-	// Make this task depend on the generatePom task
-	dependsOn 'generatePomFileForReleasePublication'
-	
-	doLast {
-		def pomFile = file("${project.buildDir}/publications/release/pom-default.xml")
-		if (pomFile.exists()) {
-			def testPomDir = file("${project.buildDir}/test-pom")
-			testPomDir.mkdirs()
-			copy {
-				from pomFile
-				into testPomDir
-			}
-			logger.lifecycle("Test POM generated at: ${testPomDir}/pom-default.xml")
-			logger.lifecycle("POM content:\n${pomFile.text}")
-		} else {
-			logger.lifecycle("POM file not found at: ${pomFile.absolutePath}")
-		}
-	}
-}
+// Removed custom androidSourcesJar and archives publication to avoid duplicate sources/signatures
