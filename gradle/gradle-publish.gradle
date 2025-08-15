@@ -1,6 +1,8 @@
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
+import org.gradle.authentication.http.HttpHeaderAuthentication
+
 
 ext["signing.keyId"] = System.getenv('SIGNING_KEY_ID') ?: ''
 ext["signing.password"] = System.getenv('SIGNING_KEY_PASSWORD') ?: ''
@@ -66,16 +68,32 @@ afterEvaluate {
 				}
 			}
 
-			// Default path: deploy to OSSRH (s01) using basic auth. Use snapshots vs releases by version.
+			// Default path: deploy to OSSRH (s01) using token auth. Use snapshots vs releases by version.
 			maven {
 				name = "sonatype"
 				def isSnapshot = project.ext.version?.toString()?.endsWith('-SNAPSHOT')
 				def releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
 				def snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
 				url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
-				credentials {
-					username = (findProperty('sonatypeUsername') ?: System.getenv('OSSRH_USERNAME') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: '') as String
-					password = (findProperty('sonatypePassword') ?: System.getenv('OSSRH_PASSWORD') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: '') as String
+				
+				// Check if we're using token authentication
+				def tokenAuth = System.getenv('SONATYPE_TOKEN_AUTH') == 'true' || findProperty('sonatypeTokenAuth') == 'true'
+				
+				if (tokenAuth) {
+					// Use token-based authentication with Bearer token
+					credentials(HttpHeaderCredentials) {
+						name = "Authorization"
+						value = "Bearer ${System.getenv('SONATYPE_NEXUS_PASSWORD') ?: findProperty('sonatypePassword') ?: ''}"
+					}
+					authentication {
+						header(HttpHeaderAuthentication)
+					}
+				} else {
+					// Use traditional username/password authentication
+					credentials {
+						username = (findProperty('sonatypeUsername') ?: System.getenv('OSSRH_USERNAME') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: '') as String
+						password = (findProperty('sonatypePassword') ?: System.getenv('OSSRH_PASSWORD') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: '') as String
+					}
 				}
 			}
 		}

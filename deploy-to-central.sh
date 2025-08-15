@@ -8,13 +8,29 @@ SKIP_POM_FIXES=${SKIP_POM_FIXES:-false}
 
 echo "Deploying to Maven Central via OSSRH..."
 
-# Resolve OSSRH credentials (prefer OSSRH_*, fallback to SONATYPE_NEXUS_* for backward compat)
-OSSRH_USER="${OSSRH_USERNAME:-$SONATYPE_NEXUS_USERNAME}"
-OSSRH_PASS="${OSSRH_PASSWORD:-$SONATYPE_NEXUS_PASSWORD}"
+# Check if we're using token authentication
+if [ "${SONATYPE_TOKEN_AUTH:-false}" = "true" ]; then
+    echo "Using token-based authentication..."
+    # For token auth, we only need the token (stored in SONATYPE_NEXUS_PASSWORD)
+    if [ -z "$SONATYPE_NEXUS_PASSWORD" ]; then
+        echo "Error: Set SONATYPE_NEXUS_PASSWORD with your API token when using token authentication"
+        exit 1
+    fi
+    
+    # Set token auth flag for Gradle
+    export SONATYPE_TOKEN_AUTH=true
+    OSSRH_USER=""
+    OSSRH_PASS="$SONATYPE_NEXUS_PASSWORD"
+else
+    echo "Using username/password authentication..."
+    # Resolve OSSRH credentials (prefer OSSRH_*, fallback to SONATYPE_NEXUS_* for backward compat)
+    OSSRH_USER="${OSSRH_USERNAME:-$SONATYPE_NEXUS_USERNAME}"
+    OSSRH_PASS="${OSSRH_PASSWORD:-$SONATYPE_NEXUS_PASSWORD}"
 
-if [ -z "$OSSRH_USER" ] || [ -z "$OSSRH_PASS" ]; then
-    echo "Error: Set OSSRH_USERNAME and OSSRH_PASSWORD (or SONATYPE_NEXUS_USERNAME/SONATYPE_NEXUS_PASSWORD)"
-    exit 1
+    if [ -z "$OSSRH_USER" ] || [ -z "$OSSRH_PASS" ]; then
+        echo "Error: Set OSSRH_USERNAME and OSSRH_PASSWORD (or SONATYPE_NEXUS_USERNAME/SONATYPE_NEXUS_PASSWORD)"
+        exit 1
+    fi
 fi
 
 # Prepare artifacts (ensures sources/javadoc jars exist for publication)
@@ -45,7 +61,13 @@ echo "Publishing to OSSRH staging (Gradle maven-publish)..."
 ./gradlew -q :library:publish "${GRADLE_AUTH_PROPS[@]}" | cat
 
 echo "Closing and releasing staging repository..."
-./gradlew -q closeAndReleaseRepository "${GRADLE_AUTH_PROPS[@]}" | cat
+if [ "${SONATYPE_TOKEN_AUTH:-false}" = "true" ]; then
+    echo "Using token-based repository close and release..."
+    ./gradlew -q closeAndPromoteRepositoryWithToken "${GRADLE_AUTH_PROPS[@]}" | cat
+else
+    echo "Using standard repository close and release..."
+    ./gradlew -q closeAndReleaseRepository "${GRADLE_AUTH_PROPS[@]}" | cat
+fi
 
 echo "Deployment initiated successfully!"
 echo "Note: It can take 10–30 minutes to propagate to Maven Central mirrors."
