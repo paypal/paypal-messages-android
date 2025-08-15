@@ -8,8 +8,20 @@ SKIP_POM_FIXES=${SKIP_POM_FIXES:-false}
 
 echo "Deploying to Maven Central via OSSRH..."
 
-# Check if we're using token authentication
-if [ "${SONATYPE_TOKEN_AUTH:-false}" = "true" ]; then
+# Check if we're using token authentication or if we need to auto-detect
+echo "Checking authentication method..."
+echo "SONATYPE_TOKEN_AUTH=${SONATYPE_TOKEN_AUTH:-not set}"
+echo "OSSRH_USERNAME=${OSSRH_USERNAME:-not set}"
+echo "SONATYPE_NEXUS_USERNAME=${SONATYPE_NEXUS_USERNAME:-not set}"
+
+# Force token authentication by default now that Sonatype requires it
+# Or explicitly set to true/false via environment variable
+TOKEN_AUTH=true
+if [ "${SONATYPE_TOKEN_AUTH:-}" = "false" ]; then
+    TOKEN_AUTH=false
+fi
+
+if [ "$TOKEN_AUTH" = "true" ]; then
     echo "Using token-based authentication..."
     # For token auth, we only need the token (stored in SONATYPE_NEXUS_PASSWORD)
     if [ -z "$SONATYPE_NEXUS_PASSWORD" ]; then
@@ -17,10 +29,11 @@ if [ "${SONATYPE_TOKEN_AUTH:-false}" = "true" ]; then
         exit 1
     fi
     
-    # Set token auth flag for Gradle
+    # Set token auth flag for Gradle - export it so it's visible to subprocess Gradle invocations
     export SONATYPE_TOKEN_AUTH=true
     OSSRH_USER=""
     OSSRH_PASS="$SONATYPE_NEXUS_PASSWORD"
+    echo "Token authentication is enabled. Token length: ${#SONATYPE_NEXUS_PASSWORD} characters"
 else
     echo "Using username/password authentication..."
     # Resolve OSSRH credentials (prefer OSSRH_*, fallback to SONATYPE_NEXUS_* for backward compat)
@@ -31,6 +44,7 @@ else
         echo "Error: Set OSSRH_USERNAME and OSSRH_PASSWORD (or SONATYPE_NEXUS_USERNAME/SONATYPE_NEXUS_PASSWORD)"
         exit 1
     fi
+    echo "Username authentication is enabled with user: $OSSRH_USER"
 fi
 
 # Prepare artifacts (ensures sources/javadoc jars exist for publication)
@@ -58,12 +72,20 @@ GRADLE_AUTH_PROPS=( -PsonatypeUsername="$OSSRH_USER" -PsonatypePassword="$OSSRH_
 # Publish to OSSRH (s01). Gradle maven-publish is configured with packaging=aar
 # For releases (non -SNAPSHOT), this goes to staging; then we close and release the repository.
 echo "Publishing to OSSRH staging (Gradle maven-publish)..."
-./gradlew -q :library:publish "${GRADLE_AUTH_PROPS[@]}" | cat
+if [ "$TOKEN_AUTH" = "true" ]; then
+    echo "Using token-based authentication for publishing..."
+    ./gradlew -q :library:publish "${GRADLE_AUTH_PROPS[@]}" -PsonatypeTokenAuth=true | cat
+else
+    echo "Using standard authentication for publishing..."
+    ./gradlew -q :library:publish "${GRADLE_AUTH_PROPS[@]}" | cat
+fi
 
 echo "Closing and releasing staging repository..."
-if [ "${SONATYPE_TOKEN_AUTH:-false}" = "true" ]; then
+# Use TOKEN_AUTH variable we set above for consistency
+if [ "$TOKEN_AUTH" = "true" ]; then
     echo "Using token-based repository close and release..."
-    ./gradlew -q closeAndPromoteRepositoryWithToken "${GRADLE_AUTH_PROPS[@]}" | cat
+    echo "Token authentication flag: SONATYPE_TOKEN_AUTH=${SONATYPE_TOKEN_AUTH}"
+    ./gradlew -q closeAndPromoteRepositoryWithToken "${GRADLE_AUTH_PROPS[@]}" -PsonatypeTokenAuth=true | cat
 else
     echo "Using standard repository close and release..."
     ./gradlew -q closeAndReleaseRepository "${GRADLE_AUTH_PROPS[@]}" | cat
