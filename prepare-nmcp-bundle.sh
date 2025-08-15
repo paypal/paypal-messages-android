@@ -6,7 +6,7 @@ set -e
 echo "Preparing NMCP bundle..."
 
 # Build the library and generate all artifacts
-./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication :library:sourcesJar
+./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication
 
 # Get version info
 VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' build.gradle | grep -o '"[^"]*"$' | tr -d '"')
@@ -19,9 +19,13 @@ echo "Artifact ID: $ARTIFACT_ID"
 BUNDLE_DIR="library/build/libs"
 mkdir -p "$BUNDLE_DIR"
 
+# Get the fixed version for naming
+VERSION_FIXED=$(echo "$VERSION" | sed 's/-SNAPSHOT-SNAPSHOT$/-SNAPSHOT/')
+echo "Fixed version: $VERSION_FIXED"
+
 # Copy and rename AAR file
 echo "Copying AAR..."
-cp "library/build/outputs/aar/library-release.aar" "$BUNDLE_DIR/${ARTIFACT_ID}-${VERSION}.aar"
+cp "library/build/outputs/aar/library-release.aar" "$BUNDLE_DIR/${ARTIFACT_ID}-${VERSION_FIXED}.aar"
 
 # The POM should already be in library/build/pom.xml from our gradle task
 if [ ! -f "library/build/pom.xml" ]; then
@@ -29,21 +33,35 @@ if [ ! -f "library/build/pom.xml" ]; then
     exit 1
 fi
 
-# Also ensure POM is in the libs directory
-cp "library/build/pom.xml" "$BUNDLE_DIR/${ARTIFACT_ID}-${VERSION}.pom"
+# Also ensure POM is in the libs directory - fix for duplicate SNAPSHOT issue
+VERSION_FIXED=$(echo "$VERSION" | sed 's/-SNAPSHOT-SNAPSHOT$/-SNAPSHOT/')
+cp "library/build/pom.xml" "$BUNDLE_DIR/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
 
-# Copy and rename sources JAR
-echo "Copying sources JAR..."
-if [ -f "$BUNDLE_DIR/library-sources.jar" ]; then
-    cp "$BUNDLE_DIR/library-sources.jar" "$BUNDLE_DIR/${ARTIFACT_ID}-${VERSION}-sources.jar"
-else
-    echo "Warning: Sources JAR not found at expected location"
-    # Try alternative location
-    if [ -f "library/build/intermediates/runtime_library_classes_jar/release/classes.jar" ]; then
-        echo "Creating sources JAR from classes JAR as fallback..."
-        cp "library/build/intermediates/runtime_library_classes_jar/release/classes.jar" "$BUNDLE_DIR/${ARTIFACT_ID}-${VERSION}-sources.jar"
-    fi
+# Update version in the POM file
+sed -i.bak "s/<version>.*<\/version>/<version>${VERSION_FIXED}<\/version>/g" "$BUNDLE_DIR/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
+rm "$BUNDLE_DIR/${ARTIFACT_ID}-${VERSION_FIXED}.pom.bak"
+
+# Create sources JAR
+echo "Creating sources JAR..."
+SRC_DIR="library/src/main"
+SOURCES_JAR="$BUNDLE_DIR/${ARTIFACT_ID}-${VERSION_FIXED}-sources.jar"
+
+# Create a temporary directory for the sources
+TEMP_SRC_DIR="library/build/tmp/nmcp-sources-${VERSION_FIXED}"
+rm -rf "$TEMP_SRC_DIR"
+mkdir -p "$TEMP_SRC_DIR"
+
+# Copy the source files
+if [ -d "$SRC_DIR/java" ]; then
+    cp -r "$SRC_DIR/java/"* "$TEMP_SRC_DIR/"
 fi
+
+if [ -d "$SRC_DIR/kotlin" ]; then
+    cp -r "$SRC_DIR/kotlin/"* "$TEMP_SRC_DIR/"
+fi
+
+# Create the sources JAR
+jar cf "$SOURCES_JAR" -C "$TEMP_SRC_DIR" .
 
 echo ""
 echo "Bundle prepared. Contents of $BUNDLE_DIR:"

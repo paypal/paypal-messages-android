@@ -65,7 +65,7 @@ tasks.register('publishToCentralPortal') {
                              !System.getenv('SIGNING_KEY_PASSWORD').isEmpty() &&
                              !System.getenv('SIGNING_KEY_FILE').isEmpty()
     
-    dependsOn ':library:assembleRelease', ':library:generatePomFileForReleasePublication', ':library:sourcesJar'
+    dependsOn ':library:assembleRelease', ':library:generatePomFileForReleasePublication'
     
     doLast {
         logger.lifecycle("====================================================================")
