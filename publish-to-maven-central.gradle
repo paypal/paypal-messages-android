@@ -10,7 +10,7 @@ task publishToMavenCentralDirect {
     group = 'publishing'
     description = 'Publishes library to Maven Central using direct API upload'
     
-    dependsOn ':library:assembleRelease', ':library:generatePomFileForReleasePublication', ':library:androidSourcesJar'
+    dependsOn ':library:assembleRelease', ':library:generatePomFileForReleasePublication', ':library:sourcesJar'
     
     doLast {
         def username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: project.findProperty('sonatypeUsername')
@@ -30,7 +30,7 @@ task publishToMavenCentralDirect {
         // Prepare files
         def aarFile = file("${libraryProject.buildDir}/outputs/aar/library-release.aar")
         def pomFile = file("${libraryProject.buildDir}/publications/release/pom-default.xml")
-        def sourcesJar = file("${libraryProject.buildDir}/libs/library-${version}-sources.jar")
+        def sourcesJar = file("${libraryProject.buildDir}/libs/library-sources.jar")
         
         // Ensure all files exist
         if (!aarFile.exists()) {
