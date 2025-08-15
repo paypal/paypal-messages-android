@@ -7,7 +7,7 @@ echo "Preparing artifacts for Maven Central publishing..."
 
 # Build the library
 echo "Building library..."
-./gradlew :library:assembleRelease :library:androidSourcesJar
+./gradlew :library:assembleRelease :library:sourcesJar
 
 # Get version from build.gradle
 VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' build.gradle | grep -o '"[^"]*"$' | tr -d '"')
@@ -29,7 +29,7 @@ cp "library/build/outputs/aar/library-release.aar" "$TARGET_DIR/${ARTIFACT_ID}-$
 
 # Copy sources JAR
 echo "Copying sources JAR..."
-SOURCES_JAR="library/build/libs/library-${VERSION}-sources.jar"
+SOURCES_JAR="library/build/libs/library-sources.jar"
 if [ -f "$SOURCES_JAR" ]; then
     cp "$SOURCES_JAR" "$TARGET_DIR/${ARTIFACT_ID}-${VERSION}-sources.jar"
 else
