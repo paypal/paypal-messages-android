@@ -74,7 +74,7 @@ You can also use the Gradle tasks directly:
 ./gradlew publishToCentralPortal
 
 # For automatic publishing (recommended for snapshots)
-./gradlew publishToCentralPortal -PautoPublish=true
+./gradlew publishToCentralPortal -PautoPublish
 
 # Traditional publishing via OSSRH
 ./gradlew :library:publish -PsonatypeTokenAuth=true

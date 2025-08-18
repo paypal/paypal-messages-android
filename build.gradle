@@ -164,7 +164,7 @@ tasks.register('publishToCentralPortal') {
 
         // Upload to Central Portal
         def client = HttpClients.createDefault()
-        def auto = project.hasProperty('autoPublish') ? project.getProperty('autoPublish').toBoolean() : false
+        def auto = project.hasProperty('autoPublish')
         def publishingType = auto ? 'AUTOMATIC' : 'USER_MANAGED'
         def uploadUrl = "https://central.sonatype.com/api/v1/publisher/upload?publishingType=${publishingType}"
 

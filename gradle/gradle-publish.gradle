@@ -77,7 +77,7 @@ afterEvaluate {
 				def snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
 				url = isSnapshot ? snapshotsRepoUrl : releasesRepoUrl
 				
-				// Check if we're using token authentication
+				// Check if we're using token authentication (default to false)
 				def tokenAuth = System.getenv('SONATYPE_TOKEN_AUTH') == 'true' || findProperty('sonatypeTokenAuth') == 'true'
 				
 				if (tokenAuth) {

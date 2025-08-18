@@ -14,11 +14,10 @@ echo "SONATYPE_TOKEN_AUTH=${SONATYPE_TOKEN_AUTH:-not set}"
 echo "OSSRH_USERNAME=${OSSRH_USERNAME:-not set}"
 echo "SONATYPE_NEXUS_USERNAME=${SONATYPE_NEXUS_USERNAME:-not set}"
 
-# Force token authentication by default now that Sonatype requires it
-# Or explicitly set to true/false via environment variable
-TOKEN_AUTH=true
-if [ "${SONATYPE_TOKEN_AUTH:-}" = "false" ]; then
-    TOKEN_AUTH=false
+# Default to username/password authentication unless explicitly set to use token
+TOKEN_AUTH=false
+if [ "${SONATYPE_TOKEN_AUTH:-}" = "true" ]; then
+    TOKEN_AUTH=true
 fi
 
 if [ "$TOKEN_AUTH" = "true" ]; then
@@ -100,7 +99,7 @@ if [ "$TOKEN_AUTH" = "true" ]; then
         echo "If issues persist, try using the publish-with-token.sh script as an alternative"
     fi
 else
-    echo "Using standard repository close and release..."
+    echo "Using standard username/password repository close and release..."
     ./gradlew -q closeAndReleaseRepository "${GRADLE_AUTH_PROPS[@]}" | cat
 fi
 
