@@ -1,111 +1,100 @@
 #!/bin/bash
 
-# Script to deploy artifacts to Maven Central via OSSRH using Gradle maven-publish (no @aar needed)
+# Script to deploy artifacts to Maven Central using the Central Publishing Maven Plugin (token-based)
 set -e
 
-# Set this to true to skip POM XML name tag fixes (for debugging)
-SKIP_POM_FIXES=${SKIP_POM_FIXES:-false}
+echo "Deploying to Maven Central Portal..."
 
-echo "Deploying to Maven Central via OSSRH..."
-
-# Check if we're using token authentication or if we need to auto-detect
-echo "Checking authentication method..."
-echo "SONATYPE_TOKEN_AUTH=${SONATYPE_TOKEN_AUTH:-not set}"
-echo "OSSRH_USERNAME=${OSSRH_USERNAME:-not set}"
-echo "SONATYPE_NEXUS_USERNAME=${SONATYPE_NEXUS_USERNAME:-not set}"
-
-# Default to username/password authentication unless explicitly set to use token
-TOKEN_AUTH=false
-if [ "${SONATYPE_TOKEN_AUTH:-}" = "true" ]; then
-    TOKEN_AUTH=true
+# Check for required environment variables
+if [ -z "$SONATYPE_NEXUS_PASSWORD" ]; then
+    echo "Error: SONATYPE_NEXUS_PASSWORD must be set to your API token or password"
+    exit 1
 fi
 
-if [ "$TOKEN_AUTH" = "true" ]; then
-    echo "Using token-based authentication..."
-    # For token auth, we only need the token (stored in SONATYPE_NEXUS_PASSWORD)
-    if [ -z "$SONATYPE_NEXUS_PASSWORD" ]; then
-        echo "Error: SONATYPE_NEXUS_PASSWORD environment variable is not set"
-        echo "For token authentication, set SONATYPE_NEXUS_PASSWORD to your Sonatype API token"
-        echo "You can create a token at: https://central.sonatype.com/profile"
-        echo ""
-        echo "Example: export SONATYPE_NEXUS_PASSWORD=your-token-here"
-        exit 1
-    fi
-    
-    # Set token auth flag for Gradle - export it so it's visible to subprocess Gradle invocations
-    export SONATYPE_TOKEN_AUTH=true
-    OSSRH_USER=""
-    OSSRH_PASS="$SONATYPE_NEXUS_PASSWORD"
-    echo "Token authentication is enabled. Token length: ${#SONATYPE_NEXUS_PASSWORD} characters"
-else
-    echo "Using username/password authentication..."
-    # Resolve OSSRH credentials (prefer OSSRH_*, fallback to SONATYPE_NEXUS_* for backward compat)
-    OSSRH_USER="${OSSRH_USERNAME:-$SONATYPE_NEXUS_USERNAME}"
-    OSSRH_PASS="${OSSRH_PASSWORD:-$SONATYPE_NEXUS_PASSWORD}"
-
-    if [ -z "$OSSRH_USER" ] || [ -z "$OSSRH_PASS" ]; then
-        echo "Error: Set OSSRH_USERNAME and OSSRH_PASSWORD (or SONATYPE_NEXUS_USERNAME/SONATYPE_NEXUS_PASSWORD)"
-        exit 1
-    fi
-    echo "Username authentication is enabled with user: $OSSRH_USER"
-fi
-
-# Prepare artifacts (ensures sources/javadoc jars exist for publication)
+# Prepare artifacts first (build AAR, sources, javadoc, and POM)
 echo "Preparing artifacts..."
 ./prepare-maven-artifacts.sh
-
-# Fix POM file name tags if needed
-if [ "$SKIP_POM_FIXES" != "true" ]; then
-    echo "Fixing POM XML name tags..."
-    if [ -f "./fix_name_tags_mac.sh" ]; then
-        ./fix_name_tags_mac.sh
-    else
-        echo "Warning: fix_name_tags_mac.sh not found, skipping POM fixes"
-    fi
-fi
 
 # Get version info
 VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' build.gradle | grep -o '"[^"]*"$' | tr -d '"')
 ARTIFACT_ID="paypal-messages"
+GROUP_ID="com.paypal.messages"
 
 echo "Deploying version: $VERSION"
 
-GRADLE_AUTH_PROPS=( -PsonatypeUsername="$OSSRH_USER" -PsonatypePassword="$OSSRH_PASS" )
+# Stage artifacts into proper Maven-repo layout expected by the Central plugin
+STAGING_ROOT="library/build/central-staging"
+GROUP_PATH="com/paypal/messages/${ARTIFACT_ID}"
+STAGE_DIR="${STAGING_ROOT}/${GROUP_PATH}/${VERSION}"
+SRC_DIR="library/build/maven-deploy"
 
-# Publish to OSSRH (s01). Gradle maven-publish is configured with packaging=aar
-# For releases (non -SNAPSHOT), this goes to staging; then we close and release the repository.
-echo "Publishing to OSSRH staging (Gradle maven-publish)..."
-if [ "$TOKEN_AUTH" = "true" ]; then
-    echo "Using token-based authentication for publishing..."
-    ./gradlew -q :library:publish "${GRADLE_AUTH_PROPS[@]}" -PsonatypeTokenAuth=true | cat
-else
-    echo "Using standard authentication for publishing..."
-    ./gradlew -q :library:publish "${GRADLE_AUTH_PROPS[@]}" | cat
-fi
+rm -rf "${STAGING_ROOT}"
+mkdir -p "${STAGE_DIR}"
 
-echo "Closing and releasing staging repository..."
-# Use TOKEN_AUTH variable we set above for consistency
-if [ "$TOKEN_AUTH" = "true" ]; then
-    echo "Using token-based repository close and release..."
-    echo "Token authentication flag: SONATYPE_TOKEN_AUTH=${SONATYPE_TOKEN_AUTH}"
-    echo "Running closeAndPromoteRepositoryWithToken with token-based authentication..."
-    # Run with full stack trace for better error reporting
-    ./gradlew --stacktrace closeAndPromoteRepositoryWithToken "${GRADLE_AUTH_PROPS[@]}" -PsonatypeTokenAuth=true | cat
-    
-    # Check if the command failed
-    if [ ${PIPESTATUS[0]} -ne 0 ]; then
-        echo "Error: Failed to close and promote repository"
-        echo "Check that your SONATYPE_NEXUS_PASSWORD token is valid and has the correct permissions"
-        echo "If issues persist, try using the publish-with-token.sh script as an alternative"
+# Copy artifacts (POM must have <packaging>aar</packaging>)
+cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION}.pom" "${STAGE_DIR}/"
+cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION}.aar" "${STAGE_DIR}/"
+cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION}-sources.jar" "${STAGE_DIR}/"
+cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION}-javadoc.jar" "${STAGE_DIR}/"
+
+echo "Signing artifacts for Central validation..."
+sign_file() {
+  local f="$1"
+  if [ -f "$f" ] && [ ! -f "$f.asc" ]; then
+    local PASSPHRASE=${MAVEN_GPG_PASSPHRASE:-$SIGNING_KEY_PASSWORD}
+    local UID_ARGS=()
+    if [ -n "$SIGNING_KEY_ID" ]; then UID_ARGS+=(--local-user "$SIGNING_KEY_ID"); fi
+    if [ -n "$PASSPHRASE" ]; then
+      printf '%s' "$PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 "${UID_ARGS[@]}" --armor --detach-sign "$f"
+    else
+      gpg --batch --yes "${UID_ARGS[@]}" --armor --detach-sign "$f"
     fi
-else
-    echo "Using standard username/password repository close and release..."
-    ./gradlew -q closeAndReleaseRepository "${GRADLE_AUTH_PROPS[@]}" | cat
-fi
+  fi
+}
+
+sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION}.pom"
+sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION}.aar"
+sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION}-sources.jar"
+sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION}-javadoc.jar"
+
+echo "Creating wrapper POM for Central plugin..."
+WRAPPER_POM="${STAGING_ROOT}/deploy-pom.xml"
+cat > "${WRAPPER_POM}" << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>${GROUP_ID}</groupId>
+  <artifactId>${ARTIFACT_ID}-central-publish</artifactId>
+  <version>${VERSION}</version>
+  <packaging>pom</packaging>
+  <name>Central Publish Wrapper</name>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.8.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+          <autoPublish>false</autoPublish>
+          <waitUntil>validated</waitUntil>
+          <deploymentName>PayPal Messages Android ${VERSION}</deploymentName>
+          <stagingDirectory>${STAGING_ROOT}</stagingDirectory>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+EOF
+
+# Publish via Central plugin using the staged Maven-repo layout
+echo "Publishing via Maven Central Publishing plugin (stagingDirectory)..."
+mvn --batch-mode \
+  -f "${WRAPPER_POM}" \
+  -s .mvn/maven-settings.xml \
+  org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"
-echo "Note: It can take 10–30 minutes to propagate to Maven Central mirrors."
-echo ""
-echo "If you encounter issues with the repository close and release process,"
-echo "you can try the direct publishing method using:"
-echo "  ./publish-with-token.sh"
+echo "Check the status at: https://central.sonatype.com/publishing/deployments"
