@@ -1,12 +1,12 @@
 # Publishing to Maven Central
 
-This project is configured to publish to Maven Central via the Sonatype Central Portal API.
+This project is configured to publish to Maven Central via token-based authentication. It supports both the Sonatype OSSRH API and the Central Portal API.
 
 ## Prerequisites
 
 1. Sonatype Central Portal account with access to publish under the `com.paypal` groupId
-2. User token generated from Sonatype Central Portal
-3. GPG/PGP key for signing artifacts
+2. API token generated from Sonatype Central Portal
+3. GPG/PGP key for signing artifacts (optional for snapshots)
 
 ## Configuration
 
@@ -17,36 +17,69 @@ To publish the library, you need to provide the following credentials:
 Set the following environment variables:
 
 ```bash
-export SONATYPE_NEXUS_USERNAME=your_sonatype_username
-export SONATYPE_NEXUS_PASSWORD=your_sonatype_user_token
+# Required: API token for authentication (token-based auth is now the default)
+export SONATYPE_NEXUS_PASSWORD=your_sonatype_api_token
+
+# Optional: GPG signing keys (required for releases)
 export SIGNING_KEY_ID=your_gpg_key_id
 export SIGNING_KEY_PASSWORD=your_gpg_key_password
 export SIGNING_KEY_FILE=/path/to/secring.gpg
 ```
 
-**Important**: `SONATYPE_NEXUS_PASSWORD` should be a user token generated from the Sonatype Central Portal. You can generate this token from your account page at https://central.sonatype.com/account.
+**Important**: `SONATYPE_NEXUS_PASSWORD` should be an API token generated from the Sonatype Central Portal. You can generate this token from your account page at https://central.sonatype.com/profile.
 
-## Publishing Method
+## Publishing Methods
 
-### Central Portal API Publishing
+We provide several methods for publishing to Maven Central:
 
-To publish using the Central Portal API:
+### 1. Combined Publishing (Recommended)
+
+The most reliable approach that tries multiple publishing methods with fallback mechanisms:
 
 ```bash
+./publish-with-fallback.sh
+```
+
+This script will:
+1. Try traditional Gradle maven-publish with token authentication
+2. If that fails, automatically fall back to direct API publishing
+3. Provide detailed error messages if issues occur
+
+### 2. Traditional Maven Publishing
+
+For publishing via the traditional Sonatype OSSRH workflow:
+
+```bash
+./deploy-to-central.sh
+```
+
+This uses Gradle's maven-publish plugin with token authentication to publish to Sonatype OSSRH and then close and release the repository.
+
+### 3. Direct API Publishing
+
+For publishing directly to the Sonatype Central Portal API:
+
+```bash
+./publish-with-token.sh
+```
+
+This uses a direct HTTP API approach to upload the bundle to Central Portal without using the Gradle maven-publish plugin.
+
+### 4. Gradle Tasks
+
+You can also use the Gradle tasks directly:
+
+```bash
+# Direct API publishing via Central Portal
 ./gradlew publishToCentralPortal
-```
 
-By default, this will use the `USER_MANAGED` publishing type, which requires manual approval in the portal after validation. This is the recommended approach for official releases. 
+# For automatic publishing (recommended for snapshots)
+./gradlew publishToCentralPortal -PautoPublish=true
 
-To use automatic publishing (recommended for snapshots):
+# Traditional publishing via OSSRH
+./gradlew :library:publish -PsonatypeTokenAuth=true
 
-```bash
-./gradlew publishToCentralPortal -PautoPublish
-```
-
-To check the status of your deployment:
-
-```bash
+# Check deployment status
 ./gradlew checkCentralPortalDeployment
 ```
 
@@ -129,19 +162,48 @@ To publish from GitHub Actions, you need to set up these repository secrets:
 
 ## Troubleshooting
 
-### Central Portal API Issues
-If you encounter issues with the Central Portal API:
-1. Verify that your user token is correct and not expired
-2. Check the response from the API for detailed error messages
-3. Ensure your artifacts are properly signed
-4. Verify that the package metadata (groupId, artifactId, version) is correct
-5. Check the GitHub Actions logs for any credential or authentication issues
-
 ### Common Issues
-- **"Component already exists" error**: This means you're trying to publish a version that already exists. Maven Central doesn't allow overwriting published artifacts. Use a new version number.
-- **Missing manual approval**: For releases, you must manually approve the deployment by clicking the "Publish" button on the Central Portal deployments page: https://central.sonatype.com/publishing/deployments
+
+1. **Authentication Errors (401)**
+   - Make sure you're using a valid API token
+   - Ensure the token has the correct permissions
+   - Try regenerating your token at https://central.sonatype.com/profile
+   - Check that SONATYPE_NEXUS_PASSWORD is correctly set
+
+2. **SSL/TLS Errors**
+   - Try using the direct API publishing method (`./publish-with-token.sh`)
+   - This may bypass SSL/TLS issues that can occur with Gradle
+
+3. **"Component already exists" error**
+   - This means you're trying to publish a version that already exists
+   - Maven Central doesn't allow overwriting published artifacts
+   - Use a new version number or append a SNAPSHOT suffix for development
+
+4. **Missing manual approval**
+   - For releases using USER_MANAGED mode, you must manually approve the deployment
+   - Click the "Publish" button on the Central Portal deployments page: 
+     https://central.sonatype.com/publishing/deployments
+
+5. **OkHttp Dependency Issues**
+   - The library now bundles OkHttp 4.8.0 as an API dependency
+   - ProGuard rules have been added to prevent conflicts with other libraries
+   - When integrated with Braintree or other libraries that use OkHttp 3.x, no conflicts should occur
+
+### Dependency Conflict Resolution
+
+The AAR is now the primary artifact and bundles OkHttp correctly:
+- OkHttp 4.8.0 is included as an `api` dependency
+- ProGuard rules in `consumer-rules.pro` prevent conflicts
+- No need to use the `@aar` suffix when depending on the library
 
 ### Testing Locally
-When testing publishing locally, you may see warning messages about missing credentials. The build system will use dummy values for testing, which won't actually publish anything. This is expected behavior and helps with local testing without requiring real credentials.
 
-To test with real credentials locally, set the environment variables as described in the Configuration section.
+When testing publishing locally:
+- You may see warning messages about missing credentials if environment variables aren't set
+- The scripts will fail gracefully with helpful error messages
+- Use a test token for trying out the publishing process without actually deploying
+
+For proper local testing:
+1. Set the environment variables as described in the Configuration section
+2. Use a `-SNAPSHOT` suffix for test versions
+3. Try the combined publishing script: `./publish-with-fallback.sh`

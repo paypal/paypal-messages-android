@@ -25,7 +25,11 @@ if [ "$TOKEN_AUTH" = "true" ]; then
     echo "Using token-based authentication..."
     # For token auth, we only need the token (stored in SONATYPE_NEXUS_PASSWORD)
     if [ -z "$SONATYPE_NEXUS_PASSWORD" ]; then
-        echo "Error: Set SONATYPE_NEXUS_PASSWORD with your API token when using token authentication"
+        echo "Error: SONATYPE_NEXUS_PASSWORD environment variable is not set"
+        echo "For token authentication, set SONATYPE_NEXUS_PASSWORD to your Sonatype API token"
+        echo "You can create a token at: https://central.sonatype.com/profile"
+        echo ""
+        echo "Example: export SONATYPE_NEXUS_PASSWORD=your-token-here"
         exit 1
     fi
     
@@ -85,7 +89,16 @@ echo "Closing and releasing staging repository..."
 if [ "$TOKEN_AUTH" = "true" ]; then
     echo "Using token-based repository close and release..."
     echo "Token authentication flag: SONATYPE_TOKEN_AUTH=${SONATYPE_TOKEN_AUTH}"
-    ./gradlew -q closeAndPromoteRepositoryWithToken "${GRADLE_AUTH_PROPS[@]}" -PsonatypeTokenAuth=true | cat
+    echo "Running closeAndPromoteRepositoryWithToken with token-based authentication..."
+    # Run with full stack trace for better error reporting
+    ./gradlew --stacktrace closeAndPromoteRepositoryWithToken "${GRADLE_AUTH_PROPS[@]}" -PsonatypeTokenAuth=true | cat
+    
+    # Check if the command failed
+    if [ ${PIPESTATUS[0]} -ne 0 ]; then
+        echo "Error: Failed to close and promote repository"
+        echo "Check that your SONATYPE_NEXUS_PASSWORD token is valid and has the correct permissions"
+        echo "If issues persist, try using the publish-with-token.sh script as an alternative"
+    fi
 else
     echo "Using standard repository close and release..."
     ./gradlew -q closeAndReleaseRepository "${GRADLE_AUTH_PROPS[@]}" | cat
@@ -93,3 +106,7 @@ fi
 
 echo "Deployment initiated successfully!"
 echo "Note: It can take 10–30 minutes to propagate to Maven Central mirrors."
+echo ""
+echo "If you encounter issues with the repository close and release process,"
+echo "you can try the direct publishing method using:"
+echo "  ./publish-with-token.sh"

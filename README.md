@@ -29,14 +29,43 @@ The PayPalMessages Library uses a client ID for authentication. This can be foun
 This library follows [Semantic Versioning](https://semver.org/). This library is published to Maven Central. The release process is automated via GitHub Actions.
 
 ### Manual Publishing (Development)
-For development and testing purposes, you can manually publish to Maven Central via the Sonatype Central Portal Maven plugin:
+For development and testing purposes, you can manually publish to Maven Central. We provide several methods:
 
-1. Set env vars: `SONATYPE_NEXUS_USERNAME`, `SONATYPE_NEXUS_PASSWORD`, `SIGNING_KEY_ID`, `SIGNING_KEY_PASSWORD`, `SIGNING_KEY_FILE`.
+#### Using the Combined Publishing Script (Recommended)
+The most reliable method uses our combined script that tries multiple publishing approaches:
+
+1. Set required environment variables:
+   - `SONATYPE_NEXUS_PASSWORD` - Your Sonatype API token (required)
+   - `SIGNING_KEY_ID`, `SIGNING_KEY_PASSWORD`, `SIGNING_KEY_FILE` - For GPG signing (optional for snapshots)
+
 2. Optionally set a version (use `-SNAPSHOT` for snapshots):
    - `./gradlew -PversionParam=1.2.3-SNAPSHOT changeReleaseVersion`
-3. Build and publish:
-   - `./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication :library:androidSourcesJar`
-   - `./gradlew publishToCentralPortal`
+
+3. Run the combined publishing script:
+   - `./publish-with-fallback.sh`
+
+#### Using Traditional Maven Publishing
+For publishing via the traditional Sonatype OSSRH workflow:
+
+1. Set required environment variables as above
+2. Run the deployment script:
+   - `./deploy-to-central.sh`
+
+#### Using Direct API Publishing
+For publishing directly to the Sonatype Central Portal API:
+
+1. Set required environment variables as above
+2. Run the direct publishing script:
+   - `./publish-with-token.sh`
+
+#### Using Gradle Tasks Directly
+You can also use the Gradle tasks directly:
+
+1. Set environment variables as above
+2. Build and publish:
+   - `./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication`
+   - `./gradlew publishToCentralPortal` (for direct API publishing)
+   - or `./gradlew :library:publish -PsonatypeTokenAuth=true` (for OSSRH publishing)
 
 ## Testing
 

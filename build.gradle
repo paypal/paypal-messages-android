@@ -164,7 +164,7 @@ tasks.register('publishToCentralPortal') {
 
         // Upload to Central Portal
         def client = HttpClients.createDefault()
-        def auto = project.hasProperty('autoPublish')
+        def auto = project.hasProperty('autoPublish') ? project.getProperty('autoPublish').toBoolean() : false
         def publishingType = auto ? 'AUTOMATIC' : 'USER_MANAGED'
         def uploadUrl = "https://central.sonatype.com/api/v1/publisher/upload?publishingType=${publishingType}"
 
@@ -328,7 +328,13 @@ tasks.register('closeAndPromoteRepositoryWithToken') {
         
         def token = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: findProperty('sonatypePassword')
         if (!token) {
-            throw new GradleException("SONATYPE_NEXUS_PASSWORD token is required for token authentication")
+            logger.error("============================================================")
+            logger.error("ERROR: SONATYPE_NEXUS_PASSWORD token is required for token authentication")
+            logger.error("You can create a token at: https://central.sonatype.com/profile")
+            logger.error("")
+            logger.error("Add it to your environment with: export SONATYPE_NEXUS_PASSWORD=your-token-here")
+            logger.error("============================================================")
+            throw new GradleException("Missing SONATYPE_NEXUS_PASSWORD token for Maven Central authentication")
         }
         
         // Create HTTP client
@@ -408,14 +414,47 @@ tasks.register('closeAndPromoteRepositoryWithToken') {
                 def repo = json.data.find { it.repositoryId == repoId }
                 if (repo && repo.type == "closed") {
                     isClosed = true
+                    logger.lifecycle("Repository successfully closed: ${repoId}")
                     break
+                } else if (repo && repo.type == "open") {
+                    logger.lifecycle("Repository is still open, waiting for close operation to complete...")
+                } else if (repo) {
+                    logger.lifecycle("Repository status: ${repo.type}, waiting for close operation to complete...")
                 }
                 
                 logger.lifecycle("Waiting for repository to be closed... (${i+1}/30)")
             }
             
             if (!isClosed) {
-                throw new GradleException("Repository closing timed out after 150 seconds")
+                // Check if there are errors in the repository status
+                getRepos = new HttpGet(listReposUrl)
+                getRepos.setHeader("Authorization", "Bearer " + token)
+                getRepos.setHeader("Accept", "application/json")
+                
+                response = client.execute(getRepos)
+                responseBody = EntityUtils.toString(response.getEntity())
+                json = new JsonSlurper().parseText(responseBody)
+                
+                def repo = json.data.find { it.repositoryId == repoId }
+                if (repo && repo.transitioning) {
+                    logger.error("Repository is still transitioning after timeout period")
+                    throw new GradleException("Repository closing timed out after 150 seconds, but is still transitioning")
+                } else if (repo && repo.type != "closed") {
+                    // Check for errors in the repository
+                    def errorsUrl = baseUrl + "staging/repository/${repoId}/activity"
+                    def getErrors = new HttpGet(errorsUrl)
+                    getErrors.setHeader("Authorization", "Bearer " + token)
+                    getErrors.setHeader("Accept", "application/json")
+                    
+                    response = client.execute(getErrors)
+                    responseBody = EntityUtils.toString(response.getEntity())
+                    
+                    logger.error("Repository failed to close, current status: ${repo.type}")
+                    logger.error("Activity log: ${responseBody}")
+                    throw new GradleException("Repository failed to close. Current status: ${repo.type}")
+                } else {
+                    throw new GradleException("Repository closing timed out after 150 seconds")
+                }
             }
             
             // 3. Release the repository
