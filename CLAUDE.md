@@ -296,3 +296,9 @@ com.paypal.messages/
 - `/.github/workflows/` - CI/CD configurations
 
 This guide should provide sufficient context for Claude to understand and work effectively with the PayPal Messages Android SDK codebase.
+
+## Release Rules
+
+- Bundle okhttp into aar
+- AAR should be primary artifact
+- Deploy only the library module

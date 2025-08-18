@@ -17,25 +17,27 @@ echo "Preparing artifacts..."
 
 # Get version info
 VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' build.gradle | grep -o '"[^"]*"$' | tr -d '"')
+# Fix duplicate SNAPSHOT suffix if present
+VERSION_FIXED=$(echo "$VERSION" | sed 's/-SNAPSHOT-SNAPSHOT$/-SNAPSHOT/')
 ARTIFACT_ID="paypal-messages"
 GROUP_ID="com.paypal.messages"
 
-echo "Deploying version: $VERSION"
+echo "Deploying version: $VERSION_FIXED"
 
 # Stage artifacts into proper Maven-repo layout expected by the Central plugin
 STAGING_ROOT="library/build/central-staging"
 GROUP_PATH="com/paypal/messages/${ARTIFACT_ID}"
-STAGE_DIR="${STAGING_ROOT}/${GROUP_PATH}/${VERSION}"
+STAGE_DIR="${STAGING_ROOT}/${GROUP_PATH}/${VERSION_FIXED}"
 SRC_DIR="library/build/maven-deploy"
 
 rm -rf "${STAGING_ROOT}"
 mkdir -p "${STAGE_DIR}"
 
 # Copy artifacts (POM must have <packaging>aar</packaging>)
-cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION}.pom" "${STAGE_DIR}/"
-cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION}.aar" "${STAGE_DIR}/"
-cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION}-sources.jar" "${STAGE_DIR}/"
-cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION}-javadoc.jar" "${STAGE_DIR}/"
+cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom" "${STAGE_DIR}/"
+cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.aar" "${STAGE_DIR}/"
+cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-sources.jar" "${STAGE_DIR}/"
+cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-javadoc.jar" "${STAGE_DIR}/"
 
 echo "Signing artifacts for Central validation..."
 sign_file() {
@@ -52,10 +54,10 @@ sign_file() {
   fi
 }
 
-sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION}.pom"
-sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION}.aar"
-sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION}-sources.jar"
-sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION}-javadoc.jar"
+sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
+sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.aar"
+sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-sources.jar"
+sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-javadoc.jar"
 
 echo "Creating wrapper POM for Central plugin..."
 WRAPPER_POM="${STAGING_ROOT}/deploy-pom.xml"
@@ -66,9 +68,36 @@ cat > "${WRAPPER_POM}" << EOF
   <modelVersion>4.0.0</modelVersion>
   <groupId>${GROUP_ID}</groupId>
   <artifactId>${ARTIFACT_ID}-central-publish</artifactId>
-  <version>${VERSION}</version>
+  <version>${VERSION_FIXED}</version>
   <packaging>pom</packaging>
-  <name>Central Publish Wrapper</name>
+  <name>PayPal Messages Android Central Publish</name>
+  <description>Wrapper POM for publishing PayPal Messages Android Library to Maven Central</description>
+  <url>https://github.com/paypal/paypal-messages-android</url>
+  
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  
+  <developers>
+    <developer>
+      <id>paypal</id>
+      <name>PayPal</name>
+      <email>dl-paypal-messages@paypal.com</email>
+      <organization>PayPal</organization>
+      <organizationUrl>https://www.paypal.com</organizationUrl>
+    </developer>
+  </developers>
+  
+  <scm>
+    <connection>scm:git:git://github.com/paypal/paypal-messages-android.git</connection>
+    <developerConnection>scm:git:ssh://github.com:paypal/paypal-messages-android.git</developerConnection>
+    <url>https://github.com/paypal/paypal-messages-android</url>
+  </scm>
+  
   <build>
     <plugins>
       <plugin>
@@ -80,7 +109,7 @@ cat > "${WRAPPER_POM}" << EOF
           <publishingServerId>central</publishingServerId>
           <autoPublish>false</autoPublish>
           <waitUntil>validated</waitUntil>
-          <deploymentName>PayPal Messages Android ${VERSION}</deploymentName>
+          <deploymentName>PayPal Messages Android ${VERSION_FIXED}</deploymentName>
           <stagingDirectory>${STAGING_ROOT}</stagingDirectory>
         </configuration>
       </plugin>
