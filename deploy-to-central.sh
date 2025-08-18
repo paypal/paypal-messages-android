@@ -67,7 +67,8 @@ cp deploy-pom-template.xml "$WRAPPER_POM"
 sed -i.bak "s/PLACEHOLDER_GROUP_ID/${GROUP_ID}/g" "$WRAPPER_POM"
 sed -i.bak "s/PLACEHOLDER_ARTIFACT_ID/${ARTIFACT_ID}/g" "$WRAPPER_POM"
 sed -i.bak "s/PLACEHOLDER_VERSION/${VERSION_FIXED}/g" "$WRAPPER_POM"
-sed -i.bak "s|PLACEHOLDER_STAGING_ROOT|${STAGING_ROOT}|g" "$WRAPPER_POM"
+# Don't set stagingDirectory in POM anymore as it's deprecated
+# sed -i.bak "s|PLACEHOLDER_STAGING_ROOT|${STAGING_ROOT}|g" "$WRAPPER_POM"
 rm -f "$WRAPPER_POM.bak"
 
 # Fix XML name tags (direct replacement to avoid heredoc issues)
@@ -77,25 +78,32 @@ rm -f "$WRAPPER_POM.bak"
 
 # Sign the wrapper POM itself
 echo "Signing wrapper POM file..."
-# Copy to both locations - the artifact directory and as a separate artifact
-WRAPPER_POM_DST="${STAGING_ROOT}/${GROUP_PATH}/${VERSION_FIXED}/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom"
+
+# Sign the original wrapper POM first (important for Maven Central plugin)
+sign_file "$WRAPPER_POM"
+
+# Create directory structure expected by Central plugin
 WRAPPER_ARTIFACT_DIR="${STAGING_ROOT}/com/paypal/messages/${ARTIFACT_ID}-central-publish/${VERSION_FIXED}"
-mkdir -p "$(dirname "$WRAPPER_POM_DST")"
 mkdir -p "$WRAPPER_ARTIFACT_DIR"
 
-# Copy to artifact directory (for the main artifacts)
-cp "$WRAPPER_POM" "$WRAPPER_POM_DST"
-sign_file "$WRAPPER_POM_DST"
-
-# Also copy as its own artifact
+# Copy to original artifact directory for inclusion in bundle
 cp "$WRAPPER_POM" "$WRAPPER_ARTIFACT_DIR/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom"
-sign_file "$WRAPPER_ARTIFACT_DIR/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom"
+cp "$WRAPPER_POM.asc" "$WRAPPER_ARTIFACT_DIR/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom.asc"
+
+# Copy to library artifact directory as well (for completeness)
+WRAPPER_POM_DST="${STAGING_ROOT}/${GROUP_PATH}/${VERSION_FIXED}/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom"
+mkdir -p "$(dirname "$WRAPPER_POM_DST")"
+cp "$WRAPPER_POM" "$WRAPPER_POM_DST"
+cp "$WRAPPER_POM.asc" "$WRAPPER_POM_DST.asc"
+
+echo "Wrapper POM signed and placed in all required locations"
 
 # Publish via Central plugin using the staged Maven-repo layout
 echo "Publishing via Maven Central Publishing plugin (stagingDirectory)..."
 mvn --batch-mode \
   -f "${WRAPPER_POM}" \
   -s .mvn/maven-settings.xml \
+  -DstagingDirectory="${STAGING_ROOT}" \
   org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"

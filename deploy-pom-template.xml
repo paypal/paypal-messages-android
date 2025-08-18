@@ -46,7 +46,6 @@
           <autoPublish>false</autoPublish>
           <waitUntil>validated</waitUntil>
           <deploymentName>PayPal Messages Android PLACEHOLDER_VERSION</deploymentName>
-          <stagingDirectory>PLACEHOLDER_STAGING_ROOT</stagingDirectory>
         </configuration>
       </plugin>
     </plugins>
