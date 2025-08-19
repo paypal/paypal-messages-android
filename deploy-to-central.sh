@@ -100,10 +100,37 @@ echo "Wrapper POM signed and placed in all required locations"
 
 # Publish via Central plugin using the staged Maven-repo layout
 echo "Publishing via Maven Central Publishing plugin (stagingDirectory)..."
+# Create a separate target directory to avoid nesting issues
+TARGET_STAGING="${STAGING_ROOT}/target"
+rm -rf "${TARGET_STAGING}"
+mkdir -p "${TARGET_STAGING}"
+
+# Create a separate bundle directory for Maven
+MAVEN_TARGET="${TARGET_STAGING}/maven-bundle"
+mkdir -p "${MAVEN_TARGET}"
+
+# Copy the staged artifacts to the target directory
+cp -r "${STAGING_ROOT}/com" "${MAVEN_TARGET}/"
+
+# Sign the wrapper POM in its final Maven location
+FINAL_POM="${MAVEN_TARGET}/com/paypal/messages/${ARTIFACT_ID}-central-publish/${VERSION_FIXED}/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom"
+if [ -f "${FINAL_POM}" ]; then
+  echo "Signing final POM at: ${FINAL_POM}"
+  sign_file "${FINAL_POM}"
+else
+  echo "Warning: Final POM not found at expected location: ${FINAL_POM}"
+  # Create the directory structure and copy the POM if it doesn't exist
+  FINAL_POM_DIR="$(dirname "${FINAL_POM}")"
+  mkdir -p "${FINAL_POM_DIR}"
+  cp "${WRAPPER_POM}" "${FINAL_POM}"
+  sign_file "${FINAL_POM}"
+fi
+
+# Run the Maven Central publish command with the new target directory
 mvn --batch-mode \
   -f "${WRAPPER_POM}" \
   -s .mvn/maven-settings.xml \
-  -DstagingDirectory="${STAGING_ROOT}" \
+  -DstagingDirectory="${MAVEN_TARGET}" \
   org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"
