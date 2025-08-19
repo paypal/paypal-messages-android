@@ -130,7 +130,7 @@ fi
 mvn --batch-mode \
   -f "${WRAPPER_POM}" \
   -s .mvn/maven-settings.xml \
-  -DstagingDirectory="${MAVEN_TARGET}" \
+  -DstagingDirectory=target/maven-bundle \
   org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"
