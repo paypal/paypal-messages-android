@@ -39,6 +39,11 @@ cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.aar" "${STAGE_DIR}/"
 cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-sources.jar" "${STAGE_DIR}/"
 cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-javadoc.jar" "${STAGE_DIR}/"
 
+# Copy POM signature if it exists
+if [ -f "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom.asc" ]; then
+  cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom.asc" "${STAGE_DIR}/"
+fi
+
 echo "Signing artifacts for Central validation..."
 sign_file() {
   local f="$1"
@@ -46,11 +51,21 @@ sign_file() {
     local PASSPHRASE=${MAVEN_GPG_PASSPHRASE:-$SIGNING_KEY_PASSWORD}
     local UID_ARGS=()
     if [ -n "$SIGNING_KEY_ID" ]; then UID_ARGS+=(--local-user "$SIGNING_KEY_ID"); fi
+    
+    # Create temp directory for signature operation
+    local TEMP_DIR=$(mktemp -d)
+    local TEMP_FILE="$TEMP_DIR/$(basename "$f")"
+    cp "$f" "$TEMP_FILE"
+    
     if [ -n "$PASSPHRASE" ]; then
-      printf '%s' "$PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 "${UID_ARGS[@]}" --armor --detach-sign "$f"
+      printf '%s' "$PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 "${UID_ARGS[@]}" --armor --detach-sign "$TEMP_FILE"
     else
-      gpg --batch --yes "${UID_ARGS[@]}" --armor --detach-sign "$f"
+      gpg --batch --yes "${UID_ARGS[@]}" --armor --detach-sign "$TEMP_FILE"
     fi
+    
+    # Copy the signature to the original location
+    cp "$TEMP_FILE.asc" "$f.asc"
+    rm -rf "$TEMP_DIR"
   fi
 }
 
@@ -75,6 +90,13 @@ rm -f "$WRAPPER_POM.bak"
 echo "Fixing XML name tags in POM file..."
 ./fix_xml_during_deploy.sh "$WRAPPER_POM"
 rm -f "$WRAPPER_POM.bak"
+
+# Fix name tags in all POM files in the staging area
+for pom_file in $(find "${STAGING_ROOT}" -name "*.pom"); do
+  echo "Fixing name tags in $pom_file"
+  ./fix_xml_during_deploy.sh "$pom_file"
+  rm -f "$pom_file.bak"
+done
 
 # Sign the wrapper POM itself
 echo "Signing wrapper POM file..."
@@ -101,36 +123,68 @@ echo "Wrapper POM signed and placed in all required locations"
 # Publish via Central plugin using the staged Maven-repo layout
 echo "Publishing via Maven Central Publishing plugin (stagingDirectory)..."
 # Create a separate target directory to avoid nesting issues
-TARGET_STAGING="${STAGING_ROOT}/target"
-rm -rf "${TARGET_STAGING}"
-mkdir -p "${TARGET_STAGING}"
-
-# Create a separate bundle directory for Maven
-MAVEN_TARGET="${TARGET_STAGING}/maven-bundle"
+MAVEN_TARGET="target/maven-bundle"
+rm -rf "${MAVEN_TARGET}"
 mkdir -p "${MAVEN_TARGET}"
 
 # Copy the staged artifacts to the target directory
 cp -r "${STAGING_ROOT}/com" "${MAVEN_TARGET}/"
 
-# Sign the wrapper POM in its final Maven location
-FINAL_POM="${MAVEN_TARGET}/com/paypal/messages/${ARTIFACT_ID}-central-publish/${VERSION_FIXED}/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom"
-if [ -f "${FINAL_POM}" ]; then
-  echo "Signing final POM at: ${FINAL_POM}"
-  sign_file "${FINAL_POM}"
-else
-  echo "Warning: Final POM not found at expected location: ${FINAL_POM}"
-  # Create the directory structure and copy the POM if it doesn't exist
-  FINAL_POM_DIR="$(dirname "${FINAL_POM}")"
-  mkdir -p "${FINAL_POM_DIR}"
-  cp "${WRAPPER_POM}" "${FINAL_POM}"
-  sign_file "${FINAL_POM}"
+# Special handling for the central-publish POM file
+CENTRAL_PUBLISH_POM="${MAVEN_TARGET}/com/paypal/messages/${ARTIFACT_ID}-central-publish/${VERSION_FIXED}/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom"
+CENTRAL_PUBLISH_POM_DIR="$(dirname "${CENTRAL_PUBLISH_POM}")"
+mkdir -p "${CENTRAL_PUBLISH_POM_DIR}"
+
+# Ensure central-publish POM exists at the correct location
+if [ ! -f "${CENTRAL_PUBLISH_POM}" ]; then
+  echo "Creating central-publish POM at: ${CENTRAL_PUBLISH_POM}"
+  cp "${WRAPPER_POM}" "${CENTRAL_PUBLISH_POM}"
 fi
+
+# Ensure central-publish POM signature exists
+if [ ! -f "${CENTRAL_PUBLISH_POM}.asc" ]; then
+  echo "Creating signature for central-publish POM"
+  # Make sure the source signature exists
+  if [ -f "${WRAPPER_POM}.asc" ]; then
+    cp "${WRAPPER_POM}.asc" "${CENTRAL_PUBLISH_POM}.asc"
+  else
+    # Sign the POM file directly
+    sign_file "${CENTRAL_PUBLISH_POM}"
+  fi
+fi
+
+# Sign the wrapper POM in its final Maven location (already handled above)
+
+# Verify signatures exist and fix any missing ones
+echo "Verifying signatures in bundle..."
+
+# Fix any missing POM signatures
+echo "Running POM signature fix script..."
+./fix_pom_signatures.sh
+
+# Double-check for any remaining missing signatures
+MISSING_SIGS=$(find "${MAVEN_TARGET}" -type f -name "*.pom" -exec sh -c 'f="{}"; if [ ! -f "$f.asc" ]; then echo "$f"; fi' \;)
+
+if [ -n "$MISSING_SIGS" ]; then
+  echo "WARNING: The following POM files still have missing signatures:"
+  echo "$MISSING_SIGS"
+  echo "Attempting to create fallback signatures..."
+  
+  # Create fallback signatures for any remaining missing ones
+  for f in $MISSING_SIGS; do
+    echo "Creating fallback signature for: $f"
+    sign_file "$f"
+  done
+fi
+
+# Final verification
+find "${MAVEN_TARGET}" -type f -name "*.pom" -exec sh -c 'f="{}"; if [ ! -f "$f.asc" ]; then echo "ERROR: Missing signature for $f"; fi' \;
 
 # Run the Maven Central publish command with the new target directory
 mvn --batch-mode \
   -f "${WRAPPER_POM}" \
   -s .mvn/maven-settings.xml \
-  -DstagingDirectory=target/maven-bundle \
+  -DstagingDirectory="${MAVEN_TARGET}" \
   org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"
