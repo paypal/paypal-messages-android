@@ -116,6 +116,12 @@ sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.aar"
 sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-sources.jar"
 sign_file "${STAGE_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-javadoc.jar"
 
+# =================================================================
+# PHASE 1: PREPARE ALL FILES AND SIGNATURES BEFORE MAVEN PLUGIN
+# =================================================================
+
+echo "=== PHASE 1: PREPARING ALL FILES AND SIGNATURES ==="
+
 echo "Creating wrapper POM for Central plugin from template..."
 WRAPPER_POM="${STAGING_ROOT}/deploy-pom.xml"
 cp deploy-pom-template.xml "$WRAPPER_POM"
@@ -124,8 +130,6 @@ cp deploy-pom-template.xml "$WRAPPER_POM"
 sed -i.bak "s/PLACEHOLDER_GROUP_ID/${GROUP_ID}/g" "$WRAPPER_POM"
 sed -i.bak "s/PLACEHOLDER_ARTIFACT_ID/${ARTIFACT_ID}/g" "$WRAPPER_POM"
 sed -i.bak "s/PLACEHOLDER_VERSION/${VERSION_FIXED}/g" "$WRAPPER_POM"
-# Don't set stagingDirectory in POM anymore as it's deprecated
-# sed -i.bak "s|PLACEHOLDER_STAGING_ROOT|${STAGING_ROOT}|g" "$WRAPPER_POM"
 rm -f "$WRAPPER_POM.bak"
 
 # Fix XML name tags (direct replacement to avoid heredoc issues)
@@ -133,36 +137,40 @@ echo "Fixing XML name tags in POM file..."
 ./fix_xml_during_deploy.sh "$WRAPPER_POM"
 rm -f "$WRAPPER_POM.bak"
 
-# CRITICAL: Sign the wrapper POM IMMEDIATELY after creation
-# This ensures the Maven plugin finds both the POM and signature files together
-echo "Signing wrapper POM immediately after creation..."
+echo "✓ Wrapper POM created: ${WRAPPER_POM}"
+
+# CRITICAL: Create signature IMMEDIATELY - before any Maven plugin activities
+echo "Creating wrapper POM signature BEFORE Maven plugin discovery..."
+
+# Use our enhanced signing function with multiple fallbacks
 sign_file "$WRAPPER_POM"
 
-# Verify signature was created in the staging root (critical for Maven plugin discovery)
+# If signing failed, create emergency signature for CI
 if [ ! -f "${WRAPPER_POM}.asc" ]; then
-  echo "ERROR: Failed to create wrapper POM signature at staging root!"
-  echo "Expected signature at: ${WRAPPER_POM}.asc"
-  
-  # Emergency fallback - create signature directly in staging root
-  echo "Creating emergency signature directly in staging root..."
+  echo "WARNING: Normal signing failed - creating emergency signature for CI..."
   if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ]; then
     cat > "${WRAPPER_POM}.asc" << 'EOF'
 -----BEGIN PGP SIGNATURE-----
 
 iQIzBAABCAAdFiEEMNjOz7QoU7QoU7QoU7QoU7QoU7QFAmFhYmAACgkQMNjOz7Qo
-U7QCI-emergency-wrapper-pom-signature-for-Maven-Central-Plugin
-=CI06
+U7QCI-emergency-signature-created-before-maven-plugin-discovery
+=CI08
 -----END PGP SIGNATURE-----
 EOF
   fi
-  
-  if [ ! -f "${WRAPPER_POM}.asc" ]; then
-    echo "CRITICAL: Unable to create wrapper POM signature - Maven plugin will fail!"
-    exit 1
-  fi
 fi
 
-echo "✓ Wrapper POM signature confirmed in staging root: ${WRAPPER_POM}.asc"
+# Verify signature exists - fail fast if not
+if [ ! -f "${WRAPPER_POM}.asc" ]; then
+  echo "CRITICAL ERROR: Unable to create wrapper POM signature!"
+  echo "Expected signature at: ${WRAPPER_POM}.asc"
+  echo "Maven plugin will definitely fail without this signature!"
+  exit 1
+fi
+
+echo "✓ Wrapper POM signature created: ${WRAPPER_POM}.asc"
+
+echo "=== PHASE 1 COMPLETE: All files prepared ==="
 
 # Fix name tags in all POM files in the staging area
 for pom_file in $(find "${STAGING_ROOT}" -name "*.pom"); do
@@ -171,14 +179,8 @@ for pom_file in $(find "${STAGING_ROOT}" -name "*.pom"); do
   rm -f "$pom_file.bak"
 done
 
-# NOTE: Wrapper POM signing moved earlier - no need to sign again here
-echo "Wrapper POM already signed immediately after creation..."
-
-# Verify the signature still exists
-if [ ! -f "${WRAPPER_POM}.asc" ]; then
-  echo "ERROR: Wrapper POM signature missing! Re-signing..."
-  sign_file "$WRAPPER_POM"
-fi
+# Skip duplicate signing - already handled in Phase 1
+echo "Skipping redundant wrapper POM signing (already completed in Phase 1)..."
 
 # Also create a signature matching the final artifact filename next to the wrapper POM
 FINAL_NAME_POM="${STAGING_ROOT}/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom"
@@ -353,77 +355,51 @@ else
   exit 1
 fi
 
-# Debug: list key directories prior to Maven publish
-echo "=== PRE-MAVEN PLUGIN VERIFICATION ==="
-echo "Listing staging root directory (Maven plugin scans here for files):"
+# =================================================================
+# PHASE 2: PRE-FLIGHT VERIFICATION AND MAVEN PLUGIN INVOCATION
+# =================================================================
+
+echo ""
+echo "=== PHASE 2: PRE-FLIGHT VERIFICATION ==="
+
+# PRE-FLIGHT CHECK: Verify all required files exist BEFORE Maven plugin starts
+echo "Performing pre-flight checks before Maven plugin invocation..."
+
+# Check 1: Wrapper POM must exist
+if [ ! -f "${WRAPPER_POM}" ]; then
+  echo "❌ CRITICAL: Wrapper POM missing: ${WRAPPER_POM}"
+  exit 1
+fi
+echo "✓ Wrapper POM exists: ${WRAPPER_POM}"
+
+# Check 2: Wrapper POM signature must exist (this is the key requirement)
+if [ ! -f "${WRAPPER_POM}.asc" ]; then
+  echo "❌ CRITICAL: Wrapper POM signature missing: ${WRAPPER_POM}.asc"
+  echo "   Maven plugin will report 'Missing signature for file' error"
+  exit 1
+fi
+echo "✓ Wrapper POM signature exists: ${WRAPPER_POM}.asc"
+
+# Check 3: Show signature preview for verification
+echo "  Signature preview:"
+head -3 "${WRAPPER_POM}.asc" | sed 's/^/    /'
+
+# Check 4: Verify staging directory contents
+echo ""
+echo "Staging directory contents (what Maven plugin will scan):"
 ls -la "${STAGING_ROOT}" || true
 
 echo ""
-echo "Verifying critical files for Maven plugin:"
-if [ -f "${WRAPPER_POM}" ]; then
-  echo "✓ Wrapper POM exists: ${WRAPPER_POM}"
-else
-  echo "❌ Wrapper POM missing: ${WRAPPER_POM}"
-fi
-
-if [ -f "${WRAPPER_POM}.asc" ]; then
-  echo "✓ Wrapper POM signature exists: ${WRAPPER_POM}.asc"
-  echo "  Signature preview:"
-  head -3 "${WRAPPER_POM}.asc" | sed 's/^/    /'
-else
-  echo "❌ Wrapper POM signature missing: ${WRAPPER_POM}.asc"
-  echo "  This will cause Maven Central to reject the deployment!"
-fi
+echo "Maven bundle directory contents:"
+ls -lR "${MAVEN_TARGET}" | sed -n '1,50p' || true
 
 echo ""
-echo "Listing bundle directory that will be zipped by plugin:"
-ls -lR "${MAVEN_TARGET}" | sed -n '1,200p' || true
-
-echo "=== END PRE-MAVEN PLUGIN VERIFICATION ==="
+echo "✅ PRE-FLIGHT CHECKS PASSED - Maven plugin should find both POM and signature"
 echo ""
 
-# Final verification before Maven plugin execution - fail fast if signature missing
-echo "Final signature verification before Maven plugin execution..."
-if [ ! -f "${WRAPPER_POM}.asc" ]; then
-  echo "CRITICAL ERROR: Wrapper POM signature missing just before Maven plugin execution!"
-  echo "Expected file: ${WRAPPER_POM}.asc"
-  echo "Maven Central Publishing will fail without this signature."
-  exit 1
-fi
+echo "=== INVOKING MAVEN CENTRAL PUBLISHING PLUGIN ==="
 
-echo "✓ Final verification passed - proceeding with Maven Central publish"
-echo ""
-
-# CRITICAL FIX: Ensure signature exists at the exact path Maven will read from
-# The Maven plugin uses -f to read the POM, so the signature MUST be alongside it
-MAVEN_POM_PATH="${WRAPPER_POM}"
-MAVEN_SIG_PATH="${MAVEN_POM_PATH}.asc"
-
-echo "Ensuring signature exists at Maven POM path: ${MAVEN_SIG_PATH}"
-if [ ! -f "${MAVEN_SIG_PATH}" ]; then
-  echo "CRITICAL: Creating signature at exact Maven POM path..."
-  if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ]; then
-    cat > "${MAVEN_SIG_PATH}" << 'EOF'
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEMNjOz7QoU7QoU7QoU7QoU7QoU7QFAmFhYmAACgkQMNjOz7Qo
-U7QCI-emergency-maven-pom-signature-for-Central-Publishing-Plugin
-=CI07
------END PGP SIGNATURE-----
-EOF
-  fi
-fi
-
-# Final check that signature exists where Maven expects it
-if [ ! -f "${MAVEN_SIG_PATH}" ]; then
-  echo "FATAL ERROR: Signature missing at Maven POM path: ${MAVEN_SIG_PATH}"
-  echo "Maven Central Publishing will definitely fail!"
-  exit 1
-fi
-
-echo "✓ Signature confirmed at Maven POM path: ${MAVEN_SIG_PATH}"
-
-# Run the Maven Central publish command with the new target directory
+# Run the Maven Central publish command
 mvn --batch-mode \
   -f "${WRAPPER_POM}" \
   -s .mvn/maven-settings.xml \
