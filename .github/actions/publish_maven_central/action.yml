@@ -93,6 +93,15 @@ runs:
 
         echo "Importing GPG key for signing"
         gpg --batch --import "${SIGNING_KEY_FILE}"
+        
+        # Configure GPG for CI environment
+        echo "Configuring GPG for CI environment..."
+        export GPG_TTY=$(tty 2>/dev/null || echo "")
+        gpg --batch --list-secret-keys --keyid-format LONG
+        
+        # Test GPG signing capability early
+        echo "Testing GPG signing capability..."
+        echo "test" | gpg --batch --yes --pinentry-mode loopback --passphrase "${SIGNING_KEY_PASSWORD}" --local-user "${SIGNING_KEY_ID}" --armor --detach-sign --output /tmp/test.asc || echo "Warning: GPG test signing failed"
 
         echo "Warming up Gradle wrapper (with retries)"
         attempts=0
@@ -120,6 +129,16 @@ runs:
 
         echo "Building library and preparing artifacts (AAR + sources + POM)"
         ./prepare-maven-artifacts.sh
+
+        echo "Pre-signing critical files using CI helper..."
+        # Use our CI signing helper to ensure POM signatures are created
+        if [ -f "ci-sign-helper.sh" ]; then
+          chmod +x ci-sign-helper.sh
+          # Try to sign the deploy POM template early
+          if [ -f "deploy-pom-template.xml" ]; then
+            ./ci-sign-helper.sh deploy-pom-template.xml || echo "Warning: Failed to pre-sign deploy POM template"
+          fi
+        fi
 
         echo "Deploying to Central Portal via Maven plugin"
         ./deploy-to-central.sh
