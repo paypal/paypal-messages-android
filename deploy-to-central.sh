@@ -123,7 +123,8 @@ echo "Wrapper POM signed and placed in all required locations"
 # Publish via Central plugin using the staged Maven-repo layout
 echo "Publishing via Maven Central Publishing plugin (stagingDirectory)..."
 # Create a separate target directory to avoid nesting issues
-MAVEN_TARGET="target/maven-bundle"
+MAVEN_TARGET_REL="target/maven-bundle"
+MAVEN_TARGET="${STAGING_ROOT}/${MAVEN_TARGET_REL}"
 rm -rf "${MAVEN_TARGET}"
 mkdir -p "${MAVEN_TARGET}"
 
@@ -205,8 +206,6 @@ else
   echo "This is an emergency signature placeholder created during deployment" > "${CENTRAL_PUBLISH_POM}.asc"
 fi
 
-# Sign the wrapper POM in its final Maven location (already handled above)
-
 # Verify signatures exist and fix any missing ones
 echo "Verifying signatures in bundle..."
 
@@ -264,7 +263,7 @@ fi
 mvn --batch-mode \
   -f "${WRAPPER_POM}" \
   -s .mvn/maven-settings.xml \
-  -DstagingDirectory="${MAVEN_TARGET}" \
+  -DstagingDirectory="${MAVEN_TARGET_REL}" \
   org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"
