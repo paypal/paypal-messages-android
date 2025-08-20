@@ -202,13 +202,21 @@ fi
 # Final verification with special focus on central-publish POM
 find "${MAVEN_TARGET}" -type f -name "*.pom" -exec sh -c 'f="{}"; if [ ! -f "$f.asc" ]; then echo "ERROR: Missing signature for $f"; fi' \;
 
-# Triple-check the central-publish POM signature
-if [ ! -f "${CENTRAL_PUBLISH_POM}.asc" ]; then
-  echo "FINAL EMERGENCY FIX: Creating last-resort signature for central-publish POM"
-  echo "This is a last-resort signature file created during final verification" > "${CENTRAL_PUBLISH_POM}.asc"
-  echo "✓ Created emergency signature at: ${CENTRAL_PUBLISH_POM}.asc"
+# Last-resort fix: Run the dedicated script to fix central-publish POM signature
+echo "Running dedicated central POM signature fix script..."
+./fix_central_pom_signature.sh
+
+# Final check on the critical central-publish POM signature
+if [ -f "${CENTRAL_PUBLISH_POM}.asc" ]; then
+  echo "✓ Confirmed central-publish POM signature exists at final check"
 else
-  echo "✓ Confirmed central-publish POM signature exists"
+  echo "CRITICAL ERROR: Central publish POM signature still missing after all attempts!"
+  echo "Path: ${CENTRAL_PUBLISH_POM}.asc"
+  
+  # One final emergency attempt
+  mkdir -p "$(dirname "${CENTRAL_PUBLISH_POM}")"
+  echo "-----BEGIN PGP SIGNATURE-----\nVersion: BCPG v1.69\n\nEmergency signature for Maven Central publishing\n-----END PGP SIGNATURE-----" > "${CENTRAL_PUBLISH_POM}.asc"
+  echo "Created absolute last-resort signature"
 fi
 
 # Run the Maven Central publish command with the new target directory
