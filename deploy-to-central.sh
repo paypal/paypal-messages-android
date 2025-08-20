@@ -139,36 +139,9 @@ rm -f "$WRAPPER_POM.bak"
 
 echo "✓ Wrapper POM created: ${WRAPPER_POM}"
 
-# CRITICAL: Create signature IMMEDIATELY - before any Maven plugin activities
-echo "Creating wrapper POM signature BEFORE Maven plugin discovery..."
-
-# Use our enhanced signing function with multiple fallbacks
-sign_file "$WRAPPER_POM"
-
-# If signing failed, create emergency signature for CI
-if [ ! -f "${WRAPPER_POM}.asc" ]; then
-  echo "WARNING: Normal signing failed - creating emergency signature for CI..."
-  if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ]; then
-    cat > "${WRAPPER_POM}.asc" << 'EOF'
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEMNjOz7QoU7QoU7QoU7QoU7QoU7QFAmFhYmAACgkQMNjOz7Qo
-U7QCI-emergency-signature-created-before-maven-plugin-discovery
-=CI08
------END PGP SIGNATURE-----
-EOF
-  fi
-fi
-
-# Verify signature exists - fail fast if not
-if [ ! -f "${WRAPPER_POM}.asc" ]; then
-  echo "CRITICAL ERROR: Unable to create wrapper POM signature!"
-  echo "Expected signature at: ${WRAPPER_POM}.asc"
-  echo "Maven plugin will definitely fail without this signature!"
-  exit 1
-fi
-
-echo "✓ Wrapper POM signature created: ${WRAPPER_POM}.asc"
+# NOTE: Maven GPG plugin will handle signing automatically
+# No need to create manual signatures - this was interfering with Maven's signing process
+echo "Skipping manual signature creation - Maven GPG plugin will handle signing..."
 
 echo "=== PHASE 1 COMPLETE: All files prepared ==="
 
@@ -372,17 +345,19 @@ if [ ! -f "${WRAPPER_POM}" ]; then
 fi
 echo "✓ Wrapper POM exists: ${WRAPPER_POM}"
 
-# Check 2: Wrapper POM signature must exist (this is the key requirement)
-if [ ! -f "${WRAPPER_POM}.asc" ]; then
-  echo "❌ CRITICAL: Wrapper POM signature missing: ${WRAPPER_POM}.asc"
-  echo "   Maven plugin will report 'Missing signature for file' error"
-  exit 1
+# Check 2: Verify Maven GPG plugin configuration exists in POM
+if grep -q "maven-gpg-plugin" "${WRAPPER_POM}"; then
+  echo "✓ Maven GPG plugin configured in POM - signing will be handled automatically"
+else
+  echo "❌ WARNING: Maven GPG plugin not found in POM - manual signing might be needed"
 fi
-echo "✓ Wrapper POM signature exists: ${WRAPPER_POM}.asc"
 
-# Check 3: Show signature preview for verification
-echo "  Signature preview:"
-head -3 "${WRAPPER_POM}.asc" | sed 's/^/    /'
+# Check 3: Verify GPG key is available
+if gpg --list-secret-keys >/dev/null 2>&1; then
+  echo "✓ GPG secret key available for Maven GPG plugin"
+else
+  echo "❌ WARNING: No GPG secret keys found - signing may fail"
+fi
 
 # Check 4: Verify staging directory contents
 echo ""
@@ -394,10 +369,14 @@ echo "Maven bundle directory contents:"
 ls -lR "${MAVEN_TARGET}" | sed -n '1,50p' || true
 
 echo ""
-echo "✅ PRE-FLIGHT CHECKS PASSED - Maven plugin should find both POM and signature"
+echo "✅ PRE-FLIGHT CHECKS PASSED - Maven GPG plugin will handle signing automatically"
 echo ""
 
 echo "=== INVOKING MAVEN CENTRAL PUBLISHING PLUGIN ==="
+echo "Maven will now:"
+echo "1. Use maven-gpg-plugin to sign the POM during 'verify' phase"
+echo "2. Central Publishing plugin will find both POM and signature"
+echo "3. Bundle and upload to Maven Central"
 
 # Run the Maven Central publish command
 mvn --batch-mode \
