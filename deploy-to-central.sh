@@ -104,6 +104,11 @@ echo "Signing wrapper POM file..."
 # Sign the original wrapper POM first (important for Maven Central plugin)
 sign_file "$WRAPPER_POM"
 
+# Also create a signature matching the final artifact filename next to the wrapper POM
+FINAL_NAME_POM="${STAGING_ROOT}/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom"
+cp "$WRAPPER_POM" "$FINAL_NAME_POM"
+sign_file "$FINAL_NAME_POM"
+
 # Create directory structure expected by Central plugin
 WRAPPER_ARTIFACT_DIR="${STAGING_ROOT}/com/paypal/messages/${ARTIFACT_ID}-central-publish/${VERSION_FIXED}"
 mkdir -p "$WRAPPER_ARTIFACT_DIR"
@@ -259,11 +264,19 @@ else
   echo "Created absolute last-resort signature"
 fi
 
+# Debug: list key directories prior to Maven publish
+echo "Listing wrapper POM directory (should include .asc and artifact-named .pom/.asc):"
+ls -l "${STAGING_ROOT}" || true
+
+echo "Listing bundle directory that will be zipped by plugin:"
+ls -lR "${MAVEN_TARGET}" | sed -n '1,200p' || true
+
 # Run the Maven Central publish command with the new target directory
 mvn --batch-mode \
   -f "${WRAPPER_POM}" \
   -s .mvn/maven-settings.xml \
   -DstagingDirectory="${MAVEN_TARGET_REL}" \
+  -Dorg.slf4j.simpleLogger.log.org.sonatype.central=debug \
   org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"
