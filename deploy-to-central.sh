@@ -166,13 +166,13 @@ mkdir -p "$WRAPPER_ARTIFACT_DIR"
 
 # Copy to original artifact directory for inclusion in bundle
 cp "$WRAPPER_POM" "$WRAPPER_ARTIFACT_DIR/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom"
-cp "$WRAPPER_POM.asc" "$WRAPPER_ARTIFACT_DIR/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom.asc"
+# Skip copying signature - Maven GPG plugin will create it during signing phase
 
 # Copy to library artifact directory as well (for completeness)
 WRAPPER_POM_DST="${STAGING_ROOT}/${GROUP_PATH}/${VERSION_FIXED}/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom"
 mkdir -p "$(dirname "$WRAPPER_POM_DST")"
 cp "$WRAPPER_POM" "$WRAPPER_POM_DST"
-cp "$WRAPPER_POM.asc" "$WRAPPER_POM_DST.asc"
+# Skip copying signature - Maven GPG plugin will create it during signing phase
 
 echo "Wrapper POM signed and placed in all required locations"
 
@@ -230,11 +230,8 @@ echo "Ensuring signature exists for central-publish POM"
 # Try to sign it first using standard method
 sign_file "${CENTRAL_PUBLISH_POM}"
 
-# If still missing signature, try copying
-if [ ! -f "${CENTRAL_PUBLISH_POM}.asc" ] && [ -f "${WRAPPER_POM}.asc" ]; then
-  echo "Copying existing signature from wrapper POM"
-  cp "${WRAPPER_POM}.asc" "${CENTRAL_PUBLISH_POM}.asc"
-fi
+# Skip copying signature - Maven GPG plugin will handle signing
+echo "Skipping signature copying - Maven GPG plugin will create signatures automatically"
 
 # Use CI signing helper as additional fallback
 if [ ! -f "${CENTRAL_PUBLISH_POM}.asc" ] && [ -f "ci-sign-helper.sh" ] && [ -x "ci-sign-helper.sh" ]; then
@@ -378,12 +375,13 @@ echo "1. Use maven-gpg-plugin to sign the POM during 'verify' phase"
 echo "2. Central Publishing plugin will find both POM and signature"
 echo "3. Bundle and upload to Maven Central"
 
-# Run the Maven Central publish command
+# Run the Maven Central publish command (including verify phase for GPG signing)
 mvn --batch-mode \
   -f "${WRAPPER_POM}" \
   -s .mvn/maven-settings.xml \
   -DstagingDirectory="${MAVEN_TARGET_REL}" \
   -Dorg.slf4j.simpleLogger.log.org.sonatype.central=debug \
+  verify \
   org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"
