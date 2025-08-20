@@ -148,27 +148,18 @@ if [ ! -f "${CENTRAL_BUNDLE_POM}" ]; then
 fi
 
 # Create signature file directly in the bundle directory (this is what Maven Central checks)
-echo "Creating signature for central-publish POM in maven-bundle target..."
-if command -v gpg &>/dev/null && [ -n "$SIGNING_KEY_PASSWORD" ]; then
-  # Try GPG signing
-  if [ -n "$SIGNING_KEY_ID" ]; then
-    printf '%s' "$SIGNING_KEY_PASSWORD" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --local-user "$SIGNING_KEY_ID" --armor --detach-sign "${CENTRAL_BUNDLE_POM}" || echo "GPG signing failed, will create placeholder"
-  else
-    printf '%s' "$SIGNING_KEY_PASSWORD" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --armor --detach-sign "${CENTRAL_BUNDLE_POM}" || echo "GPG signing failed, will create placeholder"
-  fi
-fi
+echo "Signing central-publish POM in maven-bundle target..."
+sign_file "${CENTRAL_BUNDLE_POM}"
 
-# Always create a placeholder signature if one doesn't exist
+# Verify signature exists (fail fast)
 if [ ! -f "${CENTRAL_BUNDLE_POM}.asc" ]; then
-  echo "Creating placeholder signature for central-publish POM in maven-bundle target..."
-  echo "-----BEGIN PGP SIGNATURE-----\nVersion: BCPG v1.69\n\nThis is a placeholder signature file created for Maven Central Publishing.\n-----END PGP SIGNATURE-----" > "${CENTRAL_BUNDLE_POM}.asc"
+  echo "ERROR: Failed to create signature for central-publish POM in maven-bundle target!"
+  exit 1
 fi
 
-# Verify signature exists
-if [ -f "${CENTRAL_BUNDLE_POM}.asc" ]; then
-  echo "✓ Created signature for central-publish POM in maven-bundle target: ${CENTRAL_BUNDLE_POM}.asc"
-else
-  echo "ERROR: Failed to create signature for central-publish POM in maven-bundle target!"
+# Optionally verify the signature (non-fatal if verification fails due to key trust)
+if command -v gpg &>/dev/null; then
+  gpg --verify "${CENTRAL_BUNDLE_POM}.asc" "${CENTRAL_BUNDLE_POM}" || echo "Warning: gpg --verify failed for central-publish POM signature"
 fi
 
 # Special handling for the central-publish POM file
@@ -194,10 +185,10 @@ if [ ! -f "${CENTRAL_PUBLISH_POM}.asc" ] && [ -f "${WRAPPER_POM}.asc" ]; then
   cp "${WRAPPER_POM}.asc" "${CENTRAL_PUBLISH_POM}.asc"
 fi
 
-# If still missing, use the dedicated signature creation script
+# Fail fast if still missing
 if [ ! -f "${CENTRAL_PUBLISH_POM}.asc" ]; then
-  echo "Using dedicated script to create signature for central-publish POM"
-  ./create_pom_signature.sh "${CENTRAL_PUBLISH_POM}"
+  echo "ERROR: Failed to create central-publish POM signature!"
+  exit 1
 fi
 
 # Verify signature exists
@@ -208,7 +199,7 @@ else
   
   # Last resort fallback
   echo "Creating last-resort placeholder signature file"
-  echo "This is an emergency signature placeholder created during deployment" > "${CENTRAL_PUBLISH_POM}.asc"
+  echo "This is an emergency signature placeholder created for Maven Central Publishing." > "${CENTRAL_PUBLISH_POM}.asc"
 fi
 
 # Verify signatures exist and fix any missing ones
@@ -219,8 +210,8 @@ echo "Fixing any missing POM signatures..."
 
 # Handle central-publish POM again to be extra sure
 if [ ! -f "${CENTRAL_PUBLISH_POM}.asc" ]; then
-  echo "CRITICAL: Central publish POM signature still missing! Creating emergency signature."
-  echo "This is an emergency signature created during final check" > "${CENTRAL_PUBLISH_POM}.asc"
+  echo "CRITICAL: Central publish POM signature still missing! Aborting."
+  exit 1
 fi
 
 # Double-check for any remaining missing signatures
@@ -244,11 +235,11 @@ find "${MAVEN_TARGET}" -type f -name "*.pom" -exec sh -c 'f="{}"; if [ ! -f "$f.
 # Last-resort fix: Try one more direct approach based on the Maven Central error message
 echo "Final check on Maven bundle signature..."
 
-# Check if the signature exists in the Maven target directory (this is what Maven Central checks)
+# Verify that the signature exists in the Maven target bundle directory
 MAVEN_CENTRAL_POM="${MAVEN_TARGET}/com/paypal/messages/${ARTIFACT_ID}-central-publish/${VERSION_FIXED}/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom"
 if [ ! -f "${MAVEN_CENTRAL_POM}.asc" ]; then
-  echo "CRITICAL: Creating signature directly in the Maven target bundle directory"
-  echo "-----BEGIN PGP SIGNATURE-----\nVersion: BCPG v1.69\n\nThis is a placeholder signature file created for Maven Central Publishing.\nIt was generated during the deployment process as a fallback.\n-----END PGP SIGNATURE-----" > "${MAVEN_CENTRAL_POM}.asc"
+  echo "CRITICAL: Missing signature directly in the Maven target bundle directory"
+  exit 1
 fi
 
 # Final check on the critical central-publish POM signature
@@ -257,11 +248,7 @@ if [ -f "${CENTRAL_PUBLISH_POM}.asc" ]; then
 else
   echo "CRITICAL ERROR: Central publish POM signature still missing after all attempts!"
   echo "Path: ${CENTRAL_PUBLISH_POM}.asc"
-  
-  # One final emergency attempt
-  mkdir -p "$(dirname "${CENTRAL_PUBLISH_POM}")"
-  echo "-----BEGIN PGP SIGNATURE-----\nVersion: BCPG v1.69\n\nEmergency signature for Maven Central publishing\n-----END PGP SIGNATURE-----" > "${CENTRAL_PUBLISH_POM}.asc"
-  echo "Created absolute last-resort signature"
+  exit 1
 fi
 
 # Debug: list key directories prior to Maven publish
