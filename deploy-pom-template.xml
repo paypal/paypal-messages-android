@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>PLACEHOLDER_GROUP_ID</groupId>
+  <artifactId>PLACEHOLDER_ARTIFACT_ID-central-publish</artifactId>
+  <version>PLACEHOLDER_VERSION</version>
+  <packaging>pom</packaging>
+  <name>PayPal Messages Android Central Publish</name>
+  <description>Wrapper POM for publishing PayPal Messages Android Library to Maven Central</description>
+  <url>https://github.com/paypal/paypal-messages-android</url>
+  
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  
+  <developers>
+    <developer>
+      <id>paypal</id>
+      <name>PayPal</name>
+      <email>dl-paypal-messages@paypal.com</email>
+      <organization>PayPal</organization>
+      <organizationUrl>https://www.paypal.com</organizationUrl>
+    </developer>
+  </developers>
+  
+  <scm>
+    <connection>scm:git:git://github.com/paypal/paypal-messages-android.git</connection>
+    <developerConnection>scm:git:ssh://github.com:paypal/paypal-messages-android.git</developerConnection>
+    <url>https://github.com/paypal/paypal-messages-android</url>
+  </scm>
+  
+  <build>
+    <plugins>
+      <!-- Maven GPG Plugin for signing artifacts -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            <configuration>
+              <gpgArguments>
+                <arg>--batch</arg>
+                <arg>--yes</arg>
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+              </gpgArguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <!-- Central Publishing Maven Plugin -->
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.8.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+          <autoPublish>false</autoPublish>
+          <waitUntil>validated</waitUntil>
+          <deploymentName>PayPal Messages Android PLACEHOLDER_VERSION</deploymentName>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
