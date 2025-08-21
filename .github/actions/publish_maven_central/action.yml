@@ -130,15 +130,12 @@ runs:
         echo "Building library and preparing artifacts (AAR + sources + POM)"
         ./prepare-maven-artifacts.sh
 
-        echo "Pre-signing critical files using CI helper..."
-        # Use our CI signing helper to ensure POM signatures are created
-        if [ -f "ci-sign-helper.sh" ]; then
-          chmod +x ci-sign-helper.sh
-          # Try to sign the deploy POM template early
-          if [ -f "deploy-pom-template.xml" ]; then
-            ./ci-sign-helper.sh deploy-pom-template.xml || echo "Warning: Failed to pre-sign deploy POM template"
-          fi
-        fi
+        echo "Using library POM directly - no wrapper POM needed..."
+        # The library POM already has all the required configuration:
+        # - packaging=aar (AAR as primary artifact)
+        # - maven-gpg-plugin (for signing)
+        # - central-publishing-maven-plugin (for deployment)
+        echo "Library POM has all required Maven Central configuration"
 
         echo "Deploying to Central Portal via Maven plugin"
         ./deploy-to-central.sh

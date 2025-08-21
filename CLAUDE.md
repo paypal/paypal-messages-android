@@ -302,3 +302,4 @@ This guide should provide sufficient context for Claude to understand and work e
 - Bundle okhttp into aar
 - AAR should be primary artifact
 - Deploy only the library module
+- Sign the POM
