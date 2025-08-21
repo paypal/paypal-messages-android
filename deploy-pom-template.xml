@@ -3,11 +3,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>PLACEHOLDER_GROUP_ID</groupId>
-  <artifactId>PLACEHOLDER_ARTIFACT_ID-central-publish</artifactId>
+  <artifactId>PLACEHOLDER_ARTIFACT_ID</artifactId>
   <version>PLACEHOLDER_VERSION</version>
   <packaging>pom</packaging>
-  <name>PayPal Messages Android Central Publish</name>
-  <description>Wrapper POM for publishing PayPal Messages Android Library to Maven Central</description>
+  <name>PayPal Messages Android</name>
+  <description>PayPal Messages Android Library</description>
   <url>https://github.com/paypal/paypal-messages-android</url>
   
   <licenses>
@@ -22,7 +22,7 @@
     <developer>
       <id>paypal</id>
       <name>PayPal</name>
-      <email>dl-paypal-messages@paypal.com</email>
+      <email>sdks-messages@paypal.com</email>
       <organization>PayPal</organization>
       <organizationUrl>https://www.paypal.com</organizationUrl>
     </developer>

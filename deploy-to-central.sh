@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Script to deploy artifacts to Maven Central using wrapper POM approach
-# This restores the working wrapper approach but fixes artifact inclusion
+# Script to deploy artifacts to Maven Central using library POM directly
+# This approach ensures the AAR packaging type is preserved
 set -e
 
 echo "Deploying to Maven Central Portal..."
@@ -51,26 +51,10 @@ for file in "${STAGE_DIR}"/*; do
     fi
 done
 
-echo "Creating wrapper POM for Central plugin from template..."
-WRAPPER_POM="${STAGING_ROOT}/deploy-pom.xml"
-cp deploy-pom-template.xml "$WRAPPER_POM"
-
-# Replace placeholders
-sed -i.bak "s/PLACEHOLDER_GROUP_ID/${GROUP_ID}/g" "$WRAPPER_POM"
-sed -i.bak "s/PLACEHOLDER_ARTIFACT_ID/${ARTIFACT_ID}/g" "$WRAPPER_POM"
-sed -i.bak "s/PLACEHOLDER_VERSION/${VERSION_FIXED}/g" "$WRAPPER_POM"
-rm -f "$WRAPPER_POM.bak"
-
-# Fix XML name tags
-echo "Fixing XML name tags in POM file..."
-./fix_xml_during_deploy.sh "$WRAPPER_POM"
-rm -f "$WRAPPER_POM.bak"
-
-# Sign the wrapper POM
-echo "Signing wrapper POM..."
-if [ -f "ci-sign-helper.sh" ] && [ -x "ci-sign-helper.sh" ]; then
-    ./ci-sign-helper.sh "$WRAPPER_POM"
-fi
+echo "Using library POM directly for deployment..."
+# Use the library POM directly instead of creating a wrapper POM
+LIBRARY_POM="${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
+echo "Library POM: ${LIBRARY_POM}"
 
 # Create target directory for Maven plugin
 MAVEN_TARGET_REL="target/maven-bundle"
@@ -78,25 +62,12 @@ MAVEN_TARGET="${STAGING_ROOT}/${MAVEN_TARGET_REL}"
 rm -rf "${MAVEN_TARGET}"
 mkdir -p "${MAVEN_TARGET}"
 
-# Copy ALL staged artifacts (library + wrapper) to target directory
+# Copy all staged artifacts to target directory
 echo "Copying all artifacts to Maven target directory..."
 cp -r "${STAGING_ROOT}/com" "${MAVEN_TARGET}/"
 
-# CRITICAL: Create wrapper POM directory structure in Maven target
-WRAPPER_TARGET_DIR="${MAVEN_TARGET}/com/paypal/messages/${ARTIFACT_ID}-central-publish/${VERSION_FIXED}"
-mkdir -p "${WRAPPER_TARGET_DIR}"
-
-# Copy wrapper POM to proper location in target
-cp "${WRAPPER_POM}" "${WRAPPER_TARGET_DIR}/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom"
-if [ -f "${WRAPPER_POM}.asc" ]; then
-    cp "${WRAPPER_POM}.asc" "${WRAPPER_TARGET_DIR}/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom.asc"
-fi
-
-# Also place wrapper POM in root for Maven to find
-cp "${WRAPPER_POM}" "${MAVEN_TARGET}/"
-if [ -f "${WRAPPER_POM}.asc" ]; then
-    cp "${WRAPPER_POM}.asc" "${MAVEN_TARGET}/"
-fi
+# Use the library POM directly for deployment - no wrapper POM needed
+echo "The library POM already has packaging=aar and will be the primary artifact"
 
 echo "Final verification - listing all files that will be uploaded:"
 find "${MAVEN_TARGET}" -type f | sort
@@ -107,7 +78,7 @@ ABSOLUTE_MAVEN_TARGET=$(realpath "${MAVEN_TARGET}")
 echo "Using absolute staging directory: ${ABSOLUTE_MAVEN_TARGET}"
 
 mvn --batch-mode \
-  -f "${WRAPPER_POM}" \
+  -f "${LIBRARY_POM}" \
   -s .mvn/maven-settings.xml \
   -DstagingDirectory="${ABSOLUTE_MAVEN_TARGET}" \
   -Dorg.slf4j.simpleLogger.log.org.sonatype.central=debug \
