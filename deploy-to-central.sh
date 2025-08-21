@@ -82,6 +82,16 @@ mkdir -p "${MAVEN_TARGET}"
 echo "Copying all artifacts to Maven target directory..."
 cp -r "${STAGING_ROOT}/com" "${MAVEN_TARGET}/"
 
+# CRITICAL: Create wrapper POM directory structure in Maven target
+WRAPPER_TARGET_DIR="${MAVEN_TARGET}/com/paypal/messages/${ARTIFACT_ID}-central-publish/${VERSION_FIXED}"
+mkdir -p "${WRAPPER_TARGET_DIR}"
+
+# Copy wrapper POM to proper location in target
+cp "${WRAPPER_POM}" "${WRAPPER_TARGET_DIR}/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom"
+if [ -f "${WRAPPER_POM}.asc" ]; then
+    cp "${WRAPPER_POM}.asc" "${WRAPPER_TARGET_DIR}/${ARTIFACT_ID}-central-publish-${VERSION_FIXED}.pom.asc"
+fi
+
 # Also place wrapper POM in root for Maven to find
 cp "${WRAPPER_POM}" "${MAVEN_TARGET}/"
 if [ -f "${WRAPPER_POM}.asc" ]; then
@@ -92,10 +102,14 @@ echo "Final verification - listing all files that will be uploaded:"
 find "${MAVEN_TARGET}" -type f | sort
 
 # Run the Maven Central publish command
+# Use absolute path for staging directory to ensure plugin finds all artifacts
+ABSOLUTE_MAVEN_TARGET=$(realpath "${MAVEN_TARGET}")
+echo "Using absolute staging directory: ${ABSOLUTE_MAVEN_TARGET}"
+
 mvn --batch-mode \
   -f "${WRAPPER_POM}" \
   -s .mvn/maven-settings.xml \
-  -DstagingDirectory="${MAVEN_TARGET_REL}" \
+  -DstagingDirectory="${ABSOLUTE_MAVEN_TARGET}" \
   -Dorg.slf4j.simpleLogger.log.org.sonatype.central=debug \
   verify \
   org.sonatype.central:central-publishing-maven-plugin:publish
