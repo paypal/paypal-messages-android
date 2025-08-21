@@ -59,9 +59,9 @@ mkdir -p "$WORK_DIR"
 # Copy the library POM to working directory
 cp "$LIBRARY_POM" "$WORK_DIR/pom.xml"
 
-# Update version in the copied POM to match the build
-echo "Updating POM version to: $VERSION_FIXED"
-sed -i.bak "s/<version>.*<\/version>/<version>$VERSION_FIXED<\/version>/g" "$WORK_DIR/pom.xml"
+# Update only the project version, not plugin versions
+echo "Updating POM project version to: $VERSION_FIXED"
+sed -i.bak "0,/<version>.*<\/version>/s//<version>$VERSION_FIXED<\/version>/" "$WORK_DIR/pom.xml"
 rm -f "$WORK_DIR/pom.xml.bak"
 
 # Set up Maven to use our prepared artifacts
@@ -82,15 +82,33 @@ echo "2. Sign all artifacts with GPG during 'verify' phase"
 echo "3. Deploy to Maven Central via Central Publishing plugin"
 echo ""
 
-# Run Maven to deploy the library to Central
-# The library POM is configured to deploy to Maven Central via the central-publishing-maven-plugin
+# Maven doesn't natively understand AAR packaging, so we need to copy artifacts to the right place
+# and change packaging to 'jar' temporarily, then use the Central Publishing plugin directly
+
+echo "Setting up artifacts for Maven Central Publishing plugin..."
+
+# Create a proper Maven project structure
+PROJECT_DIR="$WORK_DIR/target"
+mkdir -p "$PROJECT_DIR"
+
+# Copy all artifacts to the target directory with standard Maven naming
+cp "${LIBRARY_BUILD_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.aar" "$PROJECT_DIR/${ARTIFACT_ID}-${VERSION_FIXED}.aar"
+cp "${LIBRARY_BUILD_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom" "$PROJECT_DIR/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
+cp "${LIBRARY_BUILD_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-sources.jar" "$PROJECT_DIR/${ARTIFACT_ID}-${VERSION_FIXED}-sources.jar"
+cp "${LIBRARY_BUILD_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-javadoc.jar" "$PROJECT_DIR/${ARTIFACT_ID}-${VERSION_FIXED}-javadoc.jar"
+
+# Change packaging to 'pom' to avoid Maven AAR issues, then use Central Publishing plugin directly
+sed -i.bak "s/<packaging>aar<\/packaging>/<packaging>pom<\/packaging>/" "$WORK_DIR/pom.xml"
+rm -f "$WORK_DIR/pom.xml.bak"
+
+# Use the Central Publishing plugin to deploy directly
+echo "Deploying via Central Publishing Maven Plugin..."
 mvn --batch-mode \
   -f "$WORK_DIR/pom.xml" \
   -s .mvn/maven-settings.xml \
   -DskipTests=true \
-  -Dmaven.build.dir="$LIBRARY_BUILD_DIR" \
-  -Dmaven.build.finalName="${ARTIFACT_ID}-${VERSION_FIXED}" \
-  clean verify \
+  -Dmaven.install.skip=true \
+  -Dmaven.deploy.skip=true \
   org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"
