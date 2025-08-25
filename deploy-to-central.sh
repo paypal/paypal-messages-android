@@ -71,23 +71,17 @@ done
 
 echo "Using library POM directly for deployment..."
 # Use the library POM directly instead of creating a wrapper POM
-LIBRARY_POM="${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
+LIBRARY_POM="${STAGE_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
 echo "Library POM: ${LIBRARY_POM}"
 
 # Fix the POM file to ensure it has proper name tags and extensions for AAR packaging
-echo "Fixing POM file for Maven Central..."
-
-# Use our dedicated POM fixer for the action
-if [ -x ".github/actions/publish_maven_central/fix_pom_in_action.sh" ]; then
-    echo "Using GitHub Action POM fixer script..."
-    .github/actions/publish_maven_central/fix_pom_in_action.sh "$LIBRARY_POM" "$VERSION_FIXED"
+if [ -x "./fix_pom_for_central.sh" ]; then
+    echo "Using POM fixer script..."
+    ./fix_pom_for_central.sh "$LIBRARY_POM"
 else
-    echo "Creating a new POM file with proper formatting..."
-    # Create a temporary file
-    NEW_POM=$(mktemp)
-    
+    echo "POM fixer script not found! Using direct approach."
     # Create a completely new POM with proper tags
-    cat > "$NEW_POM" << XML
+    cat > "$LIBRARY_POM" << XML
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -259,30 +253,8 @@ else
     </dependencies>
 </project>
 XML
-    
-    # Replace the original file with our corrected version
-    cp "$LIBRARY_POM" "$LIBRARY_POM.orig"
-    cp "$NEW_POM" "$LIBRARY_POM"
-    rm -f "$NEW_POM"
+    echo "Created new POM file directly"
 fi
-
-# Verify changes were applied
-echo "Verifying fixes..."
-echo "- Checking name tags:"
-grep -n "<name>" "$LIBRARY_POM" | head -3 || echo "  No name tags found!"
-echo "- Checking plugin versions:"
-grep -n "central-publishing-maven-plugin" -A 2 "$LIBRARY_POM" || echo "  Plugin not found!"
-grep -n "<version>0.8.0</version>" "$LIBRARY_POM" || echo "  Version 0.8.0 not found!"
-grep -n "maven-gpg-plugin" -A 2 "$LIBRARY_POM" || echo "  GPG plugin not found!"
-echo "- Checking dependency versions:"
-grep -n "<groupId>com.google.code.gson</groupId>" -A 2 "$LIBRARY_POM" || echo "  Gson dependency not found!"
-grep -n "<groupId>com.squareup.okhttp3</groupId>" -A 2 "$LIBRARY_POM" || echo "  OkHttp dependency not found!"
-echo "- Checking extensions:"
-grep -n "<extensions>" -A 5 "$LIBRARY_POM" || echo "  No extensions found!"
-echo "- Checking packaging type:"
-grep -n "<packaging>aar</packaging>" "$LIBRARY_POM" || echo "  AAR packaging not found!"
-
-echo "POM file fixed successfully!"
 
 # Create target directory for Maven plugin
 MAVEN_TARGET_REL="target/maven-bundle"
@@ -324,24 +296,10 @@ else
     exit 1
 fi
 
-# Verify plugin versions - fix the POM file if it has the wrong version
-if ! grep -q "<version>0.8.0</version>" "$POM_FILE" || grep -q "<version>1.1.7</version>" "$POM_FILE"; then
-    echo "\n!!! POM file has incorrect plugin versions - fixing them directly !!!"
-    # Replace all instances of version 1.1.7 with 0.8.0 for central-publishing-maven-plugin
-    perl -i -pe 's|(<artifactId>central-publishing-maven-plugin</artifactId>\s*)<version>[^<]+</version>|\1<version>0.8.0</version>|g' "$POM_FILE"
-    # Replace all instances of version 1.1.7 with 3.2.8 for maven-gpg-plugin
-    perl -i -pe 's|(<artifactId>maven-gpg-plugin</artifactId>\s*)<version>[^<]+</version>|\1<version>3.2.8</version>|g' "$POM_FILE"
-    echo "Fixed plugin versions in $POM_FILE"
-fi
-
-# Verify the fix was successful
-if grep -q "<version>0.8.0</version>" "$POM_FILE"; then
-    echo "\n=== POM file has correct central-publishing-maven-plugin version ==="
-    grep -n "central-publishing-maven-plugin" -A 2 "$POM_FILE"
-else
-    echo "\n!!! ERROR: POM file has incorrect central-publishing-maven-plugin version !!!"
-    grep -n "central-publishing-maven-plugin" -A 2 "$POM_FILE" || echo "Plugin not found in POM file"
-    exit 1
+# Fix the POM file in the target directory again to be double sure
+if [ -x "./fix_pom_for_central.sh" ]; then
+    echo "Using POM fixer script on target POM..."
+    ./fix_pom_for_central.sh "$POM_FILE"
 fi
 
 # Run the Maven Central publish command
