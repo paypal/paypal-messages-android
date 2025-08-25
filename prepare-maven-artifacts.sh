@@ -56,9 +56,28 @@ jar cf "${TARGET_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-javadoc.jar" -C "$JAVADOC_
 echo "Copying POM file..."
 cp "library/pom.xml" "$TARGET_DIR/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
 
-# Update version in the copied POM
-sed -i.bak "s/<version>.*<\/version>/<version>${VERSION_FIXED}<\/version>/g" "$TARGET_DIR/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
-rm "$TARGET_DIR/${ARTIFACT_ID}-${VERSION_FIXED}.pom.bak"
+# Update project version in the copied POM
+GENERATED_POM="$TARGET_DIR/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
+echo "Updating project version to ${VERSION_FIXED} in POM..."
+sed -i.bak "s/<version>[^<]*<\/version>/<version>${VERSION_FIXED}<\/version>/" "$GENERATED_POM" 2>/dev/null || echo "Warning: Version replacement failed"
+grep -n "<version>" "$GENERATED_POM" | head -1 || echo "No version tag found"
+
+# Run the POM fixer script to correct name tags and plugin versions
+if [ -f "./fix_pom_for_central.sh" ]; then
+  echo "Running POM fixer script..."
+  ./fix_pom_for_central.sh "$GENERATED_POM"
+elif [ -f "./fix_name_tags.sh" ]; then
+  echo "Running name tag fixer script..."
+  ./fix_name_tags.sh "$GENERATED_POM"
+else
+  echo "Warning: POM fixer scripts not found. Manual fix may be required."
+  # Try to fix name tags directly
+  echo "Attempting to fix name tags directly..."
+  sed -i.bak 's/<n>/<name>/g' "$GENERATED_POM"
+  sed -i.bak 's/<\/n>/<\/name>/g' "$GENERATED_POM"
+fi
+
+rm -f "$GENERATED_POM.bak"
 
 echo "Artifacts prepared in: $TARGET_DIR"
 echo "Contents:"

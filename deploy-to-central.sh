@@ -56,6 +56,31 @@ echo "Using library POM directly for deployment..."
 LIBRARY_POM="${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
 echo "Library POM: ${LIBRARY_POM}"
 
+# Fix the POM file to ensure it has proper name tags and extensions for AAR packaging
+echo "Fixing POM file for Maven Central..."
+if [ -f "./fix_pom_names.sh" ]; then
+    echo "Using direct POM name fixer script..."
+    ./fix_pom_names.sh "$LIBRARY_POM"
+    echo "Fixed POM file will be used for deployment"
+else
+    echo "Warning: POM fixer script not found. Will attempt to continue with the original POM file."
+    
+    # Try a direct fix as a last resort
+    echo "Attempting direct name tag fix as fallback..."
+    # Create temporary sed script files to avoid special character issues
+    echo 's/<n>PayPal Messages<\/n>/<name>PayPal Messages<\/name>/g' > /tmp/fix_n_name1.sed
+    echo 's/<n>The Apache License, Version 2.0<\/n>/<name>The Apache License, Version 2.0<\/name>/g' > /tmp/fix_n_name2.sed
+    echo 's/<n>PayPalMessages Android<\/n>/<name>PayPalMessages Android<\/name>/g' > /tmp/fix_n_name3.sed
+    
+    # Apply the fixes
+    sed -i.bak -f /tmp/fix_n_name1.sed "$LIBRARY_POM"
+    sed -i.bak -f /tmp/fix_n_name2.sed "$LIBRARY_POM"
+    sed -i.bak -f /tmp/fix_n_name3.sed "$LIBRARY_POM"
+    
+    # Clean up
+    rm -f "$LIBRARY_POM.bak" /tmp/fix_n_name*.sed
+fi
+
 # Create target directory for Maven plugin
 MAVEN_TARGET_REL="target/maven-bundle"
 MAVEN_TARGET="${STAGING_ROOT}/${MAVEN_TARGET_REL}"
