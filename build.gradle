@@ -4,7 +4,7 @@ import org.jmailen.gradle.kotlinter.tasks.FormatTask
 
 buildscript {
 		ext.modules = [
-			"sdkVersionName"      : "1.1.7",
+			"sdkVersionName"      : "1.1.8",
 			"androidMinSdkVersion": 23,
 			"androidTargetVersion": 34
 		]

@@ -71,7 +71,7 @@ cat > "$POM_FILE" << XML
                 <configuration>
                     <publishingServerId>central</publishingServerId>
                     <tokenAuth>true</tokenAuth>
-                    <autoPublish>true</autoPublish>
+                    <autoPublish>false</autoPublish>
                     <waitUntil>validated</waitUntil>
                     <deploymentName>PayPal Messages Android \${project.version}</deploymentName>
                 </configuration>
