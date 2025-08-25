@@ -11,6 +11,31 @@ fi
 
 echo "Creating a completely new POM file with proper tags for version $VERSION"
 
+# Always make a backup of the original file
+cp "$POM_FILE" "$POM_FILE.bak"
+
+# First try to fix the existing file directly
+echo "Attempting direct fixes to POM file first..."
+perl -i -pe 's|(<artifactId>central-publishing-maven-plugin</artifactId>\s*)<version>[^<]+</version>|\1<version>0.8.0</version>|g' "$POM_FILE"
+perl -i -pe 's|(<artifactId>maven-gpg-plugin</artifactId>\s*)<version>[^<]+</version>|\1<version>3.2.8</version>|g' "$POM_FILE"
+perl -i -pe 's|(<groupId>com\.google\.code\.gson</groupId>\s*<artifactId>gson</artifactId>\s*)<version>[^<]+</version>|\1<version>2.9.1</version>|g' "$POM_FILE"
+perl -i -pe 's|(<groupId>com\.squareup\.okhttp3</groupId>\s*<artifactId>okhttp</artifactId>\s*)<version>[^<]+</version>|\1<version>4.8.0</version>|g' "$POM_FILE"
+perl -i -pe 's|<n>PayPal Messages</n>|<name>PayPal Messages</name>|g' "$POM_FILE"
+perl -i -pe 's|<n>The Apache License, Version 2.0</n>|<name>The Apache License, Version 2.0</name>|g' "$POM_FILE"
+perl -i -pe 's|<n>PayPalMessages Android</n>|<name>PayPalMessages Android</name>|g' "$POM_FILE"
+
+# Verify if direct fixes worked
+if grep -q "<version>0.8.0</version>" "$POM_FILE" && grep -q "<name>" "$POM_FILE"; then
+    echo "Direct fixes successful!"
+    grep -n "central-publishing-maven-plugin" -A 2 "$POM_FILE"
+    grep -n "<name>" "$POM_FILE" | head -3
+    echo "Skipping template-based replacement."
+    exit 0
+fi
+
+# If direct fixes failed, fall back to template replacement
+echo "Direct fixes failed or incomplete. Creating new POM from template..."
+
 # Create a new POM file from template
 cat > "$POM_FILE.new" << XML
 <?xml version="1.0" encoding="UTF-8"?>

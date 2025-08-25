@@ -324,7 +324,17 @@ else
     exit 1
 fi
 
-# Verify plugin versions
+# Verify plugin versions - fix the POM file if it has the wrong version
+if ! grep -q "<version>0.8.0</version>" "$POM_FILE" || grep -q "<version>1.1.7</version>" "$POM_FILE"; then
+    echo "\n!!! POM file has incorrect plugin versions - fixing them directly !!!"
+    # Replace all instances of version 1.1.7 with 0.8.0 for central-publishing-maven-plugin
+    perl -i -pe 's|(<artifactId>central-publishing-maven-plugin</artifactId>\s*)<version>[^<]+</version>|\1<version>0.8.0</version>|g' "$POM_FILE"
+    # Replace all instances of version 1.1.7 with 3.2.8 for maven-gpg-plugin
+    perl -i -pe 's|(<artifactId>maven-gpg-plugin</artifactId>\s*)<version>[^<]+</version>|\1<version>3.2.8</version>|g' "$POM_FILE"
+    echo "Fixed plugin versions in $POM_FILE"
+fi
+
+# Verify the fix was successful
 if grep -q "<version>0.8.0</version>" "$POM_FILE"; then
     echo "\n=== POM file has correct central-publishing-maven-plugin version ==="
     grep -n "central-publishing-maven-plugin" -A 2 "$POM_FILE"
