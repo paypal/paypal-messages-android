@@ -104,69 +104,17 @@ cat > "$POM_FILE" << XML
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.9.1</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>4.8.0</version>
-            <scope>compile</scope>
-        </dependency>
-        
-        <!-- Android dependencies (provided scope) -->
-        <dependency>
-            <groupId>androidx.core</groupId>
-            <artifactId>core-ktx</artifactId>
-            <version>1.10.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>androidx.appcompat</groupId>
-            <artifactId>appcompat</artifactId>
-            <version>1.6.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.android.material</groupId>
-            <artifactId>material</artifactId>
-            <version>1.9.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>androidx.compose.foundation</groupId>
-            <artifactId>foundation</artifactId>
-            <version>1.4.3</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>androidx.compose.runtime</groupId>
-            <artifactId>runtime</artifactId>
-            <version>1.4.3</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>androidx.compose.ui</groupId>
-            <artifactId>ui</artifactId>
-            <version>1.4.3</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>androidx.compose.material3</groupId>
-            <artifactId>material3</artifactId>
-            <version>1.1.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>androidx.activity</groupId>
-            <artifactId>activity-compose</artifactId>
-            <version>1.7.2</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
 XML
 
-echo "Created new POM file with jar packaging type"
+echo "Created new POM file with jar packaging type and minimal dependencies"
 
 # Verify the new POM file
 echo "=== Verifying POM file ==="
@@ -179,5 +127,8 @@ grep -n "maven-gpg-plugin" -A 2 "$POM_FILE" || echo "GPG plugin not found!"
 
 echo "- Name tags:"
 grep -n "<name>" "$POM_FILE" | head -3 || echo "No name tags found!"
+
+echo "- Dependencies:"
+grep -n "<dependency>" -A 4 "$POM_FILE" || echo "No dependencies found!"
 
 echo "=== POM file fixed! ==="
