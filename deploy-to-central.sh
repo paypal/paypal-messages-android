@@ -58,28 +58,51 @@ echo "Library POM: ${LIBRARY_POM}"
 
 # Fix the POM file to ensure it has proper name tags and extensions for AAR packaging
 echo "Fixing POM file for Maven Central..."
-if [ -f "./fix_pom_names.sh" ]; then
-    echo "Using direct POM name fixer script..."
-    ./fix_pom_names.sh "$LIBRARY_POM"
-    echo "Fixed POM file will be used for deployment"
+
+# Fix name tags and plugin versions using direct string replacements
+echo "Fixing name and plugin tags..."
+{
+  # Read the POM file
+  POM_CONTENT=$(cat "$LIBRARY_POM")
+  
+  # Replace name tags
+  POM_CONTENT=$(echo "$POM_CONTENT" | sed 's/<n>PayPal Messages<\/n>/<name>PayPal Messages<\/name>/g')
+  POM_CONTENT=$(echo "$POM_CONTENT" | sed 's/<n>The Apache License, Version 2.0<\/n>/<name>The Apache License, Version 2.0<\/name>/g')
+  POM_CONTENT=$(echo "$POM_CONTENT" | sed 's/<n>PayPalMessages Android<\/n>/<name>PayPalMessages Android<\/name>/g')
+  
+  # Fix plugin versions
+  POM_CONTENT=$(echo "$POM_CONTENT" | sed 's/<artifactId>central-publishing-maven-plugin<\/artifactId>.*<version>[^<]*<\/version>/<artifactId>central-publishing-maven-plugin<\/artifactId>\n                <version>0.8.0<\/version>/g')
+  POM_CONTENT=$(echo "$POM_CONTENT" | sed 's/<artifactId>maven-gpg-plugin<\/artifactId>.*<version>[^<]*<\/version>/<artifactId>maven-gpg-plugin<\/artifactId>\n                <version>3.2.8<\/version>/g')
+  
+  # Write back to the POM file
+  echo "$POM_CONTENT" > "$LIBRARY_POM"
+}
+
+# Add extensions for AAR support if needed
+echo "Adding AAR support extensions..."
+if ! grep -q "<extensions>" "$LIBRARY_POM"; then
+    echo "Extensions section not found, adding it..."
+    TMPFILE=$(mktemp)
+    sed '/<build>/ a\
+    <extensions>\
+        <!-- For AAR packaging support -->\
+        <extension>\
+            <groupId>org.apache.maven.wagon</groupId>\
+            <artifactId>wagon-http</artifactId>\
+            <version>3.5.3</version>\
+        </extension>\
+        <extension>\
+            <groupId>org.apache.maven.archetype</groupId>\
+            <artifactId>archetype-packaging</artifactId>\
+            <version>3.2.1</version>\
+        </extension>\
+    </extensions>' "$LIBRARY_POM" > "$TMPFILE"
+    mv "$TMPFILE" "$LIBRARY_POM"
 else
-    echo "Warning: POM fixer script not found. Will attempt to continue with the original POM file."
-    
-    # Try a direct fix as a last resort
-    echo "Attempting direct name tag fix as fallback..."
-    # Create temporary sed script files to avoid special character issues
-    echo 's/<n>PayPal Messages<\/n>/<name>PayPal Messages<\/name>/g' > /tmp/fix_n_name1.sed
-    echo 's/<n>The Apache License, Version 2.0<\/n>/<name>The Apache License, Version 2.0<\/name>/g' > /tmp/fix_n_name2.sed
-    echo 's/<n>PayPalMessages Android<\/n>/<name>PayPalMessages Android<\/name>/g' > /tmp/fix_n_name3.sed
-    
-    # Apply the fixes
-    sed -i.bak -f /tmp/fix_n_name1.sed "$LIBRARY_POM"
-    sed -i.bak -f /tmp/fix_n_name2.sed "$LIBRARY_POM"
-    sed -i.bak -f /tmp/fix_n_name3.sed "$LIBRARY_POM"
-    
-    # Clean up
-    rm -f "$LIBRARY_POM.bak" /tmp/fix_n_name*.sed
+    echo "Extensions section already exists, using it."
 fi
+
+echo "POM file fixed successfully!"
 
 # Create target directory for Maven plugin
 MAVEN_TARGET_REL="target/maven-bundle"

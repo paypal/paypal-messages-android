@@ -15,27 +15,64 @@ TMP_FILE=$(mktemp)
 echo "Fixing name tags..."
 cat "$POM_FILE" > "$TMP_FILE"
 
-echo 's/<n>PayPal Messages<\/n>/<name>PayPal Messages<\/name>/g' > /tmp/sed_cmd1
-echo 's/<n>The Apache License, Version 2.0<\/n>/<name>The Apache License, Version 2.0<\/name>/g' > /tmp/sed_cmd2
-echo 's/<n>PayPalMessages Android<\/n>/<name>PayPalMessages Android<\/name>/g' > /tmp/sed_cmd3
+# Create sed commands for name tags
+cat > /tmp/fix_n_tags.sed << 'SEDCMD'
+s/<n>PayPal Messages<\/n>/<name>PayPal Messages<\/name>/g
+s/<n>The Apache License, Version 2.0<\/n>/<name>The Apache License, Version 2.0<\/name>/g
+s/<n>PayPalMessages Android<\/n>/<name>PayPalMessages Android<\/name>/g
+SEDCMD
 
-# Run the substitutions
-sed -f /tmp/sed_cmd1 "$TMP_FILE" > "${TMP_FILE}.1"
-sed -f /tmp/sed_cmd2 "${TMP_FILE}.1" > "${TMP_FILE}.2"
-sed -f /tmp/sed_cmd3 "${TMP_FILE}.2" > "${TMP_FILE}.3"
+# Create sed commands for plugin versions
+cat > /tmp/fix_plugin_versions.sed << 'SEDCMD'
+s/<artifactId>central-publishing-maven-plugin<\/artifactId>.*<version>[^<]*<\/version>/<artifactId>central-publishing-maven-plugin<\/artifactId>\n                <version>0.8.0<\/version>/g
+s/<artifactId>maven-gpg-plugin<\/artifactId>.*<version>[^<]*<\/version>/<artifactId>maven-gpg-plugin<\/artifactId>\n                <version>3.2.8<\/version>/g
+SEDCMD
 
-# Fix plugin versions
-echo "Fixing plugin versions..."
-echo 's/<artifactId>central-publishing-maven-plugin<\/artifactId>.*<version>1.1.7<\/version>/<artifactId>central-publishing-maven-plugin<\/artifactId>\n                <version>0.8.0<\/version>/g' > /tmp/sed_cmd4
-echo 's/<artifactId>maven-gpg-plugin<\/artifactId>.*<version>1.1.7<\/version>/<artifactId>maven-gpg-plugin<\/artifactId>\n                <version>3.2.8<\/version>/g' > /tmp/sed_cmd5
+# Create sed commands for AAR extensions
+cat > /tmp/fix_extensions.sed << 'SEDCMD'
+/<build>/ {
+a\
+        <extensions>\
+            <!-- For AAR packaging support -->\
+            <extension>\
+                <groupId>org.apache.maven.wagon</groupId>\
+                <artifactId>wagon-http</artifactId>\
+                <version>3.5.3</version>\
+            </extension>\
+            <extension>\
+                <groupId>org.apache.maven.archetype</groupId>\
+                <artifactId>archetype-packaging</artifactId>\
+                <version>3.2.1</version>\
+            </extension>\
+        </extensions>
+}
+SEDCMD
 
-sed -f /tmp/sed_cmd4 "${TMP_FILE}.3" > "${TMP_FILE}.4"
-sed -f /tmp/sed_cmd5 "${TMP_FILE}.4" > "${TMP_FILE}.5"
+# Apply all fixes
+echo "Applying name tag fixes..."
+sed -f /tmp/fix_n_tags.sed "$TMP_FILE" > "${TMP_FILE}.1"
+
+echo "Applying plugin version fixes..."
+sed -f /tmp/fix_plugin_versions.sed "${TMP_FILE}.1" > "${TMP_FILE}.2"
+
+echo "Adding AAR packaging extensions..."
+if ! grep -q "<extensions>" "${TMP_FILE}.2"; then
+  sed -f /tmp/fix_extensions.sed "${TMP_FILE}.2" > "${TMP_FILE}.3"
+else
+  cp "${TMP_FILE}.2" "${TMP_FILE}.3"
+  echo "Extensions section already exists, skipping..."
+fi
 
 # Copy fixed file back
-cp "${TMP_FILE}.5" "$POM_FILE"
+cp "${TMP_FILE}.3" "$POM_FILE"
 
 # Clean up
-rm -f "$TMP_FILE" "${TMP_FILE}."* /tmp/sed_cmd*
+rm -f "$TMP_FILE" "${TMP_FILE}."* /tmp/fix_*.sed
 
 echo "POM file fixed: $POM_FILE"
+echo "Verifying name tags:"
+grep -n "<name>" "$POM_FILE" || echo "No name tags found"
+echo "Verifying plugin versions:"
+grep -A 1 "central-publishing-maven-plugin" "$POM_FILE" | grep -E "version|central" || echo "Plugin version not found"
+echo "Verifying extensions:"
+grep -A 3 "<extensions>" "$POM_FILE" || echo "No extensions found"
