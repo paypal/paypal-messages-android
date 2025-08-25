@@ -1,6 +1,6 @@
 #!/bin/bash
 # Script to ensure POM file has correct plugin versions and name tags
-# And uses the "jar" packaging type for Maven compatibility
+# And uses the "aar" packaging type for Android compatibility
 set -e
 
 POM_FILE="$1"
@@ -26,7 +26,7 @@ cat > "$POM_FILE" << XML
     <groupId>com.paypal.messages</groupId>
     <artifactId>paypal-messages</artifactId>
     <version>${VERSION}</version>
-    <packaging>jar</packaging>
+    <packaging>aar</packaging>
 
     <name>PayPal Messages</name>
     <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
@@ -115,7 +115,7 @@ cat > "$POM_FILE" << XML
 </project>
 XML
 
-echo "Created new POM file with jar packaging type and minimal dependencies"
+echo "Created new POM file with aar packaging type and minimal dependencies"
 
 # Verify the new POM file
 echo "=== Verifying POM file ==="

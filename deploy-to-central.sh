@@ -90,7 +90,7 @@ else
     <groupId>com.paypal.messages</groupId>
     <artifactId>paypal-messages</artifactId>
     <version>${VERSION_FIXED}</version>
-    <packaging>jar</packaging>
+    <packaging>aar</packaging>
 
     <name>PayPal Messages</name>
     <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
@@ -192,7 +192,7 @@ echo "Copying all artifacts to Maven target directory..."
 cp -r "${STAGING_ROOT}/com" "${MAVEN_TARGET}/"
 
 # Use the library POM directly for deployment - no wrapper POM needed
-echo "The AAR file will be used as the primary artifact with a jar packaging type"
+echo "The AAR file will be used as the primary artifact with AAR packaging type"
 
 # Final verification - listing all files that will be uploaded:
 echo "Final verification - listing all files that will be uploaded:"
@@ -212,11 +212,11 @@ fi
 
 # Verify that POM file has correct packaging
 POM_FILE="${MAVEN_TARGET}/com/paypal/messages/${ARTIFACT_ID}/${VERSION_FIXED}/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
-if grep -q "<packaging>jar</packaging>" "$POM_FILE"; then
-    echo "\n=== POM file has correct jar packaging for Maven compatibility ==="
+if grep -q "<packaging>aar</packaging>" "$POM_FILE"; then
+    echo "\n=== POM file has correct aar packaging for Android compatibility ==="
     grep -n "<packaging>" "$POM_FILE"
 else
-    echo "\n!!! POM file does not have jar packaging. Fixing it now !!!"
+    echo "\n!!! POM file does not have aar packaging. Fixing it now !!!"
     # Apply our POM fixer again to be sure
     if [ -x "./fix_pom_for_central.sh" ]; then
         echo "Using POM fixer script on target POM..."
