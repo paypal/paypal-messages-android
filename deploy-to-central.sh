@@ -46,7 +46,25 @@ for file in "${STAGE_DIR}"/*; do
     if [[ -f "$file" && ! "$file" == *.asc ]]; then
         echo "Signing: $file"
         if [ -f "ci-sign-helper.sh" ] && [ -x "ci-sign-helper.sh" ]; then
-            ./ci-sign-helper.sh "$file"
+            ./ci-sign-helper.sh "$file" || {
+                # If in test mode, create a dummy signature file
+                if [[ "$SONATYPE_NEXUS_PASSWORD" == "test" ]]; then
+                    echo "Test mode detected, creating dummy signature file"
+                    touch "${file}.asc"
+                else
+                    echo "Error: Failed to sign file ${file}"
+                    exit 1
+                fi
+            }
+        else
+            # If in test mode, create a dummy signature file
+            if [[ "$SONATYPE_NEXUS_PASSWORD" == "test" ]]; then
+                echo "Test mode detected, creating dummy signature file"
+                touch "${file}.asc"
+            else
+                echo "Error: ci-sign-helper.sh not found or not executable"
+                exit 1
+            fi
         fi
     fi
 done
@@ -59,48 +77,210 @@ echo "Library POM: ${LIBRARY_POM}"
 # Fix the POM file to ensure it has proper name tags and extensions for AAR packaging
 echo "Fixing POM file for Maven Central..."
 
-# Fix name tags and plugin versions using direct string replacements
-echo "Fixing name and plugin tags..."
-{
-  # Read the POM file
-  POM_CONTENT=$(cat "$LIBRARY_POM")
-  
-  # Replace name tags
-  POM_CONTENT=$(echo "$POM_CONTENT" | sed 's/<n>PayPal Messages<\/n>/<name>PayPal Messages<\/name>/g')
-  POM_CONTENT=$(echo "$POM_CONTENT" | sed 's/<n>The Apache License, Version 2.0<\/n>/<name>The Apache License, Version 2.0<\/name>/g')
-  POM_CONTENT=$(echo "$POM_CONTENT" | sed 's/<n>PayPalMessages Android<\/n>/<name>PayPalMessages Android<\/name>/g')
-  
-  # Fix plugin versions
-  POM_CONTENT=$(echo "$POM_CONTENT" | sed 's/<artifactId>central-publishing-maven-plugin<\/artifactId>.*<version>[^<]*<\/version>/<artifactId>central-publishing-maven-plugin<\/artifactId>\n                <version>0.8.0<\/version>/g')
-  POM_CONTENT=$(echo "$POM_CONTENT" | sed 's/<artifactId>maven-gpg-plugin<\/artifactId>.*<version>[^<]*<\/version>/<artifactId>maven-gpg-plugin<\/artifactId>\n                <version>3.2.8<\/version>/g')
-  
-  # Write back to the POM file
-  echo "$POM_CONTENT" > "$LIBRARY_POM"
-}
-
-# Add extensions for AAR support if needed
-echo "Adding AAR support extensions..."
-if ! grep -q "<extensions>" "$LIBRARY_POM"; then
-    echo "Extensions section not found, adding it..."
-    TMPFILE=$(mktemp)
-    sed '/<build>/ a\
-    <extensions>\
-        <!-- For AAR packaging support -->\
-        <extension>\
-            <groupId>org.apache.maven.wagon</groupId>\
-            <artifactId>wagon-http</artifactId>\
-            <version>3.5.3</version>\
-        </extension>\
-        <extension>\
-            <groupId>org.apache.maven.archetype</groupId>\
-            <artifactId>archetype-packaging</artifactId>\
-            <version>3.2.1</version>\
-        </extension>\
-    </extensions>' "$LIBRARY_POM" > "$TMPFILE"
-    mv "$TMPFILE" "$LIBRARY_POM"
+# Use our dedicated POM fixer for the action
+if [ -x ".github/actions/publish_maven_central/fix_pom_in_action.sh" ]; then
+    echo "Using GitHub Action POM fixer script..."
+    .github/actions/publish_maven_central/fix_pom_in_action.sh "$LIBRARY_POM" "$VERSION_FIXED"
 else
-    echo "Extensions section already exists, using it."
+    echo "Creating a new POM file with proper formatting..."
+    # Create a temporary file
+    NEW_POM=$(mktemp)
+    
+    # Create a completely new POM with proper tags
+    cat > "$NEW_POM" << XML
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.paypal.messages</groupId>
+    <artifactId>paypal-messages</artifactId>
+    <version>${VERSION_FIXED}</version>
+    <packaging>aar</packaging>
+
+    <name>PayPal Messages</name>
+    <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
+    <url>https://github.com/paypal/paypal-messages-android</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>paypal-messages-android</id>
+            <name>PayPalMessages Android</name>
+            <email>sdks-messages@paypal.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/paypal/paypal-messages-android.git</connection>
+        <developerConnection>scm:git:ssh://github.com:paypal/paypal-messages-android.git</developerConnection>
+        <url>https://github.com/paypal/paypal-messages-android</url>
+    </scm>
+
+    <build>
+        <directory>\${project.basedir}/build</directory>
+        <extensions>
+            <!-- For AAR packaging support -->
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-http</artifactId>
+                <version>3.5.3</version>
+            </extension>
+            <extension>
+                <groupId>org.apache.maven.archetype</groupId>
+                <artifactId>archetype-packaging</artifactId>
+                <version>3.2.1</version>
+            </extension>
+            <extension>
+                <groupId>com.android.tools.build</groupId>
+                <artifactId>aar-maven-plugin</artifactId>
+                <version>8.0.2</version>
+            </extension>
+            <extension>
+                <groupId>org.sonatype.aether</groupId>
+                <artifactId>aether-aar-uri-provider</artifactId>
+                <version>1.13.1</version>
+            </extension>
+        </extensions>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.8.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <tokenAuth>true</tokenAuth>
+                    <autoPublish>true</autoPublish>
+                    <waitUntil>validated</waitUntil>
+                    <deploymentName>PayPal Messages Android \${project.version}</deploymentName>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>publish-to-central</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>publish</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.2.8</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                        <configuration>
+                            <keyname>\${env.SIGNING_KEY_ID}</keyname>
+                            <passphrase>\${env.SIGNING_KEY_PASSWORD}</passphrase>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    
+    <dependencies>
+        <!-- Regular JAR dependencies (compile scope) -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.9.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.8.0</version>
+            <scope>compile</scope>
+        </dependency>
+        
+        <!-- Android dependencies (provided scope) -->
+        <dependency>
+            <groupId>androidx.core</groupId>
+            <artifactId>core-ktx</artifactId>
+            <version>1.1.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>androidx.appcompat</groupId>
+            <artifactId>appcompat</artifactId>
+            <version>1.1.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.android.material</groupId>
+            <artifactId>material</artifactId>
+            <version>1.1.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>androidx.compose.foundation</groupId>
+            <artifactId>foundation</artifactId>
+            <version>1.1.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>androidx.compose.runtime</groupId>
+            <artifactId>runtime</artifactId>
+            <version>1.1.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>androidx.compose.ui</groupId>
+            <artifactId>ui</artifactId>
+            <version>1.1.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>androidx.compose.material3</groupId>
+            <artifactId>material3</artifactId>
+            <version>1.1.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>androidx.activity</groupId>
+            <artifactId>activity-compose</artifactId>
+            <version>1.1.7</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>
+XML
+    
+    # Replace the original file with our corrected version
+    cp "$LIBRARY_POM" "$LIBRARY_POM.orig"
+    cp "$NEW_POM" "$LIBRARY_POM"
+    rm -f "$NEW_POM"
 fi
+
+# Verify changes were applied
+echo "Verifying fixes..."
+echo "- Checking name tags:"
+grep -n "<name>" "$LIBRARY_POM" | head -3 || echo "  No name tags found!"
+echo "- Checking plugin versions:"
+grep -n "central-publishing-maven-plugin" -A 2 "$LIBRARY_POM" || echo "  Plugin not found!"
+grep -n "<version>0.8.0</version>" "$LIBRARY_POM" || echo "  Version 0.8.0 not found!"
+grep -n "maven-gpg-plugin" -A 2 "$LIBRARY_POM" || echo "  GPG plugin not found!"
+echo "- Checking dependency versions:"
+grep -n "<groupId>com.google.code.gson</groupId>" -A 2 "$LIBRARY_POM" || echo "  Gson dependency not found!"
+grep -n "<groupId>com.squareup.okhttp3</groupId>" -A 2 "$LIBRARY_POM" || echo "  OkHttp dependency not found!"
+echo "- Checking extensions:"
+grep -n "<extensions>" -A 5 "$LIBRARY_POM" || echo "  No extensions found!"
+echo "- Checking packaging type:"
+grep -n "<packaging>aar</packaging>" "$LIBRARY_POM" || echo "  AAR packaging not found!"
 
 echo "POM file fixed successfully!"
 
@@ -117,21 +297,79 @@ cp -r "${STAGING_ROOT}/com" "${MAVEN_TARGET}/"
 # Use the library POM directly for deployment - no wrapper POM needed
 echo "The library POM already has packaging=aar and will be the primary artifact"
 
+# Final verification - listing all files that will be uploaded:
 echo "Final verification - listing all files that will be uploaded:"
+echo "=== Files to be uploaded ==="
 find "${MAVEN_TARGET}" -type f | sort
+
+# Verify that AAR file is included
+AAR_FILE="${MAVEN_TARGET}/com/paypal/messages/${ARTIFACT_ID}/${VERSION_FIXED}/${ARTIFACT_ID}-${VERSION_FIXED}.aar"
+if [ -f "$AAR_FILE" ]; then
+    echo "\n=== AAR file exists and will be uploaded ==="
+    ls -lah "$AAR_FILE"
+else
+    echo "\n!!! ERROR: AAR file does not exist !!!"
+    echo "Expected at: $AAR_FILE"
+    exit 1
+fi
+
+# Verify that POM file has correct packaging
+POM_FILE="${MAVEN_TARGET}/com/paypal/messages/${ARTIFACT_ID}/${VERSION_FIXED}/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
+if grep -q "<packaging>aar</packaging>" "$POM_FILE"; then
+    echo "\n=== POM file has correct AAR packaging ==="
+    grep -n "<packaging>" "$POM_FILE"
+else
+    echo "\n!!! ERROR: POM file does not have AAR packaging !!!"
+    grep -n "<packaging>" "$POM_FILE" || echo "No packaging element found in POM file"
+    exit 1
+fi
+
+# Verify plugin versions
+if grep -q "<version>0.8.0</version>" "$POM_FILE"; then
+    echo "\n=== POM file has correct central-publishing-maven-plugin version ==="
+    grep -n "central-publishing-maven-plugin" -A 2 "$POM_FILE"
+else
+    echo "\n!!! ERROR: POM file has incorrect central-publishing-maven-plugin version !!!"
+    grep -n "central-publishing-maven-plugin" -A 2 "$POM_FILE" || echo "Plugin not found in POM file"
+    exit 1
+fi
 
 # Run the Maven Central publish command
 # Use absolute path for staging directory to ensure plugin finds all artifacts
 ABSOLUTE_MAVEN_TARGET=$(realpath "${MAVEN_TARGET}")
-echo "Using absolute staging directory: ${ABSOLUTE_MAVEN_TARGET}"
+echo "\n=== Using absolute staging directory ==="
+echo "$ABSOLUTE_MAVEN_TARGET"
 
-mvn --batch-mode \
-  -f "${LIBRARY_POM}" \
-  -s .mvn/maven-settings.xml \
-  -DstagingDirectory="${ABSOLUTE_MAVEN_TARGET}" \
-  -Dorg.slf4j.simpleLogger.log.org.sonatype.central=debug \
-  verify \
-  org.sonatype.central:central-publishing-maven-plugin:publish
+echo "\n=== Command that will be executed ==="
+echo "mvn --batch-mode -f \"${LIBRARY_POM}\" -s .mvn/maven-settings.xml -DstagingDirectory=\"${ABSOLUTE_MAVEN_TARGET}\" verify org.sonatype.central:central-publishing-maven-plugin:publish"
+
+if [[ "$SONATYPE_NEXUS_PASSWORD" == "test" ]]; then
+  echo "\n=== Test mode: skipping actual publish to Maven Central ==="
+  echo "Command that would be run:"
+  echo "mvn --batch-mode \\
+  -f \"${LIBRARY_POM}\" \\
+  -s .mvn/maven-settings.xml \\
+  -DstagingDirectory=\"${ABSOLUTE_MAVEN_TARGET}\" \\
+  -Dorg.slf4j.simpleLogger.log.org.sonatype.central=debug \\
+  verify \\
+  org.sonatype.central:central-publishing-maven-plugin:publish"
+  
+  # Just run verification without publishing
+  mvn --batch-mode \
+    -f "${LIBRARY_POM}" \
+    -s .mvn/maven-settings.xml \
+    -DstagingDirectory="${ABSOLUTE_MAVEN_TARGET}" \
+    verify
+else
+  # Run the actual publish command
+  mvn --batch-mode \
+    -f "${LIBRARY_POM}" \
+    -s .mvn/maven-settings.xml \
+    -DstagingDirectory="${ABSOLUTE_MAVEN_TARGET}" \
+    -Dorg.slf4j.simpleLogger.log.org.sonatype.central=debug \
+    verify \
+    org.sonatype.central:central-publishing-maven-plugin:publish
+fi
 
 echo "Deployment initiated successfully!"
 echo "Check the status at: https://central.sonatype.com/publishing/deployments"
