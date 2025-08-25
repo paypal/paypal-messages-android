@@ -1,5 +1,5 @@
 #!/bin/bash
-# Fix POM file for Maven Central - using aar packaging type for Android compatibility
+# Fix POM file for Maven Central - using jar packaging type for Maven compatibility
 set -e
 
 POM_FILE="$1"
@@ -25,7 +25,7 @@ cat > "$POM_FILE" << XML
     <groupId>com.paypal.messages</groupId>
     <artifactId>paypal-messages</artifactId>
     <version>${VERSION}</version>
-    <packaging>aar</packaging>
+    <packaging>jar</packaging>
 
     <name>PayPal Messages</name>
     <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
@@ -54,6 +54,14 @@ cat > "$POM_FILE" << XML
 
     <build>
         <directory>\${project.basedir}/build</directory>
+        <extensions>
+            <!-- Extension mappings to handle AAR files -->
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-file</artifactId>
+                <version>3.5.3</version>
+            </extension>
+        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.sonatype.central</groupId>
@@ -111,15 +119,34 @@ cat > "$POM_FILE" << XML
             <version>4.8.0</version>
         </dependency>
     </dependencies>
+    
+    <!-- Define classifiers for non-JAR artifacts -->
+    <distributionManagement>
+        <relocation>
+            <groupId>com.paypal.messages</groupId>
+            <artifactId>paypal-messages</artifactId>
+            <message>This artifact has been relocated to use the AAR format as the primary artifact</message>
+        </relocation>
+    </distributionManagement>
+    
+    <!-- Define file extension mappings -->
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <android.library>true</android.library>
+        <aar.classifier>aar</aar.classifier>
+    </properties>
 </project>
 XML
 
-echo "Created new POM file with aar packaging type and minimal dependencies"
+echo "Created new POM file with jar packaging type and minimal dependencies"
 
 # Verify the new POM file
 echo "=== Verifying POM file ==="
 echo "- Packaging type:"
 grep -n "<packaging>" "$POM_FILE" || echo "No packaging type found!"
+
+echo "- Extension mappings:"
+grep -n "<extension>" -A 4 "$POM_FILE" || echo "No extension mappings found!"
 
 echo "- Plugin versions:"
 grep -n "central-publishing-maven-plugin" -A 2 "$POM_FILE" || echo "Central plugin not found!"
@@ -130,5 +157,9 @@ grep -n "<name>" "$POM_FILE" | head -3 || echo "No name tags found!"
 
 echo "- Dependencies:"
 grep -n "<dependency>" -A 4 "$POM_FILE" || echo "No dependencies found!"
+
+echo "- Classifiers and properties:"
+grep -n "<aar.classifier>" "$POM_FILE" || echo "No AAR classifier found!"
+grep -n "<android.library>" "$POM_FILE" || echo "No android.library property found!"
 
 echo "=== POM file fixed! ==="

@@ -1,16 +1,31 @@
 #!/bin/bash
-# Fix name tags in GitHub Action files
+# Fix name tags in POM file - Direct approach
 set -e
 
-ACTION_FILE="/Users/grablack/Code/paypal-messages-android/.github/actions/publish_maven_central/action.yml"
-
-if [ ! -f "$ACTION_FILE" ]; then
-  echo "Error: Action file not found: $ACTION_FILE"
+POM_FILE="$1"
+if [ ! -f "$POM_FILE" ]; then
+  echo "Usage: $0 <pom-file>"
   exit 1
 fi
 
-echo "Fixing name tags in GitHub Action file: $ACTION_FILE"
-perl -i -pe 's/<n>([^<]+)<\/n>/<name>$1<\/name>/g' "$ACTION_FILE"
+echo "Fixing name tags in $POM_FILE"
 
-echo "Action file fixed"
-grep -n "<name>" "$ACTION_FILE" || echo "No name tags found"
+# Use direct search and replace without any escaping issues
+cp "$POM_FILE" "$POM_FILE.orig"
+
+# Fix first name tag (line 11)
+sed -i'.bak' '11s/<n>PayPal Messages<\/n>/<name>PayPal Messages<\/name>/g' "$POM_FILE"
+
+# Fix second name tag (license, line 17)
+sed -i'.bak' '17s/<n>The Apache License, Version 2.0<\/n>/<name>The Apache License, Version 2.0<\/name>/g' "$POM_FILE"
+
+# Fix third name tag (developer, line 25)
+sed -i'.bak' '25s/<n>PayPalMessages Android<\/n>/<name>PayPalMessages Android<\/name>/g' "$POM_FILE"
+
+# Clean up
+rm -f "$POM_FILE.bak"
+
+echo "Name tags fixed in $POM_FILE"
+echo "Checking result:"
+echo "- Name tags:"
+grep -n "<name>" "$POM_FILE" || echo "No name tags found"

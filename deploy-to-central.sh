@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to deploy artifacts to Maven Central using library POM directly
-# This approach ensures the AAR packaging type is preserved
+# This approach uses jar packaging type with extension mappings for AAR files
 set -e
 
 echo "Deploying to Maven Central Portal..."
@@ -90,7 +90,7 @@ else
     <groupId>com.paypal.messages</groupId>
     <artifactId>paypal-messages</artifactId>
     <version>${VERSION_FIXED}</version>
-    <packaging>aar</packaging>
+    <packaging>jar</packaging>
 
     <name>PayPal Messages</name>
     <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
@@ -119,6 +119,14 @@ else
 
     <build>
         <directory>\${project.basedir}/build</directory>
+        <extensions>
+            <!-- Extension mappings to handle AAR files -->
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-file</artifactId>
+                <version>3.5.3</version>
+            </extension>
+        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.sonatype.central</groupId>
@@ -192,7 +200,7 @@ echo "Copying all artifacts to Maven target directory..."
 cp -r "${STAGING_ROOT}/com" "${MAVEN_TARGET}/"
 
 # Use the library POM directly for deployment - no wrapper POM needed
-echo "The AAR file will be used as the primary artifact with AAR packaging type"
+echo "The AAR file will be used as the primary artifact with jar packaging type and extension mappings"
 
 # Final verification - listing all files that will be uploaded:
 echo "Final verification - listing all files that will be uploaded:"
@@ -210,14 +218,38 @@ else
     exit 1
 fi
 
-# Verify that POM file has correct packaging
+# Verify that POM file has correct packaging and extensions
 POM_FILE="${MAVEN_TARGET}/com/paypal/messages/${ARTIFACT_ID}/${VERSION_FIXED}/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
-if grep -q "<packaging>aar</packaging>" "$POM_FILE"; then
-    echo "\n=== POM file has correct aar packaging for Android compatibility ==="
+if grep -q "<packaging>jar</packaging>" "$POM_FILE"; then
+    echo "\n=== POM file has correct jar packaging for Maven Central compatibility ==="
     grep -n "<packaging>" "$POM_FILE"
 else
-    echo "\n!!! POM file does not have aar packaging. Fixing it now !!!"
+    echo "\n!!! POM file does not have jar packaging. Fixing it now !!!"
     # Apply our POM fixer again to be sure
+    if [ -x "./fix_pom_for_central.sh" ]; then
+        echo "Using POM fixer script on target POM..."
+        ./fix_pom_for_central.sh "$POM_FILE"
+    fi
+fi
+
+# Verify extension mappings are present
+if grep -q "<extension>" "$POM_FILE"; then
+    echo "\n=== POM file has extension mappings for AAR files ==="
+    grep -n "<extension>" -A 4 "$POM_FILE"
+else
+    echo "\n!!! POM file does not have extension mappings. Fixing it now !!!"
+    if [ -x "./fix_pom_for_central.sh" ]; then
+        echo "Using POM fixer script on target POM..."
+        ./fix_pom_for_central.sh "$POM_FILE"
+    fi
+fi
+
+# Verify classifiers are present
+if grep -q "<aar.classifier>" "$POM_FILE"; then
+    echo "\n=== POM file has AAR classifier ==="
+    grep -n "<aar.classifier>" "$POM_FILE"
+else
+    echo "\n!!! POM file does not have AAR classifier. Fixing it now !!!"
     if [ -x "./fix_pom_for_central.sh" ]; then
         echo "Using POM fixer script on target POM..."
         ./fix_pom_for_central.sh "$POM_FILE"
