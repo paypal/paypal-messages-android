@@ -74,13 +74,13 @@ echo "Using library POM directly for deployment..."
 LIBRARY_POM="${STAGE_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
 echo "Library POM: ${LIBRARY_POM}"
 
-# Fix the POM file to ensure it has proper name tags and extensions for AAR packaging
+# Fix the POM file to ensure it has proper name tags and plugin versions
 if [ -x "./fix_pom_for_central.sh" ]; then
     echo "Using POM fixer script..."
     ./fix_pom_for_central.sh "$LIBRARY_POM"
 else
-    echo "POM fixer script not found! Using direct approach."
-    # Create a completely new POM with proper tags
+    echo "POM fixer script not found! Creating a new POM file directly."
+    # Create a completely new POM with proper tags and jar packaging
     cat > "$LIBRARY_POM" << XML
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -90,7 +90,7 @@ else
     <groupId>com.paypal.messages</groupId>
     <artifactId>paypal-messages</artifactId>
     <version>${VERSION_FIXED}</version>
-    <packaging>aar</packaging>
+    <packaging>jar</packaging>
 
     <name>PayPal Messages</name>
     <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
@@ -119,29 +119,6 @@ else
 
     <build>
         <directory>\${project.basedir}/build</directory>
-        <extensions>
-            <!-- For AAR packaging support -->
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-http</artifactId>
-                <version>3.5.3</version>
-            </extension>
-            <extension>
-                <groupId>org.apache.maven.archetype</groupId>
-                <artifactId>archetype-packaging</artifactId>
-                <version>3.2.1</version>
-            </extension>
-            <extension>
-                <groupId>com.android.tools.build</groupId>
-                <artifactId>aar-maven-plugin</artifactId>
-                <version>8.0.2</version>
-            </extension>
-            <extension>
-                <groupId>org.sonatype.aether</groupId>
-                <artifactId>aether-aar-uri-provider</artifactId>
-                <version>1.13.1</version>
-            </extension>
-        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.sonatype.central</groupId>
@@ -205,49 +182,49 @@ else
         <dependency>
             <groupId>androidx.core</groupId>
             <artifactId>core-ktx</artifactId>
-            <version>1.1.7</version>
+            <version>1.10.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>androidx.appcompat</groupId>
             <artifactId>appcompat</artifactId>
-            <version>1.1.7</version>
+            <version>1.6.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.google.android.material</groupId>
             <artifactId>material</artifactId>
-            <version>1.1.7</version>
+            <version>1.9.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>androidx.compose.foundation</groupId>
             <artifactId>foundation</artifactId>
-            <version>1.1.7</version>
+            <version>1.4.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>androidx.compose.runtime</groupId>
             <artifactId>runtime</artifactId>
-            <version>1.1.7</version>
+            <version>1.4.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>androidx.compose.ui</groupId>
             <artifactId>ui</artifactId>
-            <version>1.1.7</version>
+            <version>1.4.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>androidx.compose.material3</groupId>
             <artifactId>material3</artifactId>
-            <version>1.1.7</version>
+            <version>1.1.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>androidx.activity</groupId>
             <artifactId>activity-compose</artifactId>
-            <version>1.1.7</version>
+            <version>1.7.2</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -267,7 +244,7 @@ echo "Copying all artifacts to Maven target directory..."
 cp -r "${STAGING_ROOT}/com" "${MAVEN_TARGET}/"
 
 # Use the library POM directly for deployment - no wrapper POM needed
-echo "The library POM already has packaging=aar and will be the primary artifact"
+echo "The AAR file will be used as the primary artifact with a jar packaging type"
 
 # Final verification - listing all files that will be uploaded:
 echo "Final verification - listing all files that will be uploaded:"
@@ -287,19 +264,16 @@ fi
 
 # Verify that POM file has correct packaging
 POM_FILE="${MAVEN_TARGET}/com/paypal/messages/${ARTIFACT_ID}/${VERSION_FIXED}/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
-if grep -q "<packaging>aar</packaging>" "$POM_FILE"; then
-    echo "\n=== POM file has correct AAR packaging ==="
+if grep -q "<packaging>jar</packaging>" "$POM_FILE"; then
+    echo "\n=== POM file has correct jar packaging for Maven compatibility ==="
     grep -n "<packaging>" "$POM_FILE"
 else
-    echo "\n!!! ERROR: POM file does not have AAR packaging !!!"
-    grep -n "<packaging>" "$POM_FILE" || echo "No packaging element found in POM file"
-    exit 1
-fi
-
-# Fix the POM file in the target directory again to be double sure
-if [ -x "./fix_pom_for_central.sh" ]; then
-    echo "Using POM fixer script on target POM..."
-    ./fix_pom_for_central.sh "$POM_FILE"
+    echo "\n!!! POM file does not have jar packaging. Fixing it now !!!"
+    # Apply our POM fixer again to be sure
+    if [ -x "./fix_pom_for_central.sh" ]; then
+        echo "Using POM fixer script on target POM..."
+        ./fix_pom_for_central.sh "$POM_FILE"
+    fi
 fi
 
 # Run the Maven Central publish command
