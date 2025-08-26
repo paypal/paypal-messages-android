@@ -244,12 +244,12 @@ else
     fi
 fi
 
-# Verify classifiers are present
-if grep -q "<aar.classifier>" "$POM_FILE"; then
-    echo "\n=== POM file has AAR classifier ==="
-    grep -n "<aar.classifier>" "$POM_FILE"
+# Verify Android library property is present
+if grep -q "<android.library>" "$POM_FILE"; then
+    echo "\n=== POM file has Android library property ==="
+    grep -n "<android.library>" "$POM_FILE"
 else
-    echo "\n!!! POM file does not have AAR classifier. Fixing it now !!!"
+    echo "\n!!! POM file does not have Android library property. Fixing it now !!!"
     if [ -x "./fix_pom_for_central.sh" ]; then
         echo "Using POM fixer script on target POM..."
         ./fix_pom_for_central.sh "$POM_FILE"

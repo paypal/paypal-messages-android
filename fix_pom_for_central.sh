@@ -121,20 +121,12 @@ cat > "$POM_FILE" << XML
         </dependency>
     </dependencies>
     
-    <!-- Define classifiers for non-JAR artifacts -->
-    <distributionManagement>
-        <relocation>
-            <groupId>com.paypal.messages</groupId>
-            <artifactId>paypal-messages</artifactId>
-            <message>This artifact has been relocated to use the AAR format as the primary artifact</message>
-        </relocation>
-    </distributionManagement>
+    <!-- Android library properties -->
     
     <!-- Define file extension mappings -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <android.library>true</android.library>
-        <aar.classifier>aar</aar.classifier>
     </properties>
 </project>
 XML
@@ -159,8 +151,7 @@ grep -n "<name>" "$POM_FILE" | head -3 || echo "No name tags found!"
 echo "- Dependencies:"
 grep -n "<dependency>" -A 4 "$POM_FILE" || echo "No dependencies found!"
 
-echo "- Classifiers and properties:"
-grep -n "<aar.classifier>" "$POM_FILE" || echo "No AAR classifier found!"
+echo "- Android library properties:"
 grep -n "<android.library>" "$POM_FILE" || echo "No android.library property found!"
 
 echo "=== POM file fixed! ==="
