@@ -12,9 +12,9 @@ if [ -f "$GRADLE_POM" ]; then
   # Create backup
   cp "$GRADLE_POM" "$GRADLE_POM.bak"
   
-  # Fix name tags with direct string replacement
-  sed -i.sed 's/<n>/<name>/g' "$GRADLE_POM"
-  sed -i.sed 's/<\/n>/<\/name>/g' "$GRADLE_POM"
+  # Fix name tags with direct string replacement using perl
+  perl -i -pe 's/<n>/<name>/g' "$GRADLE_POM"
+  perl -i -pe 's/<\/n>/<\/name>/g' "$GRADLE_POM"
   
   # Clean up backup files
   rm -f "$GRADLE_POM.sed"
@@ -36,9 +36,9 @@ if [ -f "$MAVEN_LOCAL_POM" ]; then
   # Create backup
   cp "$MAVEN_LOCAL_POM" "$MAVEN_LOCAL_POM.bak"
   
-  # Fix name tags with direct string replacement
-  sed -i.sed 's/<n>/<name>/g' "$MAVEN_LOCAL_POM"
-  sed -i.sed 's/<\/n>/<\/name>/g' "$MAVEN_LOCAL_POM"
+  # Fix name tags with direct string replacement using perl
+  perl -i -pe 's/<n>/<name>/g' "$MAVEN_LOCAL_POM"
+  perl -i -pe 's/<\/n>/<\/name>/g' "$MAVEN_LOCAL_POM"
   
   # Clean up backup files
   rm -f "$MAVEN_LOCAL_POM.sed"

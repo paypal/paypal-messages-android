@@ -64,59 +64,11 @@ VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' build.gradle | grep -o '"[^"]
 echo "Detected version: $VERSION"
 
 echo "Creating properly formatted POM file..."
+# Use the prepare-maven-artifacts.sh script to create properly formatted POMs with all required metadata
+./prepare-maven-artifacts.sh
+
+# The POM file is now created at library/build/libs/paypal-messages.pom
 POM_FILE="library/build/libs/paypal-messages.pom"
-cat > "$POM_FILE" << EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <groupId>com.paypal.messages</groupId>
-    <artifactId>paypal-messages</artifactId>
-    <version>${VERSION}</version>
-    <packaging>aar</packaging>
-
-    <name>PayPal Messages</name>
-    <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
-    <url>https://github.com/paypal/paypal-messages-android</url>
-
-    <licenses>
-        <license>
-            <name>The Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
-        </license>
-    </licenses>
-
-    <developers>
-        <developer>
-            <id>paypal-messages-android</id>
-            <name>PayPalMessages Android</name>
-            <email>sdks-messages@paypal.com</email>
-        </developer>
-    </developers>
-
-    <scm>
-        <connection>scm:git:git://github.com/paypal/paypal-messages-android.git</connection>
-        <developerConnection>scm:git:ssh://github.com:paypal/paypal-messages-android.git</developerConnection>
-        <url>https://github.com/paypal/paypal-messages-android</url>
-    </scm>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.9.1</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>4.8.0</version>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies>
-</project>
-EOF
 
 # Rename the AAR file to match our artifact ID
 echo "Preparing files for deployment..."
@@ -205,19 +157,8 @@ if command -v mvn &> /dev/null; then
   echo "Deploying to Maven Central using Maven..."
   
   # Deploy with the Central portal plugin
-  # Create a minimal pom.xml in the current directory to satisfy Maven's requirements
-  echo "Creating temporary root pom.xml for Maven..."
-  cat > pom.xml << EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>com.paypal.messages</groupId>
-    <artifactId>paypal-messages-parent</artifactId>
-    <version>${VERSION}</version>
-    <packaging>pom</packaging>
-</project>
-EOF
+  # Root pom.xml was already created by prepare-maven-artifacts.sh
+  echo "Using pre-created root pom.xml for Maven..."
 
   # Run the Maven command with the temporary POM
   echo "Attempting to publish with Maven from root directory..."
@@ -232,18 +173,8 @@ EOF
     echo "First attempt failed, trying to run Maven from the libs directory..."
     cd library/build/libs
     
-    # Create a minimal pom.xml in the libs directory
-    cat > pom.xml << EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>com.paypal.messages</groupId>
-    <artifactId>paypal-messages-parent</artifactId>
-    <version>${VERSION}</version>
-    <packaging>pom</packaging>
-</project>
-EOF
+    # Copy the pre-created root pom.xml to the libs directory
+    cp ../../../pom.xml pom.xml
     
     # Copy the Maven settings file
     mkdir -p .mvn
