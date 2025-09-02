@@ -1,5 +1,5 @@
 #!/bin/bash
-# Fix POM file for Maven Central - using jar packaging type for Maven compatibility
+# Fix POM file for Maven Central - ensuring proper name tags and AAR packaging
 set -e
 
 POM_FILE="$1"
@@ -16,7 +16,7 @@ VERSION=$(grep -o "<version>[^<]*</version>" "$POM_FILE" | head -1 | sed 's/<ver
 echo "Using version: $VERSION"
 
 # Create a completely new POM file optimized for Maven Central
-cat > "$POM_FILE" << XML
+cat > "$POM_FILE.new" << XML
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -25,7 +25,7 @@ cat > "$POM_FILE" << XML
     <groupId>com.paypal.messages</groupId>
     <artifactId>paypal-messages</artifactId>
     <version>${VERSION}</version>
-    <packaging>jar</packaging>
+    <packaging>aar</packaging>
 
     <name>PayPal Messages</name>
     <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
@@ -54,14 +54,6 @@ cat > "$POM_FILE" << XML
 
     <build>
         <directory>\${project.basedir}/build</directory>
-        <extensions>
-            <!-- Extension mappings to handle AAR files -->
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-file</artifactId>
-                <version>3.5.3</version>
-            </extension>
-        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.sonatype.central</groupId>
@@ -112,45 +104,86 @@ cat > "$POM_FILE" << XML
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.9.1</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>4.8.0</version>
+            <scope>compile</scope>
+        </dependency>
+        
+        <!-- Android dependencies (provided scope) -->
+        <dependency>
+            <groupId>androidx.core</groupId>
+            <artifactId>core-ktx</artifactId>
+            <version>1.10.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>androidx.appcompat</groupId>
+            <artifactId>appcompat</artifactId>
+            <version>1.6.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.android.material</groupId>
+            <artifactId>material</artifactId>
+            <version>1.9.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>androidx.compose.foundation</groupId>
+            <artifactId>foundation</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>androidx.compose.runtime</groupId>
+            <artifactId>runtime</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>androidx.compose.ui</groupId>
+            <artifactId>ui</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>androidx.compose.material3</groupId>
+            <artifactId>material3</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>androidx.activity</groupId>
+            <artifactId>activity-compose</artifactId>
+            <version>1.7.2</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
-    
-    <!-- Android library properties -->
-    
-    <!-- Define file extension mappings -->
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <android.library>true</android.library>
-    </properties>
 </project>
 XML
 
-echo "Created new POM file with jar packaging type and minimal dependencies"
+# Move the new POM file into place
+mv "$POM_FILE.new" "$POM_FILE"
+
+echo "Created new POM file with correct name tags and AAR packaging"
 
 # Verify the new POM file
 echo "=== Verifying POM file ==="
 echo "- Packaging type:"
 grep -n "<packaging>" "$POM_FILE" || echo "No packaging type found!"
 
-echo "- Extension mappings:"
-grep -n "<extension>" -A 4 "$POM_FILE" || echo "No extension mappings found!"
+echo "- Name tags:"
+grep -n "<name>" "$POM_FILE" | head -3 || echo "No name tags found!"
 
 echo "- Plugin versions:"
 grep -n "central-publishing-maven-plugin" -A 2 "$POM_FILE" || echo "Central plugin not found!"
 grep -n "maven-gpg-plugin" -A 2 "$POM_FILE" || echo "GPG plugin not found!"
 
-echo "- Name tags:"
-grep -n "<name>" "$POM_FILE" | head -3 || echo "No name tags found!"
-
 echo "- Dependencies:"
-grep -n "<dependency>" -A 4 "$POM_FILE" || echo "No dependencies found!"
-
-echo "- Android library properties:"
-grep -n "<android.library>" "$POM_FILE" || echo "No android.library property found!"
+grep -n "<dependency>" -A 4 "$POM_FILE" | head -10 || echo "No dependencies found!"
 
 echo "=== POM file fixed! ==="

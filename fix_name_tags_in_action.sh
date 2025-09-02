@@ -1,31 +1,31 @@
 #!/bin/bash
-# Fix name tags in POM file - Direct approach
+# Fix <n> tags in GitHub Action YAML files
 set -e
 
-POM_FILE="$1"
-if [ ! -f "$POM_FILE" ]; then
-  echo "Usage: $0 <pom-file>"
-  exit 1
+ACTION_YML="$1"
+if [ ! -f "$ACTION_YML" ]; then
+  ACTION_YML=".github/actions/publish_maven_central/action.yml"
+  if [ ! -f "$ACTION_YML" ]; then
+    echo "Usage: $0 <action-yml-file>"
+    exit 1
+  fi
 fi
 
-echo "Fixing name tags in $POM_FILE"
+echo "Fixing <n> tags in $ACTION_YML"
 
-# Use direct search and replace without any escaping issues
-cp "$POM_FILE" "$POM_FILE.orig"
+# Create a backup of the original file
+cp "$ACTION_YML" "$ACTION_YML.orig"
 
-# Fix first name tag (line 11)
-sed -i'.bak' '11s/<n>PayPal Messages<\/n>/<name>PayPal Messages<\/name>/g' "$POM_FILE"
+# Use perl to safely replace <n> tags with <name> tags
+perl -i -pe 's/<n>PayPal Messages<\/n>/<name>PayPal Messages<\/name>/g' "$ACTION_YML"
 
-# Fix second name tag (license, line 17)
-sed -i'.bak' '17s/<n>The Apache License, Version 2.0<\/n>/<name>The Apache License, Version 2.0<\/name>/g' "$POM_FILE"
+# Verify the fix
+echo "Verifying fix..."
+if grep -q "<n>" "$ACTION_YML"; then
+  echo "WARNING: There are still <n> tags in the action.yml file!"
+  grep -n "<n>" "$ACTION_YML"
+else
+  echo "All <n> tags fixed successfully!"
+fi
 
-# Fix third name tag (developer, line 25)
-sed -i'.bak' '25s/<n>PayPalMessages Android<\/n>/<name>PayPalMessages Android<\/name>/g' "$POM_FILE"
-
-# Clean up
-rm -f "$POM_FILE.bak"
-
-echo "Name tags fixed in $POM_FILE"
-echo "Checking result:"
-echo "- Name tags:"
-grep -n "<name>" "$POM_FILE" || echo "No name tags found"
+echo "Action file preparation complete."

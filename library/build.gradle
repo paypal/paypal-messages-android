@@ -279,7 +279,141 @@ if (System.getenv('SKIP_KOVER') == 'true' || project.hasProperty('skipKover')) {
 
 // We'll use the basic ProGuard approach with OkHttp embedded
 
-apply from: rootProject.file("gradle/gradle-publish.gradle")
+// Use the official Android AAR publishing approach with the Maven Publish plugin
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                
+                // Required for publishing to Maven Central
+                pom {
+                    name = "PayPal Messages"
+                    description = "The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit."
+                    url = "https://github.com/paypal/paypal-messages-android"
+                    
+                    licenses {
+                        license {
+                            name = "The Apache License, Version 2.0"
+                            url = "http://www.apache.org/licenses/LICENSE-2.0"
+                        }
+                    }
+                    
+                    developers {
+                        developer {
+                            id = "paypal-messages-android"
+                            name = "PayPalMessages Android"
+                            email = "sdks-messages@paypal.com"
+                        }
+                    }
+                    
+                    scm {
+                        connection = "scm:git:git://github.com/paypal/paypal-messages-android.git"
+                        developerConnection = "scm:git:ssh://github.com:paypal/paypal-messages-android.git"
+                        url = "https://github.com/paypal/paypal-messages-android"
+                    }
+                    
+                    // Fix common Maven packaging errors by using withXml
+                    withXml {
+                        def root = asNode()
+                        // Fix <n> tags to <name> tags
+                        root.children().forEach { child ->
+                            if (child.name().toString() == "n") {
+                                def nameNode = new Node(root, "name")
+                                nameNode.setValue(child.value())
+                                root.remove(child)
+                            }
+                        }
+                        
+                        // Fix license name tags
+                        root.licenses.license.each { license ->
+                            license.children().forEach { licenseChild ->
+                                if (licenseChild.name().toString() == "n") {
+                                    def nameNode = new Node(license, "name")
+                                    nameNode.setValue(licenseChild.value())
+                                    license.remove(licenseChild)
+                                }
+                            }
+                        }
+                        
+                        // Fix developer name tags
+                        root.developers.developer.each { developer ->
+                            developer.children().forEach { devChild ->
+                                if (devChild.name().toString() == "n") {
+                                    def nameNode = new Node(developer, "name")
+                                    nameNode.setValue(devChild.value())
+                                    developer.remove(devChild)
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Ensure all artifacts have consistent groupId, artifactId, and version
+                groupId = group
+                artifactId = project.ext.name
+                version = project.ext.version
+            }
+        }
+        
+        repositories {
+            maven {
+                name = "mavenCentral"
+                def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                
+                credentials {
+                    username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: findProperty('sonatypeUsername')
+                    password = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: findProperty('sonatypePassword')
+                }
+            }
+        }
+    }
+    
+    // Fix POM file after generation
+    tasks.named('generatePomFileForReleasePublication') {
+        doLast {
+            def pomFile = file("${buildDir}/publications/release/pom-default.xml")
+            if (pomFile.exists()) {
+                // Create backup
+                copy {
+                    from pomFile
+                    into buildDir
+                    rename { "pom-original.xml" }
+                }
+                
+                // Fix name tags with direct string replacement
+                def pomContent = pomFile.text
+                pomContent = pomContent.replaceAll("<n>", "<name>")
+                pomContent = pomContent.replaceAll("</n>", "</name>")
+                pomFile.text = pomContent
+                
+                // Copy the fixed POM file
+                copy {
+                    from pomFile
+                    into buildDir
+                    rename { "pom.xml" }
+                }
+                println "POM file fixed and copied to: ${buildDir}/pom.xml"
+            }
+        }
+    }
+    
+    // Set up signing configuration
+    signing {
+        def signingKeyId = System.getenv('SIGNING_KEY_ID') ?: findProperty('signing.keyId')
+        def signingPassword = System.getenv('SIGNING_KEY_PASSWORD') ?: findProperty('signing.password')
+        def signingSecretKeyRingFile = System.getenv('SIGNING_KEY_FILE') ?: findProperty('signing.secretKeyRingFile')
+        
+        if (signingKeyId && signingPassword && signingSecretKeyRingFile) {
+            sign publishing.publications.release
+        }
+    }
+}
 
 // Ensure version is set for the library
 version = modules.sdkVersionName
