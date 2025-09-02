@@ -34,6 +34,10 @@ rm -rf "$SOURCES_DIR"
 mkdir -p "$SOURCES_DIR"
 cp -r library/src/main/java "$SOURCES_DIR/" 2>/dev/null || true
 cp -r library/src/main/kotlin "$SOURCES_DIR/" 2>/dev/null || true
+
+# Make sure the target directory exists
+mkdir -p "library/build/libs"
+
 SOURCES_JAR="library/build/libs/paypal-messages-sources.jar"
 jar cf "$SOURCES_JAR" -C "$SOURCES_DIR" .
 
@@ -48,6 +52,10 @@ cat > "$JAVADOC_DIR/README.md" << EOF
 This is a placeholder Javadoc JAR for the PayPal Messages Android SDK.
 For detailed documentation, please visit: https://github.com/paypal/paypal-messages-android
 EOF
+
+# Make sure the target directory exists (redundant but for safety)
+mkdir -p "library/build/libs"
+
 JAVADOC_JAR="library/build/libs/paypal-messages-javadoc.jar"
 jar cf "$JAVADOC_JAR" -C "$JAVADOC_DIR" .
 

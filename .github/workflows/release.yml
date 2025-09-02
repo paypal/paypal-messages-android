@@ -91,4 +91,4 @@ jobs:
           SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
         run: |
           echo "Running direct deployment script..."
-          ./deploy-to-maven-central.sh --no-auto-publish
+          bash -e ./deploy-to-maven-central.sh --no-auto-publish
