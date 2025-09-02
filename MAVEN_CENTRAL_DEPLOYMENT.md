@@ -80,6 +80,59 @@ Creates signature files for POM files. If no files are specified, it tries to fi
 
 Verifies that all Maven Central requirements are met for the specified POM files.
 
+## Deployment Process
+
+### Option 1: Comprehensive One-Step Deployment
+
+For the most reliable deployment, use the `deploy-to-central.sh` script:
+
+1. Set up credentials for Sonatype Central Portal:
+   ```bash
+   export SONATYPE_NEXUS_USERNAME="your-username"
+   export SONATYPE_NEXUS_PASSWORD="your-password"
+   ```
+2. Set up GPG signing credentials:
+   ```bash
+   export SIGNING_KEY_ID="your-key-id"
+   export SIGNING_KEY_PASSWORD="your-key-password"
+   export SIGNING_KEY_FILE="/path/to/your/key.gpg"
+   ```
+3. Run the deployment script:
+   ```bash
+   ./deploy-to-central.sh
+   ```
+
+This script performs all the necessary steps:
+- Fixes name tags in all POM files
+- Prepares Maven artifacts with proper metadata
+- Verifies all Maven Central requirements
+- Deploys to Maven Central
+
+### Option 2: Step-by-Step Deployment
+
+If you prefer more control, you can run the steps individually:
+
+1. Fix name tags in all POM files:
+   ```bash
+   ./fix_name_closing_tags.sh
+   ```
+
+2. Prepare Maven artifacts:
+   ```bash
+   ./prepare-maven-artifacts.sh
+   ```
+
+3. Verify Maven Central requirements:
+   ```bash
+   ./verify_maven_central.sh
+   ```
+
+4. Deploy to Maven Central:
+   ```bash
+   ./deploy-to-maven-central.sh [--auto-publish]
+   ```
+   The `--auto-publish` flag will automatically publish the artifacts after validation. Without this flag, you'll need to manually publish from the Sonatype Central Portal.
+
 ## Common Issues
 
 ### 1. Missing Signature Files

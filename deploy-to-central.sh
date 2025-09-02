@@ -75,13 +75,11 @@ LIBRARY_POM="${STAGE_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
 echo "Library POM: ${LIBRARY_POM}"
 
 # Fix the POM file to ensure it has proper name tags and plugin versions
-if [ -x "./fix_pom_for_central.sh" ]; then
-    echo "Using POM fixer script..."
-    ./fix_pom_for_central.sh "$LIBRARY_POM"
-else
-    echo "POM fixer script not found! Creating a new POM file directly."
-    # Create a completely new POM with proper tags and jar packaging
-    cat > "$LIBRARY_POM" << XML
+echo "Using POM fixer script..."
+./fix_name_closing_tags.sh "$LIBRARY_POM"
+
+# Create a completely new POM with proper tags and jar packaging
+cat > "$LIBRARY_POM" << XML
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -255,6 +253,14 @@ else
         ./fix_pom_for_central.sh "$POM_FILE"
     fi
 fi
+
+# Run our final name tag fix script to ensure all tags are properly fixed
+echo "\n=== Final name tag fix ==="
+./fix_name_closing_tags.sh
+
+# Run our verification script to ensure all Maven Central requirements are met
+echo "\n=== Verifying Maven Central requirements ==="
+./verify_maven_central.sh
 
 # Run the Maven Central publish command
 # Use absolute path for staging directory to ensure plugin finds all artifacts
