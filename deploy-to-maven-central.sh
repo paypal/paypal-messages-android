@@ -130,6 +130,19 @@ mv "$POM_FILE" "library/build/libs/paypal-messages-${VERSION}.pom"
 echo "Prepared files for deployment:"
 ls -la library/build/libs/
 
+# Sign the artifacts directly
+if [ -n "$SIGNING_KEY_ID" ] && [ -n "$SIGNING_KEY_PASSWORD" ]; then
+  echo "Directly signing artifacts with GPG..."
+  for file in library/build/libs/paypal-messages-${VERSION}*; do
+    if [[ -f "$file" && ! "$file" == *.asc ]]; then
+      echo "Signing: $file"
+      gpg --batch --yes --pinentry-mode loopback --passphrase "${SIGNING_KEY_PASSWORD}" \
+          --local-user "${SIGNING_KEY_ID}" --armor --detach-sign \
+          --output "${file}.asc" "$file" || echo "Warning: Failed to sign $file"
+    fi
+  done
+fi
+
 # Deploy to Maven Central using Maven
 echo "Deploying to Maven Central..."
 echo "This step requires Maven and proper Sonatype credentials in .mvn/maven-settings.xml"
@@ -181,6 +194,10 @@ fi
 if [ -n "$SIGNING_KEY_FILE" ] && [ -f "$SIGNING_KEY_FILE" ]; then
   echo "Importing GPG key..."
   gpg --batch --import "$SIGNING_KEY_FILE"
+  
+  # Test GPG signing capability early
+  echo "Testing GPG signing capability..."
+  echo "test" | gpg --batch --yes --pinentry-mode loopback --passphrase "${SIGNING_KEY_PASSWORD}" --local-user "${SIGNING_KEY_ID}" --armor --detach-sign --output /tmp/test.asc || echo "Warning: GPG test signing failed"
 fi
 
 # Deploy using Maven (requires Maven to be installed)
@@ -188,11 +205,64 @@ if command -v mvn &> /dev/null; then
   echo "Deploying to Maven Central using Maven..."
   
   # Deploy with the Central portal plugin
+  # Create a minimal pom.xml in the current directory to satisfy Maven's requirements
+  echo "Creating temporary root pom.xml for Maven..."
+  cat > pom.xml << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.paypal.messages</groupId>
+    <artifactId>paypal-messages-parent</artifactId>
+    <version>${VERSION}</version>
+    <packaging>pom</packaging>
+</project>
+EOF
+
+  # Run the Maven command with the temporary POM
+  echo "Attempting to publish with Maven from root directory..."
   mvn org.sonatype.central:central-publishing-maven-plugin:publish \
     -s .mvn/maven-settings.xml \
     -DrepositoryDir="library/build/libs" \
     -DautoPublish=$AUTO_PUBLISH \
     -Dverbose=true
+  
+  # If the above command fails, try running directly from the libs directory
+  if [ $? -ne 0 ]; then
+    echo "First attempt failed, trying to run Maven from the libs directory..."
+    cd library/build/libs
+    
+    # Create a minimal pom.xml in the libs directory
+    cat > pom.xml << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.paypal.messages</groupId>
+    <artifactId>paypal-messages-parent</artifactId>
+    <version>${VERSION}</version>
+    <packaging>pom</packaging>
+</project>
+EOF
+    
+    # Copy the Maven settings file
+    mkdir -p .mvn
+    cp ../../../.mvn/maven-settings.xml .mvn/
+    
+    # Run Maven from the libs directory
+    mvn org.sonatype.central:central-publishing-maven-plugin:publish \
+      -s .mvn/maven-settings.xml \
+      -DrepositoryDir="." \
+      -DautoPublish=$AUTO_PUBLISH \
+      -Dverbose=true
+      
+    # Return to the original directory
+    cd ../../..
+  fi
+    
+  # Clean up temporary pom.xml files
+  rm -f pom.xml
+  rm -f library/build/libs/pom.xml
   
   echo "Deployment submitted to Maven Central."
   echo "Check the status at: https://central.sonatype.com/publishing/deployments"
