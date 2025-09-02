@@ -16,6 +16,21 @@ done
 echo "Deploying PayPal Messages Android SDK to Maven Central..."
 echo "Auto-publish: $AUTO_PUBLISH"
 
+# Import GPG key early so subsequent signing steps succeed
+if [ -n "$SIGNING_KEY_FILE" ] && [ -f "$SIGNING_KEY_FILE" ]; then
+  echo "Importing GPG key..."
+  gpg --batch --import "$SIGNING_KEY_FILE"
+  
+  # Test GPG signing capability early
+  echo "Testing GPG signing capability..."
+  echo "test" | gpg --batch --yes --pinentry-mode loopback \
+    --passphrase "${SIGNING_KEY_PASSWORD}" \
+    --local-user "${SIGNING_KEY_ID}" \
+    --armor --detach-sign --output /tmp/test.asc || echo "Warning: GPG test signing failed"
+else
+  echo "Warning: SIGNING_KEY_FILE not set or not found; GPG signing may fail."
+fi
+
 # Build and prepare the library
 echo "Building library..."
 ./gradlew clean :library:assembleRelease
@@ -103,7 +118,7 @@ echo "This step requires Maven and proper Sonatype credentials in .mvn/maven-set
 mkdir -p .mvn
 
 # Create maven-settings.xml with proper credentials
-cat > .mvn/maven-settings.xml << EOF
+cat > .mvn/maven-settings.xml << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -111,8 +126,8 @@ cat > .mvn/maven-settings.xml << EOF
     <servers>
         <server>
             <id>central</id>
-            <username>\${env.SONATYPE_NEXUS_USERNAME}</username>
-            <password>\${env.SONATYPE_NEXUS_PASSWORD}</password>
+            <username>${env.SONATYPE_NEXUS_USERNAME}</username>
+            <password>${env.SONATYPE_NEXUS_PASSWORD}</password>
         </server>
     </servers>
     <profiles>
@@ -120,8 +135,8 @@ cat > .mvn/maven-settings.xml << EOF
             <id>gpg</id>
             <properties>
                 <gpg.executable>gpg</gpg.executable>
-                <gpg.keyname>\${env.SIGNING_KEY_ID}</gpg.keyname>
-                <gpg.passphrase>\${env.SIGNING_KEY_PASSWORD}</gpg.passphrase>
+                <gpg.keyname>${env.SIGNING_KEY_ID}</gpg.keyname>
+                <gpg.passphrase>${env.SIGNING_KEY_PASSWORD}</gpg.passphrase>
             </properties>
         </profile>
     </profiles>
@@ -140,16 +155,6 @@ fi
 if [ -z "$SIGNING_KEY_ID" ] || [ -z "$SIGNING_KEY_PASSWORD" ] || [ -z "$SIGNING_KEY_FILE" ]; then
   echo "Warning: Signing credentials (SIGNING_KEY_ID, SIGNING_KEY_PASSWORD, SIGNING_KEY_FILE) not set."
   echo "The deployment command will likely fail without these credentials."
-fi
-
-# Check for GPG key
-if [ -n "$SIGNING_KEY_FILE" ] && [ -f "$SIGNING_KEY_FILE" ]; then
-  echo "Importing GPG key..."
-  gpg --batch --import "$SIGNING_KEY_FILE"
-  
-  # Test GPG signing capability early
-  echo "Testing GPG signing capability..."
-  echo "test" | gpg --batch --yes --pinentry-mode loopback --passphrase "${SIGNING_KEY_PASSWORD}" --local-user "${SIGNING_KEY_ID}" --armor --detach-sign --output /tmp/test.asc || echo "Warning: GPG test signing failed"
 fi
 
 # Deploy using Maven (requires Maven to be installed)
