@@ -48,14 +48,6 @@ If you need to fix specific issues:
 
 Replaces `<n>` tags with `<name>` tags in the specified POM file.
 
-#### Create Root POM
-
-```bash
-./fix_pom_in_action_mac.sh
-```
-
-Creates a proper root POM file with all required metadata for Maven Central.
-
 #### Fix GitHub Action YML Files
 
 ```bash
@@ -82,56 +74,34 @@ Verifies that all Maven Central requirements are met for the specified POM files
 
 ## Deployment Process
 
-### Option 1: Comprehensive One-Step Deployment
+### Option 1: One-Step Deployment (Recommended)
 
-For the most reliable deployment, use the `deploy-to-central.sh` script:
+Use the unified deployment script:
 
-1. Set up credentials for Sonatype Central Portal:
-   ```bash
-   export SONATYPE_NEXUS_USERNAME="your-username"
-   export SONATYPE_NEXUS_PASSWORD="your-password"
-   ```
-2. Set up GPG signing credentials:
-   ```bash
-   export SIGNING_KEY_ID="your-key-id"
-   export SIGNING_KEY_PASSWORD="your-key-password"
-   export SIGNING_KEY_FILE="/path/to/your/key.gpg"
-   ```
-3. Run the deployment script:
-   ```bash
-   ./deploy-to-central.sh
-   ```
+```bash
+./deploy-to-maven-central.sh [--auto-publish]
+```
 
-This script performs all the necessary steps:
-- Fixes name tags in all POM files
-- Prepares Maven artifacts with proper metadata
-- Verifies all Maven Central requirements
-- Deploys to Maven Central
+- The `--auto-publish` flag will automatically publish the artifacts after validation. Without this flag, you'll need to manually publish from the Sonatype Central Portal.
 
 ### Option 2: Step-by-Step Deployment
 
 If you prefer more control, you can run the steps individually:
 
-1. Fix name tags in all POM files:
-   ```bash
-   ./fix_name_closing_tags.sh
-   ```
-
-2. Prepare Maven artifacts:
+1. Prepare Maven artifacts:
    ```bash
    ./prepare-maven-artifacts.sh
    ```
 
-3. Verify Maven Central requirements:
+2. Verify Maven Central requirements:
    ```bash
    ./verify_maven_central.sh
    ```
 
-4. Deploy to Maven Central:
+3. Deploy to Maven Central:
    ```bash
    ./deploy-to-maven-central.sh [--auto-publish]
    ```
-   The `--auto-publish` flag will automatically publish the artifacts after validation. Without this flag, you'll need to manually publish from the Sonatype Central Portal.
 
 ## Common Issues
 
@@ -149,10 +119,7 @@ Run the signature fix script:
 
 ### 2. Missing Metadata
 
-If you see errors about missing name, description, URL, license, SCM, or developers information, run:
-```bash
-./fix_pom_in_action_mac.sh
-```
+If you see errors about missing name, description, URL, license, SCM, or developers information, ensure your POMs are generated via `prepare-maven-artifacts.sh` or update them via the fix scripts above.
 
 ### 3. Name Tag Issues
 
@@ -161,7 +128,7 @@ If you see issues with XML formatting, specifically `<n>` tags, run:
 ./fix_name_in_pom.sh <pom-file>
 ```
 
-## Deployment Process
+## Deployment Steps Summary
 
 1. Fix any issues with the POM files using the scripts above
 2. Set up credentials for Sonatype Central Portal:
