@@ -217,6 +217,7 @@ if command -v mvn &> /dev/null; then
   mvn org.sonatype.central:central-publishing-maven-plugin:publish \
     -s .mvn/maven-settings.xml \
     -DstagingDirectory="$ABS_STAGING_ROOT" \
+    -DdeploymentName="PayPal Messages Android ${VERSION}" \
     -DautoPublish=$AUTO_PUBLISH \
     -Dverbose=true
   
@@ -226,6 +227,7 @@ if command -v mvn &> /dev/null; then
     mvn org.sonatype.central:central-publishing-maven-plugin:publish \
       -s .mvn/maven-settings.xml \
       -DstagingDirectory="$ABS_STAGING_ROOT" \
+      -DdeploymentName="PayPal Messages Android ${VERSION}" \
       -DautoPublish=$AUTO_PUBLISH \
       -Dverbose=true
   fi
