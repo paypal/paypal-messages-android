@@ -110,6 +110,54 @@ if [ -n "$SIGNING_KEY_ID" ] && [ -n "$SIGNING_KEY_PASSWORD" ]; then
   done
 fi
 
+# Stage artifacts in a Maven repository layout expected by Central plugin
+echo "Staging artifacts in Maven repository layout..."
+STAGING_ROOT="target/central-staging"
+LIB_GROUP_PATH="com/paypal/messages/paypal-messages/${VERSION}"
+PARENT_GROUP_PATH="com/paypal/messages/paypal-messages-parent/${VERSION}"
+
+rm -rf "$STAGING_ROOT"
+mkdir -p "$STAGING_ROOT/$LIB_GROUP_PATH"
+mkdir -p "$STAGING_ROOT/$PARENT_GROUP_PATH"
+
+# Copy library artifacts
+cp "library/build/libs/paypal-messages-${VERSION}.aar" "$STAGING_ROOT/$LIB_GROUP_PATH/"
+cp "library/build/libs/paypal-messages-${VERSION}.pom" "$STAGING_ROOT/$LIB_GROUP_PATH/"
+cp "library/build/libs/paypal-messages-${VERSION}-sources.jar" "$STAGING_ROOT/$LIB_GROUP_PATH/"
+cp "library/build/libs/paypal-messages-${VERSION}-javadoc.jar" "$STAGING_ROOT/$LIB_GROUP_PATH/"
+
+# Copy signatures if present
+if [ -f "library/build/libs/paypal-messages-${VERSION}.aar.asc" ]; then cp "library/build/libs/paypal-messages-${VERSION}.aar.asc" "$STAGING_ROOT/$LIB_GROUP_PATH/"; fi
+if [ -f "library/build/libs/paypal-messages-${VERSION}.pom.asc" ]; then cp "library/build/libs/paypal-messages-${VERSION}.pom.asc" "$STAGING_ROOT/$LIB_GROUP_PATH/"; fi
+if [ -f "library/build/libs/paypal-messages-${VERSION}-sources.jar.asc" ]; then cp "library/build/libs/paypal-messages-${VERSION}-sources.jar.asc" "$STAGING_ROOT/$LIB_GROUP_PATH/"; fi
+if [ -f "library/build/libs/paypal-messages-${VERSION}-javadoc.jar.asc" ]; then cp "library/build/libs/paypal-messages-${VERSION}-javadoc.jar.asc" "$STAGING_ROOT/$LIB_GROUP_PATH/"; fi
+
+# Copy parent POM and its signature
+cp "pom.xml" "$STAGING_ROOT/$PARENT_GROUP_PATH/paypal-messages-parent-${VERSION}.pom"
+if [ -f "pom.xml.asc" ]; then cp "pom.xml.asc" "$STAGING_ROOT/$PARENT_GROUP_PATH/paypal-messages-parent-${VERSION}.pom.asc"; fi
+
+# Generate checksums for all staged files (MD5 and SHA1)
+echo "Generating checksums for staged artifacts..."
+if command -v md5sum >/dev/null 2>&1 && command -v sha1sum >/dev/null 2>&1; then
+  find "$STAGING_ROOT" -type f ! -name "*.md5" ! -name "*.sha1" -print0 | while IFS= read -r -d '' f; do
+    md5sum "$f" | awk '{print $1}' > "${f}.md5"
+    sha1sum "$f" | awk '{print $1}' > "${f}.sha1"
+  done
+else
+  echo "md5sum/sha1sum not found; attempting platform-specific tools..."
+  find "$STAGING_ROOT" -type f ! -name "*.md5" ! -name "*.sha1" -print0 | while IFS= read -r -d '' f; do
+    if command -v md5 >/dev/null 2>&1; then md5 -q "$f" > "${f}.md5"; fi
+    if command -v shasum >/dev/null 2>&1; then shasum -a 1 "$f" | awk '{print $1}' > "${f}.sha1"; fi
+  done
+fi
+
+echo "Checksum generation complete. Contents of staging:"
+find "$STAGING_ROOT" -type f | sort
+
+ABS_STAGING_ROOT=$(realpath "$STAGING_ROOT")
+
+echo "Staging directory prepared at: $ABS_STAGING_ROOT"
+
 # Deploy to Maven Central using Maven
 echo "Deploying to Maven Central..."
 echo "This step requires Maven and proper Sonatype credentials in .mvn/maven-settings.xml"
@@ -161,39 +209,25 @@ fi
 if command -v mvn &> /dev/null; then
   echo "Deploying to Maven Central using Maven..."
   
-  # Deploy with the Central portal plugin
-  # Root pom.xml was already created by prepare-maven-artifacts.sh
-  echo "Using pre-created root pom.xml for Maven..."
+  # Deploy with the Central portal plugin, using the staging directory we prepared
+  echo "Using staging directory for Maven Central publish..."
 
-  # Run the Maven command with the temporary POM
+  # Run the Maven command from the root directory
   echo "Attempting to publish with Maven from root directory..."
   mvn org.sonatype.central:central-publishing-maven-plugin:publish \
     -s .mvn/maven-settings.xml \
-    -DrepositoryDir="library/build/libs" \
+    -DstagingDirectory="$ABS_STAGING_ROOT" \
     -DautoPublish=$AUTO_PUBLISH \
     -Dverbose=true
   
-  # If the above command fails, try running directly from the libs directory
+  # If the above command fails, try running again without changing directories
   if [ $? -ne 0 ]; then
-    echo "First attempt failed, trying to run Maven from the libs directory..."
-    cd library/build/libs
-    
-    # Copy the pre-created root pom.xml to the libs directory
-    cp ../../../pom.xml pom.xml
-    
-    # Copy the Maven settings file
-    mkdir -p .mvn
-    cp ../../../.mvn/maven-settings.xml .mvn/
-    
-    # Run Maven from the libs directory
+    echo "First attempt failed, retrying publish once..."
     mvn org.sonatype.central:central-publishing-maven-plugin:publish \
       -s .mvn/maven-settings.xml \
-      -DrepositoryDir="." \
+      -DstagingDirectory="$ABS_STAGING_ROOT" \
       -DautoPublish=$AUTO_PUBLISH \
       -Dverbose=true
-      
-    # Return to the original directory
-    cd ../../..
   fi
     
   # Clean up temporary pom.xml files
