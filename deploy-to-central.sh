@@ -18,6 +18,7 @@ echo "Preparing artifacts..."
 
 # Get version info
 VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' build.gradle | grep -o '"[^"]*"$' | tr -d '"')
+# Normalize potential double -SNAPSHOT (seen in logs)
 VERSION_FIXED=$(echo "$VERSION" | sed 's/-SNAPSHOT-SNAPSHOT$/-SNAPSHOT/')
 ARTIFACT_ID="paypal-messages"
 GROUP_ID="com.paypal.messages"
@@ -28,57 +29,74 @@ echo "Deploying version: $VERSION_FIXED"
 STAGING_ROOT="library/build/central-staging"
 GROUP_PATH="com/paypal/messages/${ARTIFACT_ID}"
 STAGE_DIR="${STAGING_ROOT}/${GROUP_PATH}/${VERSION_FIXED}"
-SRC_DIR="library/build/maven-deploy"
+# Use libs output where prepare-maven-artifacts.sh places files
+SRC_DIR="library/build/libs"
 
 rm -rf "${STAGING_ROOT}"
 mkdir -p "${STAGE_DIR}"
 
-# Copy library artifacts (THE KEY FIX: ensure these are included)
+# Ensure expected source artifacts exist, build AAR if missing
+if [ ! -f "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.aar" ]; then
+  echo "AAR not found in ${SRC_DIR}, attempting to build :library:assembleRelease"
+  ./gradlew :library:assembleRelease --no-daemon --stacktrace
+  AAR_PATH="library/build/outputs/aar/library-release.aar"
+  if [ -f "$AAR_PATH" ]; then
+    cp "$AAR_PATH" "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.aar"
+  else
+    echo "Error: AAR still not found after build"; exit 1
+  fi
+fi
+
+# Ensure POM exists (prepare-maven-artifacts.sh creates it)
+if [ ! -f "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom" ]; then
+  echo "Error: POM not found at ${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom"; exit 1
+fi
+
+# Ensure sources and javadoc jars exist
+if [ ! -f "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-sources.jar" ]; then
+  echo "Error: sources jar not found at ${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-sources.jar"; exit 1
+fi
+if [ ! -f "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-javadoc.jar" ]; then
+  echo "Error: javadoc jar not found at ${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-javadoc.jar"; exit 1
+fi
+
+# Copy library artifacts to staging directory
 echo "Copying library artifacts to staging directory..."
 cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom" "${STAGE_DIR}/"
 cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.aar" "${STAGE_DIR}/"
 cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-sources.jar" "${STAGE_DIR}/"
 cp "${SRC_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}-javadoc.jar" "${STAGE_DIR}/"
 
+# Sign artifacts present in stage directory
 echo "Signing library artifacts..."
-# Use our working CI signing helper
 for file in "${STAGE_DIR}"/*; do
     if [[ -f "$file" && ! "$file" == *.asc ]]; then
         echo "Signing: $file"
         if [ -f "ci-sign-helper.sh" ] && [ -x "ci-sign-helper.sh" ]; then
             ./ci-sign-helper.sh "$file" || {
-                # If in test mode, create a dummy signature file
                 if [[ "$SONATYPE_NEXUS_PASSWORD" == "test" ]]; then
                     echo "Test mode detected, creating dummy signature file"
                     touch "${file}.asc"
                 else
-                    echo "Error: Failed to sign file ${file}"
-                    exit 1
+                    echo "Error: Failed to sign file ${file}"; exit 1
                 fi
             }
         else
-            # If in test mode, create a dummy signature file
             if [[ "$SONATYPE_NEXUS_PASSWORD" == "test" ]]; then
                 echo "Test mode detected, creating dummy signature file"
                 touch "${file}.asc"
             else
-                echo "Error: ci-sign-helper.sh not found or not executable"
-                exit 1
+                echo "Error: ci-sign-helper.sh not found or not executable"; exit 1
             fi
         fi
     fi
 done
 
 echo "Using library POM directly for deployment..."
-# Use the library POM directly instead of creating a wrapper POM
 LIBRARY_POM="${STAGE_DIR}/${ARTIFACT_ID}-${VERSION_FIXED}.pom"
 echo "Library POM: ${LIBRARY_POM}"
 
-# Fix the POM file to ensure it has proper name tags and plugin versions
-echo "Using POM fixer script..."
-./fix_name_closing_tags.sh "$LIBRARY_POM"
-
-# Create a completely new POM with proper tags and jar packaging
+# Re-create a POM that matches Central expectations
 cat > "$LIBRARY_POM" << XML
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -118,7 +136,6 @@ cat > "$LIBRARY_POM" << XML
     <build>
         <directory>\${project.basedir}/build</directory>
         <extensions>
-            <!-- Extension mappings to handle AAR files -->
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-file</artifactId>
@@ -170,7 +187,6 @@ cat > "$LIBRARY_POM" << XML
     </build>
     
     <dependencies>
-        <!-- Regular JAR dependencies (compile scope) -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -184,8 +200,6 @@ cat > "$LIBRARY_POM" << XML
     </dependencies>
 </project>
 XML
-    echo "Created new POM file directly"
-fi
 
 # Create target directory for Maven plugin
 MAVEN_TARGET_REL="target/maven-bundle"
@@ -196,9 +210,6 @@ mkdir -p "${MAVEN_TARGET}"
 # Copy all staged artifacts to target directory
 echo "Copying all artifacts to Maven target directory..."
 cp -r "${STAGING_ROOT}/com" "${MAVEN_TARGET}/"
-
-# Use the library POM directly for deployment - no wrapper POM needed
-echo "The AAR file will be used as the primary artifact with jar packaging type and extension mappings"
 
 # Final verification - listing all files that will be uploaded:
 echo "Final verification - listing all files that will be uploaded:"
@@ -221,48 +232,8 @@ POM_FILE="${MAVEN_TARGET}/com/paypal/messages/${ARTIFACT_ID}/${VERSION_FIXED}/${
 if grep -q "<packaging>jar</packaging>" "$POM_FILE"; then
     echo "\n=== POM file has correct jar packaging for Maven Central compatibility ==="
     grep -n "<packaging>" "$POM_FILE"
-else
-    echo "\n!!! POM file does not have jar packaging. Fixing it now !!!"
-    # Apply our POM fixer again to be sure
-    if [ -x "./fix_pom_for_central.sh" ]; then
-        echo "Using POM fixer script on target POM..."
-        ./fix_pom_for_central.sh "$POM_FILE"
-    fi
 fi
 
-# Verify extension mappings are present
-if grep -q "<extension>" "$POM_FILE"; then
-    echo "\n=== POM file has extension mappings for AAR files ==="
-    grep -n "<extension>" -A 4 "$POM_FILE"
-else
-    echo "\n!!! POM file does not have extension mappings. Fixing it now !!!"
-    if [ -x "./fix_pom_for_central.sh" ]; then
-        echo "Using POM fixer script on target POM..."
-        ./fix_pom_for_central.sh "$POM_FILE"
-    fi
-fi
-
-# Verify Android library property is present
-if grep -q "<android.library>" "$POM_FILE"; then
-    echo "\n=== POM file has Android library property ==="
-    grep -n "<android.library>" "$POM_FILE"
-else
-    echo "\n!!! POM file does not have Android library property. Fixing it now !!!"
-    if [ -x "./fix_pom_for_central.sh" ]; then
-        echo "Using POM fixer script on target POM..."
-        ./fix_pom_for_central.sh "$POM_FILE"
-    fi
-fi
-
-# Run our final name tag fix script to ensure all tags are properly fixed
-echo "\n=== Final name tag fix ==="
-./fix_name_closing_tags.sh
-
-# Run our verification script to ensure all Maven Central requirements are met
-echo "\n=== Verifying Maven Central requirements ==="
-./verify_maven_central.sh
-
-# Run the Maven Central publish command
 # Use absolute path for staging directory to ensure plugin finds all artifacts
 ABSOLUTE_MAVEN_TARGET=$(realpath "${MAVEN_TARGET}")
 echo "\n=== Using absolute staging directory ==="
@@ -271,33 +242,14 @@ echo "$ABSOLUTE_MAVEN_TARGET"
 echo "\n=== Command that will be executed ==="
 echo "mvn --batch-mode -f \"${LIBRARY_POM}\" -s .mvn/maven-settings.xml -DstagingDirectory=\"${ABSOLUTE_MAVEN_TARGET}\" verify org.sonatype.central:central-publishing-maven-plugin:publish"
 
-if [[ "$SONATYPE_NEXUS_PASSWORD" == "test" ]]; then
-  echo "\n=== Test mode: skipping actual publish to Maven Central ==="
-  echo "Command that would be run:"
-  echo "mvn --batch-mode \\
-  -f \"${LIBRARY_POM}\" \\
-  -s .mvn/maven-settings.xml \\
-  -DstagingDirectory=\"${ABSOLUTE_MAVEN_TARGET}\" \\
-  -Dorg.slf4j.simpleLogger.log.org.sonatype.central=debug \\
-  verify \\
-  org.sonatype.central:central-publishing-maven-plugin:publish"
-  
-  # Just run verification without publishing
-  mvn --batch-mode \
-    -f "${LIBRARY_POM}" \
-    -s .mvn/maven-settings.xml \
-    -DstagingDirectory="${ABSOLUTE_MAVEN_TARGET}" \
-    verify
-else
-  # Run the actual publish command
-  mvn --batch-mode \
-    -f "${LIBRARY_POM}" \
-    -s .mvn/maven-settings.xml \
-    -DstagingDirectory="${ABSOLUTE_MAVEN_TARGET}" \
-    -Dorg.slf4j.simpleLogger.log.org.sonatype.central=debug \
-    verify \
-    org.sonatype.central:central-publishing-maven-plugin:publish
-fi
+# Run the actual publish command
+mvn --batch-mode \
+  -f "${LIBRARY_POM}" \
+  -s .mvn/maven-settings.xml \
+  -DstagingDirectory="${ABSOLUTE_MAVEN_TARGET}" \
+  -Dorg.slf4j.simpleLogger.log.org.sonatype.central=debug \
+  verify \
+  org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"
 echo "Check the status at: https://central.sonatype.com/publishing/deployments"

@@ -501,7 +501,7 @@ tasks.register('closeAndPromoteRepositoryWithToken') {
 //./gradlew -PversionParam=0.0.1 changeReleaseVersion
 tasks.register('changeReleaseVersion') {
     doLast {
-        def newVersion = versionParam + (System.getenv('USE_SNAPSHOT') == "true" ? "-SNAPSHOT" : "")
+        def newVersion = versionParam
         
         // Update build.gradle
         def topLevelGradleFile = file('./build.gradle')
