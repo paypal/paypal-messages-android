@@ -1,96 +1,66 @@
 # Publishing to Maven Central
 
-This project is configured to publish to Maven Central via token-based authentication using the Central Portal Maven plugin.
+This project releases exclusively via GitHub Actions using the Sonatype Central Portal Maven plugin. Do not run local scripts to publish.
 
-## Prerequisites
+## Prerequisites (GitHub Secrets)
 
-1. Sonatype Central Portal account with access to publish under the `com.paypal` groupId
-2. API token generated from Sonatype Central Portal
-3. GPG/PGP key for signing artifacts (required for releases)
+The following repository secrets must be configured in GitHub for the workflows to run:
 
-## Configuration
-
-To publish the library, you need to provide the following credentials:
-
-### Environment Variables
-
-Set the following environment variables:
-
-```bash
-# Required: API token for authentication
-export SONATYPE_NEXUS_PASSWORD=your_sonatype_api_token
-
-# Required for releases: GPG signing keys
-export SIGNING_KEY_ID=your_gpg_key_id
-export SIGNING_KEY_PASSWORD=your_gpg_key_password
-export SIGNING_KEY_FILE=/path/to/secring.gpg
-```
-
-**Important**: `SONATYPE_NEXUS_PASSWORD` should be an API token generated from the Sonatype Central Portal (`https://central.sonatype.com/profile`).
-
-## Publishing Methods
-
-### Recommended: Scripted Deployment
-
-Use the unified deployment script that stages artifacts, signs them, and invokes the Central plugin:
-
-```bash
-./deploy-to-maven-central.sh [--auto-publish]
-```
-
-- Add `--auto-publish` to auto-publish after validation; omit for manual approval in the Portal.
-
-### Gradle Tasks (advanced)
-
-You can also use Gradle tasks to prepare artifacts:
-
-```bash
-./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication
-```
-
-## CI/CD Publishing Configuration
-
-The GitHub Actions workflows publish via the Central Portal API.
-
-### Workflows
-
-1. `release.yml` – manual releases
-   - Decodes and imports the GPG key
-   - Runs `deploy-to-maven-central.sh --no-auto-publish`
-   - Requires manual approval in the Sonatype Central Portal
-
-2. `release-snapshots.yml` – snapshot releases
-   - Sets version with `-SNAPSHOT`
-   - Publishes via composite action to the Central Portal
-   - Uses automatic publishing (no manual approval)
-
-Required secrets for both:
 - `SONATYPE_NEXUS_USERNAME` – Sonatype username
-- `SONATYPE_NEXUS_PASSWORD` – Sonatype user token
+- `SONATYPE_NEXUS_PASSWORD` – Sonatype API token (Central Portal)
 - `SIGNING_KEY_ID` – GPG key id
 - `SIGNING_KEY_PASSWORD` – GPG key password
 - `SIGNING_KEY_FILE` – base64-encoded GPG private key
 
-## Manual Publishing Approval
+## Release Workflows
 
-When using manual (user-managed) mode, publish from the Portal after validation:
+### 1) Production Release (`.github/workflows/release.yml`)
+
+- Trigger: Manual (`workflow_dispatch`)
+- Jobs: `lint` → `test` → `build` → `release`
+- Key steps in `release` job:
+  - Decodes and imports the signing key via `./.github/actions/decode_signing_key_action`
+  - Sets `USE_SNAPSHOT=false`
+  - Runs the direct deployment script: `./deploy-to-maven-central.sh --no-auto-publish`
+  - After validation completes, publish from the Sonatype Central Portal manually
+
+When to use: production-ready versions that should be manually approved in the Portal.
+
+### 2) Snapshot Release (`.github/workflows/release-snapshots.yml`)
+
+- Trigger: Manual (`workflow_dispatch`)
+- Jobs: `lint` → `test` → `build` → `release`
+- Key steps in `release` job:
+  - Decodes and imports the signing key via `./.github/actions/decode_signing_key_action`
+  - Sets `USE_SNAPSHOT=true`
+  - Runs `semantic-release` to determine a new snapshot version
+  - Publishes via composite action `./.github/actions/publish_maven_central` with `use_snapshot: true` and `auto_publish: true`
+
+When to use: snapshot builds for validation/testing that publish automatically.
+
+## Manual Publishing Approval (Production Releases)
+
+For production releases, after the CI deployment validates on Sonatype, publish from the Portal:
 
 1. Open `https://central.sonatype.com/publishing/deployments`
 2. Open your deployment
 3. Click Publish
 
-## Troubleshooting
-
-### Authentication Errors (401)
-- Ensure the API token is valid and configured
-
-### "Component already exists"
-- Use a new version or a `-SNAPSHOT` version for testing
-
-### GPG signing issues
-- Ensure the key is imported and `SIGNING_KEY_ID` matches a secret key fingerprint
-
-## Checking Deployment Status
+## Post-Release: Check Deployment Status
 
 Monitor deployments at:
+
 `https://central.sonatype.com/publishing/deployments`
+
+Artifacts typically appear on Maven Central after validation and publication completes.
+
+## Troubleshooting
+
+- Authentication (401): verify `SONATYPE_NEXUS_USERNAME` and `SONATYPE_NEXUS_PASSWORD` secrets are set and valid.
+- GPG signing issues: ensure the GPG secrets are present and the key decodes/imports correctly (handled by the decode action).
+- Component already exists: bump the version (handled automatically for snapshots; for releases, ensure the version is new).
+
+## Notes
+
+- The composite action `./.github/actions/publish_maven_central` uses the Central Portal Maven plugin to publish artifacts prepared by the build.
+- The decode action `./.github/actions/decode_signing_key_action` writes the provided base64 key to the runner for signing.

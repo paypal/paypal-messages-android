@@ -67,35 +67,20 @@ To run the activity:
 
 ## Maven Central Publishing
 
-### Preparing Artifacts for Publishing
+The canonical, up-to-date publishing guide is in `PUBLISHING.md`. Refer to it for required secrets, environment variables, and troubleshooting.
 
-The project includes scripts to prepare artifacts for Maven Central publishing:
+### Quick overview
 
-- **`prepare-nmcp-bundle.sh`**: Builds the library and prepares all required artifacts (AAR, POM, sources JAR) in the correct structure for Maven Central Portal publishing.
+- **Manual release (recommended for production)**
+  - Trigger the `Release` workflow in GitHub Actions.
+  - It decodes the GPG key and runs `./deploy-to-maven-central.sh --no-auto-publish`.
+  - Approve the deployment in the Sonatype Central Portal when validation completes.
 
-To prepare artifacts for publishing:
+- **Snapshot release**
+  - Trigger the `Snapshot Release` workflow in GitHub Actions.
+  - Uses the NMCP composite action at `./.github/actions/publish_maven_central` to publish snapshots automatically.
 
-```bash
-./prepare-nmcp-bundle.sh
-```
-
-This script will:
-1. Clean and build the library
-2. Generate the POM file
-3. Create sources JAR
-4. Copy all artifacts to the correct locations with proper naming
-
-### Required Environment Variables for Publishing
-
-For actual publishing (used by GitHub Actions), these environment variables are required:
-
-```bash
-export SONATYPE_NEXUS_USERNAME="your-sonatype-username"
-export SONATYPE_NEXUS_PASSWORD="your-sonatype-token"
-export SIGNING_KEY_ID="your-gpg-key-id"
-export SIGNING_KEY_PASSWORD="your-gpg-key-password"
-export SIGNING_KEY_FILE="path-to-your-gpg-key-file"
-```
+For full details (secrets, variables, and commands), see `PUBLISHING.md`.
 
 ## Troubleshooting
 
