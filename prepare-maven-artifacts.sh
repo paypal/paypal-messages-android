@@ -100,6 +100,38 @@ cat > library/build/libs/paypal-messages.pom << EOF2
 </project>
 EOF2
 
+# Create sources and javadoc JARs for deployment
+echo "Creating sources and javadoc JARs..."
+SOURCES_DIR="library/build/tmp/sources"
+JAVADOC_DIR="library/build/tmp/javadoc-${VERSION}"
+mkdir -p "${SOURCES_DIR}" "${JAVADOC_DIR}"
+rm -rf "${SOURCES_DIR:?}"/* "${JAVADOC_DIR:?}"/* || true
+
+# Collect sources (java and kotlin if present)
+if [ -d "library/src/main/java" ]; then
+  mkdir -p "${SOURCES_DIR}/java"
+  cp -r library/src/main/java/* "${SOURCES_DIR}/" 2>/dev/null || true
+fi
+if [ -d "library/src/main/kotlin" ]; then
+  mkdir -p "${SOURCES_DIR}/kotlin"
+  cp -r library/src/main/kotlin/* "${SOURCES_DIR}/" 2>/dev/null || true
+fi
+
+# Build sources jar if we have any content
+if [ -d "${SOURCES_DIR}" ] && [ "$(ls -A \"${SOURCES_DIR}\")" ]; then
+  jar cf "library/build/libs/paypal-messages-${VERSION}-sources.jar" -C "${SOURCES_DIR}" .
+else
+  echo "Warning: No sources found to include in sources JAR"
+  # still create an empty jar to satisfy Central's requirements
+  jar cf "library/build/libs/paypal-messages-${VERSION}-sources.jar" -C "${SOURCES_DIR}" . || true
+fi
+
+# Minimal javadoc jar placeholder (Central requires javadoc or javadoc-like jar)
+cat > "${JAVADOC_DIR}/README.md" << EOF
+This is a placeholder Javadoc JAR for paypal-messages ${VERSION}.
+EOF
+jar cf "library/build/libs/paypal-messages-${VERSION}-javadoc.jar" -C "${JAVADOC_DIR}" .
+
 # Step 3: Create version-specific copy
 echo "Step 3: Creating version-specific POMs..."
 cp library/build/libs/paypal-messages.pom "library/build/libs/paypal-messages-${VERSION}.pom"
