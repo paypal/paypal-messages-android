@@ -74,16 +74,16 @@ for file in "${STAGE_DIR}"/*; do
         echo "Signing: $file"
         if [ -f "ci-sign-helper.sh" ] && [ -x "ci-sign-helper.sh" ]; then
             ./ci-sign-helper.sh "$file" || {
-                if [[ "$SONATYPE_NEXUS_PASSWORD" == "test" ]]; then
-                    echo "Test mode detected, creating dummy signature file"
+                if [ "${ALLOW_FAKE_SIGNATURES:-false}" = "true" ]; then
+                    echo "Creating dummy signature file (test-only) due to ALLOW_FAKE_SIGNATURES=true"
                     touch "${file}.asc"
                 else
                     echo "Error: Failed to sign file ${file}"; exit 1
                 fi
             }
         else
-            if [[ "$SONATYPE_NEXUS_PASSWORD" == "test" ]]; then
-                echo "Test mode detected, creating dummy signature file"
+            if [ "${ALLOW_FAKE_SIGNATURES:-false}" = "true" ]; then
+                echo "Creating dummy signature file (test-only) due to ALLOW_FAKE_SIGNATURES=true"
                 touch "${file}.asc"
             else
                 echo "Error: ci-sign-helper.sh not found or not executable"; exit 1

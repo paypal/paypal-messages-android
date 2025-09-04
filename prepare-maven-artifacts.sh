@@ -148,9 +148,14 @@ if [ -n "$SIGNING_KEY_ID" ] && [ -n "$SIGNING_KEY_PASSWORD" ]; then
       --local-user "${SIGNING_KEY_ID}" --armor --detach-sign \
       --output "library/build/libs/paypal-messages-${VERSION}.pom.asc" "library/build/libs/paypal-messages-${VERSION}.pom"
 else
-  echo "Creating dummy signature files..."
-  echo "DUMMY SIGNATURE FOR TESTING" > "pom.xml.asc"
-  echo "DUMMY SIGNATURE FOR TESTING" > "library/build/libs/paypal-messages-${VERSION}.pom.asc"
+  if [ "${ALLOW_FAKE_SIGNATURES:-false}" = "true" ]; then
+    echo "Creating dummy signature files (test-only) due to ALLOW_FAKE_SIGNATURES=true..."
+    echo "DUMMY SIGNATURE FOR TESTING" > "pom.xml.asc"
+    echo "DUMMY SIGNATURE FOR TESTING" > "library/build/libs/paypal-messages-${VERSION}.pom.asc"
+  else
+    echo "ERROR: Missing SIGNING_KEY_ID or SIGNING_KEY_PASSWORD; cannot sign artifacts" >&2
+    exit 1
+  fi
 fi
 
 # Step 5: Create Maven settings file

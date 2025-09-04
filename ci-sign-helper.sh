@@ -71,11 +71,12 @@ sign_file_ci() {
     else
         echo "ERROR: GPG signing failed for $file_path"
         rm -rf "$temp_dir"
-        
-        # Create a fallback signature for CI environments
-        echo "Creating fallback signature for CI environment..."
-        create_fallback_signature "$file_path" "$signature_path"
-        return $?
+        if [ "${ALLOW_FAKE_SIGNATURES:-false}" = "true" ]; then
+            echo "Creating fallback signature (test-only) due to ALLOW_FAKE_SIGNATURES=true"
+            create_fallback_signature "$file_path" "$signature_path"
+            return $?
+        fi
+        return 1
     fi
 }
 

@@ -4,6 +4,9 @@ on:
 env:
   SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     uses: ./.github/workflows/lint.yml
@@ -26,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           # pulls all commits (needed for semantic release to correctly version)
           fetch-depth: '0'
@@ -71,3 +74,10 @@ jobs:
           signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
           auto_publish: 'true'
           use_snapshot: 'true'
+
+      - name: Cleanup signing key files
+        if: always()
+        run: |
+          shred -u -z -n 3 "${SIGNING_KEY_FILE_PATH}" || rm -f "${SIGNING_KEY_FILE_PATH}"
+          rm -f ~/secretKey.gpg.b64 || true
+        shell: bash
