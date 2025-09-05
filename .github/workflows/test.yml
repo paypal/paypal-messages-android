@@ -31,6 +31,9 @@ jobs:
   test_unit_coverage:
     name: Unit Tests Coverage
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     # test coverage only runs on PRs
     if: ${{ github.event_name == 'pull_request' }}
 
