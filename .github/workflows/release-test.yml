@@ -123,26 +123,26 @@ jobs:
           
           echo "✅ Library publication configuration verified"
 
-  # test_instrumentation:
-  #   name: Instrumentation Tests
-  #   runs-on: ubuntu-latest
+  test_instrumentation:
+    name: Instrumentation Tests
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Checkout repo
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-  #     - name: Set up JDK 17
-  #       uses: actions/setup-java@v3
-  #       with:
-  #         java-version: '17'
-  #         distribution: 'microsoft'
-  #         cache: gradle
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'microsoft'
+          cache: gradle
 
-  #     - name: Run Instrumentation Tests
-  #       uses: ReactiveCircus/android-emulator-runner@v2
-  #       with:
-  #         api-level: 23
-  #         target: google_apis
-  #         arch: x86_64
-  #         script: ./gradlew connectedCheck --info
-  #       continue-on-error: true
+      - name: Run Instrumentation Tests
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 23
+          target: google_apis
+          arch: x86_64
+          script: ./gradlew connectedCheck --info
+        continue-on-error: true
