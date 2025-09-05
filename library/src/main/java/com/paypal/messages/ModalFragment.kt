@@ -9,6 +9,7 @@ import android.graphics.PorterDuffColorFilter
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Bundle
+import android.os.Message
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -214,6 +215,29 @@ internal class ModalFragment(
 				val source = "${consoleMessage.sourceId()}:${consoleMessage.lineNumber()}"
 				LogCat.debug(TAG, "\n$source:\n  ${consoleMessage.message()}\n")
 				return super.onConsoleMessage(consoleMessage)
+			}
+
+			override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
+				val transport = resultMsg?.obj as? WebView.WebViewTransport
+				val tempWebView = WebView(view?.context ?: return false)
+
+				tempWebView.webViewClient = object : WebViewClient() {
+					override fun shouldOverrideUrlLoading(v: WebView?, request: WebResourceRequest?): Boolean {
+						val uri = request?.url ?: return false
+						return try {
+							val intent = Intent(Intent.ACTION_VIEW, uri)
+							v?.context?.startActivity(intent)
+							true
+						} catch (e: Exception) {
+							LogCat.error(TAG, "Failed to open new window URL: $uri")
+							false
+						}
+					}
+				}
+
+				transport?.webView = tempWebView
+				resultMsg?.sendToTarget()
+				return true
 			}
 		}
 	}
