@@ -138,6 +138,6 @@ runs:
         echo "Library POM has all required Maven Central configuration"
 
         echo "Deploying to Central Portal via Maven plugin"
-        ./deploy-to-central.sh
+        bash -e ./deploy-snapshot-to-central.sh
 
         echo "NMCP publish finished. Check deployments at https://central.sonatype.com/publishing/deployments"

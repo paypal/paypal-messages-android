@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to deploy artifacts to Maven Central using library POM directly
+# Script to deploy artifacts to Maven Central using library POM directly (Snapshot or Release depending on version)
 # This approach uses jar packaging type with extension mappings for AAR files
 set -e
 
@@ -252,4 +252,4 @@ mvn --batch-mode \
   org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"
-echo "Check the status at: https://central.sonatype.com/publishing/deployments"
+echo "Check the status at: https://central.sonatype.com/publishing/deployments" 
