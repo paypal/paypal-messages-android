@@ -221,7 +221,7 @@ koverReport {
 dependencies {
 	implementation 'androidx.core:core-ktx:1.10.1'
 	implementation 'androidx.appcompat:appcompat:1.6.1'
-	implementation 'com.google.android.material:material:1.10.0'
+	implementation 'com.google.android.material:material:1.9.0'
 	implementation 'com.google.code.gson:gson:2.9.1'
 	// Bundle OkHttp with the AAR but use APIs compatible with both 3.x and 4.x
 	api 'com.squareup.okhttp3:okhttp:4.8.0'
@@ -249,7 +249,7 @@ dependencies {
 	testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
 	testImplementation 'io.mockk:mockk:1.13.7'
 	// Ensure Material Components are on the unit test classpath for resource linking
-	testImplementation 'com.google.android.material:material:1.10.0'
+	testImplementation 'com.google.android.material:material:1.9.0'
 	// Robolectric for resource/theme inflation tests
     testImplementation 'org.robolectric:robolectric:4.10.3'
     // Needed for ApplicationProvider in unit tests
