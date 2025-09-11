@@ -4,7 +4,7 @@
 		<item name="bottomSheetStyle">@style/BottomSheetModal</item>
 	</style>
 
-	<style name="BottomSheetModal" parent="Widget.Design.BottomSheet.Modal">
+	<style name="BottomSheetModal" parent="Widget.MaterialComponents.BottomSheet.Modal">
 		<item name="android:background">@android:color/transparent</item>
 	</style>
 	
