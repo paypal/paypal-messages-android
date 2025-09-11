@@ -438,3 +438,19 @@ afterEvaluate {
         }
     }
 }
+
+// Verify unit test resource linking (catches missing attrs like bottomSheetStyle)
+tasks.register('verifyUnitTestResourceLinking') {
+	group = 'verification'
+	description = 'Verifies that unit test resources link successfully for debug and release.'
+	dependsOn 'generateDebugUnitTestResources', 'generateReleaseUnitTestResources'
+	doLast {
+		println '\n✅ Unit test resource linking verified for debug and release variants.'
+	}
+}
+
+tasks.named('check') {
+	configure {
+		dependsOn 'verifyUnitTestResourceLinking'
+	}
+}
