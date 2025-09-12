@@ -72,8 +72,8 @@ jobs:
           signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
           signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
           signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
-          auto_publish: 'true'
-          use_snapshot: 'true'
+          auto_publish: 'false'
+          use_snapshot: 'false'
 
       - name: Cleanup signing key files
         if: always()
