@@ -106,7 +106,7 @@ cat > "$LIBRARY_POM" << XML
     <groupId>com.paypal.messages</groupId>
     <artifactId>paypal-messages</artifactId>
     <version>${VERSION_FIXED}</version>
-    <packaging>aar</packaging>
+    <packaging>jar</packaging>
 
     <name>PayPal Messages</name>
     <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
@@ -240,7 +240,7 @@ echo "\n=== Using absolute staging directory ==="
 echo "$ABSOLUTE_MAVEN_TARGET"
 
 echo "\n=== Command that will be executed ==="
-echo "mvn --batch-mode -f \"${LIBRARY_POM}\" -s .mvn/maven-settings.xml -DstagingDirectory=\"${ABSOLUTE_MAVEN_TARGET}\" verify org.sonatype.central:central-publishing-maven-plugin:publish"
+echo "mvn --batch-mode -s .mvn/maven-settings.xml -DstagingDirectory=\"${ABSOLUTE_MAVEN_TARGET}\" org.sonatype.central:central-publishing-maven-plugin:publish"
 
 # Run the actual publish command
 mvn --batch-mode \
