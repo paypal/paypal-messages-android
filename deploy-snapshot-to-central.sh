@@ -25,6 +25,14 @@ GROUP_ID="com.paypal.messages"
 
 echo "Deploying version: $VERSION_FIXED"
 
+# If this is a SNAPSHOT, publish directly via Gradle maven-publish so the AAR is uploaded as the primary artifact
+if [[ "$VERSION_FIXED" == *-SNAPSHOT ]]; then
+  echo "Detected SNAPSHOT version; publishing via Gradle maven-publish (ensures .aar is primary)."
+  ./gradlew :library:publishReleasePublicationToMavenCentralRepository --no-daemon --stacktrace
+  echo "Gradle maven-publish finished for SNAPSHOT. Exiting."
+  exit 0
+fi
+
 # Stage artifacts into proper Maven-repo layout expected by the Central plugin
 STAGING_ROOT="library/build/central-staging"
 GROUP_PATH="com/paypal/messages/${ARTIFACT_ID}"
@@ -244,11 +252,9 @@ echo "mvn --batch-mode -s .mvn/maven-settings.xml -DstagingDirectory=\"${ABSOLUT
 
 # Run the actual publish command
 mvn --batch-mode \
-  -f "${LIBRARY_POM}" \
   -s .mvn/maven-settings.xml \
   -DstagingDirectory="${ABSOLUTE_MAVEN_TARGET}" \
   -Dorg.slf4j.simpleLogger.log.org.sonatype.central=debug \
-  verify \
   org.sonatype.central:central-publishing-maven-plugin:publish
 
 echo "Deployment initiated successfully!"
