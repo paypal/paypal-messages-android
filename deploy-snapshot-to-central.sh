@@ -106,7 +106,7 @@ cat > "$LIBRARY_POM" << XML
     <groupId>com.paypal.messages</groupId>
     <artifactId>paypal-messages</artifactId>
     <version>${VERSION_FIXED}</version>
-    <packaging>jar</packaging>
+    <packaging>aar</packaging>
 
     <name>PayPal Messages</name>
     <description>The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit.</description>
