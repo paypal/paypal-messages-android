@@ -2,6 +2,7 @@ package com.paypal.messages
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Path
 import android.util.AttributeSet
 import android.webkit.WebView
@@ -34,7 +35,8 @@ internal class RoundedWebView : WebView {
 
 	override fun onDraw(canvas: Canvas) {
 		canvas.clipPath(path)
-
+		// Ensure a transparent background to avoid black flash before first paint
+		canvas.drawColor(Color.TRANSPARENT)
 		super.onDraw(canvas)
 	}
 }
