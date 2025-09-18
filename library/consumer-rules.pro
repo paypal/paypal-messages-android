@@ -40,8 +40,8 @@
 # This prevents conflicts when the consuming app has a different version of OkHttp
 -dontwarn okhttp3.**
 -dontwarn okio.**
-# Rename our OkHttp classes to avoid conflicts
--repackageclasses com.paypal.messages.internal.okhttp3
+# Do not attempt to repackage/relocate OkHttp at consumer shrink time.
+# If relocation is required, shade at build time in the library instead.
 # Keep any OkHttp 4.x Companion objects and extension functions
 -keep class okhttp3.HttpUrl$Companion { *; }
 -keep class okhttp3.MediaType$Companion { *; }
