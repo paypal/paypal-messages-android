@@ -1,7 +1,7 @@
 name: Release
 on:
   workflow_dispatch: {}
-  # noop: force re-indexing of workflow on this branch
+
 env:
   SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
 
