@@ -84,6 +84,13 @@ cat > library/build/libs/paypal-messages.pom << EOF2
     </scm>
 
     <dependencies>
+        <!-- Transitive dependencies that consumers must have -->
+        <dependency>
+            <groupId>com.google.android.material</groupId>
+            <artifactId>material</artifactId>
+            <version>1.9.0</version>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
