@@ -1,8 +1,12 @@
 name: Release
 on:
   workflow_dispatch: {}
+  # noop: force re-indexing of workflow on this branch
 env:
   SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
+
+permissions:
+  contents: read
 
 jobs:
   lint:
@@ -24,13 +28,23 @@ jobs:
     name: Release
     needs: [lint, test, build]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           # pulls all commits (needed for semantic release to correctly version)
           fetch-depth: '0'
-          persist-credentials: false
+          persist-credentials: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git user for release commits
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -38,14 +52,17 @@ jobs:
           java-version: '17'
           distribution: 'microsoft'
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
       - name: Decode Signing Key
         uses: ./.github/actions/decode_signing_key_action
         with:
           signing_key_file: ${{ secrets.SIGNING_KEY_FILE }}
           signing_file_path: ${{ env.SIGNING_KEY_FILE_PATH }}
-
-      - name: Set snapshot environment variable
-        run: echo "USE_SNAPSHOT=false" >> $GITHUB_ENV
 
       - name: Install Semantic Release Dependencies
         run: npm install
@@ -58,24 +75,49 @@ jobs:
           SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
-        run: npx semantic-release@21
+        run: |
+          git fetch --tags --force
+          npx semantic-release@21
 
-      - name: Sync release to develop
-        uses: devmasx/merge-branch@master
+      - name: Create PR: release -> develop
+        uses: repo-sync/pull-request@v2
         with:
-          type: now
-          from_branch: release
-          target_branch: develop
+          source_branch: "release"
+          destination_branch: "develop"
+          pr_title: "chore: merge release into develop"
+          pr_body: "Automated PR to sync changes from release to develop after publishing."
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Central Portal publishing method
-      - name: Publish to Central Portal
-        uses: ./.github/actions/publish_central_portal
+      - name: Create PR: develop -> release
+        uses: repo-sync/pull-request@v2
         with:
-          # Pass credentials directly as input parameters
-          sonatype_user: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          sonatype_token: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
-          signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
-          signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
-          auto_publish: 'true'
+          source_branch: "develop"
+          destination_branch: "release"
+          pr_title: "chore: merge develop into release"
+          pr_body: "Automated PR to keep release branch up to date with develop."
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set snapshot environment variable
+        run: echo "USE_SNAPSHOT=false" >> $GITHUB_ENV
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      # Publish via our new direct deployment script
+      - name: Publish to Maven Central
+        env:
+          SONATYPE_NEXUS_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
+          SONATYPE_NEXUS_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
+        run: |
+          echo "Running direct deployment script..."
+          bash -e ./deploy-to-maven-central.sh --no-auto-publish
+
+      - name: Cleanup signing key files
+        if: always()
+        run: |
+          shred -u -z -n 3 "${SIGNING_KEY_FILE_PATH}" || rm -f "${SIGNING_KEY_FILE_PATH}"
+          rm -f ~/secretKey.gpg.b64 || true
+        shell: bash

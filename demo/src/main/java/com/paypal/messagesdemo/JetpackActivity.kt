@@ -128,19 +128,31 @@ class JetpackActivity : ComponentActivity() {
 								onLoading = {
 									progressBar = true
 									buttonEnabled = false
-									Toast.makeText(context, "Loading Content...", Toast.LENGTH_SHORT).show()
+									// Safe Toast handling
+									val activity = context as? ComponentActivity
+									if (activity != null && !activity.isFinishing && !activity.isDestroyed) {
+										Toast.makeText(context, "Loading Content...", Toast.LENGTH_SHORT).show()
+									}
 								},
 								onError = {
 									Log.d(TAG, "onError $it")
 									progressBar = false
 									buttonEnabled = true
-									Toast.makeText(context, it.javaClass.toString() + ":" + it.message, Toast.LENGTH_LONG).show()
+									// Safe Toast handling
+									val activity = context as? ComponentActivity
+									if (activity != null && !activity.isFinishing && !activity.isDestroyed) {
+										Toast.makeText(context, it.javaClass.toString() + ":" + it.message, Toast.LENGTH_LONG).show()
+									}
 								},
 								onSuccess = {
 									Log.d(TAG, "onSuccess")
 									progressBar = false
 									buttonEnabled = true
-									Toast.makeText(context, "Success Getting Content", Toast.LENGTH_SHORT).show()
+									// Safe Toast handling
+									val activity = context as? ComponentActivity
+									if (activity != null && !activity.isFinishing && !activity.isDestroyed) {
+										Toast.makeText(context, "Success Getting Content", Toast.LENGTH_SHORT).show()
+									}
 								},
 							),
 							// Optional: Add callbacks for click events
@@ -153,7 +165,11 @@ class JetpackActivity : ComponentActivity() {
 								},
 								onApply = {
 									Log.d(TAG, "Apply clicked in modal")
-									Toast.makeText(context, "Apply clicked in modal", Toast.LENGTH_SHORT).show()
+									// Safe Toast handling
+									val activity = context as? ComponentActivity
+									if (activity != null && !activity.isFinishing && !activity.isDestroyed) {
+										Toast.makeText(context, "Apply clicked in modal", Toast.LENGTH_SHORT).show()
+									}
 								},
 							),
 						),
