@@ -111,7 +111,7 @@
             <groupId>com.google.android.material</groupId>
             <artifactId>material</artifactId>
             <version>1.9.0</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>androidx.compose.foundation</groupId>
