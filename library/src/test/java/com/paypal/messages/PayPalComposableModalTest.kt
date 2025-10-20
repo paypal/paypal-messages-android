@@ -178,7 +178,13 @@ class PayPalComposableModalTest {
 		val closeButton = ModalCloseButton()
 
 		// Verify defaults
-		assertNull(closeButton.alternativeText)
+		assertEquals("PayPal learn more modal close", closeButton.alternativeText)
+		assertEquals(26, closeButton.width)
+		assertEquals(26, closeButton.height)
+		assertEquals(60, closeButton.availableWidth)
+		assertEquals(60, closeButton.availableHeight)
+		assertEquals("#001435", closeButton.color)
+		assertEquals("dark", closeButton.colorType)
 	}
 
 	@Test

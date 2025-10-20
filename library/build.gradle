@@ -3,7 +3,8 @@ plugins {
 	id 'kotlin-android'
 	id 'org.jetbrains.kotlin.android'
 	id 'de.mannodermaus.android-junit5' version "1.9.3.0"
-	id 'org.jetbrains.kotlinx.kover' version '0.7.6'
+	// Temporarily disabled due to dependency resolution issues
+	// id 'org.jetbrains.kotlinx.kover' version '0.7.6'
 }
 
 group = "com.paypal.messages"
@@ -223,6 +224,8 @@ tasks.register('testKoverPaths') {
 	description = "Tests and fixes paths in Kover coverage reports"
 }
 
+// Temporarily disabled - Kover plugin commented out
+/*
 kover {
 	filters {
 		classes {
@@ -256,6 +259,7 @@ kover {
 		}
 	}
 }
+*/
 
 dependencies {
 	implementation 'androidx.core:core-ktx:1.10.1'
