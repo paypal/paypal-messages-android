@@ -1,6 +1,7 @@
 package com.paypal.messages.io
 
 import android.content.Context
+import android.util.Base64
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonObject
 import com.paypal.messages.BuildConfig
@@ -13,11 +14,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl
-import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import okio.IOException
 import org.json.JSONObject
+import java.io.IOException
 import java.util.UUID
 import com.paypal.messages.config.PayPalEnvironment as Env
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
@@ -230,12 +230,26 @@ object Api {
 	}
 
 	internal fun createLoggerRequest(json: String): Request {
+		val jsonObject = JSONObject(json)
+
+		// 	Create authorization header for logs: Basic <base64_client_id>
+		val encodedClientId = runCatching {
+			jsonObject.getJSONObject("data")
+				.getString("client_id")
+				.toByteArray(charset = Charsets.UTF_8)
+				.let { Base64.encodeToString(it, Base64.NO_WRAP) }
+		}.onFailure { error ->
+			LogCat.error(TAG, "Error processing client_id: ${error.message}")
+		}.getOrNull()
+
 		val request = Request.Builder().apply {
+			header("Authorization", "Basic $encodedClientId")
 			url(env.url(Env.Endpoints.LOGGER))
-			post(json.toRequestBody("application/json".toMediaType()))
+			val mt: MediaType = OkHttpCompat.mediaTypeFrom("application/json")
+			post(OkHttpCompat.createRequestBody(json, mt))
 		}.build()
 
-		val jsonNoFdata = JSONObject(json).toString(2)
+		val jsonNoFdata = jsonObject.toString(2)
 			.replace(""""fdata":.*?",""".toRegex(), "")
 		LogCat.debug(TAG, "createLoggerRequest: $request\npayloadJson: $jsonNoFdata")
 		return request

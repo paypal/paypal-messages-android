@@ -58,6 +58,7 @@
 				"assets": [
 					"gradle/*",
 					"library/*",
+					"library/pom.xml",
 					"readme-images/*",
 					"build.gradle",
 					"CHANGELOG.md",

@@ -28,6 +28,13 @@ The PayPalMessages Library uses a client ID for authentication. This can be foun
 ## Release Process
 This library follows [Semantic Versioning](https://semver.org/). This library is published to Maven Central. The release process is automated via GitHub Actions.
 
+### Using Gradle Tasks Directly
+You can also use the Gradle tasks directly:
+
+1. Set environment variables as above
+2. Build and prepare:
+   - `./gradlew clean :library:assembleRelease :library:generatePomFileForReleasePublication`
+
 ## Testing
 
 This repository includes unit tests, integration tests, and end-to-end tests.

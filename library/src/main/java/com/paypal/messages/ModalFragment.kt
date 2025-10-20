@@ -9,6 +9,7 @@ import android.graphics.PorterDuffColorFilter
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Bundle
+import android.os.Message
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -215,6 +216,29 @@ internal class ModalFragment(
 				LogCat.debug(TAG, "\n$source:\n  ${consoleMessage.message()}\n")
 				return super.onConsoleMessage(consoleMessage)
 			}
+
+			override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
+				val transport = resultMsg?.obj as? WebView.WebViewTransport
+				val tempWebView = WebView(view?.context ?: return false)
+
+				tempWebView.webViewClient = object : WebViewClient() {
+					override fun shouldOverrideUrlLoading(v: WebView?, request: WebResourceRequest?): Boolean {
+						val uri = request?.url ?: return false
+						return try {
+							val intent = Intent(Intent.ACTION_VIEW, uri)
+							v?.context?.startActivity(intent)
+							true
+						} catch (e: Exception) {
+							LogCat.error(TAG, "Failed to open new window URL: $uri")
+							false
+						}
+					}
+				}
+
+				transport?.webView = tempWebView
+				resultMsg?.sendToTarget()
+				return true
+			}
 		}
 	}
 	
@@ -267,6 +291,9 @@ internal class ModalFragment(
 			// Set the bottom margin here instead of in XML so it is controlled in one single location.
 			// The offset shifts the modal down, so a bottom margin keeps the scrollable space on screen.
 			(layoutParams as RelativeLayout.LayoutParams).apply { bottomMargin = offsetTop }
+
+			// Show a white background while content loads to avoid black flash
+			setBackgroundColor(Color.WHITE)
 		}
 		
 		// Set up the WebView using our helper method
@@ -278,7 +305,8 @@ internal class ModalFragment(
 	}
 
 	override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-		setStyle(STYLE_NO_FRAME, R.style.BottomSheetDialog)
+		// Use no explicit style; configure window and shape programmatically
+		setStyle(STYLE_NO_FRAME, 0)
 
 		val dialog = (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
 			window?.setBackgroundDrawableResource(android.R.color.transparent)
@@ -287,7 +315,17 @@ internal class ModalFragment(
 			behavior.isHideable = true
 			behavior.isDraggable = false
 			behavior.state = BottomSheetBehavior.STATE_EXPANDED
+
+			// Add overlay dim behind the bottom sheet
+			window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+			window?.setDimAmount(0.5f)
+
+			// Allow tapping outside (overlay) to dismiss
+			setCanceledOnTouchOutside(true)
 		}
+
+		// Ensure fragment is cancelable so overlay taps close the modal
+		isCancelable = true
 
 		this.dialog = dialog
 
@@ -371,6 +409,7 @@ internal class ModalFragment(
 		LogCat.debug(TAG, "Modal loaded with url: $url")
 		val progressBar = rootView?.findViewById<ProgressBar>(R.id.progress_bar)
 		progressBar?.visibility = ProgressBar.INVISIBLE
+		// Keep white background; no change needed
 		// Callback for onLoad
 	}
 

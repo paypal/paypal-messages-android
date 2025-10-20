@@ -1,7 +1,7 @@
 package com.paypal.messages.config
 
+import com.paypal.messages.io.OkHttpCompat
 import okhttp3.HttpUrl
-import okhttp3.HttpUrl.Companion.toHttpUrl
 
 sealed class PayPalEnvironment {
 	abstract val presentmentUrl: String
@@ -37,7 +37,7 @@ sealed class PayPalEnvironment {
 
 	fun url(endpoint: Endpoints): HttpUrl {
 		val baseUrl = if (endpoint === Endpoints.LOGGER) loggerBaseUrl else presentmentUrl
-		return "$baseUrl/${endpoint.path}".toHttpUrl()
+		return OkHttpCompat.parseHttpUrl("$baseUrl/${endpoint.path}")
 	}
 
 	@Suppress("FunctionName")

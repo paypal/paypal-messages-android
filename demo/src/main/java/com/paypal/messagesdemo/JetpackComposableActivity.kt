@@ -176,7 +176,11 @@ class JetpackComposableActivity : ComponentActivity() {
 										onError = {
 											Log.d(TAG, "Error loading message: $it")
 											isLoading = false
-											Toast.makeText(context, "Error: $it", Toast.LENGTH_SHORT).show()
+											// Safe Toast handling
+											val activity = context as? ComponentActivity
+											if (activity != null && !activity.isFinishing && !activity.isDestroyed) {
+												Toast.makeText(context, "Error: $it", Toast.LENGTH_SHORT).show()
+											}
 										},
 										onSuccess = {
 											Log.d(TAG, "Message loaded successfully")
@@ -190,7 +194,11 @@ class JetpackComposableActivity : ComponentActivity() {
 										},
 										onApply = {
 											Log.d(TAG, "Apply clicked in modal")
-											Toast.makeText(context, "Apply clicked in modal", Toast.LENGTH_SHORT).show()
+											// Safe Toast handling
+											val activity = context as? ComponentActivity
+											if (activity != null && !activity.isFinishing && !activity.isDestroyed) {
+												Toast.makeText(context, "Apply clicked in modal", Toast.LENGTH_SHORT).show()
+											}
 										},
 									),
 								),
@@ -248,7 +256,11 @@ class JetpackComposableActivity : ComponentActivity() {
 							onError = { error ->
 								Log.d(TAG, "Composable message error: $error")
 								isLoading = false
-								Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+								// Safe Toast handling
+								val activity = context as? ComponentActivity
+								if (activity != null && !activity.isFinishing && !activity.isDestroyed) {
+									Toast.makeText(context, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+								}
 							},
 							onSuccess = {
 								Log.d(TAG, "Composable message loaded successfully")
@@ -259,7 +271,11 @@ class JetpackComposableActivity : ComponentActivity() {
 							},
 							onApply = {
 								Log.d(TAG, "Apply clicked in composable message modal")
-								Toast.makeText(context, "Apply clicked in modal", Toast.LENGTH_SHORT).show()
+								// Safe Toast handling
+								val activity = context as? ComponentActivity
+								if (activity != null && !activity.isFinishing && !activity.isDestroyed) {
+									Toast.makeText(context, "Apply clicked in modal", Toast.LENGTH_SHORT).show()
+								}
 							},
 							modifier = Modifier
 								.padding(vertical = 8.dp)

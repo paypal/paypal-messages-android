@@ -2,6 +2,7 @@
 
 - [Setup](#setup)
 - [Running the Demo](#running-the-demo)
+- [Maven Central Publishing](#maven-central-publishing)
 - [Troubleshooting](#troubleshooting)
 - [Sample Modal URL](#sample-modal-url)
 
@@ -63,6 +64,23 @@ To run the activity:
 		- com.paypal.messages demo.XmlActivity
 
 ![Run General Settings Screenshot](readme-images/run-settings_general.png)
+
+## Maven Central Publishing
+
+The canonical, up-to-date publishing guide is in `PUBLISHING.md`. Refer to it for required secrets, environment variables, and troubleshooting.
+
+### Quick overview
+
+- **Manual release (recommended for production)**
+  - Trigger the `Release` workflow in GitHub Actions.
+  - It decodes the GPG key and runs `./deploy-to-maven-central.sh --no-auto-publish`.
+  - Approve the deployment in the Sonatype Central Portal when validation completes.
+
+- **Snapshot release**
+  - Trigger the `Snapshot Release` workflow in GitHub Actions.
+  - Uses the NMCP composite action at `./.github/actions/publish_maven_central` to publish snapshots automatically.
+
+For full details (secrets, variables, and commands), see `PUBLISHING.md`.
 
 ## Troubleshooting
 
