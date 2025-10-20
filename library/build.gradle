@@ -3,7 +3,7 @@ plugins {
 	id 'kotlin-android'
 	id 'org.jetbrains.kotlin.android'
 	id 'de.mannodermaus.android-junit5' version "1.9.3.0"
-	id 'org.jetbrains.kotlinx.kover' version '0.9.1'
+	id 'org.jetbrains.kotlinx.kover' version '0.7.6'
 }
 
 group = "com.paypal.messages"
@@ -123,9 +123,10 @@ tasks.withType(Test).configureEach {
 }
 
 // Configure all Kover tasks to use relative paths
-tasks.withType(org.jetbrains.kotlinx.kover.gradle.plugin.tasks.KoverXmlReportTask).configureEach {
-	systemProperty 'kover.path.normalization', 'relative'
-}
+// Commented out for Kover 0.7.6 compatibility
+// tasks.withType(org.jetbrains.kotlinx.kover.gradle.plugin.tasks.KoverXmlReportTask).configureEach {
+// 	systemProperty 'kover.path.normalization', 'relative'
+// }
 
 // Optimized approach for handling problematic tests
 android {
@@ -222,55 +223,36 @@ tasks.register('testKoverPaths') {
 	description = "Tests and fixes paths in Kover coverage reports"
 }
 
-koverReport {
-	androidReports('debug') {
-		filters {
-			excludes {
-				annotatedBy(
-					'*KoverExcludeGenerated'
-				)
-				classes(
-					// AnalyticsLogger,
-					'com.paypal.messages.analytics.AnalyticsLogger*',
-					// config
-					'com.paypal.messages.config.message.PayPalMessageEventsCallbacks\$*',
-					'com.paypal.messages.config.message.PayPalMessageViewStateCallbacks\$*',
-					'com.paypal.messages.config.modal.ModalEvents\$*',
-					// extensions,
-					'com.paypal.messages.extensions.Int*',
-					// io
-					'com.paypal.messages.io.Api',
-					'com.paypal.messages.io.Api\$*',
-					'com.paypal.messages.io.LocalStorage*',
-					'com.paypal.messages.io.OnActionCompleted',
-					// utils
-					'com.paypal.messages.utils.LogCat*',
-					// UI Stuff
-					'*Fragment',
-					'*Fragment\$*',
-					'*Activity',
-					'*Activity\$*',
-					'com.paypal.messages.PayPalMessageView*',
-					'com.paypal.messages.RoundedWebView',
-					'com.paypal.messages.RoundedWebView\$*',
-					'*.databinding.*',
-					'*.BuildConfig'
-				)
-			}
-		}
-		
-		// Add explicit XML report configuration with relative paths
-		xml {
-			// Set report file to a location relative to the project
-			reportFile.set(layout.buildDirectory.file("reports/kover/reportDebug.xml"))
-		}
-		
-		// Define sources using project-relative paths
-		sources {
-			sourceDirectories.from(
-				file("src/main/kotlin"),
-				file("src/main/java")
-			)
+kover {
+	filters {
+		classes {
+			excludes += [
+				// AnalyticsLogger,
+				'com.paypal.messages.analytics.AnalyticsLogger*',
+				// config
+				'com.paypal.messages.config.message.PayPalMessageEventsCallbacks\$*',
+				'com.paypal.messages.config.message.PayPalMessageViewStateCallbacks\$*',
+				'com.paypal.messages.config.modal.ModalEvents\$*',
+				// extensions,
+				'com.paypal.messages.extensions.Int*',
+				// io
+				'com.paypal.messages.io.Api',
+				'com.paypal.messages.io.Api\$*',
+				'com.paypal.messages.io.LocalStorage*',
+				'com.paypal.messages.io.OnActionCompleted',
+				// utils
+				'com.paypal.messages.utils.LogCat*',
+				// UI Stuff
+				'*Fragment',
+				'*Fragment\$*',
+				'*Activity',
+				'*Activity\$*',
+				'com.paypal.messages.PayPalMessageView*',
+				'com.paypal.messages.RoundedWebView',
+				'com.paypal.messages.RoundedWebView\$*',
+				'*.databinding.*',
+				'*.BuildConfig'
+			]
 		}
 	}
 }
