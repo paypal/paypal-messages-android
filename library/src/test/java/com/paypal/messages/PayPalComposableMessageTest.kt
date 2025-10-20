@@ -276,21 +276,21 @@ class PayPalComposableMessageTest {
 		val sandboxView = createPayPalMessageView(mockContext, sandboxConfig)
 		assertNotNull(sandboxView)
 
-		// Test STAGE environment
-		val stageConfig = PayPalMessageConfig(
+		// Test DEVELOP environment with host
+		val developConfig = PayPalMessageConfig(
 			data = PayPalMessageData(
 				clientID = "test-client-id",
-				environment = PayPalEnvironment.STAGE,
+				environment = PayPalEnvironment.DEVELOP("test.paypal.com"),
 			),
 		)
-		val stageView = createPayPalMessageView(mockContext, stageConfig)
-		assertNotNull(stageView)
+		val developView = createPayPalMessageView(mockContext, developConfig)
+		assertNotNull(developView)
 
-		// Test LOCAL environment
+		// Test DEVELOP environment with localhost
 		val localConfig = PayPalMessageConfig(
 			data = PayPalMessageData(
 				clientID = "test-client-id",
-				environment = PayPalEnvironment.LOCAL,
+				environment = PayPalEnvironment.DEVELOP(8443),
 			),
 		)
 		val localView = createPayPalMessageView(mockContext, localConfig)

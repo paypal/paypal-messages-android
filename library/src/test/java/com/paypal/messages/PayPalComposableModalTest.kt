@@ -116,7 +116,9 @@ class PayPalComposableModalTest {
 	@Test
 	fun testModalConfigDefaults() {
 		// Test that we can create a ModalConfig with default values
-		val config = ModalConfig()
+		val config = ModalConfig(
+			modalCloseButton = ModalCloseButton(),
+		)
 
 		// Verify default values
 		assertNull(config.amount)
@@ -202,6 +204,7 @@ class PayPalComposableModalTest {
 			val config = ModalConfig(
 				amount = 100.0,
 				offer = offerType,
+				modalCloseButton = ModalCloseButton(),
 			)
 			assertEquals(offerType, config.offer)
 		}
@@ -210,19 +213,19 @@ class PayPalComposableModalTest {
 	@Test
 	fun testEdgeCaseAmountsInModal() {
 		// Test zero amount
-		val zeroConfig = ModalConfig(amount = 0.0)
+		val zeroConfig = ModalConfig(amount = 0.0, modalCloseButton = ModalCloseButton())
 		assertEquals(0.0, zeroConfig.amount)
 
 		// Test very large amount
-		val largeConfig = ModalConfig(amount = 1000000.0)
+		val largeConfig = ModalConfig(amount = 1000000.0, modalCloseButton = ModalCloseButton())
 		assertEquals(1000000.0, largeConfig.amount)
 
 		// Test small decimal
-		val smallConfig = ModalConfig(amount = 0.01)
+		val smallConfig = ModalConfig(amount = 0.01, modalCloseButton = ModalCloseButton())
 		assertEquals(0.01, smallConfig.amount)
 
 		// Test negative amount (should still be accepted, validation is elsewhere)
-		val negativeConfig = ModalConfig(amount = -10.0)
+		val negativeConfig = ModalConfig(amount = -10.0, modalCloseButton = ModalCloseButton())
 		assertEquals(-10.0, negativeConfig.amount)
 	}
 
@@ -235,6 +238,7 @@ class PayPalComposableModalTest {
 			val config = ModalConfig(
 				amount = 100.0,
 				buyerCountry = country,
+				modalCloseButton = ModalCloseButton(),
 			)
 			assertEquals(country, config.buyerCountry)
 		}
@@ -302,8 +306,8 @@ class PayPalComposableModalTest {
 		events.onError(modalError)
 		assertEquals(modalError, capturedError)
 
-		// Test with invalid client id error
-		val clientIdError = PayPalErrors.InvalidClientId("test-id", null)
+		// Test with invalid client id exception
+		val clientIdError = PayPalErrors.InvalidClientIdException("Invalid ID", null)
 		events.onError(clientIdError)
 		assertEquals(clientIdError, capturedError)
 	}
@@ -314,6 +318,7 @@ class PayPalComposableModalTest {
 		val noCacheConfig = ModalConfig(
 			amount = 100.0,
 			ignoreCache = true,
+			modalCloseButton = ModalCloseButton(),
 		)
 		assertTrue(noCacheConfig.ignoreCache)
 
@@ -321,6 +326,7 @@ class PayPalComposableModalTest {
 		val withCacheConfig = ModalConfig(
 			amount = 100.0,
 			ignoreCache = false,
+			modalCloseButton = ModalCloseButton(),
 		)
 		assertTrue(!withCacheConfig.ignoreCache)
 	}
@@ -331,6 +337,7 @@ class PayPalComposableModalTest {
 		val devConfig = ModalConfig(
 			amount = 100.0,
 			devTouchpoint = true,
+			modalCloseButton = ModalCloseButton(),
 		)
 		assertTrue(devConfig.devTouchpoint)
 
@@ -338,6 +345,7 @@ class PayPalComposableModalTest {
 		val prodConfig = ModalConfig(
 			amount = 100.0,
 			devTouchpoint = false,
+			modalCloseButton = ModalCloseButton(),
 		)
 		assertTrue(!prodConfig.devTouchpoint)
 	}
@@ -348,6 +356,7 @@ class PayPalComposableModalTest {
 		val stagedConfig = ModalConfig(
 			amount = 100.0,
 			stageTag = "v1.2.3",
+			modalCloseButton = ModalCloseButton(),
 		)
 		assertEquals("v1.2.3", stagedConfig.stageTag)
 
@@ -355,6 +364,7 @@ class PayPalComposableModalTest {
 		val unstaged = ModalConfig(
 			amount = 100.0,
 			stageTag = null,
+			modalCloseButton = ModalCloseButton(),
 		)
 		assertNull(unstaged.stageTag)
 
@@ -362,6 +372,7 @@ class PayPalComposableModalTest {
 		val emptyStageConfig = ModalConfig(
 			amount = 100.0,
 			stageTag = "",
+			modalCloseButton = ModalCloseButton(),
 		)
 		assertEquals("", emptyStageConfig.stageTag)
 	}
