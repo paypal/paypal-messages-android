@@ -222,4 +222,133 @@ class LogoTest {
 			Arguments.of(LogoType.NONE, null, R.string.logo_none_label_default),
 		)
 	}
+
+	@org.junit.jupiter.api.Test
+	fun testLogoDefaultConstructor() {
+		// Test that Logo uses defaults when no parameters provided
+		val logo = Logo()
+		val asset = logo.getAsset(Color.BLACK)
+
+		// Should default to PRIMARY logo with PAY_LATER product group
+		assertEquals(LogoAsset.ImageAsset(R.drawable.logo_primary_standard), asset)
+	}
+
+	@org.junit.jupiter.api.Test
+	fun testLogoWithOnlyLogoType() {
+		// Test Logo with only logoType specified
+		val logo = Logo(logoType = LogoType.ALTERNATIVE)
+		val asset = logo.getAsset(Color.BLACK)
+
+		// Should use ALTERNATIVE with default PAY_LATER
+		assertEquals(LogoAsset.ImageAsset(R.drawable.logo_alternative_standard), asset)
+	}
+
+	@org.junit.jupiter.api.Test
+	fun testLogoWithOnlyProductGroup() {
+		// Test Logo with only productGroup specified
+		val logo = Logo(productGroup = ProductGroup.PAYPAL_CREDIT)
+		val asset = logo.getAsset(Color.BLACK)
+
+		// Should use default PRIMARY with PAYPAL_CREDIT
+		assertEquals(LogoAsset.ImageAsset(R.drawable.logo_credit_primary_standard), asset)
+	}
+
+	@org.junit.jupiter.api.Test
+	fun testAllColorVariantsForPrimary() {
+		// Ensure all color variants work for primary logo
+		val logo = Logo(LogoType.PRIMARY, ProductGroup.PAY_LATER)
+
+		val blackAsset = logo.getAsset(Color.BLACK) as LogoAsset.ImageAsset
+		val whiteAsset = logo.getAsset(Color.WHITE) as LogoAsset.ImageAsset
+		val monochromeAsset = logo.getAsset(Color.MONOCHROME) as LogoAsset.ImageAsset
+		val grayscaleAsset = logo.getAsset(Color.GRAYSCALE) as LogoAsset.ImageAsset
+
+		assertEquals(R.drawable.logo_primary_standard, blackAsset.resId)
+		assertEquals(R.drawable.logo_primary_white, whiteAsset.resId)
+		assertEquals(R.drawable.logo_primary_monochrome, monochromeAsset.resId)
+		assertEquals(R.drawable.logo_primary_grayscale, grayscaleAsset.resId)
+	}
+
+	@org.junit.jupiter.api.Test
+	fun testAllColorVariantsForAlternative() {
+		// Ensure all color variants work for alternative logo
+		val logo = Logo(LogoType.ALTERNATIVE, ProductGroup.PAY_LATER)
+
+		val blackAsset = logo.getAsset(Color.BLACK) as LogoAsset.ImageAsset
+		val whiteAsset = logo.getAsset(Color.WHITE) as LogoAsset.ImageAsset
+		val monochromeAsset = logo.getAsset(Color.MONOCHROME) as LogoAsset.ImageAsset
+		val grayscaleAsset = logo.getAsset(Color.GRAYSCALE) as LogoAsset.ImageAsset
+
+		assertEquals(R.drawable.logo_alternative_standard, blackAsset.resId)
+		assertEquals(R.drawable.logo_alternative_white, whiteAsset.resId)
+		assertEquals(R.drawable.logo_alternative_monochrome, monochromeAsset.resId)
+		assertEquals(R.drawable.logo_alternative_grayscale, grayscaleAsset.resId)
+	}
+
+	@org.junit.jupiter.api.Test
+	fun testAllColorVariantsForInline() {
+		// Ensure all color variants work for inline logo
+		val logo = Logo(LogoType.INLINE, ProductGroup.PAY_LATER)
+
+		val blackAsset = logo.getAsset(Color.BLACK) as LogoAsset.ImageAsset
+		val whiteAsset = logo.getAsset(Color.WHITE) as LogoAsset.ImageAsset
+		val monochromeAsset = logo.getAsset(Color.MONOCHROME) as LogoAsset.ImageAsset
+		val grayscaleAsset = logo.getAsset(Color.GRAYSCALE) as LogoAsset.ImageAsset
+
+		assertEquals(R.drawable.logo_inline_standard, blackAsset.resId)
+		assertEquals(R.drawable.logo_inline_white, whiteAsset.resId)
+		assertEquals(R.drawable.logo_inline_monochrome, monochromeAsset.resId)
+		assertEquals(R.drawable.logo_inline_grayscale, grayscaleAsset.resId)
+	}
+
+	@org.junit.jupiter.api.Test
+	fun testNoneLogoReturnsStringAsset() {
+		// Test that NONE logo type returns StringAsset, not ImageAsset
+		val logo = Logo(LogoType.NONE, ProductGroup.PAY_LATER)
+		val asset = logo.getAsset(Color.BLACK)
+
+		// Verify it's a StringAsset
+		assertTrue(asset is LogoAsset.StringAsset)
+		assertEquals(R.string.logo_none_label_default, (asset as LogoAsset.StringAsset).resId)
+	}
+
+	@org.junit.jupiter.api.Test
+	fun testImageLogoTypesReturnImageAsset() {
+		// Test that non-NONE logo types return ImageAsset
+		val logoTypes = listOf(LogoType.PRIMARY, LogoType.ALTERNATIVE, LogoType.INLINE)
+
+		logoTypes.forEach { logoType ->
+			val logo = Logo(logoType, ProductGroup.PAY_LATER)
+			val asset = logo.getAsset(Color.BLACK)
+
+			assertTrue(asset is LogoAsset.ImageAsset, "Logo type $logoType should return ImageAsset")
+		}
+	}
+
+	@org.junit.jupiter.api.Test
+	fun testCreditVsPayLaterLogos() {
+		// Test that PAYPAL_CREDIT and PAY_LATER use different logos
+		val creditLogo = Logo(LogoType.PRIMARY, ProductGroup.PAYPAL_CREDIT)
+		val payLaterLogo = Logo(LogoType.PRIMARY, ProductGroup.PAY_LATER)
+
+		val creditAsset = creditLogo.getAsset(Color.BLACK) as LogoAsset.ImageAsset
+		val payLaterAsset = payLaterLogo.getAsset(Color.BLACK) as LogoAsset.ImageAsset
+
+		// Should be different resource IDs
+		assertTrue(creditAsset.resId != payLaterAsset.resId)
+		assertEquals(R.drawable.logo_credit_primary_standard, creditAsset.resId)
+		assertEquals(R.drawable.logo_primary_standard, payLaterAsset.resId)
+	}
+
+	@org.junit.jupiter.api.Test
+	fun testNullProductGroupDefaultsToPayLater() {
+		// Test that null product group behaves like PAY_LATER
+		val nullProductLogo = Logo(LogoType.PRIMARY, null)
+		val payLaterLogo = Logo(LogoType.PRIMARY, ProductGroup.PAY_LATER)
+
+		val nullAsset = nullProductLogo.getAsset(Color.BLACK) as LogoAsset.ImageAsset
+		val payLaterAsset = payLaterLogo.getAsset(Color.BLACK) as LogoAsset.ImageAsset
+
+		assertEquals(payLaterAsset.resId, nullAsset.resId)
+	}
 }

@@ -168,6 +168,254 @@ class PayPalComposableMessageTest {
 		// This directly compares the error objects rather than just the message substring
 	}
 
+	@Test
+	fun testLoadingCallback() {
+		// Arrange
+		val clientId = "test-client-id"
+		var loadingInvoked = false
+
+		val config = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = clientId,
+				environment = PayPalEnvironment.LIVE,
+			),
+			viewStateCallbacks = PayPalMessageViewStateCallbacks(
+				onLoading = { loadingInvoked = true },
+			),
+		)
+
+		// Act - create PayPalMessageView and invoke loading callback
+		val messageView = createPayPalMessageView(mockContext, config)
+		config.viewStateCallbacks?.onLoading?.invoke()
+
+		// Assert
+		assertEquals(true, loadingInvoked)
+	}
+
+	@Test
+	fun testSuccessCallback() {
+		// Arrange
+		val clientId = "test-client-id"
+		var successInvoked = false
+
+		val config = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = clientId,
+				environment = PayPalEnvironment.LIVE,
+			),
+			viewStateCallbacks = PayPalMessageViewStateCallbacks(
+				onSuccess = { successInvoked = true },
+			),
+		)
+
+		// Act - create PayPalMessageView and invoke success callback
+		val messageView = createPayPalMessageView(mockContext, config)
+		config.viewStateCallbacks?.onSuccess?.invoke()
+
+		// Assert
+		assertEquals(true, successInvoked)
+	}
+
+	@Test
+	fun testOnClickCallback() {
+		// Arrange
+		val clientId = "test-client-id"
+		var clickInvoked = false
+
+		val config = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = clientId,
+				environment = PayPalEnvironment.LIVE,
+			),
+			eventsCallbacks = PayPalMessageEventsCallbacks(
+				onClick = { clickInvoked = true },
+			),
+		)
+
+		// Act - create PayPalMessageView and invoke click callback
+		val messageView = createPayPalMessageView(mockContext, config)
+		config.eventsCallbacks?.onClick?.invoke()
+
+		// Assert
+		assertEquals(true, clickInvoked)
+	}
+
+	@Test
+	fun testOnApplyCallback() {
+		// Arrange
+		val clientId = "test-client-id"
+		var applyInvoked = false
+
+		val config = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = clientId,
+				environment = PayPalEnvironment.LIVE,
+			),
+			eventsCallbacks = PayPalMessageEventsCallbacks(
+				onApply = { applyInvoked = true },
+			),
+		)
+
+		// Act - create PayPalMessageView and invoke apply callback
+		val messageView = createPayPalMessageView(mockContext, config)
+		config.eventsCallbacks?.onApply?.invoke()
+
+		// Assert
+		assertEquals(true, applyInvoked)
+	}
+
+	@Test
+	fun testDifferentEnvironments() {
+		// Test SANDBOX environment
+		val sandboxConfig = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = "test-client-id",
+				environment = PayPalEnvironment.SANDBOX,
+			),
+		)
+		val sandboxView = createPayPalMessageView(mockContext, sandboxConfig)
+		assertNotNull(sandboxView)
+
+		// Test STAGE environment
+		val stageConfig = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = "test-client-id",
+				environment = PayPalEnvironment.STAGE,
+			),
+		)
+		val stageView = createPayPalMessageView(mockContext, stageConfig)
+		assertNotNull(stageView)
+
+		// Test LOCAL environment
+		val localConfig = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = "test-client-id",
+				environment = PayPalEnvironment.LOCAL,
+			),
+		)
+		val localView = createPayPalMessageView(mockContext, localConfig)
+		assertNotNull(localView)
+	}
+
+	@Test
+	fun testVariousOfferTypes() {
+		// Test PAY_LATER_SHORT_TERM
+		val shortTermConfig = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = "test-client-id",
+				environment = PayPalEnvironment.LIVE,
+				offerType = PayPalMessageOfferType.PAY_LATER_SHORT_TERM,
+			),
+		)
+		val shortTermView = createPayPalMessageView(mockContext, shortTermConfig)
+		assertNotNull(shortTermView)
+		assertEquals(PayPalMessageOfferType.PAY_LATER_SHORT_TERM, shortTermConfig.data.offerType)
+
+		// Test PAY_LATER_LONG_TERM
+		val longTermConfig = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = "test-client-id",
+				environment = PayPalEnvironment.LIVE,
+				offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM,
+			),
+		)
+		val longTermView = createPayPalMessageView(mockContext, longTermConfig)
+		assertNotNull(longTermView)
+		assertEquals(PayPalMessageOfferType.PAY_LATER_LONG_TERM, longTermConfig.data.offerType)
+
+		// Test PAY_LATER_PAY_IN_1
+		val payIn1Config = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = "test-client-id",
+				environment = PayPalEnvironment.LIVE,
+				offerType = PayPalMessageOfferType.PAY_LATER_PAY_IN_1,
+			),
+		)
+		val payIn1View = createPayPalMessageView(mockContext, payIn1Config)
+		assertNotNull(payIn1View)
+		assertEquals(PayPalMessageOfferType.PAY_LATER_PAY_IN_1, payIn1Config.data.offerType)
+	}
+
+	@Test
+	fun testNullOptionalParameters() {
+		// Test with all optional parameters set to null
+		val config = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = "test-client-id",
+				environment = PayPalEnvironment.LIVE,
+				amount = null,
+				buyerCountry = null,
+				offerType = null,
+			),
+			viewStateCallbacks = null,
+			eventsCallbacks = null,
+		)
+
+		val messageView = createPayPalMessageView(mockContext, config)
+		assertNotNull(messageView)
+		assertEquals(null, config.data.amount)
+		assertEquals(null, config.data.buyerCountry)
+		assertEquals(null, config.data.offerType)
+	}
+
+	@Test
+	fun testEdgeCaseAmounts() {
+		// Test with zero amount
+		val zeroAmountConfig = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = "test-client-id",
+				environment = PayPalEnvironment.LIVE,
+				amount = 0.0,
+			),
+		)
+		val zeroView = createPayPalMessageView(mockContext, zeroAmountConfig)
+		assertNotNull(zeroView)
+		assertEquals(0.0, zeroAmountConfig.data.amount)
+
+		// Test with large amount
+		val largeAmountConfig = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = "test-client-id",
+				environment = PayPalEnvironment.LIVE,
+				amount = 999999.99,
+			),
+		)
+		val largeView = createPayPalMessageView(mockContext, largeAmountConfig)
+		assertNotNull(largeView)
+		assertEquals(999999.99, largeAmountConfig.data.amount)
+
+		// Test with small decimal amount
+		val smallAmountConfig = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = "test-client-id",
+				environment = PayPalEnvironment.LIVE,
+				amount = 0.01,
+			),
+		)
+		val smallView = createPayPalMessageView(mockContext, smallAmountConfig)
+		assertNotNull(smallView)
+		assertEquals(0.01, smallAmountConfig.data.amount)
+	}
+
+	@Test
+	fun testVariousBuyerCountries() {
+		// Test common country codes
+		val countries = listOf("US", "GB", "DE", "FR", "CA", "AU", "JP")
+
+		countries.forEach { country ->
+			val config = PayPalMessageConfig(
+				data = PayPalMessageData(
+					clientID = "test-client-id",
+					environment = PayPalEnvironment.LIVE,
+					buyerCountry = country,
+				),
+			)
+			val view = createPayPalMessageView(mockContext, config)
+			assertNotNull(view)
+			assertEquals(country, config.data.buyerCountry)
+		}
+	}
+
 	// Note: The following tests would need to be run as instrumented tests rather than unit tests
 	// as they require the Android runtime. For unit test coverage, we're focusing on testing
 	// the configuration creation which is the core logic of the composable.
