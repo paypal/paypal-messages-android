@@ -1,6 +1,11 @@
 name: Release (manual)
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.2.3). Leave empty to use build.gradle'
+        required: false
+        type: string
 
 env:
   SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
@@ -27,10 +32,14 @@ jobs:
     needs: [lint, test, build]
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
+          persist-credentials: true
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -43,6 +52,19 @@ jobs:
         with:
           signing_key_file: ${{ secrets.SIGNING_KEY_FILE }}
           signing_file_path: ${{ env.SIGNING_KEY_FILE_PATH }}
+
+      - name: Optionally set version in Gradle
+        if: ${{ inputs.version != '' }}
+        run: ./gradlew -PversionParam="${{ inputs.version }}" changeReleaseVersion
+
+      - name: Determine version
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+          else
+            VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' build.gradle | grep -o '"[^\"]*"$' | tr -d '"')
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          fi
 
       - name: Set snapshot environment variable
         run: echo "USE_SNAPSHOT=false" >> $GITHUB_ENV
@@ -61,9 +83,33 @@ jobs:
           echo "Running direct deployment script..."
           bash -e ./deploy-to-maven-central.sh --no-auto-publish
 
+      - name: Configure Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag
+        run: |
+          git fetch --tags --force
+          if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
+            echo "Tag v${VERSION} already exists; skipping tag creation"
+          else
+            git tag "v${VERSION}"
+            git push origin "v${VERSION}"
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ env.VERSION }}"
+          name: "v${{ env.VERSION }}"
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Cleanup signing key files
         if: always()
+        shell: bash
         run: |
           shred -u -z -n 3 "${SIGNING_KEY_FILE_PATH}" || rm -f "${SIGNING_KEY_FILE_PATH}"
           rm -f ~/secretKey.gpg.b64 || true
-        shell: bash 
