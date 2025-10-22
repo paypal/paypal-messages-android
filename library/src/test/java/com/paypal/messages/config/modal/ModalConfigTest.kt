@@ -46,4 +46,45 @@ class ModalConfigTest {
 			),
 		)
 	}
+
+	@Test
+	fun testDefaultValues() {
+		val modalConfig = ModalConfig(
+			modalCloseButton = ModalCloseButton(),
+		)
+		
+		assertEquals(null, modalConfig.amount)
+		assertEquals(null, modalConfig.buyerCountry)
+		assertEquals(Channel.NATIVE, modalConfig.channel)
+		assertEquals(false, modalConfig.devTouchpoint)
+		assertEquals(null, modalConfig.events)
+		assertEquals(false, modalConfig.ignoreCache)
+		assertEquals(null, modalConfig.offer)
+		assertEquals(null, modalConfig.stageTag)
+	}
+
+	@Test
+	fun testFieldMutability() {
+		val modalConfig = ModalConfig(
+			modalCloseButton = ModalCloseButton(),
+		)
+		
+		modalConfig.amount = 500.0
+		assertEquals(500.0, modalConfig.amount)
+		
+		modalConfig.buyerCountry = "CA"
+		assertEquals("CA", modalConfig.buyerCountry)
+		
+		modalConfig.ignoreCache = true
+		assertEquals(true, modalConfig.ignoreCache)
+	}
+
+	@Test
+	fun testWithMinimalParameters() {
+		val modalConfig = ModalConfig(
+			modalCloseButton = ModalCloseButton(),
+		)
+		
+		assertEquals(Channel.NATIVE, modalConfig.channel)
+	}
 }

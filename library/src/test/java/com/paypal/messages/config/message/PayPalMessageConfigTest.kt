@@ -87,4 +87,36 @@ class PayPalMessageConfigTest {
 		config.data = PayPalMessageData(clientID = "2")
 		assertNotEquals(config, cloneConfig)
 	}
+
+	@Test
+	fun testEquality() {
+		val data = PayPalMessageData(clientID = "test_id")
+		val style = PayPalMessageStyle()
+		
+		val config1 = PayPalMessageConfig(data = data, style = style)
+		val config2 = PayPalMessageConfig(data = data, style = style)
+		
+		assertEquals(config1, config2)
+		assertEquals(config1.hashCode(), config2.hashCode())
+	}
+
+	@Test
+	fun testDataMutability() {
+		val config = PayPalMessageConfig(
+			data = PayPalMessageData(clientID = "initial"),
+		)
+		
+		assertEquals("initial", config.data.clientID)
+		config.data.clientID = "modified"
+		assertEquals("modified", config.data.clientID)
+	}
+
+	@Test
+	fun testStyleDefaultValue() {
+		val config = PayPalMessageConfig(
+			data = PayPalMessageData(clientID = "test"),
+		)
+		
+		assertEquals(PayPalMessageStyle(), config.style)
+	}
 }
