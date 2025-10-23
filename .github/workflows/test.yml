@@ -51,14 +51,31 @@ jobs:
       - name: Run Unit Tests Coverage
         run: ./gradlew koverXmlReportDebug -Dkover.path.normalization=relative
 
+      - name: Check if coverage report was generated
+        run: |
+          echo "Checking for Kover report files..."
+          find library/build -name "*.xml" -path "*/kover/*" -ls || echo "No Kover XML files found"
+          ls -la library/build/reports/kover/ || echo "Kover reports directory does not exist"
+
       - name: Normalize paths in coverage report
         run: |
+          # Check if the report file exists
+          if [ ! -f "library/build/reports/kover/reportDebug.xml" ]; then
+            echo "ERROR: Coverage report not found at library/build/reports/kover/reportDebug.xml"
+            exit 1
+          fi
+
           # Create a backup of the original report
           cp library/build/reports/kover/reportDebug.xml library/build/reports/kover/reportDebug.xml.bak
-          
-          # Replace absolute paths with relative ones
-          # This matches any paths starting with /Users/ and replaces them with relative paths
-          sed -i 's|/Users/[^/]*/Code/paypal-messages-android/|./|g' library/build/reports/kover/reportDebug.xml
+
+          # Replace absolute paths with relative ones for GitHub Actions runners
+          # GitHub Actions uses /home/runner/work/paypal-messages-android/paypal-messages-android/
+          sed -i 's|/home/runner/work/paypal-messages-android/paypal-messages-android/|./|g' library/build/reports/kover/reportDebug.xml
+
+          # Also handle any other absolute paths that might appear
+          sed -i 's|${{ github.workspace }}/|./|g' library/build/reports/kover/reportDebug.xml
+
+          echo "Path normalization completed successfully"
 
       - name: Show Coverage Report XML
         run: cat library/build/reports/kover/reportDebug.xml
