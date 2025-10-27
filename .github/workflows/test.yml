@@ -49,7 +49,7 @@ jobs:
           cache: gradle
 
       - name: Run Unit Tests Coverage
-        run: ./gradlew koverXmlReportDebug -Dkover.path.normalization=relative
+        run: ./gradlew :library:koverXmlReportDebug -Dkover.path.normalization=relative
 
       - name: Check if coverage report was generated
         run: |
@@ -79,6 +79,34 @@ jobs:
 
       - name: Show Coverage Report XML
         run: cat library/build/reports/kover/reportDebug.xml
+
+      - name: Extract and Display Coverage Percentage
+        run: |
+          echo "Extracting coverage percentage from report..."
+
+          # Extract the overall coverage percentage from the XML report
+          if [ -f "library/build/reports/kover/reportDebug.xml" ]; then
+            # Parse XML to find coverage percentage
+            python3 << 'EOF'
+          import xml.etree.ElementTree as ET
+
+          tree = ET.parse('library/build/reports/kover/reportDebug.xml')
+          root = tree.getroot()
+
+          # Find all counter elements
+          for counter in root.findall('.//counter'):
+              counter_type = counter.get('type')
+              covered = int(counter.get('covered', 0))
+              missed = int(counter.get('missed', 0))
+              total = covered + missed
+
+              if total > 0:
+                  percentage = (covered / total) * 100
+                  print(f"{counter_type}: {percentage:.2f}% ({covered}/{total})")
+          EOF
+          else
+            echo "Coverage report not found"
+          fi
 
       - name: Add coverage report to PR
         id: kover
