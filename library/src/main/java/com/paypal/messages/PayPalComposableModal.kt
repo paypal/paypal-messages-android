@@ -59,7 +59,7 @@ fun PayPalComposableModal(
 	var errorMessage by remember { mutableStateOf("") }
 
 	// Create the ModalFragment instance for WebView setup
-	val modalFragment = remember { ModalFragment(clientId) }
+	val modalFragment = remember { ModalFragment.newInstance(clientId) }
 	val offerEnum = offerType?.let {
 		try {
 			PayPalMessageOfferType.valueOf(it)
