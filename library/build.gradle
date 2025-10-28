@@ -3,7 +3,7 @@ plugins {
 	id 'kotlin-android'
 	id 'org.jetbrains.kotlin.android'
 	id 'de.mannodermaus.android-junit5' version "1.9.3.0"
-	id 'org.jetbrains.kotlinx.kover' version '0.7.6'
+	id 'org.jetbrains.kotlinx.kover'
 }
 
 group = "com.paypal.messages"
@@ -183,31 +183,6 @@ tasks.register('testMemoryIntensiveClasses') {
 		}
 	}
 	description = "Runs memory-intensive tests in isolated JVM processes"
-}
-
-// Proper Test task so Kover can include isolated tests in coverage
-tasks.register('testDebugUnitTestIsolated', Test) {
-    group = 'verification'
-    description = 'Runs isolated memory-intensive tests for the debug unit test variant'
-    useJUnitPlatform()
-
-    // Reuse the same classpath and classes as the standard debug unit test task
-    def base = tasks.named('testDebugUnitTest', Test).get()
-    testClassesDirs = base.testClassesDirs
-    classpath = base.classpath
-
-    // Only run the tests we exclude from the main task to avoid OOMs
-    include '**/PayPalModalActivityTest*.class', '**/ContextCompatWrapperTest*.class'
-
-    // Increase memory and isolate executions
-    maxHeapSize = '3g'
-    jvmArgs += ['-XX:MaxMetaspaceSize=1g', '-XX:+HeapDumpOnOutOfMemoryError']
-    forkEvery = 1
-}
-
-// Ensure coverage pulls data from both the standard and isolated test tasks
-tasks.named('koverXmlReportDebug') {
-    dependsOn 'testDebugUnitTest', 'testDebugUnitTestIsolated'
 }
 
 // Note: The koverXmlReportDebug task is now provided by the Kover plugin
