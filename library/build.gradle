@@ -229,6 +229,9 @@ tasks.register('testKoverPaths') {
 }
 
 kover {
+	// Explicitly include only this module's sources
+	excludeProjects = [':demo']
+
 	filters {
 		classes {
 			excludes += [
