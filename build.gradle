@@ -31,6 +31,7 @@ plugins {
 	id 'signing'
 	id 'maven-publish'
 	id 'io.codearte.nexus-staging' version '0.30.0'
+	id 'org.jetbrains.kotlinx.kover' version '0.7.6' apply false
 }
 
 tasks.register('ktLint', LintTask) {
@@ -284,6 +285,15 @@ tasks.register('checkCentralPortalDeployment') {
 
 subprojects {
   group = "com.paypal.messages"
+
+  // Disable Kover for demo module
+  if (project.name == 'demo') {
+    pluginManager.withPlugin('org.jetbrains.kotlinx.kover') {
+      kover {
+        isDisabled = true
+      }
+    }
+  }
 }
 
 // Configure Nexus Staging to close and release automatically (OSSRH s01)

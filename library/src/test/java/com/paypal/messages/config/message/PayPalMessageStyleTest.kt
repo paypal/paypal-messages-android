@@ -27,4 +27,44 @@ class PayPalMessageStyleTest {
 
 		assertEquals(messageStyle, clonedMessageStyle)
 	}
+
+	@Test
+	fun testDefaultValues() {
+		val messageStyle = PayPalMessageStyle()
+		
+		assertEquals(Color.BLACK, messageStyle.color)
+		assertEquals(LogoType.PRIMARY, messageStyle.logoType)
+		assertEquals(Align.LEFT, messageStyle.textAlignment)
+	}
+
+	@Test
+	fun testEquality() {
+		val style1 = PayPalMessageStyle(
+			color = Color.WHITE,
+			logoType = LogoType.INLINE,
+			textAlignment = Align.RIGHT,
+		)
+		val style2 = PayPalMessageStyle(
+			color = Color.WHITE,
+			logoType = LogoType.INLINE,
+			textAlignment = Align.RIGHT,
+		)
+		
+		assertEquals(style1, style2)
+		assertEquals(style1.hashCode(), style2.hashCode())
+	}
+
+	@Test
+	fun testDifferentCombinations() {
+		val style1 = PayPalMessageStyle(color = Color.GRAYSCALE)
+		assertEquals(Color.GRAYSCALE, style1.color)
+		assertEquals(LogoType.PRIMARY, style1.logoType)
+		
+		val style2 = PayPalMessageStyle(logoType = LogoType.NONE)
+		assertEquals(Color.BLACK, style2.color)
+		assertEquals(LogoType.NONE, style2.logoType)
+		
+		val style3 = PayPalMessageStyle(textAlignment = Align.CENTER)
+		assertEquals(Align.CENTER, style3.textAlignment)
+	}
 }

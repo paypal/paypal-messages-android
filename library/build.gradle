@@ -3,7 +3,7 @@ plugins {
 	id 'kotlin-android'
 	id 'org.jetbrains.kotlin.android'
 	id 'de.mannodermaus.android-junit5' version "1.9.3.0"
-	id 'org.jetbrains.kotlinx.kover' version '0.7.6'
+	id 'org.jetbrains.kotlinx.kover'
 }
 
 group = "com.paypal.messages"
@@ -122,6 +122,12 @@ tasks.withType(Test).configureEach {
 	// Example filter: excludeTestsMatching "com.paypal.messages.PayPalModalActivityTest"
 }
 
+// Configure all Kover tasks to use relative paths
+// Note: Task type configuration disabled for Kover 0.7.6 compatibility
+// tasks.withType(org.jetbrains.kotlinx.kover.gradle.plugin.tasks.KoverXmlReportTask).configureEach {
+// 	systemProperty 'kover.path.normalization', 'relative'
+// }
+
 // Optimized approach for handling problematic tests
 android {
 	testOptions {
@@ -179,44 +185,83 @@ tasks.register('testMemoryIntensiveClasses') {
 	description = "Runs memory-intensive tests in isolated JVM processes"
 }
 
-koverReport {
-	androidReports('debug') {
-		filters {
-			excludes {
-				annotatedBy(
-					'*KoverExcludeGenerated'
-				)
-				classes(
-					// AnalyticsLogger,
-					'com.paypal.messages.analytics.AnalyticsLogger*',
-					// config
-					'com.paypal.messages.config.message.PayPalMessageEventsCallbacks\$*',
-					'com.paypal.messages.config.message.PayPalMessageViewStateCallbacks\$*',
-					'com.paypal.messages.config.modal.ModalEvents\$*',
-					// extensions,
-					'com.paypal.messages.extensions.Int*',
-					// io
-					'com.paypal.messages.io.Api',
-					'com.paypal.messages.io.Api\$*',
-					'com.paypal.messages.io.LocalStorage*',
-					'com.paypal.messages.io.OnActionCompleted',
-					// utils
-					'com.paypal.messages.utils.LogCat*',
-					// UI Stuff
-					'*Fragment',
-					'*Fragment\$*',
-					'*Activity',
-					'*Activity\$*',
-					'com.paypal.messages.PayPalMessageView*',
-					'com.paypal.messages.RoundedWebView',
-					'com.paypal.messages.RoundedWebView\$*',
-					'*.databinding.*',
-					'*.BuildConfig'
-				)
-			}
+// Note: The koverXmlReportDebug task is now provided by the Kover plugin
+// If you encounter SSL/dependency issues locally, you can temporarily disable Kover by:
+// 1. Commenting out the Kover plugin line above
+// 2. Setting SKIP_KOVER=true environment variable
+
+// Add a task to test the coverage report paths
+tasks.register('testKoverPaths') {
+	dependsOn 'koverXmlReportDebug'
+
+	doLast {
+		println "\n\n===== Testing Kover paths in coverage report =====\n"
+
+		def reportFile = file("${buildDir}/reports/kover/reportDebug.xml")
+		if (!reportFile.exists()) {
+			throw new GradleException("Coverage report file not found at: ${reportFile.absolutePath}")
+		}
+
+		println "Checking coverage report for absolute paths..."
+
+		def reportContent = reportFile.text
+		def absolutePathPattern = "/Users/"
+		def hasAbsolutePaths = reportContent.contains(absolutePathPattern)
+
+		if (hasAbsolutePaths) {
+			println "WARNING: Found absolute paths in the coverage report!"
+			println "Creating normalized version..."
+
+			// Create a backup of the original report
+			def backupFile = file("${buildDir}/reports/kover/reportDebug.xml.bak")
+			backupFile.text = reportContent
+
+			// Replace absolute paths with relative ones
+			def normalizedContent = reportContent.replaceAll("/Users/[^/]*/Code/paypal-messages-android/", "./")
+			reportFile.text = normalizedContent
+
+			println "Normalized coverage report saved to: ${reportFile.absolutePath}"
+		} else {
+			println "SUCCESS: No absolute paths found in the coverage report."
+		}
+	}
+	description = "Tests and fixes paths in Kover coverage reports"
+}
+
+kover {
+	filters {
+		classes {
+			excludes += [
+				// AnalyticsLogger,
+				'com.paypal.messages.analytics.AnalyticsLogger*',
+				// config
+				'com.paypal.messages.config.message.PayPalMessageEventsCallbacks\$*',
+				'com.paypal.messages.config.message.PayPalMessageViewStateCallbacks\$*',
+				'com.paypal.messages.config.modal.ModalEvents\$*',
+				// extensions,
+				'com.paypal.messages.extensions.Int*',
+				// io
+				'com.paypal.messages.io.Api',
+				'com.paypal.messages.io.Api\$*',
+				'com.paypal.messages.io.LocalStorage*',
+				'com.paypal.messages.io.OnActionCompleted',
+				// utils
+				'com.paypal.messages.utils.LogCat*',
+				// UI Stuff
+				'*Fragment',
+				'*Fragment\$*',
+				'*Activity',
+				'*Activity\$*',
+				'com.paypal.messages.PayPalMessageView*',
+				'com.paypal.messages.RoundedWebView',
+				'com.paypal.messages.RoundedWebView\$*',
+				'*.databinding.*',
+				'*.BuildConfig'
+			]
 		}
 	}
 }
+
 
 dependencies {
 	implementation 'androidx.core:core-ktx:1.10.1'
@@ -277,7 +322,7 @@ project.ext.version = modules.sdkVersionName
 project.ext.pom_name = "PayPal Messages"
 project.ext.pom_desc = "The PayPal Android SDK Messages Module: Promote offers to your customers such as Pay Later and PayPal Credit."
 
-// Optionally disable Kover locally to avoid agent download issues
+// Optionally disable Kover tasks locally to avoid agent download issues
 if (System.getenv('SKIP_KOVER') == 'true' || project.hasProperty('skipKover')) {
     tasks.matching { it.name.toLowerCase().startsWith('kover') }.configureEach { enabled = false }
 }

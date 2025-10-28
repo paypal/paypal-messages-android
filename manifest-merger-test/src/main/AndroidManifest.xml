@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+        This manifest simulates an app that integrates the PayPal Messages library
+        and declares its own usesCleartextTraffic setting.
+
+        This test verifies that the library's usesCleartextTraffic declaration
+        does not cause a manifest merger conflict.
+    -->
+    <application
+        android:allowBackup="true"
+        android:label="Manifest Merger Test"
+        android:usesCleartextTraffic="false">
+
+        <activity
+            android:name=".TestActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

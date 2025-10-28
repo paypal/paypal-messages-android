@@ -52,4 +52,51 @@ class PayPalMessageDataTest {
 		data.amount = 100.00
 		assertNotEquals(oldData, data)
 	}
+
+	@Test
+	fun testDefaultEnvironment() {
+		val data = PayPalMessageData(clientID = initialClientID)
+		assertEquals(PayPalEnvironment.SANDBOX, data.environment)
+	}
+
+	@Test
+	fun testNullableFields() {
+		val data = PayPalMessageData(clientID = initialClientID)
+		assertEquals(null, data.merchantID)
+		assertEquals(null, data.partnerAttributionID)
+		assertEquals(null, data.amount)
+		assertEquals(null, data.buyerCountry)
+		assertEquals(null, data.offerType)
+		assertEquals(null, data.pageType)
+	}
+
+	@Test
+	fun testEquality() {
+		val data1 = PayPalMessageData(
+			clientID = initialClientID,
+			amount = 100.0,
+			environment = PayPalEnvironment.LIVE,
+		)
+		val data2 = PayPalMessageData(
+			clientID = initialClientID,
+			amount = 100.0,
+			environment = PayPalEnvironment.LIVE,
+		)
+		assertEquals(data1, data2)
+		assertEquals(data1.hashCode(), data2.hashCode())
+	}
+
+	@Test
+	fun testFieldMutability() {
+		val data = PayPalMessageData(clientID = initialClientID)
+		
+		data.merchantID = "new_merchant"
+		assertEquals("new_merchant", data.merchantID)
+		
+		data.amount = 250.0
+		assertEquals(250.0, data.amount)
+		
+		data.buyerCountry = "GB"
+		assertEquals("GB", data.buyerCountry)
+	}
 }

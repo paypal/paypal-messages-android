@@ -9,6 +9,9 @@ pluginManagement {
       if (requested.id.id == 'com.vanniktech.maven.publish') {
         useModule("com.vanniktech:gradle-maven-publish-plugin:${requested.version}")
       }
+      if (requested.id.id == 'org.jetbrains.kotlinx.kover') {
+        useModule("org.jetbrains.kotlinx:kover-gradle-plugin:${requested.version}")
+      }
     }
   }
 }
@@ -24,3 +27,4 @@ dependencyResolutionManagement {
 rootProject.name = "PayPalMessages"
 include ':demo'
 include ':library'
+include ':manifest-merger-test'
