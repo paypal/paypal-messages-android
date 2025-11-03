@@ -368,7 +368,7 @@ class PayPalModalActivity : ComponentActivity() {
 											}
 
 											// Create and setup the modal fragment
-											val modalFragment = ModalFragment(clientId)
+											val modalFragment = ModalFragment.newInstance(clientId)
 											val offerEnum = offerType?.let {
 												try {
 													com.paypal.messages.config.PayPalMessageOfferType.valueOf(it)

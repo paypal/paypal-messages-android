@@ -50,13 +50,28 @@ import java.util.UUID
 import kotlin.system.measureTimeMillis
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 
-internal class ModalFragment(
-	private val clientId: String,
-) : BottomSheetDialogFragment() {
+internal class ModalFragment() : BottomSheetDialogFragment() {
+	companion object {
+		private const val ARG_CLIENT_ID = "client_id"
+
+		/**
+		 * Factory method to create a new instance of ModalFragment with the required parameters.
+		 * This ensures proper fragment recreation after configuration changes.
+		 */
+		fun newInstance(clientId: String): ModalFragment {
+			return ModalFragment().apply {
+				arguments = Bundle().apply {
+					putString(ARG_CLIENT_ID, clientId)
+				}
+			}
+		}
+	}
+
 	private val TAG = "PayPalMessageModal"
 	private val offsetTop = 50.dp
 	private val gson = GsonBuilder().setPrettyPrinting().create()
 
+	private var clientId: String = ""
 	private var modalUrl: String? = null
 
 	// MODAL CONFIG VALUES
@@ -92,7 +107,16 @@ internal class ModalFragment(
 	private var dialog: BottomSheetDialog? = null
 	private var closeButtonData: ModalCloseButton? = null
 	private var instanceId = UUID.randomUUID()
-	
+
+	override fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
+		// Retrieve clientId from arguments
+		clientId = arguments?.getString(ARG_CLIENT_ID) ?: ""
+		if (clientId.isEmpty()) {
+			LogCat.error(TAG, "ModalFragment created without clientId. Use ModalFragment.newInstance() factory method.")
+		}
+	}
+
 	/**
 	 * Sets up an external WebView with the modal content.
 	 * This method can be used by Compose UI to initialize a WebView.
