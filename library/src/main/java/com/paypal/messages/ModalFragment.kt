@@ -50,12 +50,34 @@ import java.util.UUID
 import kotlin.system.measureTimeMillis
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 
-internal class ModalFragment(
-	private val clientId: String,
-) : BottomSheetDialogFragment() {
+internal class ModalFragment : BottomSheetDialogFragment() {
+	companion object {
+		private const val ARG_CLIENT_ID = "clientId"
+
+		/**
+		 * Factory method to create a new instance of ModalFragment with clientId.
+		 * This pattern is required for proper fragment state restoration when
+		 * "Don't keep activities" is enabled.
+		 */
+		fun newInstance(clientId: String): ModalFragment {
+			return ModalFragment().apply {
+				arguments = Bundle().apply {
+					putString(ARG_CLIENT_ID, clientId)
+				}
+			}
+		}
+	}
+
 	private val TAG = "PayPalMessageModal"
 	private val offsetTop = 50.dp
 	private val gson = GsonBuilder().setPrettyPrinting().create()
+
+	/**
+	 * Gets the clientId from arguments Bundle.
+	 * This ensures proper state restoration when Android recreates the fragment.
+	 */
+	private val clientId: String
+		get() = arguments?.getString(ARG_CLIENT_ID) ?: throw IllegalStateException("clientId must be set via newInstance()")
 
 	private var modalUrl: String? = null
 
