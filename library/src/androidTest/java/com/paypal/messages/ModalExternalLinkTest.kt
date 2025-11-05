@@ -37,7 +37,7 @@ class ModalExternalLinkTest {
 				val webView = WebView(recordingContext)
 
 				// Initialize the modal WebView configuration
-				val fragment = ModalFragment.newInstance("test-client-id")
+				val fragment = ModalFragment(clientId = "test-client-id")
 				fragment.setupWebView(webView)
 
 				// Load a minimal page that triggers a target=_blank navigation

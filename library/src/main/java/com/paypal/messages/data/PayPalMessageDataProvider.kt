@@ -311,7 +311,7 @@ class PayPalMessageDataProvider {
 			// For AppCompatActivity contexts, use ModalFragment
 			appCompatContext != null -> {
 				val modal = modalInstances[instanceId] ?: run {
-					val newModal = ModalFragment.newInstance(config.data.clientID)
+					val newModal = ModalFragment(config.data.clientID)
 
 					// Build modal config
 					val modalConfig = ModalConfig(

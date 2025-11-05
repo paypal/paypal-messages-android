@@ -113,7 +113,7 @@ class PayPalMessageViewTest {
 // 	fun dismissAfterFragmentDetached_shouldThrow() {
 // 		val scenario: ActivityScenario<TestActivity> = ActivityScenario.launch(TestActivity::class.java)
 // 		scenario.onActivity { activity: TestActivity ->
-// 			val fragment = ModalFragment.newInstance("test_client_id")
+// 			val fragment = ModalFragment("test_client_id")
 // 			fragment.show(activity.supportFragmentManager, "test")
 //
 // 			// Remove the fragment to simulate detachment

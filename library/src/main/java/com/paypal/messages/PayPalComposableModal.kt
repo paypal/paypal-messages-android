@@ -59,9 +59,7 @@ fun PayPalComposableModal(
 	var errorMessage by remember { mutableStateOf("") }
 
 	// Create the ModalFragment instance for WebView setup
-	// Use clientId as key to ensure fragment is recreated if clientId changes
-	// This also ensures proper recreation when "Don't keep activities" is enabled
-	val modalFragment = remember(clientId) { ModalFragment.newInstance(clientId) }
+	val modalFragment = remember { ModalFragment(clientId) }
 	val offerEnum = offerType?.let {
 		try {
 			PayPalMessageOfferType.valueOf(it)
