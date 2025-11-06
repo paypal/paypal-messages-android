@@ -2,9 +2,16 @@ package com.paypal.messages
 
 import android.os.Bundle
 import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import com.paypal.messages.config.modal.ModalCloseButton
+import com.paypal.messages.config.modal.ModalConfig
+import com.paypal.messages.config.modal.ModalEvents
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -155,5 +162,196 @@ class ModalFragmentTest {
 		
 		// This test verifies the fix: fragment can be recreated using no-arg constructor
 		// and clientId is accessible via arguments Bundle
+	}
+
+	/**
+	 * Test that dismissing a fragment removes it from the fragment manager
+	 * and marks it as not added
+	 */
+	@Test
+	fun dismissFragment_removesFromFragmentManager() {
+		val testClientId = "test-client-dismiss"
+		val context = InstrumentationRegistry.getInstrumentation().targetContext
+		val activityScenario = ActivityScenario.launch(TestActivity::class.java)
+
+		activityScenario.onActivity { activity ->
+			val fragment = ModalFragment.newInstance(testClientId)
+			
+			// Initialize fragment with minimal config
+			fragment.init(
+				ModalConfig(
+					amount = 100.0,
+					buyerCountry = "US",
+					offer = null,
+					ignoreCache = false,
+					devTouchpoint = false,
+					stageTag = null,
+					events = ModalEvents(),
+					modalCloseButton = ModalCloseButton(),
+				),
+			)
+
+			// Show the fragment
+			fragment.show(activity.supportFragmentManager, "test-modal")
+			
+			// Wait for fragment to be added
+			activity.supportFragmentManager.executePendingTransactions()
+			
+			// Verify fragment is added
+			assertTrue(
+				"Fragment should be added to fragment manager",
+				fragment.isAdded,
+			)
+			
+			// Dismiss the fragment
+			fragment.dismiss()
+			activity.supportFragmentManager.executePendingTransactions()
+			
+			// Verify fragment is no longer added
+			assertFalse(
+				"Fragment should not be added after dismissal",
+				fragment.isAdded,
+			)
+			
+			// Verify fragment is not in fragment manager
+			val foundFragment = activity.supportFragmentManager.findFragmentByTag("test-modal")
+			assertTrue(
+				"Fragment should be removed from fragment manager after dismissal",
+				foundFragment == null || !foundFragment.isAdded,
+			)
+		}
+	}
+
+	/**
+	 * Test that a dismissed fragment is not restored after activity recreation
+	 * This simulates the scenario: open modal -> dismiss -> press home -> reopen app
+	 */
+	@Test
+	fun dismissedFragment_notRestoredAfterActivityRecreation() {
+		val testClientId = "test-client-dismiss-restore"
+		val context = InstrumentationRegistry.getInstrumentation().targetContext
+		val activityScenario = ActivityScenario.launch(TestActivity::class.java)
+
+		activityScenario.onActivity { activity ->
+			val fragment = ModalFragment.newInstance(testClientId)
+			
+			// Initialize fragment
+			fragment.init(
+				ModalConfig(
+					amount = 100.0,
+					buyerCountry = "US",
+					offer = null,
+					ignoreCache = false,
+					devTouchpoint = false,
+					stageTag = null,
+					events = ModalEvents(),
+					modalCloseButton = ModalCloseButton(),
+				),
+			)
+
+			// Show the fragment
+			fragment.show(activity.supportFragmentManager, "test-modal-restore")
+			activity.supportFragmentManager.executePendingTransactions()
+			
+			// Verify fragment is shown
+			assertTrue("Fragment should be added", fragment.isAdded)
+			
+			// Dismiss the fragment (simulating user clicking close button)
+			fragment.dismiss()
+			activity.supportFragmentManager.executePendingTransactions()
+			
+			// Verify fragment is dismissed
+			assertFalse("Fragment should be dismissed", fragment.isAdded)
+		}
+
+		// Simulate activity recreation (like when app goes to background and comes back)
+		activityScenario.recreate()
+
+		activityScenario.onActivity { recreatedActivity ->
+			// After recreation, check that the dismissed fragment is not restored
+			val restoredFragment = recreatedActivity.supportFragmentManager.findFragmentByTag("test-modal-restore")
+			
+			// The fragment should not exist or should not be added
+			assertTrue(
+				"Dismissed fragment should not be restored after activity recreation",
+				restoredFragment == null || !restoredFragment.isAdded,
+			)
+		}
+	}
+
+	/**
+	 * Test that onCreateView handles null closeButtonData gracefully
+	 * (This tests the fix for the NullPointerException during fragment recreation)
+	 */
+	@Test
+	fun onCreateView_withNullCloseButtonData_usesDefaults() {
+		val testClientId = "test-client-null-button"
+		val scenario = launchFragmentInContainer<ModalFragment>(
+			Bundle().apply {
+				putString("clientId", testClientId)
+			},
+		)
+
+		// onCreateView should not crash even if closeButtonData is null
+		// This happens during fragment recreation before init() is called
+		scenario.onFragment { fragment ->
+			// Fragment should be created successfully
+			assertNotNull("Fragment should be created", fragment)
+			assertNotNull("Fragment view should be created", fragment.view)
+			
+			// The view should have the close button with default values
+			val closeButton = fragment.view?.findViewById<android.widget.ImageButton>(
+				com.paypal.messages.R.id.ModalCloseButton,
+			)
+			assertNotNull("Close button should exist", closeButton)
+		}
+	}
+
+	/**
+	 * Test that onDismiss callback is invoked when fragment is dismissed
+	 */
+	@Test
+	fun dismissFragment_invokesOnDismissCallback() {
+		val testClientId = "test-client-on-dismiss"
+		val context = InstrumentationRegistry.getInstrumentation().targetContext
+		val activityScenario = ActivityScenario.launch(TestActivity::class.java)
+		var onDismissCalled = false
+
+		activityScenario.onActivity { activity ->
+			val fragment = ModalFragment.newInstance(testClientId)
+			
+			// Initialize fragment with onClose callback
+			fragment.init(
+				ModalConfig(
+					amount = 100.0,
+					buyerCountry = "US",
+					offer = null,
+					ignoreCache = false,
+					devTouchpoint = false,
+					stageTag = null,
+					events = ModalEvents(
+						onClose = { onDismissCalled = true },
+					),
+					modalCloseButton = ModalCloseButton(),
+				),
+			)
+
+			// Show the fragment
+			fragment.show(activity.supportFragmentManager, "test-modal-dismiss")
+			activity.supportFragmentManager.executePendingTransactions()
+			
+			// Dismiss the fragment
+			fragment.dismiss()
+			activity.supportFragmentManager.executePendingTransactions()
+		}
+
+		// Give time for the dismiss callback to be invoked
+		Thread.sleep(100)
+
+		// Verify onDismiss callback was called
+		assertTrue(
+			"onDismiss callback should be invoked when fragment is dismissed",
+			onDismissCalled,
+		)
 	}
 }
