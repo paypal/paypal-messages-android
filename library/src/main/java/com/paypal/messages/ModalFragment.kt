@@ -290,21 +290,34 @@ internal class ModalFragment : BottomSheetDialogFragment() {
 		val rootView =
 			inflator.inflate(R.layout.paypal_message_modal_sheet_layout, container, false)
 		val closeButton = rootView.findViewById<ImageButton>(R.id.ModalCloseButton)
-		closeButton.contentDescription = closeButtonData?.alternativeText
+		
+		// Use default values if closeButtonData is null (can happen during fragment recreation)
+		// Default values match ModalCloseButton's init block defaults
+		val buttonHeight = closeButtonData?.height ?: 26
+		val buttonWidth = closeButtonData?.width ?: 26
+		val buttonColor = closeButtonData?.color ?: "#001435"
+		val buttonAltText = closeButtonData?.alternativeText ?: "PayPal learn more modal close"
+		
+		closeButton.contentDescription = buttonAltText
 
 		closeButton.layoutParams.height = TypedValue.applyDimension(
 			TypedValue.COMPLEX_UNIT_DIP,
-			this.closeButtonData?.height!!.toFloat(), resources.displayMetrics,
+			buttonHeight.toFloat(), resources.displayMetrics,
 		).toInt()
 		closeButton.layoutParams.width = TypedValue.applyDimension(
 			TypedValue.COMPLEX_UNIT_DIP,
-			this.closeButtonData?.width!!.toFloat(), resources.displayMetrics,
+			buttonWidth.toFloat(), resources.displayMetrics,
 		).toInt()
 
-		val colorInt = Color.parseColor(this.closeButtonData?.color)
+		val colorInt = Color.parseColor(buttonColor)
 		closeButton.background.colorFilter = PorterDuffColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP)
 
-		closeButton?.setOnClickListener { dialog?.hide() }
+		closeButton?.setOnClickListener {
+			// Properly dismiss the fragment instead of just hiding the dialog
+			// This ensures the fragment is removed from the fragment manager
+			// and won't be restored when the activity is recreated
+			dismiss()
+		}
 
 		// If we already have a WebView, don't reset it
 		LogCat.debug(TAG, "Configuring WebView Settings and Handlers")
@@ -471,6 +484,13 @@ internal class ModalFragment : BottomSheetDialogFragment() {
 				requestDuration = requestDuration.toString(),
 			),
 		)
+	}
+
+	override fun onDismiss(dialog: android.content.DialogInterface) {
+		super.onDismiss(dialog)
+		// Call the onClose callback when the modal is dismissed
+		onClose.invoke()
+		LogCat.debug(TAG, "Modal dismissed, onClose callback invoked")
 	}
 
 	/**

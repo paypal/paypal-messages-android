@@ -247,8 +247,24 @@ class PayPalMessageDataProvider {
 
 			override fun onCleanup() {
 				// Clean up modal if it exists
-				modalInstances[instanceId]?.dismiss()
-				modalInstances.remove(instanceId)
+				val modal = modalInstances[instanceId]
+				if (modal != null) {
+					try {
+						// Only dismiss if the fragment is still added to a fragment manager
+						// This prevents crashes during activity destruction
+						if (modal.isAdded) {
+							modal.dismiss()
+						}
+					} catch (e: IllegalStateException) {
+						// Fragment is no longer associated with a fragment manager
+						// This can happen during activity destruction - safe to ignore
+						LogCat.debug(TAG, "Fragment no longer associated with fragment manager during cleanup: ${e.message}")
+					} catch (e: Exception) {
+						// Log any other unexpected errors but don't crash
+						LogCat.error(TAG, "Error dismissing modal during cleanup: ${e.message}")
+					}
+					modalInstances.remove(instanceId)
+				}
 			}
 		}
 	}
@@ -310,7 +326,19 @@ class PayPalMessageDataProvider {
 			}
 			// For AppCompatActivity contexts, use ModalFragment
 			appCompatContext != null -> {
-				val modal = modalInstances[instanceId] ?: run {
+				// Check if we have an existing modal and if it's still added to the fragment manager
+				// If it was dismissed, create a new one instead of reusing the dismissed fragment
+				val existingModal = modalInstances[instanceId]
+				val modal = if (existingModal != null && existingModal.isAdded) {
+					// Reuse existing modal that's still shown
+					existingModal
+				} else {
+					// Create a new modal (either doesn't exist or was dismissed)
+					// Remove the old reference if it exists but was dismissed
+					if (existingModal != null) {
+						modalInstances.remove(instanceId)
+					}
+					
 					val newModal = ModalFragment.newInstance(config.data.clientID)
 
 					// Build modal config
