@@ -13,6 +13,9 @@ import com.paypal.messages.config.message.PayPalMessageConfig
 import com.paypal.messages.config.message.PayPalMessageData
 import com.paypal.messages.io.ApiMessageData
 import org.junit.After
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -138,5 +141,82 @@ class PayPalMessageDataProviderModalTest {
 				generic = null,
 			),
 		)
+	}
+
+	/**
+	 * Test that a dismissed modal fragment is not reused when showing modal again
+	 * This verifies the fix where dismissed fragments create new instances instead of reusing
+	 */
+	@Test
+	fun dismissedModalFragment_createsNewInstanceOnNextShow() {
+		val context = InstrumentationRegistry.getInstrumentation().targetContext
+		val mockResponse = createMockResponse()
+
+		// Launch test activity
+		val intent = Intent(ApplicationProvider.getApplicationContext(), TestActivity::class.java)
+		ActivityScenario.launch<TestActivity>(intent).use { scenario ->
+			scenario.onActivity { activity ->
+				// Create click handler
+				val clickHandler = provider.createClickHandler(
+					activity,
+					config,
+					instanceId,
+				)
+
+				// First click - show modal
+				clickHandler.onMessageClick(
+					mockResponse,
+					{},
+					{},
+					{},
+				)
+
+				// Wait for modal to be shown
+				Thread.sleep(500)
+				activity.supportFragmentManager.executePendingTransactions()
+
+				// Find the modal fragment
+				val firstModal = activity.supportFragmentManager.fragments
+					.find { it is com.paypal.messages.ModalFragment } as? com.paypal.messages.ModalFragment
+
+				assertNotNull("First modal should be created", firstModal)
+				assertTrue("First modal should be added", firstModal.isAdded)
+
+				// Dismiss the modal (simulating user clicking close button)
+				firstModal.dismiss()
+				activity.supportFragmentManager.executePendingTransactions()
+
+				// Verify modal is dismissed
+				assertFalse("Modal should be dismissed", firstModal.isAdded)
+
+				// Second click - should create a new modal instance, not reuse the dismissed one
+				clickHandler.onMessageClick(
+					mockResponse,
+					{},
+					{},
+					{},
+				)
+
+				// Wait for new modal to be shown
+				Thread.sleep(500)
+				activity.supportFragmentManager.executePendingTransactions()
+
+				// Find the new modal fragment
+				val secondModal = activity.supportFragmentManager.fragments
+					.find { it is com.paypal.messages.ModalFragment } as? com.paypal.messages.ModalFragment
+
+				assertNotNull("Second modal should be created", secondModal)
+				assertTrue("Second modal should be added", secondModal.isAdded)
+
+				// Verify it's a different instance (not the dismissed one)
+				assertTrue(
+					"Second modal should be a new instance, not the dismissed one",
+					secondModal !== firstModal,
+				)
+
+				// Clean up
+				clickHandler.onCleanup()
+			}
+		}
 	}
 }

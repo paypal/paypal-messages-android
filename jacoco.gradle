@@ -70,7 +70,9 @@ def createVariantCoverage(variant) {
 		description = "Generate Jacoco coverage reports for the ${variantName.capitalize()} build."
 
 		reports {
-			html.enabled = true
+			html.required = true
+			xml.required = true
+			csv.required = false
 		}
 
 		def javaClasses = fileTree(dir: variant.javaCompileProvider.get().destinationDir, excludes: project.excludes)
