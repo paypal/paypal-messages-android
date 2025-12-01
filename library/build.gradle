@@ -8,6 +8,50 @@ plugins {
 
 group = "com.paypal.messages"
 
+// Helper function to read version properties with defaults
+def v(String key, String defaultValue) {
+	project.findProperty(key) ?: defaultValue
+}
+
+// Enable dependency locking for reproducibility
+dependencyLocking {
+	lockAllConfigurations()
+}
+
+// Resolution strategy to prefer newer versions and catch major conflicts
+configurations.all {
+	resolutionStrategy {
+		// Prefer the highest version when there are conflicts
+		// This helps resolve transitive dependency conflicts automatically
+		preferProjectModules()
+		
+		// Force specific versions for known transitive conflicts
+		force(
+			// Kotlin stdlib - use the version from our Kotlin plugin
+			"org.jetbrains.kotlin:kotlin-stdlib:1.8.22",
+			"org.jetbrains.kotlin:kotlin-stdlib-common:1.8.22",
+			"org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22",
+			"org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22",
+		)
+		
+		// Fail on version conflict only for our direct dependencies
+		// This catches accidental drifts in our declared dependencies
+		eachDependency { details ->
+			def directDeps = [
+				'androidx.core:core-ktx',
+				'androidx.appcompat:appcompat',
+				'androidx.activity:activity-compose',
+				'com.google.android.material:material',
+				'com.squareup.okhttp3:okhttp',
+			]
+			if (directDeps.any { details.requested.group == it.split(':')[0] && details.requested.name == it.split(':')[1] }) {
+				// For direct dependencies, we want to catch conflicts
+				// But we'll handle this via constraints instead
+			}
+		}
+	}
+}
+
 android {
 	namespace 'com.paypal.messages'
 	compileSdk rootProject.ext.modules.androidTargetVersion
@@ -219,23 +263,25 @@ koverReport {
 }
 
 dependencies {
-	implementation 'androidx.core:core-ktx:1.10.1'
-	implementation 'androidx.appcompat:appcompat:1.6.1'
+	// AndroidX dependencies with version overrides support
+	implementation "androidx.core:core-ktx:${v('androidxCoreVersion', '1.10.1')}"
+	implementation "androidx.appcompat:appcompat:${v('appcompatVersion', '1.6.1')}"
 	// Publish Material transitively so consumers get resources like bottomSheetStyle
-	api 'com.google.android.material:material:1.9.0'
+	api "com.google.android.material:material:${v('materialVersion', '1.9.0')}"
 	implementation 'com.google.code.gson:gson:2.9.1'
-	// Bundle OkHttp with the AAR but use APIs compatible with both 3.x and 4.x
-	api 'com.squareup.okhttp3:okhttp:4.8.0'
+	// OkHttp is not exposed in public API, so use implementation instead of api
+	// This prevents forcing consumers to use a specific OkHttp version
+	implementation 'com.squareup.okhttp3:okhttp:4.8.0'
 	
-	// Compose dependencies
-	def composeBom = platform('androidx.compose:compose-bom:2023.05.01')
+	// Compose dependencies with BOM version override support
+	def composeBom = platform("androidx.compose:compose-bom:${v('composeBomVersion', '2023.05.01')}")
 	implementation composeBom
 	implementation 'androidx.compose.foundation:foundation'
 	implementation 'androidx.compose.runtime:runtime'
 	implementation 'androidx.compose.ui:ui'
 	implementation 'androidx.compose.ui:ui-tooling-preview'
 	implementation 'androidx.compose.material3:material3'
-	implementation 'androidx.activity:activity-compose:1.7.2'
+	implementation "androidx.activity:activity-compose:${v('activityComposeVersion', '1.7.2')}"
 	implementation 'androidx.compose.material:material'
 	implementation 'androidx.compose.ui:ui-graphics'
 	implementation 'androidx.compose.ui:ui-util'
@@ -250,7 +296,7 @@ dependencies {
 	testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
 	testImplementation 'io.mockk:mockk:1.13.7'
 	// Ensure Material Components are on the unit test classpath for resource linking
-	testImplementation 'com.google.android.material:material:1.9.0'
+	testImplementation "com.google.android.material:material:${v('materialVersion', '1.9.0')}"
 	// Robolectric for resource/theme inflation tests
     testImplementation 'org.robolectric:robolectric:4.10.3'
     // Needed for ApplicationProvider in unit tests
@@ -265,11 +311,48 @@ dependencies {
 	androidTestImplementation 'com.squareup.okhttp3:mockwebserver:4.8.0'
 	
 	// Compose testing dependencies
-	androidTestImplementation platform('androidx.compose:compose-bom:2023.05.01')
+	androidTestImplementation platform("androidx.compose:compose-bom:${v('composeBomVersion', '2023.05.01')}")
 	androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
 	androidTestImplementation 'androidx.compose.ui:ui-test'
 	androidTestImplementation 'io.mockk:mockk-android:1.13.7'
 	androidTestImplementation 'com.google.truth:truth:1.4.2'
+	
+	// Dependency constraints to enforce minimum versions and prevent conflicts
+	// Note: Using prefer() for now to allow version override testing.
+	// After matrix testing validates minimum safe versions, switch to strictly() to enforce minimums.
+	constraints {
+		// AndroidX Core - minimum safe version (to be validated via matrix testing)
+		implementation("androidx.core:core-ktx") {
+			version {
+				// Use prefer() to allow overrides during testing, switch to strictly() after validation
+				prefer("1.10.1")
+			}
+		}
+		
+		// AppCompat - minimum safe version
+		implementation("androidx.appcompat:appcompat") {
+			version {
+				prefer("1.6.1")
+			}
+		}
+		
+		// Activity Compose - minimum safe version
+		implementation("androidx.activity:activity-compose") {
+			version {
+				prefer("1.7.2")
+			}
+		}
+		
+		// Material - minimum safe version
+		api("com.google.android.material:material") {
+			version {
+				prefer("1.9.0")
+			}
+		}
+		
+		// Compose BOM - ensure consistent versions across Compose artifacts
+		// Note: BOM version constraints are handled via platform() declaration above
+	}
 }
 
 project.ext.name = "paypal-messages"

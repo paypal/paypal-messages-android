@@ -21,6 +21,18 @@ As the library is moved to general availability, we will be adding a contributio
 ## Support
 The PayPalMessages Library is available for Android SDK 23+.
 
+## AndroidX Compatibility
+
+The SDK requires specific AndroidX dependencies. For compatibility information and minimum supported versions, see the [AndroidX Compatibility Guide](docs/androidx-compatibility.md).
+
+**Quick Reference:**
+- Minimum Android SDK: 23
+- AndroidX Core KTX: 1.10.1+ (baseline)
+- AndroidX AppCompat: 1.6.1+ (baseline)
+- Compose BOM: 2023.05.01+ (baseline)
+
+If you encounter dependency conflicts, ensure your AndroidX versions meet or exceed the documented minimums. The SDK uses dependency constraints to prevent conflicts and ensure compatibility.
+
 ## Client ID
 
 The PayPalMessages Library uses a client ID for authentication. This can be found in your [PayPal Developer Dashboard](https://developer.paypal.com/api/rest/#link-getstarted).
