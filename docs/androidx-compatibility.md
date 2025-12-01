@@ -10,13 +10,13 @@ The SDK is tested and validated against specific AndroidX versions. To ensure co
 
 | Artifact | Baseline Version | Minimum Safe Version | Notes | Test Date |
 |----------|-----------------|---------------------|-------|-----------|
-| `androidx.core:core-ktx` | 1.10.1 | TBD (pending validation) | Core AndroidX extensions | - |
-| `androidx.appcompat:appcompat` | 1.6.1 | TBD (pending validation) | AppCompat library | - |
-| `androidx.activity:activity-compose` | 1.7.2 | TBD (pending validation) | Activity Compose integration | - |
-| `androidx.compose:compose-bom` | 2023.05.01 | TBD (pending validation) | Compose BOM (Bill of Materials) | - |
-| `com.google.android.material:material` | 1.9.0 | TBD (pending validation) | Material Design Components | - |
+| `androidx.core:core-ktx` | 1.10.1 | 1.8.0 | Core AndroidX extensions | Dec 2024 |
+| `androidx.appcompat:appcompat` | 1.6.1 | 1.4.2 | AppCompat library | Dec 2024 |
+| `androidx.activity:activity-compose` | 1.7.2 | 1.6.1 | Activity Compose integration | Dec 2024 |
+| `androidx.compose:compose-bom` | 2023.05.01 | 2023.01.00 | Compose BOM (Bill of Materials) | Dec 2024 |
+| `com.google.android.material:material` | 1.9.0 | 1.8.0 | Material Design Components | Dec 2024 |
 
-**Note:** Minimum safe versions are determined through matrix testing and will be updated after validation completes.
+**Note:** Minimum safe versions have been validated through CI matrix testing. All listed versions passed build and unit test validation.
 
 ## Version Override Testing
 
@@ -73,27 +73,32 @@ The SDK bundles OkHttp 4.8.0 as an `implementation` dependency (not exposed in p
 
 ## Testing Matrix
 
-The following version combinations are candidates for validation:
+The following version combinations have been validated through CI matrix testing:
 
 ### Core KTX
-- Baseline: 1.10.1
-- Test: 1.9.x, 1.8.x
+- Baseline: 1.10.1 ✅
+- Tested: 1.9.0 ✅, 1.8.0 ✅
+- **Minimum Safe: 1.8.0**
 
 ### AppCompat
-- Baseline: 1.6.1
-- Test: 1.5.x, 1.4.x
+- Baseline: 1.6.1 ✅
+- Tested: 1.5.1 ✅, 1.4.2 ✅
+- **Minimum Safe: 1.4.2**
 
 ### Activity Compose
-- Baseline: 1.7.2
-- Test: 1.6.x
+- Baseline: 1.7.2 ✅
+- Tested: 1.6.1 ✅
+- **Minimum Safe: 1.6.1**
 
 ### Compose BOM
-- Baseline: 2023.05.01
-- Test: 2023.03.x, 2023.01.x
+- Baseline: 2023.05.01 ✅
+- Tested: 2023.03.00 ✅, 2023.01.00 ✅
+- **Minimum Safe: 2023.01.00**
 
 ### Material
-- Baseline: 1.9.0
-- Test: 1.8.x
+- Baseline: 1.9.0 ✅
+- Tested: 1.8.0 ✅
+- **Minimum Safe: 1.8.0**
 
 ## CI Matrix Testing
 

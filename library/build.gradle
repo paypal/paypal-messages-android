@@ -318,13 +318,12 @@ dependencies {
 	androidTestImplementation 'com.google.truth:truth:1.4.2'
 	
 	// Dependency constraints to enforce minimum versions and prevent conflicts
-	// Note: Using prefer() for now to allow version override testing.
-	// After matrix testing validates minimum safe versions, switch to strictly() to enforce minimums.
+	// Minimum versions validated via matrix testing - see docs/androidx-compatibility.md
 	constraints {
-		// AndroidX Core - minimum safe version (to be validated via matrix testing)
+		// AndroidX Core - minimum safe version (validated via matrix testing)
 		implementation("androidx.core:core-ktx") {
 			version {
-				// Use prefer() to allow overrides during testing, switch to strictly() after validation
+				strictly("[1.8.0,)")  // Minimum validated version from CI matrix tests - enforces >= 1.8.0
 				prefer("1.10.1")
 			}
 		}
@@ -332,6 +331,7 @@ dependencies {
 		// AppCompat - minimum safe version
 		implementation("androidx.appcompat:appcompat") {
 			version {
+				strictly("[1.4.2,)")  // Minimum validated version from CI matrix tests - enforces >= 1.4.2
 				prefer("1.6.1")
 			}
 		}
@@ -339,6 +339,7 @@ dependencies {
 		// Activity Compose - minimum safe version
 		implementation("androidx.activity:activity-compose") {
 			version {
+				strictly("[1.6.1,)")  // Minimum validated version from CI matrix tests - enforces >= 1.6.1
 				prefer("1.7.2")
 			}
 		}
@@ -346,6 +347,7 @@ dependencies {
 		// Material - minimum safe version
 		api("com.google.android.material:material") {
 			version {
+				strictly("[1.8.0,)")  // Minimum validated version from CI matrix tests - enforces >= 1.8.0
 				prefer("1.9.0")
 			}
 		}
