@@ -263,11 +263,14 @@ koverReport {
 }
 
 dependencies {
-	// AndroidX dependencies with version overrides support
-	implementation "androidx.core:core-ktx:${v('androidxCoreVersion', '1.10.1')}"
-	implementation "androidx.appcompat:appcompat:${v('appcompatVersion', '1.6.1')}"
-	// Publish Material transitively so consumers get resources like bottomSheetStyle
-	api "com.google.android.material:material:${v('materialVersion', '1.9.0')}"
+	// AndroidX dependencies - use minimum safe versions to maximize consumer compatibility
+	// Consumers can use higher versions; Gradle will resolve to the highest compatible version
+	implementation "androidx.core:core-ktx:${v('androidxCoreVersion', '1.8.0')}"
+	implementation "androidx.appcompat:appcompat:${v('appcompatVersion', '1.4.2')}"
+	// Material is implementation (not api) to avoid forcing version on consumers
+	// Consumers must provide their own Material dependency >= 1.8.0
+	// SDK uses Material internally for BottomSheetDialogFragment
+	implementation "com.google.android.material:material:${v('materialVersion', '1.8.0')}"
 	implementation 'com.google.code.gson:gson:2.9.1'
 	// OkHttp is not exposed in public API, so use implementation instead of api
 	// This prevents forcing consumers to use a specific OkHttp version
@@ -296,7 +299,7 @@ dependencies {
 	testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
 	testImplementation 'io.mockk:mockk:1.13.7'
 	// Ensure Material Components are on the unit test classpath for resource linking
-	testImplementation "com.google.android.material:material:${v('materialVersion', '1.9.0')}"
+	testImplementation "com.google.android.material:material:${v('materialVersion', '1.8.0')}"
 	// Robolectric for resource/theme inflation tests
     testImplementation 'org.robolectric:robolectric:4.10.3'
     // Needed for ApplicationProvider in unit tests
@@ -317,44 +320,14 @@ dependencies {
 	androidTestImplementation 'io.mockk:mockk-android:1.13.7'
 	androidTestImplementation 'com.google.truth:truth:1.4.2'
 	
-	// Dependency constraints to enforce minimum versions and prevent conflicts
-	// Minimum versions validated via matrix testing - see docs/androidx-compatibility.md
-	constraints {
-		// AndroidX Core - minimum safe version (validated via matrix testing)
-		implementation("androidx.core:core-ktx") {
-			version {
-				strictly("[1.8.0,)")  // Minimum validated version from CI matrix tests - enforces >= 1.8.0
-				prefer("1.10.1")
-			}
-		}
-		
-		// AppCompat - minimum safe version
-		implementation("androidx.appcompat:appcompat") {
-			version {
-				strictly("[1.4.2,)")  // Minimum validated version from CI matrix tests - enforces >= 1.4.2
-				prefer("1.6.1")
-			}
-		}
-		
-		// Activity Compose - minimum safe version
-		implementation("androidx.activity:activity-compose") {
-			version {
-				strictly("[1.6.1,)")  // Minimum validated version from CI matrix tests - enforces >= 1.6.1
-				prefer("1.7.2")
-			}
-		}
-		
-		// Material - minimum safe version
-		api("com.google.android.material:material") {
-			version {
-				strictly("[1.8.0,)")  // Minimum validated version from CI matrix tests - enforces >= 1.8.0
-				prefer("1.9.0")
-			}
-		}
-		
-		// Compose BOM - ensure consistent versions across Compose artifacts
-		// Note: BOM version constraints are handled via platform() declaration above
-	}
+	// Note: Constraints removed as they only affect SDK builds, not consumers.
+	// Minimum versions are enforced by using minimum safe versions in dependency declarations.
+	// See docs/androidx-compatibility.md for consumer guidance on minimum versions:
+	//   - androidx.core:core-ktx >= 1.8.0
+	//   - androidx.appcompat:appcompat >= 1.4.2
+	//   - androidx.activity:activity-compose >= 1.7.2
+	//   - androidx.compose:compose-bom >= 2023.05.01
+	//   - com.google.android.material:material >= 1.8.0 (consumers must provide)
 }
 
 project.ext.name = "paypal-messages"

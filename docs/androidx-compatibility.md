@@ -8,15 +8,18 @@ The SDK is tested and validated against specific AndroidX versions. To ensure co
 
 ## Minimum Supported Versions
 
-| Artifact | Baseline Version | Minimum Safe Version | Notes | Test Date |
-|----------|-----------------|---------------------|-------|-----------|
-| `androidx.core:core-ktx` | 1.10.1 | 1.8.0 | Core AndroidX extensions | Dec 2024 |
-| `androidx.appcompat:appcompat` | 1.6.1 | 1.4.2 | AppCompat library | Dec 2024 |
-| `androidx.activity:activity-compose` | 1.7.2 | 1.6.1 | Activity Compose integration | Dec 2024 |
-| `androidx.compose:compose-bom` | 2023.05.01 | 2023.01.00 | Compose BOM (Bill of Materials) | Dec 2024 |
-| `com.google.android.material:material` | 1.9.0 | 1.8.0 | Material Design Components | Dec 2024 |
+| Artifact | SDK Version | Minimum Required | Notes | Test Date |
+|----------|-------------|------------------|-------|-----------|
+| `androidx.core:core-ktx` | 1.8.0 | 1.8.0 | Core AndroidX extensions | Dec 2024 |
+| `androidx.appcompat:appcompat` | 1.4.2 | 1.4.2 | AppCompat library | Dec 2024 |
+| `androidx.activity:activity-compose` | 1.7.2 | 1.7.2 | Activity Compose integration | Dec 2024 |
+| `androidx.compose:compose-bom` | 2023.05.01 | 2023.05.01 | Compose BOM (Bill of Materials) | Dec 2024 |
+| `com.google.android.material:material` | 1.8.0 | **1.8.0 (must provide)** | **Consumers must add this dependency** | Dec 2024 |
 
-**Note:** Minimum safe versions have been validated through CI matrix testing. All listed versions passed build and unit test validation.
+**Important Notes:**
+- The SDK declares **minimum safe versions** to maximize compatibility with merchant apps.
+- Gradle will resolve to the higher version if your app uses a newer version.
+- **Material Components**: The SDK uses Material internally but does NOT expose it to consumers (`implementation` not `api`). **You must add Material to your app's dependencies** (version 1.8.0 or higher).
 
 ## Version Override Testing
 
@@ -51,13 +54,65 @@ The SDK uses Gradle dependency locking to ensure reproducible builds. The lockfi
 1. **Check Compatibility**: Ensure your AndroidX versions meet or exceed the minimum safe versions documented above.
 
 2. **Handle Conflicts**: If you encounter version conflicts:
-   - Update your AndroidX dependencies to meet minimum requirements
-   - Use Gradle's dependency resolution strategies to force specific versions
-   - Consider excluding transitive dependencies if necessary (though this is not recommended)
+   - **Recommended**: Update your AndroidX dependencies to meet minimum requirements
+   - **Alternative**: Use Gradle's dependency resolution strategies to force compatible versions
+   - **Last Resort**: Consider excluding transitive dependencies (though this is not recommended and may cause runtime issues)
 
-3. **Material Components**: The SDK exposes Material Components as `api` dependencies to ensure resources (like `bottomSheetStyle`) are available to consumers. If you need to use a different Material version:
-   - Ensure it's compatible with the SDK's minimum version
-   - Test thoroughly to ensure resources resolve correctly
+### Resolving Version Conflicts
+
+If you encounter dependency conflicts like:
+```
+Conflicts found for the following modules:
+  - com.google.android.material:material between versions 1.11.0 and 1.4.0-beta01
+  - androidx.core:core between versions 1.9.0, 1.8.0, 1.6.0...
+```
+
+**Solution 1: Update Dependencies (Recommended)**
+Update your `build.gradle` to use compatible versions:
+```gradle
+dependencies {
+    // Ensure minimum versions
+    implementation 'com.google.android.material:material:1.8.0' // or higher
+    implementation 'androidx.core:core-ktx:1.8.0' // or higher
+    implementation 'androidx.appcompat:appcompat:1.4.2' // or higher
+    // ... other dependencies
+}
+```
+
+**Solution 2: Force Resolution (If you can't update immediately)**
+Add to your app's `build.gradle`:
+```gradle
+configurations.all {
+    resolutionStrategy {
+        // Force compatible versions
+        force 'com.google.android.material:material:1.8.0'
+        force 'androidx.core:core-ktx:1.8.0'
+        force 'androidx.appcompat:appcompat:1.4.2'
+        // Prefer newer versions for other conflicts
+        preferProjectModules()
+    }
+}
+```
+
+**Solution 3: Exclude Conflicting Dependencies (Not Recommended)**
+Only if absolutely necessary:
+```gradle
+dependencies {
+    implementation('com.paypal.messages:library:1.1.14') {
+        // Exclude only if you're providing your own compatible version
+        exclude group: 'com.google.android.material', module: 'material'
+    }
+    // Then provide your own version
+    implementation 'com.google.android.material:material:1.8.0'
+}
+```
+
+3. **Material Components**: The SDK uses Material internally but does NOT expose it to consumers (`implementation` not `api`). **You must add Material to your app:**
+   ```gradle
+   implementation 'com.google.android.material:material:1.8.0' // or higher
+   ```
+   - This gives you full control over the Material version
+   - Must be >= 1.8.0 for SDK compatibility
 
 4. **Compose BOM**: When using Compose BOM:
    - The SDK uses Compose BOM `2023.05.01` as baseline
@@ -76,29 +131,29 @@ The SDK bundles OkHttp 4.8.0 as an `implementation` dependency (not exposed in p
 The following version combinations have been validated through CI matrix testing:
 
 ### Core KTX
-- Baseline: 1.10.1 ✅
-- Tested: 1.9.0 ✅, 1.8.0 ✅
+- SDK Version: 1.8.0 ✅
+- Tested: 1.10.1 ✅, 1.9.0 ✅, 1.8.0 ✅
 - **Minimum Safe: 1.8.0**
 
 ### AppCompat
-- Baseline: 1.6.1 ✅
-- Tested: 1.5.1 ✅, 1.4.2 ✅
+- SDK Version: 1.4.2 ✅
+- Tested: 1.6.1 ✅, 1.5.1 ✅, 1.4.2 ✅
 - **Minimum Safe: 1.4.2**
 
 ### Activity Compose
-- Baseline: 1.7.2 ✅
-- Tested: 1.6.1 ✅
-- **Minimum Safe: 1.6.1**
+- SDK Version: 1.7.2 ✅
+- Tested: 1.7.2 ✅
+- **Minimum Safe: 1.7.2** (required for stable Compose APIs)
 
 ### Compose BOM
-- Baseline: 2023.05.01 ✅
-- Tested: 2023.03.00 ✅, 2023.01.00 ✅
-- **Minimum Safe: 2023.01.00**
+- SDK Version: 2023.05.01 ✅
+- Tested: 2023.05.01 ✅
+- **Minimum Safe: 2023.05.01** (required for stable Compose APIs)
 
 ### Material
-- Baseline: 1.9.0 ✅
-- Tested: 1.8.0 ✅
-- **Minimum Safe: 1.8.0**
+- SDK Version: 1.8.0 ✅
+- Tested: 1.9.0 ✅, 1.8.0 ✅
+- **Minimum Safe: 1.8.0** (consumers must provide)
 
 ## CI Matrix Testing
 
