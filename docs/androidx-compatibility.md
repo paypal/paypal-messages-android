@@ -13,7 +13,7 @@ The SDK is tested and validated against specific AndroidX versions. To ensure co
 | `androidx.core:core-ktx` | 1.8.0 | 1.8.0 | Core AndroidX extensions | Dec 2024 |
 | `androidx.appcompat:appcompat` | 1.4.2 | 1.4.2 | AppCompat library | Dec 2024 |
 | `androidx.activity:activity-compose` | 1.7.2 | 1.7.2 | Activity Compose integration | Dec 2024 |
-| `androidx.compose:compose-bom` | 2023.05.01 | 2023.05.01 | Compose BOM (Bill of Materials) | Dec 2024 |
+| `androidx.compose:compose-bom` | 2023.05.01 | 2023.03.00 | Compose BOM (Bill of Materials) | Dec 2024 |
 | `com.google.android.material:material` | 1.8.0 | 1.8.0 | Material Design Components (provided by SDK) | Dec 2024 |
 
 **Important Notes:**
@@ -142,8 +142,8 @@ The following version combinations have been validated through CI matrix testing
 
 ### Compose BOM
 - SDK Version: 2023.05.01 ✅
-- Tested: 2023.05.01 ✅
-- **Minimum Safe: 2023.05.01** (required for stable Compose APIs)
+- Tested: 2023.05.01 ✅, 2023.03.00 ✅
+- **Minimum Safe: 2023.03.00** (older versions have experimental API issues)
 
 ### Material
 - SDK Version: 1.8.0 ✅
