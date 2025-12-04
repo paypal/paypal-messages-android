@@ -106,6 +106,16 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Update lockfile for version overrides
+        run: |
+          ./gradlew :library:dependencies --write-locks \
+            -PandroidxCoreVersion=${{ matrix.androidx_core }} \
+            -PappcompatVersion=${{ matrix.appcompat }} \
+            -PactivityComposeVersion=${{ matrix.activity_compose }} \
+            -PcomposeBomVersion=${{ matrix.compose_bom }} \
+            -PmaterialVersion=${{ matrix.material }} \
+            --no-daemon
+
       - name: Build with AndroidX version overrides
         run: |
           ./gradlew :library:assembleRelease \
@@ -184,6 +194,16 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: gradle
+
+      - name: Update lockfile for baseline versions
+        run: |
+          ./gradlew :library:dependencies --write-locks \
+            -PandroidxCoreVersion=1.10.1 \
+            -PappcompatVersion=1.6.1 \
+            -PactivityComposeVersion=1.7.2 \
+            -PcomposeBomVersion=2023.05.01 \
+            -PmaterialVersion=1.9.0 \
+            --no-daemon
 
       - name: Run Instrumentation Tests with Baseline Versions
         uses: ReactiveCircus/android-emulator-runner@v2
