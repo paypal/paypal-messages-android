@@ -267,10 +267,10 @@ dependencies {
 	// Consumers can use higher versions; Gradle will resolve to the highest compatible version
 	implementation "androidx.core:core-ktx:${v('androidxCoreVersion', '1.8.0')}"
 	implementation "androidx.appcompat:appcompat:${v('appcompatVersion', '1.4.2')}"
-	// Material is implementation (not api) to avoid forcing version on consumers
-	// Consumers must provide their own Material dependency >= 1.8.0
-	// SDK uses Material internally for BottomSheetDialogFragment
-	implementation "com.google.android.material:material:${v('materialVersion', '1.8.0')}"
+	// Material is api so consumers get it automatically
+	// Using minimum safe version (1.8.0) - Gradle will resolve to consumer's higher version if present
+	// No strictly() constraints, so no forced version conflicts
+	api "com.google.android.material:material:${v('materialVersion', '1.8.0')}"
 	implementation 'com.google.code.gson:gson:2.9.1'
 	// OkHttp is not exposed in public API, so use implementation instead of api
 	// This prevents forcing consumers to use a specific OkHttp version

@@ -30,14 +30,9 @@ The SDK requires specific AndroidX dependencies. For compatibility information a
 - AndroidX Core KTX: 1.8.0+
 - AndroidX AppCompat: 1.4.2+
 - Compose BOM: 2023.05.01+
-- **Material Components: 1.8.0+ (must add to your app)**
+- Material Components: 1.8.0+ (provided by SDK)
 
-**Important:** The SDK uses Material Components internally but does not expose them to consumers. You must add Material to your app's dependencies:
-```gradle
-implementation 'com.google.android.material:material:1.8.0' // or higher
-```
-
-This design minimizes version conflicts - you control the Material version in your app.
+The SDK uses minimum safe versions to maximize compatibility. Gradle resolves to your app's higher versions automatically.
 
 ## Client ID
 

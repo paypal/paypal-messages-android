@@ -14,12 +14,12 @@ The SDK is tested and validated against specific AndroidX versions. To ensure co
 | `androidx.appcompat:appcompat` | 1.4.2 | 1.4.2 | AppCompat library | Dec 2024 |
 | `androidx.activity:activity-compose` | 1.7.2 | 1.7.2 | Activity Compose integration | Dec 2024 |
 | `androidx.compose:compose-bom` | 2023.05.01 | 2023.05.01 | Compose BOM (Bill of Materials) | Dec 2024 |
-| `com.google.android.material:material` | 1.8.0 | **1.8.0 (must provide)** | **Consumers must add this dependency** | Dec 2024 |
+| `com.google.android.material:material` | 1.8.0 | 1.8.0 | Material Design Components (provided by SDK) | Dec 2024 |
 
 **Important Notes:**
 - The SDK declares **minimum safe versions** to maximize compatibility with merchant apps.
 - Gradle will resolve to the higher version if your app uses a newer version.
-- **Material Components**: The SDK uses Material internally but does NOT expose it to consumers (`implementation` not `api`). **You must add Material to your app's dependencies** (version 1.8.0 or higher).
+- **Material Components**: The SDK provides Material as an `api` dependency. If your app uses a higher version, Gradle will resolve to your version automatically.
 
 ## Version Override Testing
 
@@ -107,12 +107,7 @@ dependencies {
 }
 ```
 
-3. **Material Components**: The SDK uses Material internally but does NOT expose it to consumers (`implementation` not `api`). **You must add Material to your app:**
-   ```gradle
-   implementation 'com.google.android.material:material:1.8.0' // or higher
-   ```
-   - This gives you full control over the Material version
-   - Must be >= 1.8.0 for SDK compatibility
+3. **Material Components**: The SDK provides Material 1.8.0 as an `api` dependency. If your app uses a higher version (e.g., 1.11.0), Gradle will automatically resolve to your version. No action needed.
 
 4. **Compose BOM**: When using Compose BOM:
    - The SDK uses Compose BOM `2023.05.01` as baseline
@@ -153,7 +148,7 @@ The following version combinations have been validated through CI matrix testing
 ### Material
 - SDK Version: 1.8.0 ✅
 - Tested: 1.9.0 ✅, 1.8.0 ✅
-- **Minimum Safe: 1.8.0** (consumers must provide)
+- **Minimum Safe: 1.8.0** (provided by SDK)
 
 ## CI Matrix Testing
 
