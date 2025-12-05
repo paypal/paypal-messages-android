@@ -73,7 +73,8 @@ android {
 
 	buildFeatures {
 		buildConfig = true
-		viewBinding = true
+		// Disable ViewBinding to avoid forcing merchants to align ViewBinding/AGP versions
+		viewBinding = false
 		compose = true
 	}
 	

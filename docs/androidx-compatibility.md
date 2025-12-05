@@ -20,6 +20,7 @@ The SDK is tested and validated against specific AndroidX versions. To ensure co
 - The SDK declares **minimum safe versions** to maximize compatibility with merchant apps.
 - Gradle will resolve to the higher version if your app uses a newer version.
 - **Material Components**: The SDK provides Material as an `api` dependency. If your app uses a higher version, Gradle will resolve to your version automatically.
+- **ViewBinding removed**: The SDK no longer uses ViewBinding, so it does not require consumers to align ViewBinding/AGP versions.
 
 ## Version Override Testing
 
