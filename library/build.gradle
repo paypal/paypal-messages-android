@@ -14,9 +14,9 @@ def v(String key, String defaultValue) {
 }
 
 // Enable dependency locking for reproducibility
-dependencyLocking {
-	lockAllConfigurations()
-}
+// dependencyLocking {
+// 	lockAllConfigurations()
+// }
 
 // Resolution strategy to prefer newer versions and catch major conflicts
 configurations.all {
@@ -24,15 +24,6 @@ configurations.all {
 		// Prefer the highest version when there are conflicts
 		// This helps resolve transitive dependency conflicts automatically
 		preferProjectModules()
-		
-		// Force specific versions for known transitive conflicts
-		force(
-			// Kotlin stdlib - use the version from our Kotlin plugin
-			"org.jetbrains.kotlin:kotlin-stdlib:1.8.22",
-			"org.jetbrains.kotlin:kotlin-stdlib-common:1.8.22",
-			"org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22",
-			"org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22",
-		)
 		
 		// Fail on version conflict only for our direct dependencies
 		// This catches accidental drifts in our declared dependencies
