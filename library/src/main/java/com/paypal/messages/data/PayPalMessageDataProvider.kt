@@ -146,8 +146,10 @@ class PayPalMessageDataProvider {
 							callback.onSuccess(result.response as ApiMessageData.Response, requestDuration)
 						}
 						is ApiResult.Failure<*> -> {
-							LogCat.debug(TAG, "Message data fetch failed")
-							result.error?.let { callback.onError(it) }
+							LogCat.debug(TAG, "Message data fetch failed: ${result.error?.message}")
+							// Always invoke error callback to ensure terminal state
+							val error = result.error ?: PayPalErrors.FailedToFetchDataException("Unknown error occurred", null)
+							callback.onError(error)
 						}
 					}
 				}

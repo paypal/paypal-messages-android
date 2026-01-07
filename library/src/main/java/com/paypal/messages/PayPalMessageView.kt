@@ -429,7 +429,9 @@ class PayPalMessageView @JvmOverloads constructor(
 	}
 
 	override fun onError(error: PayPalErrors.Base) {
-		LogCat.debug(TAG, "onError")
+		LogCat.debug(TAG, "onError: ${error.message}")
+		// Invoke the user-provided error callback
+		this.onError.invoke(error)
 	}
 
 	/**
