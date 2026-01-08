@@ -71,7 +71,10 @@ android {
 	testOptions {
 		execution 'ANDROIDX_TEST_ORCHESTRATOR'
 		unitTests.all {
-			useJUnitPlatform()
+			// Support both JUnit 4 and JUnit 5
+			useJUnitPlatform {
+				includeEngines 'junit-jupiter', 'junit-vintage'
+			}
 			testLogging {
 				events 'passed', 'skipped', 'failed'
 			}
@@ -245,6 +248,8 @@ dependencies {
 	debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+	// JUnit Vintage engine for running JUnit 4 tests (including Robolectric) on JUnit 5 platform
+	testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.10.0'
 	testImplementation 'com.squareup.okhttp3:mockwebserver:4.8.0'
 	testImplementation 'org.mockito:mockito-core:5.5.0'
 	testImplementation 'org.mockito.kotlin:mockito-kotlin:5.1.0'
