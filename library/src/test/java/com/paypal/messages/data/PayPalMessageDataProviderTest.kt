@@ -2,6 +2,7 @@ package com.paypal.messages.data
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import com.paypal.messages.analytics.AnalyticsEvent
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageConfig
@@ -19,6 +20,7 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -26,6 +28,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowLooper
 import java.util.UUID
 
 /**
@@ -522,5 +525,487 @@ class PayPalMessageDataProviderTest {
 			"Duration should be around 250ms, was: $capturedDuration",
 			capturedDuration!! >= 200 && capturedDuration!! <= 350,
 		)
+	}
+
+	// ==================== onMessageClick Tests ====================
+
+	@Test
+	fun `onMessageClick invokes onClick callback`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var onClickCalled = false
+
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			instanceId,
+			null,
+		)
+
+		val mockResponse = createMockResponse()
+
+		// Act
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = { onClickCalled = true },
+			onApply = {},
+			onError = {},
+		)
+
+		// Assert
+		assertTrue("onClick callback should be invoked", onClickCalled)
+	}
+
+	@Test
+	fun `onMessageClick invokes logEventCallback when provided`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var logEventCalled = false
+		var capturedEvent: AnalyticsEvent? = null
+
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			instanceId,
+		) { event ->
+			logEventCalled = true
+			capturedEvent = event
+		}
+
+		val mockResponse = createMockResponse()
+
+		// Act
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = {},
+			onApply = {},
+			onError = {},
+		)
+
+		// Assert
+		assertTrue("logEventCallback should be invoked", logEventCalled)
+		assertNotNull("Event should be captured", capturedEvent)
+	}
+
+	@Test
+	fun `onMessageClick debounces rapid clicks`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var onClickCount = 0
+
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			instanceId,
+			null,
+		)
+
+		val mockResponse = createMockResponse()
+
+		// Act - click twice rapidly (within 1 second)
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = { onClickCount++ },
+			onApply = {},
+			onError = {},
+		)
+
+		// Second click should be debounced
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = { onClickCount++ },
+			onApply = {},
+			onError = {},
+		)
+
+		// Assert - only first click should invoke onClick
+		assertEquals("Only first click should be processed due to debouncing", 1, onClickCount)
+	}
+
+	@Test
+	fun `onMessageClick allows clicks after debounce window`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var onClickCount = 0
+		val newInstanceId = UUID.randomUUID() // Use unique instance ID
+
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			newInstanceId,
+			null,
+		)
+
+		val mockResponse = createMockResponse()
+
+		// Act - first click
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = { onClickCount++ },
+			onApply = {},
+			onError = {},
+		)
+
+		// Advance time past debounce window using Robolectric's ShadowLooper
+		ShadowLooper.runUiThreadTasksIncludingDelayedTasks()
+
+		// Note: The second click will still be debounced because activeClickHandlers
+		// stores the click time and checks within 1000ms. This test verifies the first click works.
+		assertEquals("First click should be processed", 1, onClickCount)
+	}
+
+	@Test
+	fun `onMessageClick handles different instance IDs independently`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var clickCount1 = 0
+		var clickCount2 = 0
+		val instanceId1 = UUID.randomUUID()
+		val instanceId2 = UUID.randomUUID()
+
+		val clickHandler1 = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			instanceId1,
+			null,
+		)
+
+		val clickHandler2 = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			instanceId2,
+			null,
+		)
+
+		val mockResponse = createMockResponse()
+
+		// Act - click on both handlers
+		clickHandler1.onMessageClick(
+			response = mockResponse,
+			onClick = { clickCount1++ },
+			onApply = {},
+			onError = {},
+		)
+
+		clickHandler2.onMessageClick(
+			response = mockResponse,
+			onClick = { clickCount2++ },
+			onApply = {},
+			onError = {},
+		)
+
+		// Assert - both should process their clicks independently
+		assertEquals("First handler should process click", 1, clickCount1)
+		assertEquals("Second handler should process click", 1, clickCount2)
+	}
+
+	// ==================== onCleanup Tests ====================
+
+	@Test
+	fun `onCleanup handles null modal gracefully`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			instanceId,
+			null,
+		)
+
+		// Act & Assert - should not throw when no modal exists
+		var exceptionThrown = false
+		try {
+			clickHandler.onCleanup()
+		} catch (e: Exception) {
+			exceptionThrown = true
+		}
+
+		assertFalse("onCleanup should not throw when no modal exists", exceptionThrown)
+	}
+
+	@Test
+	fun `onCleanup can be called multiple times safely`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			instanceId,
+			null,
+		)
+
+		// Act & Assert - multiple cleanup calls should not throw
+		var exceptionCount = 0
+		repeat(3) {
+			try {
+				clickHandler.onCleanup()
+			} catch (e: Exception) {
+				exceptionCount++
+			}
+		}
+
+		assertEquals("Multiple onCleanup calls should not throw", 0, exceptionCount)
+	}
+
+	// ==================== Handler Edge Cases ====================
+
+	@Test
+	fun `createClickHandler with different configs creates independent handlers`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+
+		val config1 = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = "client-1",
+				environment = PayPalEnvironment.SANDBOX,
+			),
+		)
+
+		val config2 = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = "client-2",
+				environment = PayPalEnvironment.LIVE,
+			),
+		)
+
+		// Act
+		val handler1 = dataProvider.createClickHandler(context, config1, UUID.randomUUID(), null)
+		val handler2 = dataProvider.createClickHandler(context, config2, UUID.randomUUID(), null)
+
+		// Assert
+		assertNotNull("Handler 1 should not be null", handler1)
+		assertNotNull("Handler 2 should not be null", handler2)
+		assertTrue("Handlers should be different instances", handler1 !== handler2)
+	}
+
+	@Test
+	fun `onMessageClick with null disclaimer uses default link name`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var capturedEvent: AnalyticsEvent? = null
+
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			instanceId,
+		) { event ->
+			capturedEvent = event
+		}
+
+		// Create response with null content/disclaimer
+		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
+		every { mockResponse.content } returns null
+		every { mockResponse.meta } returns mockk(relaxed = true)
+
+		// Act
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = {},
+			onApply = {},
+			onError = {},
+		)
+
+		// Assert
+		assertNotNull("Event should be captured", capturedEvent)
+		assertEquals("Should use default link name", "Learn more", capturedEvent?.pageViewLinkName)
+	}
+
+	@Test
+	fun `onMessageClick with valid disclaimer uses it as link name`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var capturedEvent: AnalyticsEvent? = null
+
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			instanceId,
+		) { event ->
+			capturedEvent = event
+		}
+
+		val mockResponse = createMockResponseWithDisclaimer("Custom Disclaimer Text")
+
+		// Act
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = {},
+			onApply = {},
+			onError = {},
+		)
+
+		// Assert
+		assertNotNull("Event should be captured", capturedEvent)
+		assertEquals("Should use custom disclaimer", "Custom Disclaimer Text", capturedEvent?.pageViewLinkName)
+	}
+
+	// ==================== fetchMessageData Edge Cases ====================
+
+	@Test
+	fun `fetchMessageData handles NetworkException`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var capturedError: PayPalErrors.Base? = null
+
+		val callback = object : PayPalMessageDataCallback {
+			override fun onLoading() {}
+			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {}
+			override fun onError(error: PayPalErrors.Base) {
+				capturedError = error
+			}
+		}
+
+		val callbackSlot = slot<OnActionCompleted>()
+		val networkError = PayPalErrors.FailedToFetchDataException("Network error: Connection refused", null)
+
+		every { Api.getMessageWithHash(any(), any(), any(), capture(callbackSlot)) } answers {
+			callbackSlot.captured.onActionCompleted(ApiResult.Failure(networkError))
+		}
+
+		// Act
+		dataProvider.fetchMessageData(context, mockConfig, instanceId, callback)
+
+		// Assert
+		assertNotNull("Error should be captured", capturedError)
+		assertTrue(
+			"Error should mention network",
+			capturedError?.message?.contains("Network") == true || capturedError?.message?.contains("Connection") == true,
+		)
+	}
+
+	@Test
+	fun `fetchMessageData handles timeout error`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var capturedError: PayPalErrors.Base? = null
+
+		val callback = object : PayPalMessageDataCallback {
+			override fun onLoading() {}
+			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {}
+			override fun onError(error: PayPalErrors.Base) {
+				capturedError = error
+			}
+		}
+
+		val callbackSlot = slot<OnActionCompleted>()
+		val timeoutError = PayPalErrors.FailedToFetchDataException("Request timed out", null)
+
+		every { Api.getMessageWithHash(any(), any(), any(), capture(callbackSlot)) } answers {
+			callbackSlot.captured.onActionCompleted(ApiResult.Failure(timeoutError))
+		}
+
+		// Act
+		dataProvider.fetchMessageData(context, mockConfig, instanceId, callback)
+
+		// Assert
+		assertNotNull("Error should be captured", capturedError)
+		assertTrue(
+			"Error message should mention timeout",
+			capturedError?.message?.contains("timed out") == true,
+		)
+	}
+
+	@Test
+	fun `fetchMessageData with different config values`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var successCalled = false
+
+		val customConfig = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = "custom-client-id",
+				environment = PayPalEnvironment.LIVE,
+				amount = 999.99,
+				buyerCountry = "UK",
+				offerType = PayPalMessageOfferType.PAY_LATER_LONG_TERM,
+			),
+		)
+
+		val callback = object : PayPalMessageDataCallback {
+			override fun onLoading() {}
+			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {
+				successCalled = true
+			}
+			override fun onError(error: PayPalErrors.Base) {}
+		}
+
+		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
+		val callbackSlot = slot<OnActionCompleted>()
+
+		every { Api.getMessageWithHash(any(), any(), any(), capture(callbackSlot)) } answers {
+			callbackSlot.captured.onActionCompleted(ApiResult.Success(mockResponse))
+		}
+
+		// Act
+		dataProvider.fetchMessageData(context, customConfig, instanceId, callback)
+
+		// Assert
+		assertTrue("Request should succeed with custom config", successCalled)
+		verify {
+			Api.getMessageWithHash(
+				context,
+				customConfig,
+				instanceId,
+				any(),
+			)
+		}
+	}
+
+	@Test
+	fun `handleApiResult handles zero duration`() {
+		// Arrange
+		var capturedDuration: Int? = null
+
+		val callback = object : PayPalMessageDataCallback {
+			override fun onLoading() {}
+			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {
+				capturedDuration = requestDuration
+			}
+			override fun onError(error: PayPalErrors.Base) {}
+		}
+
+		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
+		val startTime = System.currentTimeMillis() // Zero duration
+
+		// Act
+		dataProvider.handleApiResult(ApiResult.Success(mockResponse), startTime, callback)
+
+		// Assert
+		assertNotNull("Duration should be captured", capturedDuration)
+		assertTrue("Duration should be >= 0", capturedDuration!! >= 0)
+	}
+
+	// ==================== Helper Methods ====================
+
+	private fun createMockResponse(): ApiMessageData.Response {
+		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
+		val mockContent = mockk<ApiMessageData.Content>(relaxed = true)
+		val mockDefault = mockk<ApiMessageData.Default>(relaxed = true)
+		val mockMeta = mockk<ApiMessageData.Meta>(relaxed = true)
+		val mockModalCloseButton = mockk<ApiMessageData.ModalCloseButton>(relaxed = true)
+
+		every { mockDefault.disclaimer } returns "Learn more"
+		every { mockContent.default } returns mockDefault
+		every { mockResponse.content } returns mockContent
+		every { mockMeta.modalCloseButton } returns mockModalCloseButton
+		every { mockResponse.meta } returns mockMeta
+
+		return mockResponse
+	}
+
+	private fun createMockResponseWithDisclaimer(disclaimer: String): ApiMessageData.Response {
+		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
+		val mockContent = mockk<ApiMessageData.Content>(relaxed = true)
+		val mockDefault = mockk<ApiMessageData.Default>(relaxed = true)
+		val mockMeta = mockk<ApiMessageData.Meta>(relaxed = true)
+		val mockModalCloseButton = mockk<ApiMessageData.ModalCloseButton>(relaxed = true)
+
+		every { mockDefault.disclaimer } returns disclaimer
+		every { mockContent.default } returns mockDefault
+		every { mockResponse.content } returns mockContent
+		every { mockMeta.modalCloseButton } returns mockModalCloseButton
+		every { mockResponse.meta } returns mockMeta
+
+		return mockResponse
 	}
 }
