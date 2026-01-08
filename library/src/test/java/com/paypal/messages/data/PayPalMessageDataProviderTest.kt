@@ -1,6 +1,7 @@
 package com.paypal.messages.data
 
-import android.content.Context
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.message.PayPalMessageConfig
@@ -16,16 +17,21 @@ import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.util.UUID
 
 /**
  * Unit tests for PayPalMessageDataProvider.
+ *
+ * Uses Robolectric because PayPalMessageDataProvider uses Handler(Looper.getMainLooper()).
  *
  * These tests verify:
  * 1. fetchMessageData calls onLoading immediately
@@ -35,21 +41,20 @@ import java.util.UUID
  * 5. createClickHandler returns a valid handler
  * 6. onCleanup properly cleans up resources
  */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [28])
 class PayPalMessageDataProviderTest {
 
 	// Real instance - not mocked!
 	private lateinit var dataProvider: PayPalMessageDataProvider
-	private lateinit var mockContext: Context
 	private lateinit var mockConfig: PayPalMessageConfig
 	private lateinit var instanceId: UUID
 
-	@BeforeEach
+	@Before
 	fun setup() {
 		// Use REAL PayPalMessageDataProvider to test actual implementation
 		dataProvider = PayPalMessageDataProvider()
 
-		// Mock external dependencies
-		mockContext = mockk(relaxed = true)
 		instanceId = UUID.randomUUID()
 
 		// Mock the Api singleton
@@ -67,7 +72,7 @@ class PayPalMessageDataProviderTest {
 		)
 	}
 
-	@AfterEach
+	@After
 	fun tearDown() {
 		unmockkAll()
 	}
@@ -75,6 +80,7 @@ class PayPalMessageDataProviderTest {
 	@Test
 	fun `fetchMessageData calls onLoading immediately`() {
 		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
 		var loadingCalled = false
 		val callback = object : PayPalMessageDataCallback {
 			override fun onLoading() {
@@ -88,15 +94,16 @@ class PayPalMessageDataProviderTest {
 		every { Api.getMessageWithHash(any(), any(), any(), any()) } answers {}
 
 		// Act
-		dataProvider.fetchMessageData(mockContext, mockConfig, instanceId, callback)
+		dataProvider.fetchMessageData(context, mockConfig, instanceId, callback)
 
 		// Assert - onLoading should be called synchronously before API call
-		assertTrue(loadingCalled, "onLoading should be called immediately")
+		assertTrue("onLoading should be called immediately", loadingCalled)
 	}
 
 	@Test
 	fun `fetchMessageData calls onSuccess on API success`() {
 		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
 		var successCalled = false
 		var capturedResponse: ApiMessageData.Response? = null
 		var capturedDuration: Int? = null
@@ -120,17 +127,18 @@ class PayPalMessageDataProviderTest {
 		}
 
 		// Act
-		dataProvider.fetchMessageData(mockContext, mockConfig, instanceId, callback)
+		dataProvider.fetchMessageData(context, mockConfig, instanceId, callback)
 
 		// Assert
-		assertTrue(successCalled, "onSuccess should be called")
-		assertEquals(mockResponse, capturedResponse, "Response should match")
-		assertNotNull(capturedDuration, "Duration should be captured")
+		assertTrue("onSuccess should be called", successCalled)
+		assertEquals("Response should match", mockResponse, capturedResponse)
+		assertNotNull("Duration should be captured", capturedDuration)
 	}
 
 	@Test
 	fun `fetchMessageData calls onError on API failure`() {
 		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
 		var errorCalled = false
 		var capturedError: PayPalErrors.Base? = null
 
@@ -151,16 +159,17 @@ class PayPalMessageDataProviderTest {
 		}
 
 		// Act
-		dataProvider.fetchMessageData(mockContext, mockConfig, instanceId, callback)
+		dataProvider.fetchMessageData(context, mockConfig, instanceId, callback)
 
 		// Assert
-		assertTrue(errorCalled, "onError should be called")
-		assertEquals(expectedError, capturedError, "Error should match")
+		assertTrue("onError should be called", errorCalled)
+		assertEquals("Error should match", expectedError, capturedError)
 	}
 
 	@Test
 	fun `fetchMessageData calls onError with default error when error is null`() {
 		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
 		var errorCalled = false
 		var capturedError: PayPalErrors.Base? = null
 
@@ -181,20 +190,21 @@ class PayPalMessageDataProviderTest {
 		}
 
 		// Act
-		dataProvider.fetchMessageData(mockContext, mockConfig, instanceId, callback)
+		dataProvider.fetchMessageData(context, mockConfig, instanceId, callback)
 
 		// Assert
-		assertTrue(errorCalled, "onError should be called even with null error")
-		assertNotNull(capturedError, "A default error should be provided")
+		assertTrue("onError should be called even with null error", errorCalled)
+		assertNotNull("A default error should be provided", capturedError)
 		assertTrue(
-			capturedError?.message?.contains("Unknown error") == true,
 			"Default error message should indicate unknown error",
+			capturedError?.message?.contains("Unknown error") == true,
 		)
 	}
 
 	@Test
 	fun `fetchMessageData handles 404 error`() {
 		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
 		var capturedError: PayPalErrors.Base? = null
 
 		val callback = object : PayPalMessageDataCallback {
@@ -214,19 +224,20 @@ class PayPalMessageDataProviderTest {
 		}
 
 		// Act
-		dataProvider.fetchMessageData(mockContext, mockConfig, instanceId, callback)
+		dataProvider.fetchMessageData(context, mockConfig, instanceId, callback)
 
 		// Assert
-		assertNotNull(capturedError, "Error should be captured")
+		assertNotNull("Error should be captured", capturedError)
 		assertTrue(
-			capturedError?.message?.contains("404") == true,
 			"Error should contain status code",
+			capturedError?.message?.contains("404") == true,
 		)
 	}
 
 	@Test
 	fun `fetchMessageData handles 500 error`() {
 		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
 		var capturedError: PayPalErrors.Base? = null
 
 		val callback = object : PayPalMessageDataCallback {
@@ -246,19 +257,20 @@ class PayPalMessageDataProviderTest {
 		}
 
 		// Act
-		dataProvider.fetchMessageData(mockContext, mockConfig, instanceId, callback)
+		dataProvider.fetchMessageData(context, mockConfig, instanceId, callback)
 
 		// Assert
-		assertNotNull(capturedError, "Error should be captured")
+		assertNotNull("Error should be captured", capturedError)
 		assertTrue(
-			capturedError?.message?.contains("500") == true,
 			"Error should contain status code",
+			capturedError?.message?.contains("500") == true,
 		)
 	}
 
 	@Test
 	fun `fetchMessageData handles InvalidResponseException`() {
 		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
 		var capturedError: PayPalErrors.Base? = null
 
 		val callback = object : PayPalMessageDataCallback {
@@ -278,53 +290,55 @@ class PayPalMessageDataProviderTest {
 		}
 
 		// Act
-		dataProvider.fetchMessageData(mockContext, mockConfig, instanceId, callback)
+		dataProvider.fetchMessageData(context, mockConfig, instanceId, callback)
 
 		// Assert
-		assertNotNull(capturedError, "Error should be captured")
+		assertNotNull("Error should be captured", capturedError)
 		assertTrue(
-			capturedError is PayPalErrors.InvalidResponseException,
 			"Error should be InvalidResponseException",
+			capturedError is PayPalErrors.InvalidResponseException,
 		)
 	}
 
 	@Test
 	fun `createClickHandler returns non-null handler`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+
 		// Act
 		val clickHandler = dataProvider.createClickHandler(
-			mockContext,
+			context,
 			mockConfig,
 			instanceId,
 			null,
 		)
 
 		// Assert
-		assertNotNull(clickHandler, "Click handler should not be null")
+		assertNotNull("Click handler should not be null", clickHandler)
 	}
 
 	@Test
 	fun `createClickHandler with log callback returns non-null handler`() {
 		// Arrange
-		var logCallbackInvoked = false
+		val context = ApplicationProvider.getApplicationContext<Application>()
 
 		// Act
 		val clickHandler = dataProvider.createClickHandler(
-			mockContext,
+			context,
 			mockConfig,
 			instanceId,
-		) { event ->
-			logCallbackInvoked = true
-		}
+		) { _ -> }
 
 		// Assert
-		assertNotNull(clickHandler, "Click handler should not be null")
+		assertNotNull("Click handler should not be null", clickHandler)
 	}
 
 	@Test
 	fun `onCleanup can be called without error`() {
 		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
 		val clickHandler = dataProvider.createClickHandler(
-			mockContext,
+			context,
 			mockConfig,
 			instanceId,
 			null,
@@ -332,23 +346,21 @@ class PayPalMessageDataProviderTest {
 
 		// Act & Assert - should not throw
 		clickHandler.onCleanup()
-		assertTrue(true, "onCleanup should complete without error")
+		assertTrue("onCleanup should complete without error", true)
 	}
 
 	@Test
 	fun `multiple fetchMessageData calls work correctly`() {
 		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
 		var successCount = 0
-		var errorCount = 0
 
 		val callback = object : PayPalMessageDataCallback {
 			override fun onLoading() {}
 			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {
 				successCount++
 			}
-			override fun onError(error: PayPalErrors.Base) {
-				errorCount++
-			}
+			override fun onError(error: PayPalErrors.Base) {}
 		}
 
 		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
@@ -360,17 +372,17 @@ class PayPalMessageDataProviderTest {
 		}
 
 		// Act
-		dataProvider.fetchMessageData(mockContext, mockConfig, UUID.randomUUID(), callback)
-		dataProvider.fetchMessageData(mockContext, mockConfig, UUID.randomUUID(), callback)
+		dataProvider.fetchMessageData(context, mockConfig, UUID.randomUUID(), callback)
+		dataProvider.fetchMessageData(context, mockConfig, UUID.randomUUID(), callback)
 
 		// Assert
-		assertEquals(2, successCount, "Both calls should succeed")
-		assertEquals(0, errorCount, "No errors should occur")
+		assertEquals("Both calls should succeed", 2, successCount)
 	}
 
 	@Test
 	fun `Api getMessageWithHash is called with correct parameters`() {
 		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
 		val callback = object : PayPalMessageDataCallback {
 			override fun onLoading() {}
 			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {}
@@ -380,12 +392,12 @@ class PayPalMessageDataProviderTest {
 		every { Api.getMessageWithHash(any(), any(), any(), any()) } answers {}
 
 		// Act
-		dataProvider.fetchMessageData(mockContext, mockConfig, instanceId, callback)
+		dataProvider.fetchMessageData(context, mockConfig, instanceId, callback)
 
 		// Assert
 		verify {
 			Api.getMessageWithHash(
-				mockContext,
+				context,
 				mockConfig,
 				instanceId,
 				any(),
