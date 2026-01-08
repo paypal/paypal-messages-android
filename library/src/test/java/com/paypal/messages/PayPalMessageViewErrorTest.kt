@@ -178,11 +178,18 @@ class PayPalMessageViewErrorTest {
 
 		val messageView = PayPalMessageView(getContext(), config = config)
 
-		// Act
+		// Note: fetchMessageData calls onLoading() during init, so record the count after init
+		val countAfterInit = loadingCallCount
+
+		// Act - call onLoading twice more
 		messageView.onLoading()
 		messageView.onLoading()
 
-		// Assert
-		assertEquals("onLoading callback should be invoked each time", 2, loadingCallCount)
+		// Assert - verify callback was invoked 2 additional times
+		assertEquals(
+			"onLoading callback should be invoked each time it's called",
+			countAfterInit + 2,
+			loadingCallCount,
+		)
 	}
 }
