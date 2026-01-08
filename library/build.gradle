@@ -70,13 +70,17 @@ android {
 
 	testOptions {
 		execution 'ANDROIDX_TEST_ORCHESTRATOR'
-		unitTests.all {
-			// Support both JUnit 4 and JUnit 5
-			useJUnitPlatform {
-				includeEngines 'junit-jupiter', 'junit-vintage'
-			}
-			testLogging {
-				events 'passed', 'skipped', 'failed'
+		unitTests {
+			// Enable Robolectric to access Android resources in unit tests
+			includeAndroidResources = true
+			all {
+				// Support both JUnit 4 and JUnit 5
+				useJUnitPlatform {
+					includeEngines 'junit-jupiter', 'junit-vintage'
+				}
+				testLogging {
+					events 'passed', 'skipped', 'failed'
+				}
 			}
 		}
 	}
