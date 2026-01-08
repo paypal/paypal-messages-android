@@ -138,23 +138,39 @@ class PayPalMessageDataProvider {
 			instanceId,
 			object : OnActionCompleted {
 				override fun onActionCompleted(result: ApiResult) {
-					val requestDuration = (System.currentTimeMillis() - startTime).toInt()
-					when (result) {
-						is ApiResult.Success<*> -> {
-							LogCat.debug(TAG, "Message data fetch successful")
-							@Suppress("UNCHECKED_CAST")
-							callback.onSuccess(result.response as ApiMessageData.Response, requestDuration)
-						}
-						is ApiResult.Failure<*> -> {
-							LogCat.debug(TAG, "Message data fetch failed: ${result.error?.message}")
-							// Always invoke error callback to ensure terminal state
-							val error = result.error ?: PayPalErrors.FailedToFetchDataException("Unknown error occurred", null)
-							callback.onError(error)
-						}
-					}
+					handleApiResult(result, startTime, callback)
 				}
 			},
 		)
+	}
+
+	/**
+	 * Handles the API result and invokes the appropriate callback.
+	 * Extracted as a separate method for better testability and coverage.
+	 *
+	 * @param result The API result (Success or Failure)
+	 * @param startTime The timestamp when the request started
+	 * @param callback The callback to invoke with the result
+	 */
+	internal fun handleApiResult(
+		result: ApiResult,
+		startTime: Long,
+		callback: PayPalMessageDataCallback,
+	) {
+		val requestDuration = (System.currentTimeMillis() - startTime).toInt()
+		when (result) {
+			is ApiResult.Success<*> -> {
+				LogCat.debug(TAG, "Message data fetch successful")
+				@Suppress("UNCHECKED_CAST")
+				callback.onSuccess(result.response as ApiMessageData.Response, requestDuration)
+			}
+			is ApiResult.Failure<*> -> {
+				LogCat.debug(TAG, "Message data fetch failed: ${result.error?.message}")
+				// Always invoke error callback to ensure terminal state
+				val error = result.error ?: PayPalErrors.FailedToFetchDataException("Unknown error occurred", null)
+				callback.onError(error)
+			}
+		}
 	}
 	
 	/**
