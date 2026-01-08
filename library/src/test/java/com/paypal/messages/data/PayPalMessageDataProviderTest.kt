@@ -979,15 +979,13 @@ class PayPalMessageDataProviderTest {
 
 	private fun createMockResponse(): ApiMessageData.Response {
 		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
-		val mockContent = mockk<ApiMessageData.Content>(relaxed = true)
-		val mockDefault = mockk<ApiMessageData.Default>(relaxed = true)
-		val mockMeta = mockk<ApiMessageData.Meta>(relaxed = true)
-		val mockModalCloseButton = mockk<ApiMessageData.ModalCloseButton>(relaxed = true)
+		val mockContent = mockk<ApiMessageData.ContentOptions>(relaxed = true)
+		val mockContentDetails = mockk<ApiMessageData.ContentDetails>(relaxed = true)
+		val mockMeta = mockk<ApiMessageData.Metadata>(relaxed = true)
 
-		every { mockDefault.disclaimer } returns "Learn more"
-		every { mockContent.default } returns mockDefault
+		every { mockContentDetails.disclaimer } returns "Learn more"
+		every { mockContent.default } returns mockContentDetails
 		every { mockResponse.content } returns mockContent
-		every { mockMeta.modalCloseButton } returns mockModalCloseButton
 		every { mockResponse.meta } returns mockMeta
 
 		return mockResponse
@@ -995,15 +993,13 @@ class PayPalMessageDataProviderTest {
 
 	private fun createMockResponseWithDisclaimer(disclaimer: String): ApiMessageData.Response {
 		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
-		val mockContent = mockk<ApiMessageData.Content>(relaxed = true)
-		val mockDefault = mockk<ApiMessageData.Default>(relaxed = true)
-		val mockMeta = mockk<ApiMessageData.Meta>(relaxed = true)
-		val mockModalCloseButton = mockk<ApiMessageData.ModalCloseButton>(relaxed = true)
+		val mockContent = mockk<ApiMessageData.ContentOptions>(relaxed = true)
+		val mockContentDetails = mockk<ApiMessageData.ContentDetails>(relaxed = true)
+		val mockMeta = mockk<ApiMessageData.Metadata>(relaxed = true)
 
-		every { mockDefault.disclaimer } returns disclaimer
-		every { mockContent.default } returns mockDefault
+		every { mockContentDetails.disclaimer } returns disclaimer
+		every { mockContent.default } returns mockContentDetails
 		every { mockResponse.content } returns mockContent
-		every { mockMeta.modalCloseButton } returns mockModalCloseButton
 		every { mockResponse.meta } returns mockMeta
 
 		return mockResponse
