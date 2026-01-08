@@ -49,7 +49,7 @@ jobs:
           cache: gradle
 
       - name: Run Unit Tests Coverage
-        run: ./gradlew koverXmlReportDebug
+        run: ./gradlew testDebugUnitTest koverXmlReportDebug
 
       - name: Show Coverage Report XML
         run: cat library/build/reports/kover/reportDebug.xml
