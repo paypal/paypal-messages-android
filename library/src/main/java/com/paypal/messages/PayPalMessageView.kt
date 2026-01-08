@@ -431,7 +431,8 @@ class PayPalMessageView @JvmOverloads constructor(
 	override fun onError(error: PayPalErrors.Base) {
 		LogCat.debug(TAG, "onError: ${error.message}")
 		// Invoke the user-provided error callback
-		this.onError.invoke(error)
+		// Note: 'onError' here refers to the property, not this method, due to Kotlin's scoping rules
+		onError.invoke(error)
 	}
 
 	/**
