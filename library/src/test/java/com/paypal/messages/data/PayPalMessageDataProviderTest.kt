@@ -975,6 +975,474 @@ class PayPalMessageDataProviderTest {
 		assertTrue("Duration should be >= 0", capturedDuration!! >= 0)
 	}
 
+	// ==================== Additional Coverage Tests ====================
+
+	@Test
+	fun `onMessageClick records click time in activeClickHandlers`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		val uniqueInstanceId = UUID.randomUUID()
+
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			uniqueInstanceId,
+			null,
+		)
+
+		val mockResponse = createMockResponse()
+
+		// Act
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = {},
+			onApply = {},
+			onError = {},
+		)
+
+		// Assert - second click should be debounced, proving time was recorded
+		var secondClickProcessed = false
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = { secondClickProcessed = true },
+			onApply = {},
+			onError = {},
+		)
+
+		assertFalse("Second click should be debounced", secondClickProcessed)
+	}
+
+	@Test
+	fun `onMessageClick executes finally block`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		val uniqueInstanceId = UUID.randomUUID()
+
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			uniqueInstanceId,
+			null,
+		)
+
+		val mockResponse = createMockResponse()
+
+		// Act
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = {},
+			onApply = {},
+			onError = {},
+		)
+
+		// Run posted tasks (including the finally block's postDelayed)
+		ShadowLooper.runUiThreadTasksIncludingDelayedTasks()
+
+		// Assert - the click handler state should be updated (verified by debounce still working)
+		var thirdClickProcessed = false
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = { thirdClickProcessed = true },
+			onApply = {},
+			onError = {},
+		)
+
+		// After running delayed tasks, the handler should still debounce within 1 second
+		assertFalse("Third click should still be debounced after finally block", thirdClickProcessed)
+	}
+
+	@Test
+	fun `onMessageClick handles response with null content`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var onClickCalled = false
+		var capturedEvent: AnalyticsEvent? = null
+
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			UUID.randomUUID(),
+		) { event ->
+			capturedEvent = event
+		}
+
+		// Create response with null content
+		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
+		every { mockResponse.content } returns null
+		every { mockResponse.meta } returns mockk(relaxed = true)
+
+		// Act
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = { onClickCalled = true },
+			onApply = {},
+			onError = {},
+		)
+
+		// Assert
+		assertTrue("onClick should still be called", onClickCalled)
+		assertNotNull("Event should still be logged", capturedEvent)
+		assertEquals("Should use default link name", "Learn more", capturedEvent?.pageViewLinkName)
+	}
+
+	@Test
+	fun `onMessageClick handles response with null default content`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var capturedEvent: AnalyticsEvent? = null
+
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			UUID.randomUUID(),
+		) { event ->
+			capturedEvent = event
+		}
+
+		// Create response with content but null default
+		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
+		val mockContent = mockk<ApiMessageData.ContentOptions>(relaxed = true)
+		every { mockContent.default } returns null
+		every { mockResponse.content } returns mockContent
+		every { mockResponse.meta } returns mockk(relaxed = true)
+
+		// Act
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = {},
+			onApply = {},
+			onError = {},
+		)
+
+		// Assert
+		assertNotNull("Event should be logged", capturedEvent)
+		assertEquals("Should use default link name when default is null", "Learn more", capturedEvent?.pageViewLinkName)
+	}
+
+	@Test
+	fun `onMessageClick logs analytics event with correct event type`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var capturedEvent: AnalyticsEvent? = null
+
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			UUID.randomUUID(),
+		) { event ->
+			capturedEvent = event
+		}
+
+		val mockResponse = createMockResponse()
+
+		// Act
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = {},
+			onApply = {},
+			onError = {},
+		)
+
+		// Assert
+		assertNotNull("Event should be captured", capturedEvent)
+		assertEquals("Event type should be MESSAGE_CLICKED", "MESSAGE_CLICKED", capturedEvent?.eventType?.name)
+		assertEquals("Link source should be learn_more", "learn_more", capturedEvent?.pageViewLinkSource)
+	}
+
+	@Test
+	fun `createClickHandler returns handler that implements PayPalMessageClickHandler`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+
+		// Act
+		val handler = dataProvider.createClickHandler(context, mockConfig, instanceId, null)
+
+		// Assert
+		assertTrue("Handler should implement PayPalMessageClickHandler", handler is PayPalMessageClickHandler)
+	}
+
+	@Test
+	fun `multiple data providers work independently`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		val provider1 = PayPalMessageDataProvider()
+		val provider2 = PayPalMessageDataProvider()
+		var success1 = false
+		var success2 = false
+
+		val callback1 = object : PayPalMessageDataCallback {
+			override fun onLoading() {}
+			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {
+				success1 = true
+			}
+			override fun onError(error: PayPalErrors.Base) {}
+		}
+
+		val callback2 = object : PayPalMessageDataCallback {
+			override fun onLoading() {}
+			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {
+				success2 = true
+			}
+			override fun onError(error: PayPalErrors.Base) {}
+		}
+
+		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
+		val callbackSlot = slot<OnActionCompleted>()
+
+		every { Api.getMessageWithHash(any(), any(), any(), capture(callbackSlot)) } answers {
+			callbackSlot.captured.onActionCompleted(ApiResult.Success(mockResponse))
+		}
+
+		// Act
+		provider1.fetchMessageData(context, mockConfig, UUID.randomUUID(), callback1)
+		provider2.fetchMessageData(context, mockConfig, UUID.randomUUID(), callback2)
+
+		// Assert
+		assertTrue("Provider 1 should succeed", success1)
+		assertTrue("Provider 2 should succeed", success2)
+	}
+
+	@Test
+	fun `handleApiResult with different error types`() {
+		// Test with InvalidClientIdException
+		var capturedError: PayPalErrors.Base? = null
+		val callback = object : PayPalMessageDataCallback {
+			override fun onLoading() {}
+			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {}
+			override fun onError(error: PayPalErrors.Base) {
+				capturedError = error
+			}
+		}
+
+		val invalidClientError = PayPalErrors.InvalidClientIdException("Invalid client ID", "debug-001")
+		dataProvider.handleApiResult(ApiResult.Failure(invalidClientError), System.currentTimeMillis(), callback)
+
+		assertTrue("Error should be InvalidClientIdException", capturedError is PayPalErrors.InvalidClientIdException)
+	}
+
+	@Test
+	fun `handleApiResult with ModalFailedToLoad error`() {
+		var capturedError: PayPalErrors.Base? = null
+		val callback = object : PayPalMessageDataCallback {
+			override fun onLoading() {}
+			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {}
+			override fun onError(error: PayPalErrors.Base) {
+				capturedError = error
+			}
+		}
+
+		val modalError = PayPalErrors.ModalFailedToLoad("Modal failed to load", null)
+		dataProvider.handleApiResult(ApiResult.Failure(modalError), System.currentTimeMillis(), callback)
+
+		assertTrue("Error should be ModalFailedToLoad", capturedError is PayPalErrors.ModalFailedToLoad)
+	}
+
+	@Test
+	fun `fetchMessageData verifies callback sequence`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		val callSequence = mutableListOf<String>()
+
+		val callback = object : PayPalMessageDataCallback {
+			override fun onLoading() {
+				callSequence.add("onLoading")
+			}
+			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {
+				callSequence.add("onSuccess")
+			}
+			override fun onError(error: PayPalErrors.Base) {
+				callSequence.add("onError")
+			}
+		}
+
+		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
+		val callbackSlot = slot<OnActionCompleted>()
+
+		every { Api.getMessageWithHash(any(), any(), any(), capture(callbackSlot)) } answers {
+			callbackSlot.captured.onActionCompleted(ApiResult.Success(mockResponse))
+		}
+
+		// Act
+		dataProvider.fetchMessageData(context, mockConfig, instanceId, callback)
+
+		// Assert - onLoading should be called first, then onSuccess
+		assertEquals("Should have 2 callbacks", 2, callSequence.size)
+		assertEquals("First callback should be onLoading", "onLoading", callSequence[0])
+		assertEquals("Second callback should be onSuccess", "onSuccess", callSequence[1])
+	}
+
+	@Test
+	fun `fetchMessageData error callback sequence`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		val callSequence = mutableListOf<String>()
+
+		val callback = object : PayPalMessageDataCallback {
+			override fun onLoading() {
+				callSequence.add("onLoading")
+			}
+			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {
+				callSequence.add("onSuccess")
+			}
+			override fun onError(error: PayPalErrors.Base) {
+				callSequence.add("onError")
+			}
+		}
+
+		val callbackSlot = slot<OnActionCompleted>()
+
+		every { Api.getMessageWithHash(any(), any(), any(), capture(callbackSlot)) } answers {
+			callbackSlot.captured.onActionCompleted(ApiResult.Failure(PayPalErrors.FailedToFetchDataException("Error")))
+		}
+
+		// Act
+		dataProvider.fetchMessageData(context, mockConfig, instanceId, callback)
+
+		// Assert - onLoading should be called first, then onError
+		assertEquals("Should have 2 callbacks", 2, callSequence.size)
+		assertEquals("First callback should be onLoading", "onLoading", callSequence[0])
+		assertEquals("Second callback should be onError", "onError", callSequence[1])
+	}
+
+	@Test
+	fun `onCleanup with fresh handler has no side effects`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		val handler = dataProvider.createClickHandler(context, mockConfig, UUID.randomUUID(), null)
+
+		// Act - call cleanup immediately without any clicks
+		var exceptionThrown = false
+		try {
+			handler.onCleanup()
+		} catch (e: Exception) {
+			exceptionThrown = true
+		}
+
+		// Assert
+		assertFalse("Cleanup on fresh handler should not throw", exceptionThrown)
+	}
+
+	@Test
+	fun `onMessageClick with all callbacks provided`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var onClickCalled = false
+		var onApplyCalled = false
+		var onErrorCalled = false
+
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			UUID.randomUUID(),
+			null,
+		)
+
+		val mockResponse = createMockResponse()
+
+		// Act
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = { onClickCalled = true },
+			onApply = { onApplyCalled = true },
+			onError = { onErrorCalled = true },
+		)
+
+		// Assert - only onClick should be called (onApply and onError are for modal interactions)
+		assertTrue("onClick should be called", onClickCalled)
+		assertFalse("onApply should not be called during click", onApplyCalled)
+		assertFalse("onError should not be called on successful click", onErrorCalled)
+	}
+
+	@Test
+	fun `click handler maintains state across multiple instances`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		val sharedInstanceId = UUID.randomUUID()
+
+		// Create two handlers with the same instanceId
+		val handler1 = dataProvider.createClickHandler(context, mockConfig, sharedInstanceId, null)
+		val handler2 = dataProvider.createClickHandler(context, mockConfig, sharedInstanceId, null)
+
+		val mockResponse = createMockResponse()
+		var click1Processed = false
+		var click2Processed = false
+
+		// Act - click on handler1 first
+		handler1.onMessageClick(
+			response = mockResponse,
+			onClick = { click1Processed = true },
+			onApply = {},
+			onError = {},
+		)
+
+		// Click on handler2 should be debounced due to shared instanceId
+		handler2.onMessageClick(
+			response = mockResponse,
+			onClick = { click2Processed = true },
+			onApply = {},
+			onError = {},
+		)
+
+		// Assert
+		assertTrue("First click should be processed", click1Processed)
+		assertFalse("Second click should be debounced due to shared instanceId", click2Processed)
+	}
+
+	@Test
+	fun `handleApiResult with long request duration`() {
+		// Arrange
+		var capturedDuration: Int? = null
+
+		val callback = object : PayPalMessageDataCallback {
+			override fun onLoading() {}
+			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {
+				capturedDuration = requestDuration
+			}
+			override fun onError(error: PayPalErrors.Base) {}
+		}
+
+		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
+		// Simulate a 5 second request
+		val startTime = System.currentTimeMillis() - 5000
+
+		// Act
+		dataProvider.handleApiResult(ApiResult.Success(mockResponse), startTime, callback)
+
+		// Assert
+		assertNotNull("Duration should be captured", capturedDuration)
+		assertTrue("Duration should be around 5000ms", capturedDuration!! >= 4900 && capturedDuration!! <= 5500)
+	}
+
+	@Test
+	fun `fetchMessageData with minimal config`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var loadingCalled = false
+
+		val minimalConfig = PayPalMessageConfig(
+			data = PayPalMessageData(
+				clientID = "minimal-client",
+				environment = PayPalEnvironment.SANDBOX,
+			),
+		)
+
+		val callback = object : PayPalMessageDataCallback {
+			override fun onLoading() {
+				loadingCalled = true
+			}
+			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {}
+			override fun onError(error: PayPalErrors.Base) {}
+		}
+
+		every { Api.getMessageWithHash(any(), any(), any(), any()) } answers {}
+
+		// Act
+		dataProvider.fetchMessageData(context, minimalConfig, instanceId, callback)
+
+		// Assert
+		assertTrue("onLoading should be called even with minimal config", loadingCalled)
+	}
+
 	// ==================== Helper Methods ====================
 
 	private fun createMockResponse(): ApiMessageData.Response {
