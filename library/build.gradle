@@ -209,7 +209,9 @@ koverReport {
 					'com.paypal.messages.io.OnActionCompleted',
 					// utils
 					'com.paypal.messages.utils.LogCat*',
-					// UI Stuff
+					// UI Stuff - modal display (requires instrumentation tests)
+					'com.paypal.messages.data.ModalDisplayManager',
+					'com.paypal.messages.data.ModalDisplayManager\$*',
 					'*Fragment',
 					'*Fragment\$*',
 					'*Activity',

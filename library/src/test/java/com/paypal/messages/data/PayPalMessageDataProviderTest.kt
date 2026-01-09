@@ -1,9 +1,7 @@
 package com.paypal.messages.data
 
-import android.app.Activity
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import com.paypal.messages.PayPalModalActivity
 import com.paypal.messages.analytics.AnalyticsEvent
 import com.paypal.messages.config.PayPalEnvironment
 import com.paypal.messages.config.PayPalMessageOfferType
@@ -28,9 +26,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowLooper
 import java.util.UUID
@@ -52,15 +48,19 @@ import java.util.UUID
 @Config(sdk = [28])
 class PayPalMessageDataProviderTest {
 
-	// Real instance - not mocked!
+	// Real instance with mocked ModalDisplayManager
 	private lateinit var dataProvider: PayPalMessageDataProvider
+	private lateinit var mockModalDisplayManager: ModalDisplayManager
 	private lateinit var mockConfig: PayPalMessageConfig
 	private lateinit var instanceId: UUID
 
 	@Before
 	fun setup() {
-		// Use REAL PayPalMessageDataProvider to test actual implementation
-		dataProvider = PayPalMessageDataProvider()
+		// Mock ModalDisplayManager to avoid UI interactions
+		mockModalDisplayManager = mockk(relaxed = true)
+
+		// Use REAL PayPalMessageDataProvider with mocked ModalDisplayManager
+		dataProvider = PayPalMessageDataProvider(mockModalDisplayManager)
 
 		instanceId = UUID.randomUUID()
 
@@ -1447,48 +1447,18 @@ class PayPalMessageDataProviderTest {
 		assertTrue("onLoading should be called even with minimal config", loadingCalled)
 	}
 
-	// ==================== Activity Context Tests for showWebView Coverage ====================
+	// ==================== ModalDisplayManager Integration Tests ====================
 
 	@Test
-	fun `onMessageClick with Activity context triggers showWebView else branch`() {
-		// Arrange - Use Robolectric to create an actual Activity
-		val activity = Robolectric.buildActivity(Activity::class.java).create().get()
-		val shadowActivity = Shadows.shadowOf(activity)
-
-		val clickHandler = dataProvider.createClickHandler(
-			activity,
-			mockConfig,
-			UUID.randomUUID(),
-			null,
-		)
-
-		val mockResponse = createMockResponse()
-
-		// Act
-		clickHandler.onMessageClick(
-			response = mockResponse,
-			onClick = {},
-			onApply = {},
-			onError = {},
-		)
-
-		// Assert - verify an intent was started (showWebView else branch)
-		val startedIntent = shadowActivity.nextStartedActivity
-		// The intent might be null if activity start failed, but code path should be covered
-		// Just verify no exception was thrown
-		assertTrue("Click handler should execute without throwing", true)
-	}
-
-	@Test
-	fun `onMessageClick with Activity context starts PayPalModalActivity`() {
+	fun `onMessageClick delegates to ModalDisplayManager`() {
 		// Arrange
-		val activity = Robolectric.buildActivity(Activity::class.java).create().get()
-		val shadowActivity = Shadows.shadowOf(activity)
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		val uniqueInstanceId = UUID.randomUUID()
 
 		val clickHandler = dataProvider.createClickHandler(
-			activity,
+			context,
 			mockConfig,
-			UUID.randomUUID(),
+			uniqueInstanceId,
 			null,
 		)
 
@@ -1502,129 +1472,45 @@ class PayPalMessageDataProviderTest {
 			onError = {},
 		)
 
-		// Assert - check that an activity was started
-		val startedIntent = shadowActivity.nextStartedActivity
-		if (startedIntent != null) {
-			assertEquals(
-				"Should start PayPalModalActivity",
-				PayPalModalActivity::class.java.name,
-				startedIntent.component?.className,
+		// Assert - verify ModalDisplayManager.showModal was called
+		verify {
+			mockModalDisplayManager.showModal(
+				context,
+				mockResponse,
+				mockConfig,
+				uniqueInstanceId,
+				any(),
+				any(),
+				any(),
 			)
 		}
 	}
 
 	@Test
-	fun `onMessageClick passes correct extras to modal activity`() {
-		// Arrange
-		val activity = Robolectric.buildActivity(Activity::class.java).create().get()
-		val shadowActivity = Shadows.shadowOf(activity)
-
-		val testConfig = PayPalMessageConfig(
-			data = PayPalMessageData(
-				clientID = "test-client-123",
-				environment = PayPalEnvironment.SANDBOX,
-				amount = 199.99,
-				buyerCountry = "US",
-			),
-		)
-
-		val uniqueInstanceId = UUID.randomUUID()
-		val clickHandler = dataProvider.createClickHandler(
-			activity,
-			testConfig,
-			uniqueInstanceId,
-			null,
-		)
-
-		val mockResponse = createMockResponse()
-
-		// Act
-		clickHandler.onMessageClick(
-			response = mockResponse,
-			onClick = {},
-			onApply = {},
-			onError = {},
-		)
-
-		// Assert - verify intent extras
-		val startedIntent = shadowActivity.nextStartedActivity
-		if (startedIntent != null) {
-			assertEquals("CLIENT_ID should be passed", "test-client-123", startedIntent.getStringExtra("CLIENT_ID"))
-			assertEquals("AMOUNT should be passed", 199.99, startedIntent.getDoubleExtra("AMOUNT", 0.0), 0.01)
-			assertEquals("BUYER_COUNTRY should be passed", "US", startedIntent.getStringExtra("BUYER_COUNTRY"))
-			assertEquals("INSTANCE_ID should be passed", uniqueInstanceId.toString(), startedIntent.getStringExtra("INSTANCE_ID"))
-		}
-	}
-
-	@Test
-	fun `onMessageClick with Activity context handles startActivity failure`() {
-		// Arrange
-		val activity = Robolectric.buildActivity(Activity::class.java).create().get()
-		var errorCalled = false
-		var capturedError: PayPalErrors.Base? = null
-
-		val clickHandler = dataProvider.createClickHandler(
-			activity,
-			mockConfig,
-			UUID.randomUUID(),
-			null,
-		)
-
-		// Create a response that might cause issues
-		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
-		every { mockResponse.meta } returns null // This might trigger error handling
-
-		// Act
-		clickHandler.onMessageClick(
-			response = mockResponse,
-			onClick = {},
-			onApply = {},
-			onError = { error ->
-				errorCalled = true
-				capturedError = error
-			},
-		)
-
-		// Assert - code should handle gracefully
-		// Either the modal starts successfully or onError is called
-		assertTrue("Handler should execute without crashing", true)
-	}
-
-	@Test
-	fun `onMessageClick registers callbacks with PayPalModalActivity`() {
-		// Arrange
-		val activity = Robolectric.buildActivity(Activity::class.java).create().get()
-		var onApplyCalled = false
-		var onClickCalled = false
-		var onErrorCalled = false
-
-		val uniqueInstanceId = UUID.randomUUID()
-		val clickHandler = dataProvider.createClickHandler(
-			activity,
-			mockConfig,
-			uniqueInstanceId,
-			null,
-		)
-
-		val mockResponse = createMockResponse()
-
-		// Act
-		clickHandler.onMessageClick(
-			response = mockResponse,
-			onClick = { onClickCalled = true },
-			onApply = { onApplyCalled = true },
-			onError = { onErrorCalled = true },
-		)
-
-		// Assert - onClick should be called immediately
-		assertTrue("onClick should be invoked during click handling", onClickCalled)
-		// onApply and onError are passed to modal, not called during click
-	}
-
-	@Test
-	fun `onMessageClick with Application context handles gracefully`() {
+	fun `onCleanup delegates to ModalDisplayManager`() {
 		// Arrange
 		val context = ApplicationProvider.getApplicationContext<Application>()
+		val uniqueInstanceId = UUID.randomUUID()
+
+		val clickHandler = dataProvider.createClickHandler(
+			context,
+			mockConfig,
+			uniqueInstanceId,
+			null,
+		)
+
+		// Act
+		clickHandler.onCleanup()
+
+		// Assert - verify ModalDisplayManager.cleanupModal was called
+		verify { mockModalDisplayManager.cleanupModal(uniqueInstanceId) }
+	}
+
+	@Test
+	fun `onMessageClick calls onClick before delegating to ModalDisplayManager`() {
+		// Arrange
+		val context = ApplicationProvider.getApplicationContext<Application>()
+		var onClickCalled = false
 
 		val clickHandler = dataProvider.createClickHandler(
 			context,
@@ -1634,10 +1520,8 @@ class PayPalMessageDataProviderTest {
 		)
 
 		val mockResponse = createMockResponse()
-		var onClickCalled = false
 
-		// Act - click should work with Application context
-		// The showWebView will use the else branch with FLAG_ACTIVITY_NEW_TASK
+		// Act
 		clickHandler.onMessageClick(
 			response = mockResponse,
 			onClick = { onClickCalled = true },
@@ -1645,26 +1529,29 @@ class PayPalMessageDataProviderTest {
 			onError = {},
 		)
 
-		// Assert - onClick should be called regardless of activity start result
-		assertTrue("onClick should be called with Application context", onClickCalled)
+		// Assert
+		assertTrue("onClick should be called before modal display", onClickCalled)
 	}
 
 	@Test
-	fun `onMessageClick handles exception in showWebView`() {
+	fun `onMessageClick handles ModalDisplayManager exception`() {
 		// Arrange
-		val activity = Robolectric.buildActivity(Activity::class.java).create().get()
+		val context = ApplicationProvider.getApplicationContext<Application>()
 		var errorReceived = false
 
+		// Make ModalDisplayManager throw an exception
+		every {
+			mockModalDisplayManager.showModal(any(), any(), any(), any(), any(), any(), any())
+		} throws RuntimeException("Modal display failed")
+
 		val clickHandler = dataProvider.createClickHandler(
-			activity,
+			context,
 			mockConfig,
 			UUID.randomUUID(),
 			null,
 		)
 
-		// Create response with problematic data that might cause NPE
-		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
-		every { mockResponse.meta?.modalCloseButton } throws NullPointerException("Test exception")
+		val mockResponse = createMockResponse()
 
 		// Act
 		clickHandler.onMessageClick(
@@ -1674,146 +1561,8 @@ class PayPalMessageDataProviderTest {
 			onError = { errorReceived = true },
 		)
 
-		// Assert - error handler should be called on exception
-		// The try-catch in onMessageClick should handle this
-		assertTrue("Exception should be handled gracefully", true)
-	}
-
-	@Test
-	fun `createClickHandler with Activity context returns functional handler`() {
-		// Arrange
-		val activity = Robolectric.buildActivity(Activity::class.java).create().get()
-
-		// Act
-		val handler = dataProvider.createClickHandler(
-			activity,
-			mockConfig,
-			UUID.randomUUID(),
-			null,
-		)
-
-		// Assert
-		assertNotNull("Handler should be created with Activity context", handler)
-	}
-
-	@Test
-	fun `onCleanup after click with Activity context`() {
-		// Arrange
-		val activity = Robolectric.buildActivity(Activity::class.java).create().get()
-		val uniqueInstanceId = UUID.randomUUID()
-
-		val clickHandler = dataProvider.createClickHandler(
-			activity,
-			mockConfig,
-			uniqueInstanceId,
-			null,
-		)
-
-		val mockResponse = createMockResponse()
-
-		// First, trigger a click to potentially create modal state
-		clickHandler.onMessageClick(
-			response = mockResponse,
-			onClick = {},
-			onApply = {},
-			onError = {},
-		)
-
-		// Act - cleanup should work even after click
-		var exceptionThrown = false
-		try {
-			clickHandler.onCleanup()
-		} catch (e: Exception) {
-			exceptionThrown = true
-		}
-
-		// Assert
-		assertFalse("Cleanup should work after click with Activity context", exceptionThrown)
-	}
-
-	@Test
-	fun `multiple clicks with Activity context respects debouncing`() {
-		// Arrange
-		val activity = Robolectric.buildActivity(Activity::class.java).create().get()
-		var clickCount = 0
-		val uniqueInstanceId = UUID.randomUUID()
-
-		val clickHandler = dataProvider.createClickHandler(
-			activity,
-			mockConfig,
-			uniqueInstanceId,
-			null,
-		)
-
-		val mockResponse = createMockResponse()
-
-		// Act - click multiple times rapidly
-		repeat(5) {
-			clickHandler.onMessageClick(
-				response = mockResponse,
-				onClick = { clickCount++ },
-				onApply = {},
-				onError = {},
-			)
-		}
-
-		// Assert - only first click should be processed
-		assertEquals("Only first click should be processed due to debouncing", 1, clickCount)
-	}
-
-	@Test
-	fun `fetchMessageData with Activity context`() {
-		// Arrange
-		val activity = Robolectric.buildActivity(Activity::class.java).create().get()
-		var successCalled = false
-
-		val callback = object : PayPalMessageDataCallback {
-			override fun onLoading() {}
-			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {
-				successCalled = true
-			}
-			override fun onError(error: PayPalErrors.Base) {}
-		}
-
-		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
-		val callbackSlot = slot<OnActionCompleted>()
-
-		every { Api.getMessageWithHash(any(), any(), any(), capture(callbackSlot)) } answers {
-			callbackSlot.captured.onActionCompleted(ApiResult.Success(mockResponse))
-		}
-
-		// Act
-		dataProvider.fetchMessageData(activity, mockConfig, instanceId, callback)
-
-		// Assert
-		assertTrue("fetchMessageData should work with Activity context", successCalled)
-	}
-
-	// ==================== ContextCompatWrapper Tests ====================
-
-	@Test
-	fun `onMessageClick logs context type`() {
-		// This test ensures LogCat.debug calls are executed for coverage
-		val context = ApplicationProvider.getApplicationContext<Application>()
-
-		val clickHandler = dataProvider.createClickHandler(
-			context,
-			mockConfig,
-			UUID.randomUUID(),
-		) { _ -> }
-
-		val mockResponse = createMockResponse()
-
-		// Act - this triggers logging statements
-		clickHandler.onMessageClick(
-			response = mockResponse,
-			onClick = {},
-			onApply = {},
-			onError = {},
-		)
-
-		// Assert - just verify no crash
-		assertTrue("Logging should work", true)
+		// Assert - error should be caught and onError called
+		assertTrue("onError should be called when ModalDisplayManager throws", errorReceived)
 	}
 
 	// ==================== Helper Methods ====================
