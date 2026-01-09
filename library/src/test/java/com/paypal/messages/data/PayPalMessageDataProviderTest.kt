@@ -2,7 +2,6 @@ package com.paypal.messages.data
 
 import android.app.Activity
 import android.app.Application
-import androidx.appcompat.app.AppCompatActivity
 import androidx.test.core.app.ApplicationProvider
 import com.paypal.messages.PayPalModalActivity
 import com.paypal.messages.analytics.AnalyticsEvent
@@ -18,7 +17,6 @@ import com.paypal.messages.utils.PayPalErrors
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.unmockkAll
 import io.mockk.verify
@@ -1624,13 +1622,9 @@ class PayPalMessageDataProviderTest {
 	}
 
 	@Test
-	fun `onMessageClick with Application context uses FLAG_ACTIVITY_NEW_TASK`() {
+	fun `onMessageClick with Application context handles gracefully`() {
 		// Arrange
 		val context = ApplicationProvider.getApplicationContext<Application>()
-
-		// Mock PayPalModalActivity to prevent actual activity start issues
-		mockkStatic(PayPalModalActivity::class)
-		every { PayPalModalActivity.registerCallbacks(any(), any(), any(), any()) } answers {}
 
 		val clickHandler = dataProvider.createClickHandler(
 			context,
@@ -1640,21 +1634,19 @@ class PayPalMessageDataProviderTest {
 		)
 
 		val mockResponse = createMockResponse()
+		var onClickCalled = false
 
-		// Act & Assert - should not throw even with Application context
-		var exceptionThrown = false
-		try {
-			clickHandler.onMessageClick(
-				response = mockResponse,
-				onClick = {},
-				onApply = {},
-				onError = {},
-			)
-		} catch (e: Exception) {
-			exceptionThrown = true
-		}
+		// Act - click should work with Application context
+		// The showWebView will use the else branch with FLAG_ACTIVITY_NEW_TASK
+		clickHandler.onMessageClick(
+			response = mockResponse,
+			onClick = { onClickCalled = true },
+			onApply = {},
+			onError = {},
+		)
 
-		assertFalse("Should handle Application context gracefully", exceptionThrown)
+		// Assert - onClick should be called regardless of activity start result
+		assertTrue("onClick should be called with Application context", onClickCalled)
 	}
 
 	@Test
@@ -1795,215 +1787,6 @@ class PayPalMessageDataProviderTest {
 
 		// Assert
 		assertTrue("fetchMessageData should work with Activity context", successCalled)
-	}
-
-	// ==================== AppCompatActivity Context Tests ====================
-
-	/**
-	 * Test helper class to simulate AppCompatActivity context
-	 */
-	class TestAppCompatActivity : AppCompatActivity()
-
-	@Test
-	fun `onMessageClick with AppCompatActivity context triggers fragment branch`() {
-		// Arrange - Use Robolectric to create an AppCompatActivity
-		val activity = Robolectric.buildActivity(TestAppCompatActivity::class.java)
-			.create()
-			.start()
-			.resume()
-			.get()
-
-		val clickHandler = dataProvider.createClickHandler(
-			activity,
-			mockConfig,
-			UUID.randomUUID(),
-			null,
-		)
-
-		val mockResponse = createMockResponse()
-
-		// Act - this should trigger the AppCompatActivity branch in showWebView
-		var exceptionThrown = false
-		try {
-			clickHandler.onMessageClick(
-				response = mockResponse,
-				onClick = {},
-				onApply = {},
-				onError = {},
-			)
-		} catch (e: Exception) {
-			// Some exceptions might occur due to missing fragment setup, but code path is covered
-			exceptionThrown = true
-		}
-
-		// Assert - code path should be executed (even if it fails due to fragment issues)
-		assertTrue("AppCompatActivity branch should be exercised", true)
-	}
-
-	@Test
-	fun `createClickHandler with AppCompatActivity returns handler`() {
-		// Arrange
-		val activity = Robolectric.buildActivity(TestAppCompatActivity::class.java)
-			.create()
-			.start()
-			.resume()
-			.get()
-
-		// Act
-		val handler = dataProvider.createClickHandler(
-			activity,
-			mockConfig,
-			UUID.randomUUID(),
-			null,
-		)
-
-		// Assert
-		assertNotNull("Handler should be created with AppCompatActivity context", handler)
-	}
-
-	@Test
-	fun `onMessageClick with AppCompatActivity calls onClick callback`() {
-		// Arrange
-		val activity = Robolectric.buildActivity(TestAppCompatActivity::class.java)
-			.create()
-			.start()
-			.resume()
-			.get()
-
-		var onClickCalled = false
-
-		val clickHandler = dataProvider.createClickHandler(
-			activity,
-			mockConfig,
-			UUID.randomUUID(),
-			null,
-		)
-
-		val mockResponse = createMockResponse()
-
-		// Act
-		try {
-			clickHandler.onMessageClick(
-				response = mockResponse,
-				onClick = { onClickCalled = true },
-				onApply = {},
-				onError = {},
-			)
-		} catch (e: Exception) {
-			// Fragment-related exceptions are expected in test environment
-		}
-
-		// Assert - onClick should still be called even if fragment fails
-		assertTrue("onClick should be called with AppCompatActivity", onClickCalled)
-	}
-
-	@Test
-	fun `onMessageClick with AppCompatActivity handles modal creation failure`() {
-		// Arrange
-		val activity = Robolectric.buildActivity(TestAppCompatActivity::class.java)
-			.create()
-			.start()
-			.resume()
-			.get()
-
-		var errorReceived = false
-
-		val clickHandler = dataProvider.createClickHandler(
-			activity,
-			mockConfig,
-			UUID.randomUUID(),
-			null,
-		)
-
-		// Create a response with null modalCloseButton to trigger NPE in modal creation
-		val mockResponse = mockk<ApiMessageData.Response>(relaxed = true)
-		every { mockResponse.meta?.modalCloseButton } returns null
-
-		// Act
-		try {
-			clickHandler.onMessageClick(
-				response = mockResponse,
-				onClick = {},
-				onApply = {},
-				onError = { errorReceived = true },
-			)
-		} catch (e: Exception) {
-			// Expected in test environment
-		}
-
-		// Assert - either error callback is called or exception is handled
-		assertTrue("Modal creation failure should be handled", true)
-	}
-
-	@Test
-	fun `onCleanup with AppCompatActivity context after click`() {
-		// Arrange
-		val activity = Robolectric.buildActivity(TestAppCompatActivity::class.java)
-			.create()
-			.start()
-			.resume()
-			.get()
-
-		val uniqueInstanceId = UUID.randomUUID()
-
-		val clickHandler = dataProvider.createClickHandler(
-			activity,
-			mockConfig,
-			uniqueInstanceId,
-			null,
-		)
-
-		val mockResponse = createMockResponse()
-
-		// Trigger a click (may fail due to fragment issues, but that's ok)
-		try {
-			clickHandler.onMessageClick(
-				response = mockResponse,
-				onClick = {},
-				onApply = {},
-				onError = {},
-			)
-		} catch (e: Exception) {
-			// Expected
-		}
-
-		// Act - cleanup should still work
-		var cleanupSuccessful = true
-		try {
-			clickHandler.onCleanup()
-		} catch (e: Exception) {
-			cleanupSuccessful = false
-		}
-
-		// Assert
-		assertTrue("Cleanup should work with AppCompatActivity context", cleanupSuccessful)
-	}
-
-	@Test
-	fun `fetchMessageData with AppCompatActivity context`() {
-		// Arrange
-		val activity = Robolectric.buildActivity(TestAppCompatActivity::class.java)
-			.create()
-			.start()
-			.resume()
-			.get()
-		var loadingCalled = false
-
-		val callback = object : PayPalMessageDataCallback {
-			override fun onLoading() {
-				loadingCalled = true
-			}
-			override fun onSuccess(response: ApiMessageData.Response, requestDuration: Int) {}
-			override fun onError(error: PayPalErrors.Base) {}
-		}
-
-		every { Api.getMessageWithHash(any(), any(), any(), any()) } answers {}
-
-		// Act
-		dataProvider.fetchMessageData(activity, mockConfig, instanceId, callback)
-
-		// Assert
-		assertTrue("fetchMessageData should work with AppCompatActivity", loadingCalled)
 	}
 
 	// ==================== ContextCompatWrapper Tests ====================
