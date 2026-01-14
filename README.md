@@ -21,15 +21,25 @@ As the library is moved to general availability, we will be adding a contributio
 ## Support
 The PayPalMessages Library is available for Android SDK 23+.
 
-## AndroidX Compatibility
+## Requirements
 
-The SDK requires specific AndroidX dependencies. For compatibility information and minimum supported versions, see the [AndroidX Compatibility Guide](docs/androidx-compatibility.md).
+### Android Gradle Plugin (AGP)
+- **Minimum:** AGP 8.0.0
+- **Recommended:** AGP 8.1.0+
+- **Built with:** AGP 8.1.4
+
+**Note:** Apps using AGP 7.x may experience dependency conflicts due to databinding version mismatches. While workarounds exist (see [Integration Guide for Older AGP](docs/androidx-compatibility.md#older-agp-versions)), upgrading to AGP 8.0+ is recommended for the best experience.
+
+### AndroidX Dependencies
+
+The SDK requires specific AndroidX dependencies. For detailed compatibility information and minimum supported versions, see the [AndroidX Compatibility Guide](docs/androidx-compatibility.md).
 
 **Quick Reference:**
 - Minimum Android SDK: 23
+- Android Gradle Plugin: 7.4.0+
 - AndroidX Core KTX: 1.8.0+
 - AndroidX AppCompat: 1.4.2+
-- Compose BOM: 2023.05.01+
+- Compose BOM: 2023.05.01+ (optional, for Compose APIs)
 - Material Components: 1.8.0+ (provided by SDK)
 
 The SDK uses minimum safe versions to maximize compatibility. Gradle resolves to your app's higher versions automatically.
