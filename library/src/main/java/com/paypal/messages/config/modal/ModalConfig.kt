@@ -16,5 +16,7 @@ data class ModalConfig(
 	var ignoreCache: Boolean = false,
 	var modalCloseButton: ModalCloseButton,
 	var offer: PayPalMessageOfferType? = null,
+	var language: String? = null,
+	var locale: String? = null,
 	var stageTag: String? = null,
 )

@@ -106,6 +106,8 @@ internal class ModalFragment : BottomSheetDialogFragment() {
 				setJsValue(name = "offer", value = offerArg.toString())
 			}
 		}
+	var language: String? = null
+	var locale: String? = null
 	private var stageTag: String? = null
 
 	private var inErrorState: Boolean = false
@@ -268,7 +270,7 @@ internal class ModalFragment : BottomSheetDialogFragment() {
 	 * Loads or reloads the URL for the modal
 	 */
 	private fun reloadUrl() {
-		val url = Api.createModalUrl(clientId, amount, buyerCountry, offerType)
+		val url = Api.createModalUrl(clientId, amount, buyerCountry, offerType, language, locale)
 		LogCat.debug(TAG, "Loading modal URL: $url")
 		modalUrl = url
 		webView?.loadUrl(url)
@@ -379,6 +381,8 @@ internal class ModalFragment : BottomSheetDialogFragment() {
 		this.devTouchpoint = config.devTouchpoint
 		this.ignoreCache = config.ignoreCache
 		this.offerType = config.offer
+		this.language = config.language
+		this.locale = config.locale
 		this.stageTag = config.stageTag
 
 		// Set Callbacks for Modal Actions
@@ -452,7 +456,7 @@ internal class ModalFragment : BottomSheetDialogFragment() {
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 		logEvent(AnalyticsEvent(eventType = EventType.MODAL_VIEWED))
 		this.onLoading()
-		val url = Api.createModalUrl(clientId, amount, buyerCountry, offerType)
+		val url = Api.createModalUrl(clientId, amount, buyerCountry, offerType, language, locale)
 
 		LogCat.debug(TAG, "Start show process for modal with webView: $webView")
 		val requestDuration = measureTimeMillis {
