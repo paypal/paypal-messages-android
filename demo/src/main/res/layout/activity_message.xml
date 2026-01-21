@@ -36,6 +36,50 @@
 				android:hint="Add Client ID"/>
 		</TableRow>
 
+		<TableRow
+			android:layout_width="match_parent"
+			android:layout_height="48dp">
+			<TextView
+				android:text="Language"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:id="@+id/languageLabel"
+				android:layout_weight="1"
+				android:textStyle="bold"
+				android:textSize="16sp"/>
+			<EditText
+				android:importantForAutofill="no"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:inputType="text"
+				android:ems="10"
+				android:id="@+id/language"
+				android:hint="en-US"/>
+
+		</TableRow>
+
+		<TableRow
+			android:layout_width="match_parent"
+			android:layout_height="48dp">
+			<TextView
+				android:text="Locale"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:id="@+id/localeLabel"
+				android:layout_weight="1"
+				android:textStyle="bold"
+				android:textSize="16sp"/>
+			<EditText
+				android:importantForAutofill="no"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:inputType="text"
+				android:ems="10"
+				android:id="@+id/locale"
+				android:hint="en_US"/>
+
+		</TableRow>
+
 		<TextView
 			android:text="Style Options"
 			android:layout_width="match_parent"

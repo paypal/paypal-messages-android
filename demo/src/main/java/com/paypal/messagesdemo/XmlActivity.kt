@@ -134,6 +134,8 @@ class XmlActivity : AppCompatActivity() {
 
 		val amountEdit = binding.amount
 		val buyerCountryEdit = binding.buyerCountry
+		val languageEdit = binding.language
+		val localeEdit = binding.locale
 		val stageTagEdit = binding.stageTag
 		val ignoreCache = binding.ignoreCache
 		val devTouchpoint = binding.devTouchpoint
@@ -151,6 +153,9 @@ class XmlActivity : AppCompatActivity() {
 
 			val buyerCountry = buyerCountryEdit.text.toString().ifBlank { "" }
 
+			val language = languageEdit.text.toString().ifBlank { "" }
+			val locale = localeEdit.text.toString().ifBlank { "" }
+
 			val backgroundColor = if (color === PayPalMessageColor.WHITE) Color.Black else Color.White
 			payPalMessage.setBackgroundColor(backgroundColor.hashCode())
 
@@ -158,6 +163,8 @@ class XmlActivity : AppCompatActivity() {
 			payPalMessage.clientID = clientId
 			payPalMessage.amount = amount
 			payPalMessage.buyerCountry = buyerCountry
+			payPalMessage.language = language
+			payPalMessage.locale = locale
 			payPalMessage.offerType = offerType
 			payPalMessage.environment = environment
 
@@ -177,6 +184,8 @@ class XmlActivity : AppCompatActivity() {
 			devTouchpoint.isChecked = false
 			amountEdit.setText("")
 			buyerCountryEdit.setText("")
+			languageEdit.setText("")
+			localeEdit.setText("")
 
 			updateMessageData()
 		}
