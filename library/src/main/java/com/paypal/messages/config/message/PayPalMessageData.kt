@@ -18,6 +18,8 @@ data class PayPalMessageData(
 	var buyerCountry: String? = null,
 	var offerType: OfferType? = null,
 	var pageType: PageType? = null,
+	var language: String? = null,
+	var locale: String? = null,
 	var environment: Environment = Environment.SANDBOX,
 ) : Cloneable {
 	init {
