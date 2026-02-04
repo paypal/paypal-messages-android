@@ -1,6 +1,8 @@
 package com.paypal.messages.config.modal
 
 import com.paypal.messages.config.Channel
+import com.paypal.messages.config.PayPalLanguage
+import com.paypal.messages.config.PayPalLocale
 import com.paypal.messages.config.PayPalMessageOfferType
 
 /**
@@ -16,7 +18,7 @@ data class ModalConfig(
 	var ignoreCache: Boolean = false,
 	var modalCloseButton: ModalCloseButton,
 	var offer: PayPalMessageOfferType? = null,
-	var language: String? = null,
-	var locale: String? = null,
+	var language: PayPalLanguage? = null,
+	var locale: PayPalLocale? = null,
 	var stageTag: String? = null,
 )

@@ -1,5 +1,7 @@
 package com.paypal.messages.config.message
 
+import com.paypal.messages.config.PayPalLanguage
+import com.paypal.messages.config.PayPalLocale
 import com.paypal.messages.io.Api
 import com.paypal.messages.config.PayPalEnvironment as Environment
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
@@ -18,8 +20,8 @@ data class PayPalMessageData(
 	var buyerCountry: String? = null,
 	var offerType: OfferType? = null,
 	var pageType: PageType? = null,
-	var language: String? = null,
-	var locale: String? = null,
+	var language: PayPalLanguage? = null,
+	var locale: PayPalLocale? = null,
 	var environment: Environment = Environment.SANDBOX,
 ) : Cloneable {
 	init {

@@ -59,8 +59,8 @@ object Api {
 			amount?.let { addQueryParameter("amount", it.toString()) }
 			if (!buyerCountry.isNullOrBlank()) addQueryParameter("buyer_country", buyerCountry)
 			offerType?.let { addQueryParameter("offer", it.name) }
-			if (!language.isNullOrBlank()) addQueryParameter("language", language)
-			if (!locale.isNullOrBlank()) addQueryParameter("locale", locale)
+			language?.let { addQueryParameter("language", it.code) }
+			locale?.let { addQueryParameter("locale", it.code) }
 		}
 
 		if (!hash.isNullOrBlank()) addQueryParameter("merchant_config", hash)

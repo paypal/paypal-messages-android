@@ -47,14 +47,11 @@
 				android:layout_weight="1"
 				android:textStyle="bold"
 				android:textSize="16sp"/>
-			<EditText
-				android:importantForAutofill="no"
+			<Spinner
+				android:id="@+id/language"
 				android:layout_width="wrap_content"
 				android:layout_height="match_parent"
-				android:inputType="text"
-				android:ems="10"
-				android:id="@+id/language"
-				android:hint="en-US"/>
+				android:minWidth="200dp"/>
 
 		</TableRow>
 
@@ -69,14 +66,11 @@
 				android:layout_weight="1"
 				android:textStyle="bold"
 				android:textSize="16sp"/>
-			<EditText
-				android:importantForAutofill="no"
+			<Spinner
+				android:id="@+id/locale"
 				android:layout_width="wrap_content"
 				android:layout_height="match_parent"
-				android:inputType="text"
-				android:ems="10"
-				android:id="@+id/locale"
-				android:hint="en_US"/>
+				android:minWidth="200dp"/>
 
 		</TableRow>
 

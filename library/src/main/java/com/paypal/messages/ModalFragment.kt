@@ -381,8 +381,8 @@ internal class ModalFragment : BottomSheetDialogFragment() {
 		this.devTouchpoint = config.devTouchpoint
 		this.ignoreCache = config.ignoreCache
 		this.offerType = config.offer
-		this.language = config.language
-		this.locale = config.locale
+		this.language = config.language?.code
+		this.locale = config.locale?.code
 		this.stageTag = config.stageTag
 
 		// Set Callbacks for Modal Actions

@@ -4,12 +4,15 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup.LayoutParams
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.graphics.Color
 import com.paypal.messages.PayPalMessageView
 import com.paypal.messages.config.PayPalEnvironment
+import com.paypal.messages.config.PayPalLanguage
+import com.paypal.messages.config.PayPalLocale
 import com.paypal.messages.config.PayPalMessageOfferType
 import com.paypal.messages.config.PayPalMessagePageType
 import com.paypal.messages.config.message.PayPalMessageConfig
@@ -134,11 +137,23 @@ class XmlActivity : AppCompatActivity() {
 
 		val amountEdit = binding.amount
 		val buyerCountryEdit = binding.buyerCountry
-		val languageEdit = binding.language
-		val localeEdit = binding.locale
+		val languageSpinner = binding.language
+		val localeSpinner = binding.locale
 		val stageTagEdit = binding.stageTag
 		val ignoreCache = binding.ignoreCache
 		val devTouchpoint = binding.devTouchpoint
+
+		// Setup language spinner
+		val languageOptions = listOf("None") + PayPalLanguage.values().map { it.name }
+		val languageAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, languageOptions)
+		languageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+		languageSpinner.adapter = languageAdapter
+
+		// Setup locale spinner
+		val localeOptions = listOf("None") + PayPalLocale.values().map { it.name }
+		val localeAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, localeOptions)
+		localeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+		localeSpinner.adapter = localeAdapter
 
 		// Get the data from the selected options
 		fun updateMessageData() {
@@ -153,8 +168,21 @@ class XmlActivity : AppCompatActivity() {
 
 			val buyerCountry = buyerCountryEdit.text.toString().ifBlank { "" }
 
-			val language = languageEdit.text.toString().ifBlank { "" }
-			val locale = localeEdit.text.toString().ifBlank { "" }
+			// Get selected language from spinner
+			val languageSelection = languageSpinner.selectedItem.toString()
+			val language = if (languageSelection == "None") {
+				null
+			} else {
+				PayPalLanguage.valueOf(languageSelection)
+			}
+
+			// Get selected locale from spinner
+			val localeSelection = localeSpinner.selectedItem.toString()
+			val locale = if (localeSelection == "None") {
+				null
+			} else {
+				PayPalLocale.valueOf(localeSelection)
+			}
 
 			val backgroundColor = if (color === PayPalMessageColor.WHITE) Color.Black else Color.White
 			payPalMessage.setBackgroundColor(backgroundColor.hashCode())
@@ -184,8 +212,8 @@ class XmlActivity : AppCompatActivity() {
 			devTouchpoint.isChecked = false
 			amountEdit.setText("")
 			buyerCountryEdit.setText("")
-			languageEdit.setText("")
-			localeEdit.setText("")
+			languageSpinner.setSelection(0) // Reset to "None"
+			localeSpinner.setSelection(0) // Reset to "None"
 
 			updateMessageData()
 		}
