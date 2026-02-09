@@ -164,6 +164,8 @@ class ModalDisplayManager {
 				ignoreCache = false,
 				devTouchpoint = false,
 				stageTag = null,
+				language = config.data.language,
+				locale = config.data.locale,
 				events = ModalEvents(
 					onApply = onApply,
 					onClick = { /* onClick is handled earlier */ },

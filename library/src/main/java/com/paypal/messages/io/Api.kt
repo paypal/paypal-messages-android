@@ -59,6 +59,8 @@ object Api {
 			amount?.let { addQueryParameter("amount", it.toString()) }
 			if (!buyerCountry.isNullOrBlank()) addQueryParameter("buyer_country", buyerCountry)
 			offerType?.let { addQueryParameter("offer", it.name) }
+			language?.let { addQueryParameter("language", it.code) }
+			locale?.let { addQueryParameter("locale", it.code) }
 		}
 
 		if (!hash.isNullOrBlank()) addQueryParameter("merchant_config", hash)
@@ -227,6 +229,8 @@ object Api {
 		amount: Double?,
 		buyerCountry: String?,
 		offer: OfferType?,
+		language: String? = null,
+		locale: String? = null,
 	): String {
 		val url = env.url(Env.Endpoints.MODAL_DATA).newBuilder().apply {
 			addQueryParameter("client_id", clientId)
@@ -235,6 +239,8 @@ object Api {
 			amount?.let { addQueryParameter("amount", amount.toString()) }
 			if (!buyerCountry.isNullOrBlank()) addQueryParameter("buyer_country", buyerCountry)
 			offer?.let { addQueryParameter("offer", it.name) }
+			if (!language.isNullOrBlank()) addQueryParameter("language", language)
+			if (!locale.isNullOrBlank()) addQueryParameter("locale", locale)
 		}.build()
 
 		val query = url.query?.replace("&", "\n  ")
