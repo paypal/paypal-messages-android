@@ -349,6 +349,8 @@ class PayPalMessageDataProvider {
 						ignoreCache = false,
 						devTouchpoint = false,
 						stageTag = null,
+						language = config.data.language,
+						locale = config.data.locale,
 						events = ModalEvents(
 							onApply = onApply,
 							// onClick is already called before this method is invoked - don't call it again
