@@ -425,7 +425,8 @@ class PayPalMessageView @JvmOverloads constructor(
 	}
 
 	override fun onLoading() {
-		onLoading.invoke()
+		// Explicitly use 'this.' to reference the property, not this method
+		this.onLoading.invoke()
 	}
 
 	override fun onSuccess(response: ApiMessageData.Response, duration: Int) {
@@ -449,7 +450,10 @@ class PayPalMessageView @JvmOverloads constructor(
 	}
 
 	override fun onError(error: PayPalErrors.Base) {
-		LogCat.debug(TAG, "onError")
+		LogCat.debug(TAG, "onError: ${error.message}")
+		// Invoke the user-provided error callback
+		// Explicitly use 'this.' to reference the property, not this method
+		this.onError.invoke(error)
 	}
 
 	/**

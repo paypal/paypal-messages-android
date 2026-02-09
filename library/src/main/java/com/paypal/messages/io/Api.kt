@@ -113,9 +113,22 @@ object Api {
 			}
 		}
 		catch (error: IOException) {
-			// Failed to fetch the data and there is no debugId
+			// Network errors, timeouts, cancellations
 			return ApiResult.Failure(
-				PayPalErrors.FailedToFetchDataException("Message Data IOException: ${error.message}"),
+				PayPalErrors.FailedToFetchDataException("Network error: ${error.message}"),
+			)
+		}
+		catch (error: com.google.gson.JsonSyntaxException) {
+			// JSON parsing errors
+			return ApiResult.Failure(
+				PayPalErrors.FailedToFetchDataException("Failed to parse response: ${error.message}"),
+			)
+		}
+		catch (error: Exception) {
+			// Catch any other unexpected errors to ensure we always return a result
+			LogCat.error(TAG, "Unexpected error in callMessageDataEndpoint: ${error.message}")
+			return ApiResult.Failure(
+				PayPalErrors.FailedToFetchDataException("Unexpected error: ${error.message}"),
 			)
 		}
 	}
