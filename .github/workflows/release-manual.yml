@@ -53,14 +53,36 @@ jobs:
           signing_key_file: ${{ secrets.SIGNING_KEY_FILE }}
           signing_file_path: ${{ env.SIGNING_KEY_FILE_PATH }}
 
+      - name: Validate version input
+        if: ${{ inputs.version != '' }}
+        run: |
+          # Store input in environment variable for safe handling
+          INPUT_VERSION="${{ inputs.version }}"
+          
+          # Validate version format: must be semantic version (e.g., 1.2.3, 1.2.3-beta, 1.2.3-RC1)
+          if ! echo "${INPUT_VERSION}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9\.]+)?$'; then
+            echo "ERROR: Invalid version format: ${INPUT_VERSION}"
+            echo "Version must match semantic versioning format (e.g., 1.2.3, 1.2.3-beta)"
+            exit 1
+          fi
+          
+          # Check length to prevent excessively long inputs
+          if [ ${#INPUT_VERSION} -gt 50 ]; then
+            echo "ERROR: Version string exceeds maximum length of 50 characters"
+            exit 1
+          fi
+          
+          echo "VALIDATED_VERSION=${INPUT_VERSION}" >> $GITHUB_ENV
+          echo "Version validated: ${INPUT_VERSION}"
+
       - name: Optionally set version in Gradle
         if: ${{ inputs.version != '' }}
-        run: ./gradlew -PversionParam="${{ inputs.version }}" changeReleaseVersion
+        run: ./gradlew -PversionParam="${VALIDATED_VERSION}" changeReleaseVersion
 
       - name: Determine version
         run: |
-          if [ -n "${{ inputs.version }}" ]; then
-            echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+          if [ -n "${VALIDATED_VERSION:-}" ]; then
+            echo "VERSION=${VALIDATED_VERSION}" >> $GITHUB_ENV
           else
             VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' build.gradle | grep -o '"[^\"]*"$' | tr -d '"')
             echo "VERSION=${VERSION}" >> $GITHUB_ENV
@@ -80,8 +102,9 @@ jobs:
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
         run: |
+          set -euo pipefail
           echo "Running direct deployment script..."
-          bash -e ./deploy-to-maven-central.sh --no-auto-publish
+          ./deploy-to-maven-central.sh --no-auto-publish
 
       - name: Configure Git user
         run: |

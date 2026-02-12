@@ -83,11 +83,30 @@ runs:
         SIGNING_KEY_FILE: ${{ inputs.signing_key_file }}
         USE_SNAPSHOT: ${{ inputs.use_snapshot }}
         AUTO_PUBLISH: ${{ inputs.auto_publish }}
+        WORKSPACE_DIR: ${{ github.workspace }}
       run: |
         set -euo pipefail
         echo "Publishing via Central Portal Maven plugin (NMCP) - module :library"
-        if [ ! -d "${{ github.workspace }}/library" ]; then
+        
+        # Validate workspace directory path
+        if [[ ! "${WORKSPACE_DIR}" =~ ^/[a-zA-Z0-9/_.-]+$ ]]; then
+          echo "ERROR: Invalid workspace directory path format" >&2
+          exit 1
+        fi
+        
+        if [ ! -d "${WORKSPACE_DIR}/library" ]; then
           echo "Error: library directory not found" >&2
+          exit 1
+        fi
+
+        # Validate boolean inputs
+        if [[ ! "${USE_SNAPSHOT}" =~ ^(true|false)$ ]]; then
+          echo "ERROR: Invalid USE_SNAPSHOT value. Must be 'true' or 'false'" >&2
+          exit 1
+        fi
+        
+        if [[ ! "${AUTO_PUBLISH}" =~ ^(true|false)$ ]]; then
+          echo "ERROR: Invalid AUTO_PUBLISH value. Must be 'true' or 'false'" >&2
           exit 1
         fi
 
@@ -115,7 +134,14 @@ runs:
           sleep 5
         done
 
-        VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' ${{ github.workspace }}/build.gradle | grep -o '"[^"]*"$' | tr -d '"')
+        VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' "${WORKSPACE_DIR}/build.gradle" | grep -o '"[^"]*"$' | tr -d '"')
+        
+        # Validate extracted version format
+        if ! echo "${VERSION}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
+          echo "ERROR: Invalid version format extracted from build.gradle: ${VERSION}" >&2
+          exit 1
+        fi
+        
         if [ "${USE_SNAPSHOT}" = "true" ]; then
           [[ "${VERSION}" != *-SNAPSHOT ]] && VERSION="${VERSION}-SNAPSHOT"
           echo "Publishing SNAPSHOT version: ${VERSION}"
@@ -138,6 +164,7 @@ runs:
         echo "Library POM has all required Maven Central configuration"
 
         echo "Deploying to Central Portal via Maven plugin"
-        bash -e ./deploy-snapshot-to-central.sh
+        set -euo pipefail
+        ./deploy-snapshot-to-central.sh
 
         echo "NMCP publish finished. Check deployments at https://central.sonatype.com/publishing/deployments"

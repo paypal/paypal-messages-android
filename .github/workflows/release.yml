@@ -112,8 +112,9 @@ jobs:
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
         run: |
+          set -euo pipefail
           echo "Running direct deployment script..."
-          bash -e ./deploy-to-maven-central.sh --no-auto-publish
+          ./deploy-to-maven-central.sh --no-auto-publish
 
       - name: Cleanup signing key files
         if: always()
