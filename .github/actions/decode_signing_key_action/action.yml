@@ -18,14 +18,16 @@ runs:
         umask 077
         
         # Validate signing_file_path to prevent path traversal
-        SIGNING_PATH="${{ inputs.signing_file_path }}"
-        if [[ ! "${SIGNING_PATH}" =~ ^/[a-zA-Z0-9/_.-]+$ ]]; then
+        if [[ ! "${SIGNING_FILE_PATH}" =~ ^/[a-zA-Z0-9/_.-]+$ ]]; then
           echo "ERROR: Invalid signing file path format"
           exit 1
         fi
         
         # Safely handle the signing key file
-        echo "${{ inputs.signing_key_file }}" > ~/secretKey.gpg.b64
-        base64 -d ~/secretKey.gpg.b64 > "${SIGNING_PATH}"
-        chmod 600 "${SIGNING_PATH}"
+        echo "${SIGNING_KEY_FILE_CONTENT}" > ~/secretKey.gpg.b64
+        base64 -d ~/secretKey.gpg.b64 > "${SIGNING_FILE_PATH}"
+        chmod 600 "${SIGNING_FILE_PATH}"
       shell: bash
+      env:
+        SIGNING_KEY_FILE_CONTENT: ${{ inputs.signing_key_file }}
+        SIGNING_FILE_PATH: ${{ inputs.signing_file_path }}
