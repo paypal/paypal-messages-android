@@ -4,6 +4,9 @@ on:
 env:
   SIGNING_KEY_FILE_PATH: /home/runner/secretKey.gpg
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     uses: ./.github/workflows/lint.yml
@@ -26,14 +29,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           # pulls all commits (needed for semantic release to correctly version)
           fetch-depth: '0'
           persist-credentials: false
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'microsoft'
@@ -60,14 +63,21 @@ jobs:
           SIGNING_KEY_FILE: ${{ env.SIGNING_KEY_FILE_PATH }}
         run: npx semantic-release@21
 
-      # Central Portal publishing method
-      - name: Publish to Central Portal
-        uses: ./.github/actions/publish_central_portal
+      # Maven Central publishing method using official plugin
+      - name: Publish to Maven Central (NMCP Snapshots)
+        uses: ./.github/actions/publish_maven_central
         with:
-          # Pass credentials directly as input parameters
           sonatype_user: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
           sonatype_token: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
           signing_key_id: ${{ secrets.SIGNING_KEY_ID }}
           signing_key_password: ${{ secrets.SIGNING_KEY_PASSWORD }}
           signing_key_file: ${{ env.SIGNING_KEY_FILE_PATH }}
           auto_publish: 'true'
+          use_snapshot: 'true'
+
+      - name: Cleanup signing key files
+        if: always()
+        run: |
+          shred -u -z -n 3 "${SIGNING_KEY_FILE_PATH}" || rm -f "${SIGNING_KEY_FILE_PATH}"
+          rm -f ~/secretKey.gpg.b64 || true
+        shell: bash

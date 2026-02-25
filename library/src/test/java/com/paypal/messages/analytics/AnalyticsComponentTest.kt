@@ -86,6 +86,7 @@ class AnalyticsComponentTest {
 		assertEquals(instanceId, analyticsComponent.instanceId)
 		assertEquals(originatingInstanceId, analyticsComponent.originatingInstanceId)
 		assertEquals(componentEvents, analyticsComponent.componentEvents)
+		assertEquals("undefined", analyticsComponent.languageRequested)
 	}
 
 	@Test
@@ -117,7 +118,64 @@ class AnalyticsComponentTest {
 			""""originating_instance_id":"test_originating_instance_id"""",
 			""""component_events":[{"event_type":"message_clicked"}]""",
 			""""__shared__":{}""",
+			""""language_requested":"undefined"""",
 		)
 		expectedParts.forEach { assertTrue(it in json, "json does not contain $it") }
+	}
+
+	@Test
+	fun testLanguageRequestedFromLocale() {
+		val component = AnalyticsComponent(
+			locale = "en_US",
+			componentEvents = mutableListOf(),
+		)
+		assertEquals("en-US", component.languageRequested)
+	}
+
+	@Test
+	fun testLanguageRequestedFromLanguageWhenNoLocale() {
+		val component = AnalyticsComponent(
+			language = "en-US",
+			componentEvents = mutableListOf(),
+		)
+		assertEquals("en-US", component.languageRequested)
+	}
+
+	@Test
+	fun testLanguageRequestedPrefersLocaleOverLanguage() {
+		val component = AnalyticsComponent(
+			language = "fr-CA",
+			locale = "en_US",
+			componentEvents = mutableListOf(),
+		)
+		assertEquals("en-US", component.languageRequested)
+	}
+
+	@Test
+	fun testLanguageRequestedDefaultsToUndefinedWhenBothNull() {
+		val component = AnalyticsComponent(
+			componentEvents = mutableListOf(),
+		)
+		assertEquals("undefined", component.languageRequested)
+	}
+
+	@Test
+	fun testLanguageRequestedSerializationWithLocale() {
+		val component = AnalyticsComponent(
+			locale = "en_US",
+			componentEvents = mutableListOf(),
+		)
+		val json = Gson().toJson(component)
+		assertTrue(""""language_requested":"en-US"""" in json)
+	}
+
+	@Test
+	fun testLanguageRequestedSerializationWithLanguage() {
+		val component = AnalyticsComponent(
+			language = "fr-CA",
+			componentEvents = mutableListOf(),
+		)
+		val json = Gson().toJson(component)
+		assertTrue(""""language_requested":"fr-CA"""" in json)
 	}
 }

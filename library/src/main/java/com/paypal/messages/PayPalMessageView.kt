@@ -24,6 +24,8 @@ import com.paypal.messages.analytics.AnalyticsLogger
 import com.paypal.messages.analytics.ComponentType
 import com.paypal.messages.analytics.EventType
 import com.paypal.messages.config.PayPalEnvironment
+import com.paypal.messages.config.PayPalLanguage
+import com.paypal.messages.config.PayPalLocale
 import com.paypal.messages.config.ProductGroup
 import com.paypal.messages.data.PayPalMessageDataCallback
 import com.paypal.messages.data.PayPalMessageDataProvider
@@ -87,6 +89,8 @@ class PayPalMessageView @JvmOverloads constructor(
 				buyerCountry = this.buyerCountry,
 				offerType = this.offerType,
 				pageType = this.pageType,
+				language = this.language,
+				locale = this.locale,
 				environment = this.environment ?: PayPalEnvironment.SANDBOX,
 			),
 			style = MessageStyle(this.color, this.logoType, this.textAlignment),
@@ -103,6 +107,8 @@ class PayPalMessageView @JvmOverloads constructor(
 		buyerCountry = config.data.buyerCountry
 		offerType = config.data.offerType
 		pageType = config.data.pageType
+		language = config.data.language
+		locale = config.data.locale
 		color = config.style.color
 		logoType = config.style.logoType
 		textAlignment = config.style.textAlignment
@@ -166,6 +172,20 @@ class PayPalMessageView @JvmOverloads constructor(
 			}
 		}
 	var buyerCountry: String? = config.data.buyerCountry
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				debounceUpdateContent(Unit)
+			}
+		}
+	var language: PayPalLanguage? = config.data.language
+		set(arg) {
+			if (field != arg) {
+				field = arg
+				debounceUpdateContent(Unit)
+			}
+		}
+	var locale: PayPalLocale? = config.data.locale
 		set(arg) {
 			if (field != arg) {
 				field = arg
@@ -405,7 +425,8 @@ class PayPalMessageView @JvmOverloads constructor(
 	}
 
 	override fun onLoading() {
-		onLoading.invoke()
+		// Explicitly use 'this.' to reference the property, not this method
+		this.onLoading.invoke()
 	}
 
 	override fun onSuccess(response: ApiMessageData.Response, duration: Int) {
@@ -429,7 +450,10 @@ class PayPalMessageView @JvmOverloads constructor(
 	}
 
 	override fun onError(error: PayPalErrors.Base) {
-		LogCat.debug(TAG, "onError")
+		LogCat.debug(TAG, "onError: ${error.message}")
+		// Invoke the user-provided error callback
+		// Explicitly use 'this.' to reference the property, not this method
+		this.onError.invoke(error)
 	}
 
 	/**
@@ -635,6 +659,8 @@ class PayPalMessageView @JvmOverloads constructor(
 			amount = this.amount.toString(),
 			pageType = this.pageType,
 			buyerCountryCode = this.buyerCountry,
+			language = this.language?.code,
+			locale = this.locale?.code,
 			styleLogoType = this.logoType,
 			styleColor = this.color,
 			styleTextAlign = this.textAlignment,

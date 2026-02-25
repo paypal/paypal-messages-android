@@ -1,14 +1,22 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
 import org.jmailen.gradle.kotlinter.tasks.LintTask
 import org.jmailen.gradle.kotlinter.tasks.FormatTask
 
 buildscript {
-	ext.modules = [
-		"sdkVersionName"      : "1.1.0",
-		"androidMinSdkVersion": 23,
-		"androidTargetVersion": 34
-	]
-	
+		ext.modules = [
+			"sdkVersionName"      : "1.1.14",
+			"androidMinSdkVersion": 23,
+			"androidTargetVersion": 34
+		]
+			
 	dependencies {
 		classpath 'org.apache.httpcomponents:httpclient:4.5.13'
 		classpath 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
@@ -21,6 +29,8 @@ plugins {
 	id 'org.jetbrains.kotlin.android' version '1.8.22' apply false
 	id 'org.jmailen.kotlinter' version '3.16.0'
 	id 'signing'
+	id 'maven-publish'
+	id 'io.codearte.nexus-staging' version '0.30.0'
 }
 
 tasks.register('ktLint', LintTask) {
@@ -41,65 +51,234 @@ version modules.sdkVersionName
 
 
 // Central Portal API integration
+import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.ContentType
 import org.apache.http.entity.mime.MultipartEntityBuilder
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import com.fasterxml.jackson.databind.ObjectMapper
+import java.net.URLEncoder
+import org.apache.tools.ant.taskdefs.condition.Os
 
 tasks.register('publishToCentralPortal') {
     group = 'publishing'
-    description = 'Publishes artifacts to Sonatype Central Portal'
+    description = 'Publishes artifacts to Sonatype Central Portal using the Maven plugin'
     
-    dependsOn 'assemble'
-    // We don't depend on specific signing tasks here
-    // as they'll be handled by the publishing task
+    // Check if signing is configured
+    def isSigningConfigured = System.getenv('SIGNING_KEY_ID') && 
+                             System.getenv('SIGNING_KEY_PASSWORD') && 
+                             System.getenv('SIGNING_KEY_FILE') &&
+                             !System.getenv('SIGNING_KEY_ID').isEmpty() &&
+                             !System.getenv('SIGNING_KEY_PASSWORD').isEmpty() &&
+                             !System.getenv('SIGNING_KEY_FILE').isEmpty()
+    
+    dependsOn ':library:assembleRelease', ':library:generatePomFileForReleasePublication'
     
     doLast {
-        // Look for token in multiple places for flexibility
+        logger.lifecycle("====================================================================")
+        logger.lifecycle("Publishing to Maven Central via Central Portal REST API")
+        logger.lifecycle("====================================================================")
+        
+        // Make sure we have credentials
+        def username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: 
+                     findProperty('sonatypeUsername') ?: 
+                     project.hasProperty('sonatypeUsername') ? project.getProperty('sonatypeUsername') : null
+        
         def token = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: 
-                   findProperty('sonatypePassword') ?: 
-                   project.hasProperty('sonatypePassword') ? project.getProperty('sonatypePassword') : null
+                  findProperty('sonatypePassword') ?: 
+                  project.hasProperty('sonatypePassword') ? project.getProperty('sonatypePassword') : null
         
-        if (!token) {
-            logger.warn("SONATYPE_NEXUS_PASSWORD environment variable or sonatypePassword property not set")
-            logger.warn("Using 'demo-token' for testing only. For production, set SONATYPE_NEXUS_PASSWORD")
-            token = "demo-token" // Only for testing - will not work in production!
+        if (!username || !token) {
+            throw new GradleException("SONATYPE_NEXUS_USERNAME and SONATYPE_NEXUS_PASSWORD environment variables or properties are required")
         }
-        
-        // The API endpoint
-        def apiUrl = "https://central.sonatype.com/api/v1/publisher/upload"
-        def publishingType = project.hasProperty('autoPublish') ? "AUTOMATIC" : "USER_MANAGED"
-        
-        logger.lifecycle("Publishing to Central Portal API with publishing type: ${publishingType}")
-        
-        logger.lifecycle("Publishing to Central Portal API completed successfully")
+
+        // Resolve library project details
+        def libraryProject = project.findProject(':library')
+        def version = libraryProject.version
+        def artifactId = libraryProject.ext.name
+        def groupId = libraryProject.group
+
+        logger.lifecycle("Preparing bundle for ${groupId}:${artifactId}:${version}")
+
+        // Locate artifacts
+        def aarFile = file("${libraryProject.buildDir}/outputs/aar/library-release.aar")
+        def pomFile = file("${libraryProject.buildDir}/publications/release/pom-default.xml")
+        def sourcesJar = file("${libraryProject.buildDir}/libs/library-${version}-sources.jar")
+
+        if (!aarFile.exists()) {
+            throw new GradleException("AAR file not found: ${aarFile.absolutePath}")
+        }
+        if (!pomFile.exists()) {
+            throw new GradleException("POM file not found: ${pomFile.absolutePath}")
+        }
+        if (!sourcesJar.exists()) {
+            throw new GradleException("Sources JAR not found: ${sourcesJar.absolutePath}")
+        }
+
+        // Prepare bundle directory
+        def bundleDir = file("${libraryProject.buildDir}/central-bundle")
+        bundleDir.deleteDir()
+        bundleDir.mkdirs()
+
+        // Copy artifacts with correct names
+        copy {
+            from aarFile
+            into bundleDir
+            rename { "${artifactId}-${version}.aar" }
+        }
+        copy {
+            from pomFile
+            into bundleDir
+            rename { "${artifactId}-${version}.pom" }
+        }
+        copy {
+            from sourcesJar
+            into bundleDir
+            rename { "${artifactId}-${version}-sources.jar" }
+        }
+
+        // Optionally sign artifacts
+        def keyId = System.getenv('SIGNING_KEY_ID') ?: project.findProperty('signing.keyId')
+        def password = System.getenv('SIGNING_KEY_PASSWORD') ?: project.findProperty('signing.password')
+        def secretKeyRingFile = System.getenv('SIGNING_KEY_FILE') ?: project.findProperty('signing.secretKeyRingFile')
+
+        if (keyId && password && secretKeyRingFile) {
+            logger.lifecycle("Signing artifacts...")
+            bundleDir.listFiles().each { f ->
+                if (f.name.endsWith('.aar') || f.name.endsWith('.pom') || f.name.endsWith('.jar')) {
+                    exec {
+                        commandLine 'gpg', '--batch', '--yes', '--armor', '--detach-sign',
+                            '--default-key', keyId,
+                            '--passphrase', password,
+                            '--pinentry-mode', 'loopback',
+                            f.absolutePath
+                    }
+                }
+            }
+        } else {
+            logger.lifecycle("Signing not configured; proceeding without signatures")
+        }
+
+        // Create bundle ZIP
+        def bundleZip = file("${libraryProject.buildDir}/${artifactId}-${version}-bundle.zip")
+        ant.zip(destfile: bundleZip) {
+            fileset(dir: bundleDir)
+        }
+
+        logger.lifecycle("Bundle created at: ${bundleZip.absolutePath}")
+        logger.lifecycle("Bundle contents:")
+        bundleDir.listFiles().each { logger.lifecycle("  - ${it.name}") }
+
+        // Upload to Central Portal
+        def client = HttpClients.createDefault()
+        def auto = project.hasProperty('autoPublish')
+        def publishingType = auto ? 'AUTOMATIC' : 'USER_MANAGED'
+        def uploadUrl = "https://central.sonatype.com/api/v1/publisher/upload?publishingType=${publishingType}"
+
+        def post = new HttpPost(uploadUrl)
+        post.setHeader("Authorization", "Bearer ${token}")
+
+        def entity = MultipartEntityBuilder.create()
+            .addBinaryBody("bundle", bundleZip, ContentType.APPLICATION_OCTET_STREAM, bundleZip.name)
+            .build()
+
+        post.setEntity(entity)
+        logger.lifecycle("Uploading bundle to Central Portal (${publishingType})...")
+
+        def response = client.execute(post)
+        def statusCode = response.getStatusLine().getStatusCode()
+        def responseBody = EntityUtils.toString(response.getEntity())
+
+        if (statusCode == 200 || statusCode == 201 || statusCode == 202) {
+            logger.lifecycle("Successfully uploaded to Central Portal")
+            logger.lifecycle("Response: ${responseBody}")
+        } else {
+            throw new GradleException("Failed to upload to Central Portal. Status: ${statusCode}, Response: ${responseBody}")
+        }
+        client.close()
+         
+        logger.lifecycle("====================================================================")
+        logger.lifecycle("Publishing to Maven Central completed (upload).")
+        logger.lifecycle("NOTE: After successful publishing, it may take several hours for")
+        logger.lifecycle("the artifacts to appear on Maven Central and search indexes.")
+        logger.lifecycle("====================================================================")
     }
 }
 
 tasks.register('checkCentralPortalDeployment') {
     group = 'publishing'
-    description = 'Checks the status of deployments in Sonatype Central Portal'
+    description = 'Checks the status of deployments in Sonatype Central Portal using Maven plugin'
     
     doLast {
-        // Look for token in multiple places for flexibility
-        def token = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: 
-                   findProperty('sonatypePassword') ?: 
-                   project.hasProperty('sonatypePassword') ? project.getProperty('sonatypePassword') : null
+        logger.lifecycle("====================================================================")
+        logger.lifecycle("Checking deployment status in Central Portal")
+        logger.lifecycle("====================================================================")
         
-        if (!token) {
-            logger.warn("SONATYPE_NEXUS_PASSWORD environment variable or sonatypePassword property not set")
-            logger.warn("Using 'demo-token' for testing only. For production, set SONATYPE_NEXUS_PASSWORD")
-            token = "demo-token" // Only for testing - will not work in production!
+        // Make sure we have credentials
+        def username = System.getenv('SONATYPE_NEXUS_USERNAME') ?: 
+                     findProperty('sonatypeUsername') ?: 
+                     project.hasProperty('sonatypeUsername') ? project.getProperty('sonatypeUsername') : null
+        
+        def token = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: 
+                  findProperty('sonatypePassword') ?: 
+                  project.hasProperty('sonatypePassword') ? project.getProperty('sonatypePassword') : null
+        
+        if (!username || !token) {
+            throw new GradleException("SONATYPE_NEXUS_USERNAME and SONATYPE_NEXUS_PASSWORD environment variables or properties are required")
         }
         
-        // The API endpoint
-        def apiUrl = "https://central.sonatype.com/api/v1/publisher/status"
+        // Get library project information
+        def libraryProject = project.findProject(':library')
+        def groupId = libraryProject.group
+        def artifactId = libraryProject.name
+        def version = libraryProject.version
         
-        logger.lifecycle("Checking deployment status in Central Portal")
+        // Ensure we have Maven available
+        def mvnExecutable = Os.isFamily(Os.FAMILY_WINDOWS) ? "mvn.cmd" : "mvn"
         
-        logger.lifecycle("Deployment status check completed")
+        // Create the command to check status
+        def cmd = [
+            mvnExecutable,
+            "org.sonatype.central:central-publishing-maven-plugin:status",
+            "-f", "${project.rootDir}/library/pom.xml", 
+            "-s", "${project.rootDir}/.mvn/maven-settings.xml",
+            "-Dcentral.groupId=${groupId}",
+            "-Dcentral.artifactId=${artifactId}",
+            "-Dcentral.version=${version}",
+            "--batch-mode"
+        ].collect { it.toString() }
+        
+        // Execute the Maven command
+        def processBuilder = new ProcessBuilder(cmd)
+        // Pass the environment variables to the process
+        def env = processBuilder.environment()
+        env.put("SONATYPE_NEXUS_USERNAME", username)
+        env.put("SONATYPE_NEXUS_PASSWORD", token)
+        
+        // Redirect output to the Gradle logger
+        processBuilder.redirectErrorStream(true)
+        def process = processBuilder.start()
+        
+        // Read the output
+        def reader = new BufferedReader(new InputStreamReader(process.getInputStream()))
+        String line
+        while ((line = reader.readLine()) != null) {
+            logger.lifecycle(line)
+        }
+        
+        // Wait for the process to complete
+        def exitCode = process.waitFor()
+        
+        if (exitCode != 0) {
+            logger.warn("Maven status check failed with exit code: ${exitCode}")
+        }
+        
+        logger.lifecycle("====================================================================")
+        logger.lifecycle("NOTE: After successful publishing, it may take several hours for")
+        logger.lifecycle("the artifacts to appear on Maven Central (https://repo.maven.apache.org/maven2)")
+        logger.lifecycle("and search indexes like mvnrepository.com or search.maven.org.")
+        logger.lifecycle("====================================================================")
     }
 }
 
@@ -107,16 +286,251 @@ subprojects {
   group = "com.paypal.messages"
 }
 
+// Configure Nexus Staging to close and release automatically (OSSRH s01)
+nexusStaging {
+    serverUrl = "https://s01.oss.sonatype.org/service/local/"
+    packageGroup = "com.paypal.messages"
+    
+    // Check if we're using token authentication
+    def tokenAuth = System.getenv('SONATYPE_TOKEN_AUTH') == 'true' || findProperty('sonatypeTokenAuth') == 'true'
+    
+    if (tokenAuth) {
+        // For token auth, we need special configuration
+        numberOfRetries = 60
+        delayBetweenRetriesInMillis = 5000
+        
+        // For the Nexus Staging plugin, we need to use customized REST client
+        // that includes the token in the header. The plugin doesn't directly support
+        // token authentication, so we use a modified HTTP client configuration in closeAndPromoteRepository task
+    } else {
+        // Traditional username/password auth
+        username = (findProperty('sonatypeUsername') ?: System.getenv('OSSRH_USERNAME') ?: System.getenv('SONATYPE_NEXUS_USERNAME') ?: '') as String
+        password = (findProperty('sonatypePassword') ?: System.getenv('OSSRH_PASSWORD') ?: System.getenv('SONATYPE_NEXUS_PASSWORD') ?: '') as String
+    }
+}
+
+
+// Configure duplicate handling for ZIP tasks
+tasks.withType(Zip) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Add custom token-based authentication for closeAndPromoteRepository task
+import groovy.json.JsonSlurper
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.entity.StringEntity
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.util.EntityUtils
+
+tasks.register('closeAndPromoteRepositoryWithToken') {
+    group = 'publishing'
+    description = 'Close and promote repository using token authentication'
+    
+    doLast {
+        def tokenAuth = System.getenv('SONATYPE_TOKEN_AUTH') == 'true' || findProperty('sonatypeTokenAuth') == 'true'
+        if (!tokenAuth) {
+            logger.lifecycle("Token auth not enabled, skipping custom close and promote task.")
+            return
+        }
+        
+        def token = System.getenv('SONATYPE_NEXUS_PASSWORD') ?: findProperty('sonatypePassword')
+        if (!token) {
+            logger.error("============================================================")
+            logger.error("ERROR: SONATYPE_NEXUS_PASSWORD token is required for token authentication")
+            logger.error("You can create a token at: https://central.sonatype.com/profile")
+            logger.error("")
+            logger.error("Add it to your environment with: export SONATYPE_NEXUS_PASSWORD=your-token-here")
+            logger.error("============================================================")
+            throw new GradleException("Missing SONATYPE_NEXUS_PASSWORD token for Maven Central authentication")
+        }
+        
+        // Create HTTP client
+        def client = HttpClients.createDefault()
+        def baseUrl = "https://s01.oss.sonatype.org/service/local/"
+        
+        try {
+            // 1. Get staging repositories
+            def listReposUrl = baseUrl + "staging/profile_repositories"
+            def getRepos = new HttpGet(listReposUrl)
+            getRepos.setHeader("Authorization", "Bearer " + token)
+            getRepos.setHeader("Accept", "application/json")
+            
+            def response = client.execute(getRepos)
+            def responseCode = response.getStatusLine().getStatusCode()
+            def responseBody = EntityUtils.toString(response.getEntity())
+            
+            if (responseCode != 200) {
+                throw new GradleException("Failed to get staging repositories: ${responseCode}, ${responseBody}")
+            }
+            
+            // Parse response to find our repository
+            def json = new JsonSlurper().parseText(responseBody)
+            def repoId = null
+            
+            json.data.each { repo ->
+                if (repo.type == "open" && repo.profileId.contains("com.paypal.messages")) {
+                    repoId = repo.repositoryId
+                }
+            }
+            
+            if (!repoId) {
+                throw new GradleException("No open staging repository found for com.paypal.messages")
+            }
+            
+            logger.lifecycle("Found staging repository: ${repoId}")
+            
+            // 2. Close the repository
+            def closeUrl = baseUrl + "staging/bulk/close"
+            def closePost = new HttpPost(closeUrl)
+            closePost.setHeader("Authorization", "Bearer " + token)
+            closePost.setHeader("Content-Type", "application/json")
+            closePost.setHeader("Accept", "application/json")
+            
+            def closePayload = """
+            {
+                "data": {
+                    "stagedRepositoryIds": ["${repoId}"],
+                    "description": "Closed by Gradle closeAndPromoteRepositoryWithToken task"
+                }
+            }
+            """
+            
+            closePost.setEntity(new StringEntity(closePayload))
+            response = client.execute(closePost)
+            responseCode = response.getStatusLine().getStatusCode()
+            responseBody = EntityUtils.toString(response.getEntity())
+            
+            if (responseCode < 200 || responseCode > 299) {
+                throw new GradleException("Failed to close repository: ${responseCode}, ${responseBody}")
+            }
+            
+            logger.lifecycle("Successfully closed repository: ${repoId}")
+            
+            // Wait for repository to be closed
+            boolean isClosed = false
+            for (int i = 0; i < 30; i++) {
+                Thread.sleep(5000)
+                getRepos = new HttpGet(listReposUrl)
+                getRepos.setHeader("Authorization", "Bearer " + token)
+                getRepos.setHeader("Accept", "application/json")
+                
+                response = client.execute(getRepos)
+                responseBody = EntityUtils.toString(response.getEntity())
+                json = new JsonSlurper().parseText(responseBody)
+                
+                def repo = json.data.find { it.repositoryId == repoId }
+                if (repo && repo.type == "closed") {
+                    isClosed = true
+                    logger.lifecycle("Repository successfully closed: ${repoId}")
+                    break
+                } else if (repo && repo.type == "open") {
+                    logger.lifecycle("Repository is still open, waiting for close operation to complete...")
+                } else if (repo) {
+                    logger.lifecycle("Repository status: ${repo.type}, waiting for close operation to complete...")
+                }
+                
+                logger.lifecycle("Waiting for repository to be closed... (${i+1}/30)")
+            }
+            
+            if (!isClosed) {
+                // Check if there are errors in the repository status
+                getRepos = new HttpGet(listReposUrl)
+                getRepos.setHeader("Authorization", "Bearer " + token)
+                getRepos.setHeader("Accept", "application/json")
+                
+                response = client.execute(getRepos)
+                responseBody = EntityUtils.toString(response.getEntity())
+                json = new JsonSlurper().parseText(responseBody)
+                
+                def repo = json.data.find { it.repositoryId == repoId }
+                if (repo && repo.transitioning) {
+                    logger.error("Repository is still transitioning after timeout period")
+                    throw new GradleException("Repository closing timed out after 150 seconds, but is still transitioning")
+                } else if (repo && repo.type != "closed") {
+                    // Check for errors in the repository
+                    def errorsUrl = baseUrl + "staging/repository/${repoId}/activity"
+                    def getErrors = new HttpGet(errorsUrl)
+                    getErrors.setHeader("Authorization", "Bearer " + token)
+                    getErrors.setHeader("Accept", "application/json")
+                    
+                    response = client.execute(getErrors)
+                    responseBody = EntityUtils.toString(response.getEntity())
+                    
+                    logger.error("Repository failed to close, current status: ${repo.type}")
+                    logger.error("Activity log: ${responseBody}")
+                    throw new GradleException("Repository failed to close. Current status: ${repo.type}")
+                } else {
+                    throw new GradleException("Repository closing timed out after 150 seconds")
+                }
+            }
+            
+            // 3. Release the repository
+            def releaseUrl = baseUrl + "staging/bulk/promote"
+            def releasePost = new HttpPost(releaseUrl)
+            releasePost.setHeader("Authorization", "Bearer " + token)
+            releasePost.setHeader("Content-Type", "application/json")
+            releasePost.setHeader("Accept", "application/json")
+            
+            def releasePayload = """
+            {
+                "data": {
+                    "stagedRepositoryIds": ["${repoId}"],
+                    "description": "Released by Gradle closeAndPromoteRepositoryWithToken task"
+                }
+            }
+            """
+            
+            releasePost.setEntity(new StringEntity(releasePayload))
+            response = client.execute(releasePost)
+            responseCode = response.getStatusLine().getStatusCode()
+            responseBody = EntityUtils.toString(response.getEntity())
+            
+            if (responseCode < 200 || responseCode > 299) {
+                throw new GradleException("Failed to release repository: ${responseCode}, ${responseBody}")
+            }
+            
+            logger.lifecycle("Successfully released repository: ${repoId}")
+            logger.lifecycle("Artifact publishing complete! Please allow 30 minutes for synchronization to Maven Central.")
+        } finally {
+            client.close()
+        }
+    }
+}
+
 //./gradlew -PversionParam=0.0.1 changeReleaseVersion
 tasks.register('changeReleaseVersion') {
-	doLast {
-		def topLevelGradleFile = file('./build.gradle')
-		def topLevelGradleFileText = topLevelGradleFile.getText('UTF-8')
-		def useSnapshot = System.getenv('USE_SNAPSHOT')
-		def snapshotParam = useSnapshot == "true" || useSnapshot == true ? "-SNAPSHOT" : ""
-		
-		def updatedScript =
-			topLevelGradleFileText.replaceFirst(/("sdkVersionName"\s*: )".*",/, '$1"' + versionParam + snapshotParam + '",')
-		topLevelGradleFile.write(updatedScript, 'UTF-8')
-	}
+    doLast {
+        def newVersion = versionParam
+        
+        // Update build.gradle
+        def topLevelGradleFile = file('./build.gradle')
+        def topLevelGradleFileText = topLevelGradleFile.getText('UTF-8')
+        def updatedGradleScript = topLevelGradleFileText.replaceFirst(
+            /("sdkVersionName"\s*: )".*",/, 
+            '$1"' + newVersion + '",'
+        )
+        topLevelGradleFile.write(updatedGradleScript, 'UTF-8')
+        
+        // Update library/pom.xml
+        def pomFile = file('./library/pom.xml')
+        if (pomFile.exists()) {
+            def pomText = pomFile.getText('UTF-8')
+            def updatedPomText = pomText.replaceFirst(
+                /<version>.*?<\/version>/, 
+                "<version>" + newVersion + "</version>"
+            )
+            pomFile.write(updatedPomText, 'UTF-8')
+            println("Updated version in library/pom.xml to " + newVersion)
+        } else {
+            println("Warning: library/pom.xml not found")
+        }
+        
+        println("Version updated to " + newVersion)
+    }
 }
+
+
+
+
+

@@ -1,0 +1,170 @@
+name: 'Publish to Maven Central'
+description: 'Publishes all modules using the Maven Central Portal Plugin'
+inputs:
+  sonatype_user:
+    description: 'Sonatype user'
+    required: true
+    default: ''
+  sonatype_token:
+    description: 'Sonatype user token'
+    required: true
+    default: ''
+  signing_key_id:
+    description: 'Signing key id'
+    required: true
+    default: ''
+  signing_key_password:
+    description: 'Signing key password'
+    required: true
+    default: ''
+  signing_key_file:
+    description: 'Signing key file'
+    required: true
+    default: ''
+  auto_publish:
+    description: 'Whether to publish automatically'
+    required: false
+    default: 'true'
+  use_snapshot:
+    description: 'Whether to publish as a SNAPSHOT version'
+    required: false
+    default: 'false'
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@v4.5
+      with:
+        maven-version: 3.9.5
+
+    - name: Create Maven settings directory
+      shell: bash
+      run: |
+        mkdir -p ${{ github.workspace }}/.mvn
+
+    - name: Create Maven settings file
+      shell: bash
+      run: |
+        cat > ${{ github.workspace }}/.mvn/maven-settings.xml << 'EOF'
+        <?xml version="1.0" encoding="UTF-8"?>
+        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+            <servers>
+                <server>
+                    <id>central</id>
+                    <username>${env.SONATYPE_NEXUS_USERNAME}</username>
+                    <password>${env.SONATYPE_NEXUS_PASSWORD}</password>
+                </server>
+            </servers>
+            <profiles>
+                <profile>
+                    <id>gpg</id>
+                    <properties>
+                        <gpg.executable>gpg</gpg.executable>
+                        <gpg.keyname>${env.SIGNING_KEY_ID}</gpg.keyname>
+                        <gpg.passphrase>${env.SIGNING_KEY_PASSWORD}</gpg.passphrase>
+                    </properties>
+                </profile>
+            </profiles>
+            <activeProfiles>
+                <activeProfile>gpg</activeProfile>
+            </activeProfiles>
+        </settings>
+        EOF
+
+    - name: Prepare and publish via Central Portal (library)
+      shell: bash
+      env:
+        SONATYPE_NEXUS_USERNAME: ${{ inputs.sonatype_user }}
+        SONATYPE_NEXUS_PASSWORD: ${{ inputs.sonatype_token }}
+        SIGNING_KEY_ID: ${{ inputs.signing_key_id }}
+        SIGNING_KEY_PASSWORD: ${{ inputs.signing_key_password }}
+        SIGNING_KEY_FILE: ${{ inputs.signing_key_file }}
+        USE_SNAPSHOT: ${{ inputs.use_snapshot }}
+        AUTO_PUBLISH: ${{ inputs.auto_publish }}
+        WORKSPACE_DIR: ${{ github.workspace }}
+      run: |
+        set -euo pipefail
+        echo "Publishing via Central Portal Maven plugin (NMCP) - module :library"
+        
+        # Validate workspace directory path
+        if [[ ! "${WORKSPACE_DIR}" =~ ^/[a-zA-Z0-9/_.-]+$ ]]; then
+          echo "ERROR: Invalid workspace directory path format" >&2
+          exit 1
+        fi
+        
+        if [ ! -d "${WORKSPACE_DIR}/library" ]; then
+          echo "Error: library directory not found" >&2
+          exit 1
+        fi
+
+        # Validate boolean inputs
+        if [[ ! "${USE_SNAPSHOT}" =~ ^(true|false)$ ]]; then
+          echo "ERROR: Invalid USE_SNAPSHOT value. Must be 'true' or 'false'" >&2
+          exit 1
+        fi
+        
+        if [[ ! "${AUTO_PUBLISH}" =~ ^(true|false)$ ]]; then
+          echo "ERROR: Invalid AUTO_PUBLISH value. Must be 'true' or 'false'" >&2
+          exit 1
+        fi
+
+        echo "Importing GPG key for signing"
+        gpg --batch --import "${SIGNING_KEY_FILE}"
+        
+        # Configure GPG for CI environment
+        echo "Configuring GPG for CI environment..."
+        export GPG_TTY=$(tty 2>/dev/null || echo "")
+        gpg --batch --list-secret-keys --keyid-format LONG
+        
+        # Test GPG signing capability early
+        echo "Testing GPG signing capability..."
+        echo "test" | gpg --batch --yes --pinentry-mode loopback --passphrase "${SIGNING_KEY_PASSWORD}" --local-user "${SIGNING_KEY_ID}" --armor --detach-sign --output /tmp/test.asc || echo "Warning: GPG test signing failed"
+
+        echo "Warming up Gradle wrapper (with retries)"
+        attempts=0
+        until ./gradlew -v; do
+          attempts=$((attempts+1))
+          if [ $attempts -ge 5 ]; then
+            echo "Gradle wrapper download failed after ${attempts} attempts" >&2
+            exit 1
+          fi
+          echo "Gradle wrapper failed (attempt ${attempts}), retrying in 5s..."
+          sleep 5
+        done
+
+        VERSION=$(grep -o '"sdkVersionName"\s*:\s*"[^"]*"' "${WORKSPACE_DIR}/build.gradle" | grep -o '"[^"]*"$' | tr -d '"')
+        
+        # Validate extracted version format
+        if ! echo "${VERSION}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
+          echo "ERROR: Invalid version format extracted from build.gradle: ${VERSION}" >&2
+          exit 1
+        fi
+        
+        if [ "${USE_SNAPSHOT}" = "true" ]; then
+          [[ "${VERSION}" != *-SNAPSHOT ]] && VERSION="${VERSION}-SNAPSHOT"
+          echo "Publishing SNAPSHOT version: ${VERSION}"
+        else
+          [[ "${VERSION}" == *-SNAPSHOT ]] && VERSION="${VERSION%-SNAPSHOT}"
+          echo "Publishing release version: ${VERSION}"
+        fi
+
+        echo "Setting project version to ${VERSION}"
+        ./gradlew -PversionParam="${VERSION}" changeReleaseVersion --no-daemon --stacktrace
+
+        echo "Building library and preparing artifacts (AAR + sources + POM)"
+        ./prepare-maven-artifacts.sh
+
+        echo "Using library POM directly - no wrapper POM needed..."
+        # The library POM already has all the required configuration:
+        # - packaging=aar (AAR as primary artifact)
+        # - maven-gpg-plugin (for signing)
+        # - central-publishing-maven-plugin (for deployment)
+        echo "Library POM has all required Maven Central configuration"
+
+        echo "Deploying to Central Portal via Maven plugin"
+        set -euo pipefail
+        ./deploy-snapshot-to-central.sh
+
+        echo "NMCP publish finished. Check deployments at https://central.sonatype.com/publishing/deployments"

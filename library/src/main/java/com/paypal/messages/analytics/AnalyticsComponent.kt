@@ -30,8 +30,14 @@ data class AnalyticsComponent(
 	val pageType: PayPalMessagePageType? = null,
 	@SerializedName("buyer_country_code")
 	val buyerCountryCode: String? = null,
+	@SerializedName("language")
+	val language: String? = null,
+	@SerializedName("locale")
+	val locale: String? = null,
 	@SerializedName("presentment_channel")
 	val channel: String? = "UPSTREAM",
+	@SerializedName("language_requested")
+	val languageRequested: String? = locale?.replace("_", "-") ?: language ?: "undefined",
 
 	// Message Only
 	@SerializedName("style_logo_type")

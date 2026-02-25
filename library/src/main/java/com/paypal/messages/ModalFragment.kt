@@ -9,6 +9,7 @@ import android.graphics.PorterDuffColorFilter
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Bundle
+import android.os.Message
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -49,12 +50,34 @@ import java.util.UUID
 import kotlin.system.measureTimeMillis
 import com.paypal.messages.config.PayPalMessageOfferType as OfferType
 
-internal class ModalFragment(
-	private val clientId: String,
-) : BottomSheetDialogFragment() {
+internal class ModalFragment : BottomSheetDialogFragment() {
+	companion object {
+		private const val ARG_CLIENT_ID = "clientId"
+
+		/**
+		 * Factory method to create a new instance of ModalFragment with clientId.
+		 * This pattern is required for proper fragment state restoration when
+		 * "Don't keep activities" is enabled.
+		 */
+		fun newInstance(clientId: String): ModalFragment {
+			return ModalFragment().apply {
+				arguments = Bundle().apply {
+					putString(ARG_CLIENT_ID, clientId)
+				}
+			}
+		}
+	}
+
 	private val TAG = "PayPalMessageModal"
 	private val offsetTop = 50.dp
 	private val gson = GsonBuilder().setPrettyPrinting().create()
+
+	/**
+	 * Gets the clientId from arguments Bundle.
+	 * This ensures proper state restoration when Android recreates the fragment.
+	 */
+	private val clientId: String
+		get() = arguments?.getString(ARG_CLIENT_ID) ?: throw IllegalStateException("clientId must be set via newInstance()")
 
 	private var modalUrl: String? = null
 
@@ -83,6 +106,8 @@ internal class ModalFragment(
 				setJsValue(name = "offer", value = offerArg.toString())
 			}
 		}
+	var language: String? = null
+	var locale: String? = null
 	private var stageTag: String? = null
 
 	private var inErrorState: Boolean = false
@@ -215,6 +240,29 @@ internal class ModalFragment(
 				LogCat.debug(TAG, "\n$source:\n  ${consoleMessage.message()}\n")
 				return super.onConsoleMessage(consoleMessage)
 			}
+
+			override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
+				val transport = resultMsg?.obj as? WebView.WebViewTransport
+				val tempWebView = WebView(view?.context ?: return false)
+
+				tempWebView.webViewClient = object : WebViewClient() {
+					override fun shouldOverrideUrlLoading(v: WebView?, request: WebResourceRequest?): Boolean {
+						val uri = request?.url ?: return false
+						return try {
+							val intent = Intent(Intent.ACTION_VIEW, uri)
+							v?.context?.startActivity(intent)
+							true
+						} catch (e: Exception) {
+							LogCat.error(TAG, "Failed to open new window URL: $uri")
+							false
+						}
+					}
+				}
+
+				transport?.webView = tempWebView
+				resultMsg?.sendToTarget()
+				return true
+			}
 		}
 	}
 	
@@ -222,7 +270,7 @@ internal class ModalFragment(
 	 * Loads or reloads the URL for the modal
 	 */
 	private fun reloadUrl() {
-		val url = Api.createModalUrl(clientId, amount, buyerCountry, offerType)
+		val url = Api.createModalUrl(clientId, amount, buyerCountry, offerType, language, locale)
 		LogCat.debug(TAG, "Loading modal URL: $url")
 		modalUrl = url
 		webView?.loadUrl(url)
@@ -244,21 +292,34 @@ internal class ModalFragment(
 		val rootView =
 			inflator.inflate(R.layout.paypal_message_modal_sheet_layout, container, false)
 		val closeButton = rootView.findViewById<ImageButton>(R.id.ModalCloseButton)
-		closeButton.contentDescription = closeButtonData?.alternativeText
+		
+		// Use default values if closeButtonData is null (can happen during fragment recreation)
+		// Default values match ModalCloseButton's init block defaults
+		val buttonHeight = closeButtonData?.height ?: 26
+		val buttonWidth = closeButtonData?.width ?: 26
+		val buttonColor = closeButtonData?.color ?: "#001435"
+		val buttonAltText = closeButtonData?.alternativeText ?: "PayPal learn more modal close"
+		
+		closeButton.contentDescription = buttonAltText
 
 		closeButton.layoutParams.height = TypedValue.applyDimension(
 			TypedValue.COMPLEX_UNIT_DIP,
-			this.closeButtonData?.height!!.toFloat(), resources.displayMetrics,
+			buttonHeight.toFloat(), resources.displayMetrics,
 		).toInt()
 		closeButton.layoutParams.width = TypedValue.applyDimension(
 			TypedValue.COMPLEX_UNIT_DIP,
-			this.closeButtonData?.width!!.toFloat(), resources.displayMetrics,
+			buttonWidth.toFloat(), resources.displayMetrics,
 		).toInt()
 
-		val colorInt = Color.parseColor(this.closeButtonData?.color)
+		val colorInt = Color.parseColor(buttonColor)
 		closeButton.background.colorFilter = PorterDuffColorFilter(colorInt, PorterDuff.Mode.SRC_ATOP)
 
-		closeButton?.setOnClickListener { dialog?.hide() }
+		closeButton?.setOnClickListener {
+			// Properly dismiss the fragment instead of just hiding the dialog
+			// This ensures the fragment is removed from the fragment manager
+			// and won't be restored when the activity is recreated
+			dismiss()
+		}
 
 		// If we already have a WebView, don't reset it
 		LogCat.debug(TAG, "Configuring WebView Settings and Handlers")
@@ -267,6 +328,9 @@ internal class ModalFragment(
 			// Set the bottom margin here instead of in XML so it is controlled in one single location.
 			// The offset shifts the modal down, so a bottom margin keeps the scrollable space on screen.
 			(layoutParams as RelativeLayout.LayoutParams).apply { bottomMargin = offsetTop }
+
+			// Show a white background while content loads to avoid black flash
+			setBackgroundColor(Color.WHITE)
 		}
 		
 		// Set up the WebView using our helper method
@@ -278,7 +342,8 @@ internal class ModalFragment(
 	}
 
 	override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-		setStyle(STYLE_NO_FRAME, R.style.BottomSheetDialog)
+		// Use no explicit style; configure window and shape programmatically
+		setStyle(STYLE_NO_FRAME, 0)
 
 		val dialog = (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
 			window?.setBackgroundDrawableResource(android.R.color.transparent)
@@ -287,7 +352,17 @@ internal class ModalFragment(
 			behavior.isHideable = true
 			behavior.isDraggable = false
 			behavior.state = BottomSheetBehavior.STATE_EXPANDED
+
+			// Add overlay dim behind the bottom sheet
+			window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+			window?.setDimAmount(0.5f)
+
+			// Allow tapping outside (overlay) to dismiss
+			setCanceledOnTouchOutside(true)
 		}
+
+		// Ensure fragment is cancelable so overlay taps close the modal
+		isCancelable = true
 
 		this.dialog = dialog
 
@@ -306,6 +381,8 @@ internal class ModalFragment(
 		this.devTouchpoint = config.devTouchpoint
 		this.ignoreCache = config.ignoreCache
 		this.offerType = config.offer
+		this.language = config.language?.code
+		this.locale = config.locale?.code
 		this.stageTag = config.stageTag
 
 		// Set Callbacks for Modal Actions
@@ -371,6 +448,7 @@ internal class ModalFragment(
 		LogCat.debug(TAG, "Modal loaded with url: $url")
 		val progressBar = rootView?.findViewById<ProgressBar>(R.id.progress_bar)
 		progressBar?.visibility = ProgressBar.INVISIBLE
+		// Keep white background; no change needed
 		// Callback for onLoad
 	}
 
@@ -378,7 +456,7 @@ internal class ModalFragment(
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 		logEvent(AnalyticsEvent(eventType = EventType.MODAL_VIEWED))
 		this.onLoading()
-		val url = Api.createModalUrl(clientId, amount, buyerCountry, offerType)
+		val url = Api.createModalUrl(clientId, amount, buyerCountry, offerType, language, locale)
 
 		LogCat.debug(TAG, "Start show process for modal with webView: $webView")
 		val requestDuration = measureTimeMillis {
@@ -410,6 +488,13 @@ internal class ModalFragment(
 				requestDuration = requestDuration.toString(),
 			),
 		)
+	}
+
+	override fun onDismiss(dialog: android.content.DialogInterface) {
+		super.onDismiss(dialog)
+		// Call the onClose callback when the modal is dismissed
+		onClose.invoke()
+		LogCat.debug(TAG, "Modal dismissed, onClose callback invoked")
 	}
 
 	/**
