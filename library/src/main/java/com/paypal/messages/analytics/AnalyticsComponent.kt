@@ -38,6 +38,8 @@ data class AnalyticsComponent(
 	val channel: String? = "UPSTREAM",
 	@SerializedName("language_requested")
 	val languageRequested: String? = locale?.replace("_", "-") ?: language ?: "undefined",
+	@SerializedName("language_rendered")
+	val languageRendered: String? = "undefined",
 
 	// Message Only
 	@SerializedName("style_logo_type")

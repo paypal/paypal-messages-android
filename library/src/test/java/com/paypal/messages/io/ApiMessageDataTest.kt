@@ -32,6 +32,7 @@ class ApiMessageDataTest {
 	private val fdata = "test_fdata"
 	private val trackingKeys = listOf("test_tracking_key")
 	private val originatingInstanceId = fakeUuid
+	private val language = "en-US"
 
 	private val metadata = ApiMessageData.Metadata(
 		creditProductGroup = creditProductGroup,
@@ -41,6 +42,7 @@ class ApiMessageDataTest {
 		modalCloseButton = modalCloseButton,
 		variables = variables,
 		merchantCountryCode = merchantCountryCode,
+		language = language,
 		creditProductIdentifiers = creditProductIdentifiers,
 		debugId = debugId,
 		fdata = fdata,
@@ -68,7 +70,7 @@ class ApiMessageDataTest {
 		val json = gson.toJson(response)
 
 		@Suppress("ktlint:standard:max-line-length")
-		val expectedJson = """{"meta":{"credit_product_group":"PAYPAL_CREDIT","offer_country_code":"US","offer_type":"PAY_LATER_SHORT_TERM","message_type":"OFFER","modal_close_button":{"width":100,"height":100,"available_width":200,"available_height":200,"color":"#FFFFFF","color_type":"solid","alternative_text":"PayPal learn more modal close"},"variables":{"inline_logo_placeholder":"test_logo_placeholder"},"merchant_country_code":"US","credit_product_identifiers":["test_credit_product_identifier"],"debug_id":"test_debug_id","fdata":"test_fdata","tracking_keys":["test_tracking_key"],"originating_instance_id":"350e8400-e29b-41d4-a716-446655440000"},"content":{"default":{"main":"test_main","main_alternative":"test_alternative","disclaimer":"test_disclaimer"},"generic":{"main":"test_main","main_alternative":"test_alternative","disclaimer":"test_disclaimer"}}}"""
+		val expectedJson = """{"meta":{"credit_product_group":"PAYPAL_CREDIT","offer_country_code":"US","offer_type":"PAY_LATER_SHORT_TERM","message_type":"OFFER","modal_close_button":{"width":100,"height":100,"available_width":200,"available_height":200,"color":"#FFFFFF","color_type":"solid","alternative_text":"PayPal learn more modal close"},"variables":{"inline_logo_placeholder":"test_logo_placeholder"},"merchant_country_code":"US","language":"en-US","credit_product_identifiers":["test_credit_product_identifier"],"debug_id":"test_debug_id","fdata":"test_fdata","tracking_keys":["test_tracking_key"],"originating_instance_id":"350e8400-e29b-41d4-a716-446655440000"},"content":{"default":{"main":"test_main","main_alternative":"test_alternative","disclaimer":"test_disclaimer"},"generic":{"main":"test_main","main_alternative":"test_alternative","disclaimer":"test_disclaimer"}}}"""
 		assertEquals(expectedJson, json)
 	}
 
@@ -114,6 +116,7 @@ class ApiMessageDataTest {
 		assertEquals(fdata, metadata.fdata)
 		assertEquals(trackingKeys, metadata.trackingKeys)
 		assertEquals(originatingInstanceId, metadata.originatingInstanceId)
+		assertEquals(language, metadata.language)
 	}
 
 	@Test
@@ -121,7 +124,7 @@ class ApiMessageDataTest {
 		val json = gson.toJson(metadata)
 
 		@Suppress("ktlint:standard:max-line-length")
-		val expectedJson = """{"credit_product_group":"PAYPAL_CREDIT","offer_country_code":"US","offer_type":"PAY_LATER_SHORT_TERM","message_type":"OFFER","modal_close_button":{"width":100,"height":100,"available_width":200,"available_height":200,"color":"#FFFFFF","color_type":"solid","alternative_text":"PayPal learn more modal close"},"variables":{"inline_logo_placeholder":"test_logo_placeholder"},"merchant_country_code":"US","credit_product_identifiers":["test_credit_product_identifier"],"debug_id":"test_debug_id","fdata":"test_fdata","tracking_keys":["test_tracking_key"],"originating_instance_id":"350e8400-e29b-41d4-a716-446655440000"}"""
+		val expectedJson = """{"credit_product_group":"PAYPAL_CREDIT","offer_country_code":"US","offer_type":"PAY_LATER_SHORT_TERM","message_type":"OFFER","modal_close_button":{"width":100,"height":100,"available_width":200,"available_height":200,"color":"#FFFFFF","color_type":"solid","alternative_text":"PayPal learn more modal close"},"variables":{"inline_logo_placeholder":"test_logo_placeholder"},"merchant_country_code":"US","language":"en-US","credit_product_identifiers":["test_credit_product_identifier"],"debug_id":"test_debug_id","fdata":"test_fdata","tracking_keys":["test_tracking_key"],"originating_instance_id":"350e8400-e29b-41d4-a716-446655440000"}"""
 		assertEquals(expectedJson, json)
 	}
 

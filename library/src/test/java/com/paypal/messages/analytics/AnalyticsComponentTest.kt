@@ -34,6 +34,9 @@ class AnalyticsComponentTest {
 	private val instanceId = "test_instance_id"
 	private val originatingInstanceId = "test_originating_instance_id"
 	private val componentEvents = mutableListOf(AnalyticsEvent(EventType.MESSAGE_CLICKED))
+	private val language = "de-DE"
+	private val locale = "fr_CA"
+	private val languageRendered = "en-US"
 
 	private val analyticsComponent = AnalyticsComponent(
 		offerType = offerType,
@@ -41,6 +44,9 @@ class AnalyticsComponentTest {
 		pageType = pageType,
 		buyerCountryCode = buyerCountryCode,
 		channel = channel,
+		language = language,
+		locale = locale,
+		languageRendered = languageRendered,
 		styleLogoType = styleLogoType,
 		styleColor = styleColor,
 		styleTextAlign = styleTextAlign,
@@ -86,7 +92,8 @@ class AnalyticsComponentTest {
 		assertEquals(instanceId, analyticsComponent.instanceId)
 		assertEquals(originatingInstanceId, analyticsComponent.originatingInstanceId)
 		assertEquals(componentEvents, analyticsComponent.componentEvents)
-		assertEquals("undefined", analyticsComponent.languageRequested)
+		assertEquals("fr-CA", analyticsComponent.languageRequested)
+		assertEquals("en-US", analyticsComponent.languageRendered)
 	}
 
 	@Test
@@ -118,7 +125,8 @@ class AnalyticsComponentTest {
 			""""originating_instance_id":"test_originating_instance_id"""",
 			""""component_events":[{"event_type":"message_clicked"}]""",
 			""""__shared__":{}""",
-			""""language_requested":"undefined"""",
+			""""language_requested":"fr-CA"""",
+			""""language_rendered":"en-US"""",
 		)
 		expectedParts.forEach { assertTrue(it in json, "json does not contain $it") }
 	}
@@ -177,5 +185,41 @@ class AnalyticsComponentTest {
 		)
 		val json = Gson().toJson(component)
 		assertTrue(""""language_requested":"fr-CA"""" in json)
+	}
+
+	@Test
+	fun testLanguageRenderedWithValue() {
+		val component = AnalyticsComponent(
+			languageRendered = "en-CA",
+			componentEvents = mutableListOf(),
+		)
+		assertEquals("en-CA", component.languageRendered)
+	}
+
+	@Test
+	fun testLanguageRenderedDefaultsToUndefined() {
+		val component = AnalyticsComponent(
+			componentEvents = mutableListOf(),
+		)
+		assertEquals("undefined", component.languageRendered)
+	}
+
+	@Test
+	fun testLanguageRenderedSerialization() {
+		val component = AnalyticsComponent(
+			languageRendered = "fr-CA",
+			componentEvents = mutableListOf(),
+		)
+		val json = Gson().toJson(component)
+		assertTrue(""""language_rendered":"fr-CA"""" in json)
+	}
+
+	@Test
+	fun testLanguageRenderedSerializationWhenUndefined() {
+		val component = AnalyticsComponent(
+			componentEvents = mutableListOf(),
+		)
+		val json = Gson().toJson(component)
+		assertTrue(""""language_rendered":"undefined"""" in json)
 	}
 }

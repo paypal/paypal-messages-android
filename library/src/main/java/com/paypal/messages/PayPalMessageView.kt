@@ -315,6 +315,10 @@ class PayPalMessageView @JvmOverloads constructor(
 					builder.setupMessageLogo(logo.getAsset(color), tag, lineHeight)
 				}
 			}
+
+			// Apply bold styling for %bold% delimiters
+			builder.applyBoldDelimiters("%bold%")
+
 			// Apply disclaimer style
 			messageDisclaimer?.let { builder.setupDisclaimer(color, it) }
 			// TextView has textAlignment so this prevents clashing variables
@@ -652,6 +656,30 @@ class PayPalMessageView @JvmOverloads constructor(
 		)
 	}
 
+	// Extension function to apply bold styling for substrings between custom delimiters
+	private fun SpannableStringBuilder.applyBoldDelimiters(delimiter: String) {
+		var start = this.toString().indexOf(delimiter)
+		while (start != -1) {
+			val end = this.toString().indexOf(delimiter, start + delimiter.length)
+			if (end == -1) break
+			val boldStart = start
+			val boldEnd = end
+			// Remove delimiters and get the substring
+			val substring = this.substring(boldStart + delimiter.length, boldEnd)
+			// Replace the whole %bold%My Substring%bold% with just My Substring
+			replace(boldStart, boldEnd + delimiter.length, substring)
+			// Apply bold span
+			setSpan(
+				StyleSpan(android.graphics.Typeface.BOLD),
+				boldStart,
+				boldStart + substring.length,
+				Spannable.SPAN_INCLUSIVE_INCLUSIVE,
+			)
+			// Search for next occurrence
+			start = this.toString().indexOf(delimiter, boldStart + substring.length)
+		}
+	}
+
 	private fun logEvent(event: AnalyticsEvent) {
 		// Build component Information
 		val component = AnalyticsComponent(
@@ -670,6 +698,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			creditProductIdentifiers = this.messageDataResponse?.meta?.creditProductIdentifiers as MutableList<String>?,
 			offerCountryCode = this.messageDataResponse?.meta?.offerCountryCode,
 			merchantCountryCode = this.messageDataResponse?.meta?.merchantCountryCode,
+			languageRendered = this.messageDataResponse?.meta?.language ?: "undefined",
 			type = ComponentType.MESSAGE.toString(),
 			instanceId = this.instanceId.toString(),
 			originatingInstanceId = Api.originatingInstanceId.toString(),
