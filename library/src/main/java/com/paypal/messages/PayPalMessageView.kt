@@ -670,6 +670,7 @@ class PayPalMessageView @JvmOverloads constructor(
 			creditProductIdentifiers = this.messageDataResponse?.meta?.creditProductIdentifiers as MutableList<String>?,
 			offerCountryCode = this.messageDataResponse?.meta?.offerCountryCode,
 			merchantCountryCode = this.messageDataResponse?.meta?.merchantCountryCode,
+			languageRendered = this.messageDataResponse?.meta?.language ?: "undefined",
 			type = ComponentType.MESSAGE.toString(),
 			instanceId = this.instanceId.toString(),
 			originatingInstanceId = Api.originatingInstanceId.toString(),

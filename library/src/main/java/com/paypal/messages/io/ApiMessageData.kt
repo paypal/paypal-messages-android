@@ -45,6 +45,8 @@ object ApiMessageData {
 		val variables: Variables?,
 		@SerializedName("merchant_country_code")
 		val merchantCountryCode: String,
+		@SerializedName("language")
+		val language: String?,
 		@SerializedName("credit_product_identifiers")
 		val creditProductIdentifiers: List<String>,
 		@SerializedName("debug_id")
