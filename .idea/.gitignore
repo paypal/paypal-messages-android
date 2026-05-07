@@ -17,3 +17,6 @@
 /usage.statistics.xml
 misc.xml
 *.iml
+/AndroidProjectSystem.xml
+/runConfigurations.xml
+/caches/

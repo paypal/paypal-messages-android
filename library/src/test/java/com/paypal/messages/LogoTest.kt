@@ -63,7 +63,7 @@ class LogoTest {
 				LogoType.PRIMARY,
 				ProductGroup.PAYPAL_CREDIT,
 				Color.GRAYSCALE,
-				R.drawable.logo_credit_primary_grayscale,
+				R.drawable.logo_credit_primary_monochrome,
 			),
 
 			// PRIMARY PAY LATER
@@ -89,7 +89,7 @@ class LogoTest {
 				LogoType.PRIMARY,
 				ProductGroup.PAY_LATER,
 				Color.GRAYSCALE,
-				R.drawable.logo_primary_grayscale,
+				R.drawable.logo_primary_monochrome,
 			),
 			Arguments.of(
 				LogoType.PRIMARY,
@@ -121,7 +121,7 @@ class LogoTest {
 				LogoType.ALTERNATIVE,
 				ProductGroup.PAYPAL_CREDIT,
 				Color.GRAYSCALE,
-				R.drawable.logo_credit_alternative_grayscale,
+				R.drawable.logo_credit_alternative_monochrome,
 			),
 
 			// ALTERNATIVE PAY LATER
@@ -147,7 +147,7 @@ class LogoTest {
 				LogoType.ALTERNATIVE,
 				ProductGroup.PAY_LATER,
 				Color.GRAYSCALE,
-				R.drawable.logo_alternative_grayscale,
+				R.drawable.logo_alternative_monochrome,
 			),
 			Arguments.of(
 				LogoType.ALTERNATIVE,
@@ -179,7 +179,7 @@ class LogoTest {
 				LogoType.INLINE,
 				ProductGroup.PAYPAL_CREDIT,
 				Color.GRAYSCALE,
-				R.drawable.logo_credit_inline_grayscale,
+				R.drawable.logo_credit_inline_monochrome,
 			),
 
 			// INLINE PAY LATER
@@ -205,7 +205,7 @@ class LogoTest {
 				LogoType.INLINE,
 				ProductGroup.PAY_LATER,
 				Color.GRAYSCALE,
-				R.drawable.logo_inline_grayscale,
+				R.drawable.logo_inline_monochrome,
 			),
 			Arguments.of(
 				LogoType.INLINE,

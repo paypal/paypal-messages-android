@@ -23,7 +23,7 @@ enum class PayPalMessageColor(
 	MONOCHROME(value = 2, colorResId = R.color.black),
 
 	@SerializedName("grayscale")
-	GRAYSCALE(value = 3, colorResId = R.color.gray_700),
+	GRAYSCALE(value = 3, colorResId = R.color.black),
 	;
 
 	companion object {
