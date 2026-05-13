@@ -6,6 +6,7 @@ https://stackoverflow.com/a/53067685
 -->
 <resources>
 	<color name="blue_600">#005ABA</color>
+	<color name="link_blue">#0065F2</color>
 	<color name="gray_700">#2C2E2F</color>
 	<color name="white">#FFFFFF</color>
 	<color name="black">#000000</color>

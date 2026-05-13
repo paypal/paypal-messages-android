@@ -27,6 +27,7 @@ class Logo(
 							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_primary_monochrome
 						}
 					},
+					scale = 1.25f,
 				)
 			}
 
@@ -47,6 +48,7 @@ class Logo(
 							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_alternative_monochrome
 						}
 					},
+					scale = 1.25f,
 				)
 			}
 

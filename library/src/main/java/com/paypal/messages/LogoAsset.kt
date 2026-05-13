@@ -16,5 +16,6 @@ sealed class LogoAsset {
 	 */
 	data class ImageAsset(
 		@DrawableRes val resId: Int,
+		val scale: Float = 1.0f,
 	) : LogoAsset()
 }
