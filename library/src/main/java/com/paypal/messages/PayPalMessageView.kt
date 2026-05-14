@@ -596,32 +596,41 @@ class PayPalMessageView @JvmOverloads constructor(
 				ContextCompat.getDrawable(context, logoAsset.resId)?.let { logoDrawable ->
 					val logoHeight: Int
 					val top: Int
+					val alignment: Int
 
 					when {
 						// Inline
 						logoDrawable.intrinsicHeight > 200 && logoDrawable.intrinsicWidth > 200 -> {
 							logoHeight = (lineHeight * logoAsset.scale).toInt()
 							top = 6
+							alignment = 2
 						}
 						// Alternative
 						logoDrawable.intrinsicHeight > 200 && logoDrawable.intrinsicWidth < 200 -> {
 							logoHeight = lineHeight + 8
 							top = 8
+							alignment = 2
+						}
+						// Small inline (e.g. logo_inline_standard)
+						logoAsset.scale == 1.0f -> {
+							logoHeight = lineHeight
+							top = 6
+							alignment = 2
 						}
 						// Primary
 						else -> {
 							top = (logoAsset.scale * lineHeight).toInt() + fontAscent
 							logoHeight = (2f * logoAsset.scale * lineHeight).toInt() + fontAscent
+							alignment = 2
 						}
 					}
 
 					val width =
 						(logoHeight - top) * logoDrawable.intrinsicWidth / logoDrawable.intrinsicHeight
 					logoDrawable.setBounds(0, top, width, logoHeight)
-					val alignCenter = 2
 
 					setSpan(
-						ImageSpan(logoDrawable, alignCenter),
+						ImageSpan(logoDrawable, alignment),
 						logoIndex,
 						logoIndex + logoTag.length,
 						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
