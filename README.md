@@ -2,6 +2,8 @@
 
 A messaging component library allowing easy integration of PayPal Credit Messages onto your app.
 
+> **Note:** This messaging component is intended for use with the **[Braintree SDK](https://developer.paypal.com/braintree/docs/guides/paypal/messaging/android/v5)** only. To integrate PayPal messaging in your Android app, you must have a Braintree account and the Braintree SDK integrated. PPCP SDK integrations are not supported.
+
 - [Availability](#availability)
 - [Contribution](#contribution)
 - [Support](#support)
