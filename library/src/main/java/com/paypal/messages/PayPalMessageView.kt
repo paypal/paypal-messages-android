@@ -309,10 +309,11 @@ class PayPalMessageView @JvmOverloads constructor(
 			val builder = SpannableStringBuilder(content)
 			// Set the content for calculating the line height
 			val lineHeight: Int = messageTextView.lineHeight
+			val fontAscent: Int = messageTextView.paint.fontMetricsInt.ascent
 			// Apply logo style
 			messageLogoTag?.let { tag ->
 				if (builder.contains(tag)) {
-					builder.setupMessageLogo(logo.getAsset(color), tag, lineHeight)
+					builder.setupMessageLogo(logo.getAsset(color), tag, lineHeight, fontAscent)
 				}
 			}
 
@@ -576,6 +577,7 @@ class PayPalMessageView @JvmOverloads constructor(
 		logoAsset: LogoAsset,
 		logoTag: String,
 		lineHeight: Int,
+		fontAscent: Int,
 	) {
 		val logoIndex = indexOf(logoTag)
 		when (logoAsset) {
@@ -594,32 +596,41 @@ class PayPalMessageView @JvmOverloads constructor(
 				ContextCompat.getDrawable(context, logoAsset.resId)?.let { logoDrawable ->
 					val logoHeight: Int
 					val top: Int
+					val alignment: Int
 
 					when {
 						// Inline
 						logoDrawable.intrinsicHeight > 200 && logoDrawable.intrinsicWidth > 200 -> {
-							logoHeight = lineHeight
+							logoHeight = (lineHeight * logoAsset.scale).toInt()
 							top = 6
+							alignment = 2
 						}
 						// Alternative
 						logoDrawable.intrinsicHeight > 200 && logoDrawable.intrinsicWidth < 200 -> {
 							logoHeight = lineHeight + 8
 							top = 8
+							alignment = 2
+						}
+						// Small inline (e.g. logo_inline_standard)
+						logoAsset.scale == 1.0f -> {
+							logoHeight = lineHeight
+							top = 6
+							alignment = 2
 						}
 						// Primary
 						else -> {
-							logoHeight = lineHeight + 4
-							top = 4
+							top = (logoAsset.scale * lineHeight).toInt() + fontAscent
+							logoHeight = (2f * logoAsset.scale * lineHeight).toInt() + fontAscent
+							alignment = 2
 						}
 					}
 
 					val width =
 						(logoHeight - top) * logoDrawable.intrinsicWidth / logoDrawable.intrinsicHeight
 					logoDrawable.setBounds(0, top, width, logoHeight)
-					val alignCenter = 2
 
 					setSpan(
-						ImageSpan(logoDrawable, alignCenter),
+						ImageSpan(logoDrawable, alignment),
 						logoIndex,
 						logoIndex + logoTag.length,
 						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
@@ -642,7 +653,7 @@ class PayPalMessageView @JvmOverloads constructor(
 
 		if (color === Color.BLACK) {
 			setSpan(
-				ForegroundColorSpan(ContextCompat.getColor(context, R.color.blue_600)),
+				ForegroundColorSpan(ContextCompat.getColor(context, R.color.link_blue)),
 				disclaimerIndex,
 				disclaimerIndex + disclaimer.length,
 				Spannable.SPAN_INCLUSIVE_INCLUSIVE,

@@ -31,7 +31,7 @@ class PayPalMessageColorTest {
 	@Test
 	fun testGrayscale() {
 		assertEquals(PayPalMessageColor.GRAYSCALE.value, 3)
-		assertEquals(PayPalMessageColor.GRAYSCALE.colorResId, R.color.gray_700)
+		assertEquals(PayPalMessageColor.GRAYSCALE.colorResId, R.color.black)
 		assertEquals(PayPalMessageColor.GRAYSCALE.toString(), "GRAYSCALE")
 	}
 

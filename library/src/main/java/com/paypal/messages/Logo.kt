@@ -17,16 +17,17 @@ class Logo(
 							PayPalMessageColor.BLACK -> R.drawable.logo_credit_primary_standard
 							PayPalMessageColor.WHITE -> R.drawable.logo_credit_primary_white
 							PayPalMessageColor.MONOCHROME -> R.drawable.logo_credit_primary_monochrome
-							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_credit_primary_grayscale
+							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_credit_primary_monochrome
 						}
 
 						else -> when (color) {
 							PayPalMessageColor.BLACK -> R.drawable.logo_primary_standard
 							PayPalMessageColor.WHITE -> R.drawable.logo_primary_white
 							PayPalMessageColor.MONOCHROME -> R.drawable.logo_primary_monochrome
-							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_primary_grayscale
+							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_primary_monochrome
 						}
 					},
+					scale = 1.25f,
 				)
 			}
 
@@ -37,16 +38,17 @@ class Logo(
 							PayPalMessageColor.BLACK -> R.drawable.logo_credit_alternative_standard
 							PayPalMessageColor.WHITE -> R.drawable.logo_credit_alternative_white
 							PayPalMessageColor.MONOCHROME -> R.drawable.logo_credit_alternative_monochrome
-							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_credit_alternative_grayscale
+							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_credit_alternative_monochrome
 						}
 
 						else -> when (color) {
 							PayPalMessageColor.BLACK -> R.drawable.logo_alternative_standard
 							PayPalMessageColor.WHITE -> R.drawable.logo_alternative_white
 							PayPalMessageColor.MONOCHROME -> R.drawable.logo_alternative_monochrome
-							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_alternative_grayscale
+							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_alternative_monochrome
 						}
 					},
+					scale = 1.25f,
 				)
 			}
 
@@ -57,14 +59,14 @@ class Logo(
 							PayPalMessageColor.BLACK -> R.drawable.logo_credit_inline_standard
 							PayPalMessageColor.WHITE -> R.drawable.logo_credit_inline_white
 							PayPalMessageColor.MONOCHROME -> R.drawable.logo_credit_inline_monochrome
-							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_credit_inline_grayscale
+							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_credit_inline_monochrome
 						}
 
 						else -> when (color) {
 							PayPalMessageColor.BLACK -> R.drawable.logo_inline_standard
 							PayPalMessageColor.WHITE -> R.drawable.logo_inline_white
 							PayPalMessageColor.MONOCHROME -> R.drawable.logo_inline_monochrome
-							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_inline_grayscale
+							PayPalMessageColor.GRAYSCALE -> R.drawable.logo_inline_monochrome
 						}
 					},
 				)
