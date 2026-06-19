@@ -1,0 +1,225 @@
+name: AndroidX Compatibility Matrix Testing
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run weekly on Mondays to catch new AndroidX releases
+    - cron: '0 0 * * 1'
+  pull_request:
+    paths:
+      - 'library/build.gradle'
+      - 'gradle.properties'
+      - '.github/workflows/test-androidx-compatibility.yml'
+
+concurrency:
+  group: androidx-compat-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test_androidx_matrix:
+    name: AndroidX Compatibility Matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Baseline - current versions
+          - androidx_core: "1.10.1"
+            appcompat: "1.6.1"
+            activity_compose: "1.7.2"
+            compose_bom: "2023.05.01"
+            material: "1.9.0"
+            label: "baseline"
+          
+          # Test older Core KTX versions
+          - androidx_core: "1.9.0"
+            appcompat: "1.6.1"
+            activity_compose: "1.7.2"
+            compose_bom: "2023.05.01"
+            material: "1.9.0"
+            label: "core-ktx-1.9"
+          
+          - androidx_core: "1.8.0"
+            appcompat: "1.6.1"
+            activity_compose: "1.7.2"
+            compose_bom: "2023.05.01"
+            material: "1.9.0"
+            label: "core-ktx-1.8"
+          
+          # Test older AppCompat versions
+          - androidx_core: "1.10.1"
+            appcompat: "1.5.1"
+            activity_compose: "1.7.2"
+            compose_bom: "2023.05.01"
+            material: "1.9.0"
+            label: "appcompat-1.5"
+          
+          - androidx_core: "1.10.1"
+            appcompat: "1.4.2"
+            activity_compose: "1.7.2"
+            compose_bom: "2023.05.01"
+            material: "1.9.0"
+            label: "appcompat-1.4"
+          
+          # Test older Activity Compose versions
+          - androidx_core: "1.10.1"
+            appcompat: "1.6.1"
+            activity_compose: "1.6.1"
+            compose_bom: "2023.05.01"
+            material: "1.9.0"
+            label: "activity-compose-1.6"
+          
+          # Test older Compose BOM versions
+          # Note: 2023.05.01 is minimum due to stable DialogProperties API usage
+          - androidx_core: "1.10.1"
+            appcompat: "1.6.1"
+            activity_compose: "1.7.2"
+            compose_bom: "2023.03.00"
+            material: "1.9.0"
+            label: "compose-bom-2023.03"
+          
+          # Test older Material versions
+          - androidx_core: "1.10.1"
+            appcompat: "1.6.1"
+            activity_compose: "1.7.2"
+            compose_bom: "2023.05.01"
+            material: "1.8.0"
+            label: "material-1.8"
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Update lockfile for version overrides
+        run: |
+          ./gradlew :library:dependencies --write-locks \
+            -PandroidxCoreVersion=${{ matrix.androidx_core }} \
+            -PappcompatVersion=${{ matrix.appcompat }} \
+            -PactivityComposeVersion=${{ matrix.activity_compose }} \
+            -PcomposeBomVersion=${{ matrix.compose_bom }} \
+            -PmaterialVersion=${{ matrix.material }} \
+            --no-daemon
+
+      - name: Build with AndroidX version overrides
+        run: |
+          ./gradlew :library:assembleRelease \
+            -PandroidxCoreVersion=${{ matrix.androidx_core }} \
+            -PappcompatVersion=${{ matrix.appcompat }} \
+            -PactivityComposeVersion=${{ matrix.activity_compose }} \
+            -PcomposeBomVersion=${{ matrix.compose_bom }} \
+            -PmaterialVersion=${{ matrix.material }} \
+            --no-daemon
+        continue-on-error: true
+        id: build
+
+      - name: Run unit tests with AndroidX version overrides
+        if: steps.build.outcome == 'success'
+        run: |
+          ./gradlew :library:testDebugUnitTest \
+            -PandroidxCoreVersion=${{ matrix.androidx_core }} \
+            -PappcompatVersion=${{ matrix.appcompat }} \
+            -PactivityComposeVersion=${{ matrix.activity_compose }} \
+            -PcomposeBomVersion=${{ matrix.compose_bom }} \
+            -PmaterialVersion=${{ matrix.material }} \
+            --no-daemon
+        continue-on-error: true
+        id: test
+
+      - name: Report results
+        if: always()
+        run: |
+          echo "## AndroidX Compatibility Test: ${{ matrix.label }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Version |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|---------|" >> $GITHUB_STEP_SUMMARY
+          echo "| androidx.core:core-ktx | ${{ matrix.androidx_core }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| androidx.appcompat:appcompat | ${{ matrix.appcompat }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| androidx.activity:activity-compose | ${{ matrix.activity_compose }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| androidx.compose:compose-bom | ${{ matrix.compose_bom }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| com.google.android.material:material | ${{ matrix.material }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.build.outcome }}" == "success" ] && [ "${{ steps.test.outcome }}" == "success" ]; then
+            echo "✅ **Status: PASSED**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Build and unit tests passed with these AndroidX versions." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Status: FAILED**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            if [ "${{ steps.build.outcome }}" != "success" ]; then
+              echo "- Build failed" >> $GITHUB_STEP_SUMMARY
+            fi
+            if [ "${{ steps.test.outcome }}" != "success" ]; then
+              echo "- Unit tests failed" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+      - name: Fail if build or tests failed
+        if: steps.build.outcome != 'success' || steps.test.outcome != 'success'
+        run: |
+          echo "❌ AndroidX compatibility test failed for ${{ matrix.label }}"
+          echo "Build outcome: ${{ steps.build.outcome }}"
+          echo "Test outcome: ${{ steps.test.outcome }}"
+          exit 1
+
+  test_instrumentation_matrix:
+    name: Instrumentation Tests (Baseline Only)
+    runs-on: ubuntu-latest
+    # Only run instrumentation tests with baseline versions to save CI time
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Update lockfile for baseline versions
+        run: |
+          ./gradlew :library:dependencies --write-locks \
+            -PandroidxCoreVersion=1.10.1 \
+            -PappcompatVersion=1.6.1 \
+            -PactivityComposeVersion=1.7.2 \
+            -PcomposeBomVersion=2023.05.01 \
+            -PmaterialVersion=1.9.0 \
+            --no-daemon
+
+      - name: Run Instrumentation Tests with Baseline Versions
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 23
+          target: google_apis
+          arch: x86_64
+          script: |
+            ./gradlew connectedCheck \
+              -PandroidxCoreVersion=1.10.1 \
+              -PappcompatVersion=1.6.1 \
+              -PactivityComposeVersion=1.7.2 \
+              -PcomposeBomVersion=2023.05.01 \
+              -PmaterialVersion=1.9.0 \
+              --info | tee connectedCheck.log
+        continue-on-error: true
+
+      - name: Show Test Results
+        if: always()
+        run: |
+          if [ -f connectedCheck.log ]; then
+            echo "=== Instrumentation Test Results ==="
+            grep -E '(SUCCESS|FAILED|failed|PASSED|passed)' connectedCheck.log | head -20 || echo "No test results found"
+          fi
+
