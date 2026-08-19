@@ -299,7 +299,7 @@
 
 		<androidx.constraintlayout.widget.ConstraintLayout
 			android:layout_width="match_parent"
-			android:layout_height="80dp"
+			android:layout_height="100dp"
 			android:paddingTop="24dp"
 			android:id="@+id/messageWrapper">
 

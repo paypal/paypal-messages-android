@@ -66,7 +66,7 @@ class JetpackComposableActivity : ComponentActivity() {
 				var amount: String by remember { mutableStateOf("100.00") }
 				var buyerCountry: String by remember { mutableStateOf("US") }
 				var offerType: String? by remember { mutableStateOf(PayPalMessageOfferType.PAY_LATER_SHORT_TERM.name) }
-				
+
 				// Loading state
 				var isLoading by remember { mutableStateOf(false) }
 
@@ -151,7 +151,7 @@ class JetpackComposableActivity : ComponentActivity() {
 							fontWeight = FontWeight.Bold,
 							modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
 						)
-						
+
 						// Legacy Implementation
 						Text(
 							text = "1. Legacy Implementation (AndroidView):",
@@ -215,7 +215,7 @@ class JetpackComposableActivity : ComponentActivity() {
 							modifier = Modifier
 								.padding(vertical = 8.dp)
 								.background(color = backgroundColor)
-								.height(40.dp)
+								.height(100.dp)
 								.fillMaxWidth(),
 							factory = { messageView },
 							update = { view ->
@@ -227,19 +227,19 @@ class JetpackComposableActivity : ComponentActivity() {
 								)
 							},
 						)
-						
+
 						// Show loading indicator when messages are loading
 						CircularIndicator(progressBar = isLoading)
-						
+
 						Divider(modifier = Modifier.padding(vertical = 16.dp))
-						
+
 						// Composable Implementation
 						Text(
 							text = "2. Composable Implementation:",
 							fontWeight = FontWeight.Medium,
 							modifier = Modifier.padding(bottom = 4.dp),
 						)
-						
+
 						// Use our new composable for a cleaner integration
 						// Note: This composable implementation might not display properly due to compatibility issues
 						// The fallback text will be shown to indicate this
@@ -280,7 +280,7 @@ class JetpackComposableActivity : ComponentActivity() {
 							modifier = Modifier
 								.padding(vertical = 8.dp)
 								.background(Color.White)
-								.height(40.dp)
+								.height(100.dp)
 								.fillMaxWidth(),
 							showFallbackIndicator = true,
 						)
@@ -295,7 +295,7 @@ class JetpackComposableActivity : ComponentActivity() {
 							Button(
 								onClick = {
 									Log.d(TAG, "Showing custom modal with amount: $amount, country: $buyerCountry, offer: $offerType")
-									
+
 									// Create intent for the PayPalModalActivity
 									val intent = Intent(context, PayPalModalActivity::class.java).apply {
 										putExtra("CLIENT_ID", clientId)
@@ -306,10 +306,10 @@ class JetpackComposableActivity : ComponentActivity() {
 										putExtra("BUYER_COUNTRY", buyerCountry)
 										putExtra("OFFER_TYPE", offerType)
 									}
-									
+
 									// Start the activity to show the modal
 									context.startActivity(intent)
-									
+
 									// Add animation override if using an Activity context
 									if (context is Activity) {
 										context.overridePendingTransition(android.R.anim.fade_in, 0)

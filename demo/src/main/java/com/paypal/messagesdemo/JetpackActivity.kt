@@ -346,7 +346,7 @@ class JetpackActivity : ComponentActivity() {
 							modifier = Modifier
 								.padding(top = 16.dp, bottom = 32.dp, start = 8.dp, end = 8.dp)
 								.background(color = backgroundColor)
-								.height(40.dp)
+								.height(100.dp)
 								.fillMaxWidth(),
 							factory = {
 								// The messageView is created and configured earlier in this file
